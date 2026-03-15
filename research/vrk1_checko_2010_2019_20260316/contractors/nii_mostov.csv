@@ -1,0 +1,2 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490150001810000,2015-10-22,223,Услуги в области коммерческой и технической деятельности прочей,545160,,,,,0.55,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1002772,checko_contracts

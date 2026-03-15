@@ -1,0 +1,4 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490160000270000,2016-02-25,223,"Услуги по ремонту и техническому обслуживанию прочего оборудования общего назначения, не включенного в другие группировки",12589769,,,,,0.7,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1314643,checko_contracts
+67708737490160000780000,2016-05-04,223,Услуги по ремонту и техническому обслуживанию прочего оборудования специального назначения,8287261,,,,,0.7,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1607436,checko_contracts
+67708737490160001850000,2016-08-22,223,Услуги по ремонту и техническому обслуживанию прочего оборудования специального назначения,2765920,,,,,0.7,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2462609,checko_contracts

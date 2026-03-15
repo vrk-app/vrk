@@ -25,7 +25,7 @@ REQUEST_TIMEOUT = 30
 REQUEST_RETRIES = 2
 REQUEST_DELAY_RANGE = (1.0, 2.0)
 TRACKED_YEARS = tuple(range(2010, 2027))
-TRACKED_LAWS = ("44", "223", "94")
+TRACKED_LAWS = ("223", "44", "94")
 HARD_BLOCK_REASONS = {"http_429", "captcha", "rate_limited"}
 CHECKO_API_BASE = "https://api.checko.ru/v2"
 CHECKO_API_KEY_ENV = "CHECKO_API_KEY"
@@ -476,15 +476,36 @@ def slugify(value: str) -> str:
 def organization_type_from_name(name: str | None) -> str | None:
     if not name:
         return None
-    match = re.match(r'^\s*(ООО|АО|ПАО|ОАО|ЗАО|ИП|НАО|ГУП|МУП|ФГУП)\b', name)
-    return match.group(1) if match else None
+    normalized = normalize_whitespace(name.upper())
+    if not normalized:
+        return None
+    short_match = re.match(r'^\s*(ООО|АО|ПАО|ОАО|ЗАО|ИП|НАО|ГУП|МУП|ФГУП|ФБУ)\b', normalized)
+    if short_match:
+        return short_match.group(1)
+    long_forms = {
+        "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ": "ООО",
+        "АКЦИОНЕРНОЕ ОБЩЕСТВО": "АО",
+        "ПУБЛИЧНОЕ АКЦИОНЕРНОЕ ОБЩЕСТВО": "ПАО",
+        "НЕПУБЛИЧНОЕ АКЦИОНЕРНОЕ ОБЩЕСТВО": "НАО",
+        "ОТКРЫТОЕ АКЦИОНЕРНОЕ ОБЩЕСТВО": "ОАО",
+        "ЗАКРЫТОЕ АКЦИОНЕРНОЕ ОБЩЕСТВО": "ЗАО",
+        "ФЕДЕРАЛЬНОЕ ГОСУДАРСТВЕННОЕ УНИТАРНОЕ ПРЕДПРИЯТИЕ": "ФГУП",
+        "ГОСУДАРСТВЕННОЕ УНИТАРНОЕ ПРЕДПРИЯТИЕ": "ГУП",
+        "МУНИЦИПАЛЬНОЕ УНИТАРНОЕ ПРЕДПРИЯТИЕ": "МУП",
+        "ФЕДЕРАЛЬНОЕ БЮДЖЕТНОЕ УЧРЕЖДЕНИЕ": "ФБУ",
+        "ИНДИВИДУАЛЬНЫЙ ПРЕДПРИНИМАТЕЛЬ": "ИП",
+    }
+    for prefix, short_name in long_forms.items():
+        if normalized.startswith(prefix):
+            return short_name
+    return None
 
 
 def normalize_company_name(name: str | None) -> str:
     if not name:
         return ""
     normalized = normalize_whitespace(name.lower()) or ""
-    normalized = re.sub(r'^(ооо|ао|пао|оао|зао|ип|нао)\s+', "", normalized)
+    normalized = re.sub(r'^(ооо|ао|пао|оао|зао|ип|нао|гуп|муп|фгуп|фбу)\s+', "", normalized)
     normalized = normalized.replace('"', "").replace("«", "").replace("»", "")
     return normalized.strip()
 
@@ -492,6 +513,107 @@ def normalize_company_name(name: str | None) -> str:
 def is_hidden_223_supplier(name: str | None) -> bool:
     normalized = normalize_company_name(name)
     return normalized.startswith("не раскрыто в еис")
+
+
+def looks_like_url(value: str | None) -> bool:
+    if not value:
+        return False
+    return bool(re.match(r"^https?://", value.strip(), re.I))
+
+
+def extract_ogrn(value: str | None) -> str | None:
+    if not value:
+        return None
+    match = re.search(r"\b(\d{13})\b", value)
+    return match.group(1) if match else None
+
+
+RUSPROFILE_SMALL_NUMBER_WORDS = {
+    "ноль": 0,
+    "нуля": 0,
+    "нулю": 0,
+    "один": 1,
+    "одного": 1,
+    "одна": 1,
+    "одну": 1,
+    "два": 2,
+    "двух": 2,
+    "три": 3,
+    "трех": 3,
+    "трёх": 3,
+}
+
+
+def parse_rusprofile_employee_count(page_html: str) -> int | None:
+    employee_block = first_match(
+        [r'<dt class="company-info__title">\s*Среднесписочная численность.*?</dt>\s*<dd class="company-info__text">(.*?)</dd>'],
+        page_html,
+    )
+    if employee_block:
+        employee_text = strip_tags(employee_block)
+        if employee_text and "нет данных" not in employee_text.lower():
+            direct_count = parse_int(first_match([r"([0-9][0-9\s]*)\s+сотруд", r"([0-9][0-9\s]*)\s+чел"], employee_text, re.I))
+            if direct_count is not None:
+                return direct_count
+            if re.search(r"\bравна\s+нулю\b", employee_text, re.I):
+                return 0
+            word_match = re.search(r"\bдо\s+(ноль|нуля|нулю|один|одного|одна|одну|два|двух|три|трех|трёх)\b", employee_text, re.I)
+            if word_match:
+                return RUSPROFILE_SMALL_NUMBER_WORDS.get(word_match.group(1).lower())
+
+    description = first_match([r"(Численность сотрудников[^<]{0,1200})</div>"], page_html)
+    if not description:
+        return None
+    description_text = normalize_whitespace(html.unescape(description)) or ""
+    description_patterns = [
+        r"до\s*([0-9][0-9\s]*)\s*в\s*(?:20\d{2})(?:-м| году)?",
+        r"в\s*(?:20\d{2})\s*году[^.]*?работало\s*([0-9][0-9\s]*)\s*человек",
+        r"снизилась\s*с\s*[0-9][0-9\s]*\s*человек[^.]*?до\s*([0-9][0-9\s]*)\s*в\s*(?:20\d{2})(?:-м| году)?",
+        r"стабильн[а-я\s]*[—-]\s*([0-9][0-9\s]*)\s*человек",
+        r"составляет\s*(?:около\s*)?([0-9][0-9\s]*)(?:\s*[-–]\s*([0-9][0-9\s]*))?\s*человек",
+        r"составляет\s*([0-9][0-9\s]*)\s*человек\s*в\s*(?:20\d{2})(?:-м| году)?",
+    ]
+    for pattern in description_patterns:
+        match = re.search(pattern, description_text, re.I)
+        if not match:
+            continue
+        values = [parse_int(group) for group in match.groups() if group]
+        values = [value for value in values if value is not None]
+        if values:
+            return max(values)
+    if re.search(r"\bравна\s+нулю\b", description_text, re.I):
+        return 0
+    word_match = re.search(r"\bдо\s+(ноль|нуля|нулю|один|одного|одна|одну|два|двух|три|трех|трёх)\b", description_text, re.I)
+    if word_match:
+        return RUSPROFILE_SMALL_NUMBER_WORDS.get(word_match.group(1).lower())
+    return None
+
+
+def parse_rusprofile_revenue(page_html: str) -> tuple[int | None, int | None]:
+    finance_match = re.search(
+        r"Основные показатели за (\d{4}) год:\s*</p>\s*<div class=\"finance-columns.*?data-tab_name=\"tab_revenue\"[^>]*>\s*Выручка\s*</div>\s*<div>\s*<span class=\"num\">([^<]+)</span>\s*<span class=\"num-text\">([^<]+)</span>",
+        page_html,
+        re.S | re.I,
+    )
+    if not finance_match:
+        return None, None
+    revenue_year = int(finance_match.group(1))
+    revenue_value = parse_money_to_rubles(f"{finance_match.group(2)} {finance_match.group(3)}")
+    return revenue_value, revenue_year
+
+
+def build_rusprofile_queries(contract: ContractRecord) -> list[str]:
+    queries: list[str] = []
+    for candidate in (
+        extract_ogrn(contract.contractor_card_url),
+        extract_ogrn(contract.contractor_name) if looks_like_url(contract.contractor_name) else None,
+        contract.contractor_inn,
+        None if looks_like_url(contract.contractor_name) else contract.contractor_name,
+    ):
+        normalized = normalize_whitespace(candidate)
+        if normalized and normalized not in queries:
+            queries.append(normalized)
+    return queries
 
 
 def evaluate_relevance(subject: str) -> float:
@@ -1086,11 +1208,21 @@ def parse_checko_company_page(page_html: str, page_url: str) -> CompanyProfile:
 def parse_rusprofile_company_page(page_html: str, page_url: str) -> CompanyProfile:
     canonical = first_match([r'<link rel="canonical" href="([^"]+)"'], page_html) or page_url
     title = first_match([r"<title>(.*?)</title>"], page_html)
-    name = first_match(
+    display_name = first_match(
         [
+            r"<h1[^>]*>(.*?)</h1>",
             r"<title>([^<(]+?)\s+[А-ЯЁA-Z][^<(]*\s+\(ИНН",
             r"<title>([^<]+?)\s+\(ИНН",
             r"<title>(.*?)</title>",
+        ],
+        page_html,
+    )
+    if display_name and display_name.lower().startswith("по запросу"):
+        display_name = None
+    legal_name = first_match(
+        [
+            r'id="clip_name-long">\s*([^<]+)',
+            r'itemprop="legalName"[^>]*>\s*([^<]+)',
         ],
         page_html,
     )
@@ -1112,17 +1244,18 @@ def parse_rusprofile_company_page(page_html: str, page_url: str) -> CompanyProfi
         page_html,
     )
     active_status = "active" if re.search(r"действующ", page_html, re.I) else "inactive"
-    employee_count = parse_int(first_match([r"сократилась до ([0-9\s]+) сотруд", r"до ([0-9\s]+) сотруд"], page_html))
-    revenue_value = parse_money_to_rubles(first_match([r"Выручка</div><div>([^<]+)</div>", r"Выручка.*?<span class=\"num\">([^<]+)</span>"], page_html))
+    employee_count = parse_rusprofile_employee_count(page_html)
+    revenue_value, revenue_year = parse_rusprofile_revenue(page_html)
     return CompanyProfile(
-        name=name or title,
+        name=display_name or title,
         inn=inn,
         ogrn=ogrn,
-        org_type=organization_type_from_name(name or title),
+        org_type=organization_type_from_name(display_name or title) or organization_type_from_name(legal_name),
         region=normalize_whitespace(region),
         city=normalize_whitespace(city),
         employee_count=employee_count,
         revenue_value=revenue_value,
+        revenue_year=revenue_year,
         website=None,
         source_card_url=canonical,
         active_status=active_status,
@@ -1448,6 +1581,36 @@ def write_csv(path: Path, rows: list[dict[str, Any]], fieldnames: list[str]) -> 
             writer.writerow(serialized)
 
 
+def looks_like_export_dir(path: Path) -> bool:
+    export_markers = {
+        "contracts.csv",
+        "summary.csv",
+        "sources.json",
+        "customers_index.csv",
+        "blocked_sources.csv",
+        "run_state.json",
+        "contractors",
+        ".cache",
+    }
+    if not path.exists() or not path.is_dir():
+        return False
+    child_names = {child.name for child in path.iterdir()}
+    if export_markers & child_names:
+        return True
+    return any(re.match(r"^\d{13}_[a-z0-9_]+$", child.name) for child in path.iterdir() if child.is_dir())
+
+
+def allocate_output_dir(path: Path, resume: bool) -> Path:
+    if resume or not looks_like_export_dir(path):
+        return path
+    counter = 2
+    while True:
+        candidate = path.with_name(f"{path.name}_{counter}")
+        if not candidate.exists():
+            return candidate
+        counter += 1
+
+
 def load_state(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {"customers": {}}
@@ -1483,11 +1646,12 @@ class MarketResearchPipeline:
 
     def run(self, customer_ogrns: list[str], years: list[int]) -> None:
         self.out_dir.mkdir(parents=True, exist_ok=True)
+        single_customer_run = len(customer_ogrns) == 1
         index_rows: list[dict[str, Any]] = []
         all_blocked_rows: list[dict[str, Any]] = []
         for ogrn in customer_ogrns:
             seed = PILOT_CUSTOMERS[ogrn]
-            customer_dir = self.out_dir / f"{seed.ogrn}_{seed.slug}"
+            customer_dir = self.out_dir if single_customer_run else self.out_dir / f"{seed.ogrn}_{seed.slug}"
             profile = self._build_customer_profile(seed)
             self._mark_stage(seed.ogrn, "customer_profile")
             contracts = self._collect_customer_contracts(seed, years)
@@ -1555,27 +1719,28 @@ class MarketResearchPipeline:
             customer_blocked = [asdict(item) for item in self._blocked_sources(seed.ogrn)]
             all_blocked_rows.extend(customer_blocked)
 
-        write_csv(
-            self.out_dir / "customers_index.csv",
-            index_rows,
-            [
-                "customer_name",
-                "inn",
-                "ogrn",
-                "region",
-                "city",
-                "active_status",
-                "activity_signals",
-                "source_card_url",
-                "contracts_found",
-                "blocked_sources",
-            ],
-        )
-        write_csv(
-            self.out_dir / "blocked_sources.csv",
-            all_blocked_rows,
-            ["customer_ogrn", "stage", "url", "reason", "status_code", "detected_at"],
-        )
+        if not single_customer_run:
+            write_csv(
+                self.out_dir / "customers_index.csv",
+                index_rows,
+                [
+                    "customer_name",
+                    "inn",
+                    "ogrn",
+                    "region",
+                    "city",
+                    "active_status",
+                    "activity_signals",
+                    "source_card_url",
+                    "contracts_found",
+                    "blocked_sources",
+                ],
+            )
+            write_csv(
+                self.out_dir / "blocked_sources.csv",
+                all_blocked_rows,
+                ["customer_ogrn", "stage", "url", "reason", "status_code", "detected_at"],
+            )
         save_state(self.state_path, self.state)
 
     def _mark_stage(self, customer_ogrn: str, stage: str) -> None:
@@ -1701,13 +1866,17 @@ class MarketResearchPipeline:
                 if checko_result.text and not checko_result.blocked_reason:
                     profile_parts.append(parse_checko_company_page(checko_result.text, checko_result.final_url))
             if not profile_parts:
-                rusprofile_result = self.fetcher.get(
-                    f"https://www.rusprofile.ru/search?query={urllib.parse.quote(contract.contractor_name)}",
-                    seed.ogrn,
-                    "contractor_rusprofile",
-                )
-                if rusprofile_result.text and not rusprofile_result.blocked_reason:
-                    profile_parts.append(parse_rusprofile_company_page(rusprofile_result.text, rusprofile_result.final_url))
+                for query in build_rusprofile_queries(contract):
+                    rusprofile_result = self.fetcher.get(
+                        f"https://www.rusprofile.ru/search?query={urllib.parse.quote(query)}",
+                        seed.ogrn,
+                        "contractor_rusprofile",
+                    )
+                    if rusprofile_result.text and not rusprofile_result.blocked_reason:
+                        parsed_profile = parse_rusprofile_company_page(rusprofile_result.text, rusprofile_result.final_url)
+                        if parsed_profile.inn or parsed_profile.ogrn or parsed_profile.name:
+                            profile_parts.append(parsed_profile)
+                            break
             profile = merge_profiles(*profile_parts)
             profile.name = profile.name or contract.contractor_name
             profile.org_type = profile.org_type or organization_type_from_name(contract.contractor_name)
@@ -1734,8 +1903,9 @@ class MarketResearchPipeline:
         contract_rows = [asdict(contract) for contract in contracts]
         grouped: dict[str, dict[str, Any]] = {}
         for contract in contracts:
-            group_key = contract_counterparty_key(contract)
-            profile = contractor_profiles.get(group_key, CompanyProfile(name=contract.contractor_name))
+            raw_group_key = contract_counterparty_key(contract)
+            profile = contractor_profiles.get(raw_group_key, CompanyProfile(name=contract.contractor_name))
+            group_key = profile.inn or profile.source_card_url or raw_group_key
             bucket = grouped.setdefault(
                 group_key,
                 {
@@ -1776,7 +1946,7 @@ class MarketResearchPipeline:
                 {
                     "contractor_name": profile.name or bucket_contracts[0].contractor_name,
                     "contractor_region": profile.region or profile.city,
-                    "contracts_file": str(contractor_file),
+                    "contracts_file": str(contractor_file.relative_to(customer_dir)),
                     "contractor_inn": profile.inn,
                     "total_contract_value": total_contract_value,
                     "total_contract_count": len(bucket_contracts),
@@ -1785,8 +1955,8 @@ class MarketResearchPipeline:
                     "employee_count": profile.employee_count,
                     "revenue_value": profile.revenue_value,
                     "revenue_year": profile.revenue_year,
-                    "brigades_by_staff": math.ceil(profile.employee_count / 10) if profile.employee_count else None,
-                    "brigades_by_revenue": math.ceil(profile.revenue_value / 80_000_000) if profile.revenue_value else None,
+                    "brigades_by_staff": math.ceil(profile.employee_count / 10) if profile.employee_count is not None else None,
+                    "brigades_by_revenue": math.ceil(profile.revenue_value / 80_000_000) if profile.revenue_value is not None else None,
                     "source_card_url": profile.source_card_url,
                 }
             )
@@ -1841,7 +2011,10 @@ def main(argv: list[str] | None = None) -> int:
     invalid_years = [year for year in args.years if year not in TRACKED_YEARS]
     if invalid_years:
         parser.error(f"Supported years are {', '.join(str(year) for year in TRACKED_YEARS)}")
-    out_dir = Path(args.out)
+    requested_out_dir = Path(args.out)
+    out_dir = allocate_output_dir(requested_out_dir, resume=args.resume)
+    if out_dir != requested_out_dir:
+        print(f"Output directory {requested_out_dir} already contains an export. Writing to {out_dir} instead.")
     fetcher = HttpFetcher(out_dir / ".cache")
     api_client = None if args.disable_api else CheckoApiClient.from_env(out_dir / ".cache")
     pipeline = MarketResearchPipeline(out_dir=out_dir, fetcher=fetcher, resume=args.resume, api_client=api_client)

@@ -1,0 +1,2 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490160001660000,2016-11-01,223,Услуги по технической поддержке информационных технологий,3540000,,,,,0.55,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2323904,checko_contracts

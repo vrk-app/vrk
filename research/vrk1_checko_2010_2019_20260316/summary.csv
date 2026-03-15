@@ -1,0 +1,35 @@
+contractor_name,contractor_region,contracts_file,contractor_inn,total_contract_value,total_contract_count,total_work_count,org_type,employee_count,revenue_value,revenue_year,brigades_by_staff,brigades_by_revenue,source_card_url
+"ООО ""Промстрой""",город Москва,contractors/ooo_promstroi.csv,7710957615,47903673,4,,ООО,2067,27000000000,2024,207,338,https://www.rusprofile.ru/id/7159964
+"ООО ""ПКФ ""НТ""",город Санкт-Петербург,contractors/ooo_pkf_nt.csv,7805389720,23642950,3,,ООО,17,187000000,2024,2,3,https://www.rusprofile.ru/id/3970585
+"ООО ""Завод № 78""",Свердловская область,contractors/ooo_zavod_o_78.csv,6685027450,15000000,1,,ООО,0,0,2022,0,0,https://www.rusprofile.ru/id/6696100
+"ООО ""РТК""",город Москва,contractors/ooo_rtk.csv,7707702649,6195000,1,,ООО,,18000000000,2025,,225,https://www.rusprofile.ru/id/1469668
+"ООО ""Аксилон Консалтинг""",город Москва,contractors/ooo_aksilon_konsalting.csv,7708528930,5000000,1,,ООО,20,198000000,2024,2,3,https://www.rusprofile.ru/id/2488976
+"ООО ""Интеркор Рус""",Республика Дагестан,contractors/ooo_interkor_rus.csv,7701244745,3853088,2,,ООО,0,226000000,2018,0,3,https://www.rusprofile.ru/id/1354747
+"ООО ""Эверайз Бизнес Солюшнс""",город Москва,contractors/ooo_everaiz_biznes_solyushns.csv,7708773681,3540000,1,,ООО,1,0,2018,1,0,https://www.rusprofile.ru/id/6783377
+"ООО ""Когито МК""",город Москва,contractors/ooo_kogito_mk.csv,7708511164,3540000,1,,ООО,,0,2020,,0,https://www.rusprofile.ru/id/1409713
+Не раскрыто в ЕИС [67708737490150001460000],,contractors/ne_raskryto_v_eis_67708737490150001460000.csv,,3500000,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7438840
+"ООО СК "" Модернизация""",Саратовская область,contractors/ooo_sk_modernizatsiya.csv,6449041973,3367798,6,,ООО,8,61000000,2024,1,1,https://www.rusprofile.ru/id/4090864
+"ООО ""ЮРЛ""",город Санкт-Петербург,contractors/ooo_yurl.csv,7841497672,3050000,1,,ООО,17,20000000,2024,2,1,https://www.rusprofile.ru/id/7160898
+"АО ""Согаз""",город Москва,contractors/ao_sogaz.csv,7736035485,2911300,1,,АО,,,,,,https://www.rusprofile.ru/id/152336
+"ООО ""ОЦРВ""",город Москва,contractors/ooo_otsrv.csv,5042060280,2312800,1,,ООО,1201,6700000000,2025,121,84,https://www.rusprofile.ru/id/810477
+"ФБУ ""РС ФЖТ""",город Москва,contractors/fbu_rs_fzht.csv,7717096620,2203650,4,,ФБУ,,551000000,2012,,7,https://www.rusprofile.ru/id/401792
+"ООО ""УКБВ""",Свердловская область,contractors/ooo_ukbv.csv,6623091790,1963195,2,,ООО,155,620000000,2024,16,8,https://www.rusprofile.ru/id/6647497
+"ООО ""Экосервис""",город Москва,contractors/ooo_ekoservis.csv,7718915127,1914000,1,,ООО,5,2500000,2022,1,1,https://www.rusprofile.ru/id/6622356
+"ООО ""Совинтех""",Московская область,contractors/ooo_sovinteh.csv,3665093184,1874950,1,,ООО,1,907000,2024,1,1,https://www.rusprofile.ru/id/6723509
+"ООО ""Зебра - ПР""",город Москва,contractors/ooo_zebra_pr.csv,7704524412,1376960,1,,ООО,,253000000,2024,,4,https://www.rusprofile.ru/id/3025213
+"ООО ""Спецмонтаж""",Челябинская область,contractors/ooo_spetsmontazh.csv,7451214706,1300000,1,,ООО,,307000,2017,,1,https://www.rusprofile.ru/id/3935221
+"ООО ""Алмакс""",город Москва,contractors/ooo_almaks.csv,7725267621,1180000,1,,ООО,,0,2020,,0,https://www.rusprofile.ru/id/7460760
+"ООО ""Энерготехмонтаж""",Брянская область,contractors/ooo_energotehmontazh.csv,3257028765,1062733,1,,ООО,10,57000000,2024,1,1,https://www.rusprofile.ru/id/7646799
+"ООО ""Техноком""",Нижегородская область,contractors/ooo_tehnokom.csv,5249107880,944000,1,,ООО,3,25000000,2019,1,1,https://www.rusprofile.ru/id/588141
+"ООО ""Сивиджи""",город Москва,contractors/ooo_sividzhi.csv,7725675099,880000,1,,ООО,3,113000000,2021,1,2,https://www.rusprofile.ru/id/1611521
+"ООО ""Техмонтажналадка""",Московская область,contractors/ooo_tehmontazhnaladka.csv,5022043720,800000,1,,ООО,,219000000,2024,,3,https://www.rusprofile.ru/id/7115740
+"ФГУП ""ВНИИМС""",город Москва,contractors/fgup_vniims.csv,7736042404,750000,1,,ФГУП,,763000000,2020,,10,https://www.rusprofile.ru/id/705175
+"НАО ""Инфоком""",город Москва,contractors/nao_infokom.csv,7717615385,677945,2,,НАО,35,140000000,2024,4,2,https://www.rusprofile.ru/id/3972619
+"АО ""Вниижт""",город Москва,contractors/ao_vniizht.csv,7717596862,590000,1,,АО,870,6000000000,2025,87,75,https://www.rusprofile.ru/id/7775553
+Не раскрыто в ЕИС [67708737490150000820000],,contractors/ne_raskryto_v_eis_67708737490150000820000.csv,,568965,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=412629
+"ООО ""ЮЦСТ""",Краснодарский край,contractors/ooo_yutsst.csv,2311142474,554043,1,,ООО,12,507000000,2024,2,7,https://www.rusprofile.ru/id/6014421
+НИИ Мостов,город Санкт-Петербург,contractors/nii_mostov.csv,7812025114,545160,1,,ФГУП,,170000000,2016,,3,https://www.rusprofile.ru/id/3411990
+"ООО ""НПО Спецмаш""",Ростовская область,contractors/ooo_npo_spetsmash.csv,6150078222,397999,1,,ООО,25,71000000,2020,3,1,https://www.rusprofile.ru/id/7415217
+"ООО ""НПК""Илма Эко""",город Санкт-Петербург,contractors/ooo_npk_ilma_eko.csv,7839364185,339928,1,,ООО,0,5200000,2019,0,1,https://www.rusprofile.ru/id/1796524
+"ООО ""Промэкс и Д""",город Москва,contractors/ooo_promeks_i_d.csv,5003038273,309396,1,,ООО,,161000,2016,,1,https://www.rusprofile.ru/id/1137789
+"ООО ""Транском-к""",город Москва,contractors/ooo_transkom_k.csv,7701416480,240000,1,,ООО,2,1200000,2024,1,1,https://www.rusprofile.ru/id/9243087

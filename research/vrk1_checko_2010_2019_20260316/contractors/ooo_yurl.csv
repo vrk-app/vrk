@@ -1,0 +1,2 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490160001290000,2016-03-28,223,"Услуги профессиональные, научные и технические, прочие, не включенные в другие группировки",3050000,,,,,0.55,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1943976,checko_contracts
