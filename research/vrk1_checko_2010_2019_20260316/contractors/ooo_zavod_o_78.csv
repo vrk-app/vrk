@@ -1,0 +1,2 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490160001920000,2016-12-19,223,Услуги по техническим испытаниям и анализу прочие,15000000,,,,,0.85,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2543774,checko_contracts

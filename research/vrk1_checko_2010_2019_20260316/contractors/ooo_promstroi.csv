@@ -1,0 +1,5 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490160001040000,2016-02-17,223,Услуги по ремонту и техническому обслуживанию подъемно-транспортного оборудования,22499999,,,,,0.85,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1800064,checko_contracts
+67708737490160000580000,2016-02-19,223,Услуги по ремонту и техническому обслуживанию подъемно-транспортного оборудования,13929573,,,,,0.85,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1404210,checko_contracts
+67708737490160002000000,2016-12-14,223,Услуги по ремонту прочего оборудования,4490434,,,,,0.55,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2577927,checko_contracts
+67708737490160001990000,2016-12-23,223,Услуги по ремонту прочего оборудования,6983667,,,,,0.55,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2576405,checko_contracts

@@ -1,0 +1,2 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490160001420000,2016-07-28,223,Услуги в области административного и вспомогательного обслуживания,6195000,,,,,0.55,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1983582,checko_contracts

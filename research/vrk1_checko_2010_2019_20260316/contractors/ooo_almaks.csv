@@ -1,0 +1,2 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490150001480000,2015-11-02,223,"Электродвигатели и аппаратура электротехническая, не включенные в другие группировки",1180000,,,,,0.55,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=837616,checko_contracts

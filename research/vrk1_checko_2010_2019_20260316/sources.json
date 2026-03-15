@@ -1,0 +1,321 @@
+{
+  "generated_at": "2026-03-15T22:35:04+00:00",
+  "customer": {
+    "name": "АО \"ВРК-1\" - Москва - ИНН 7708737490 - Гендиректор Дубаносов А. В.",
+    "ogrn": "1117746294104",
+    "inn": "7708737490",
+    "website": "https://1vrk.ru",
+    "source_card_url": "https://checko.ru/company/vrk-1-1117746294104",
+    "activity_signals": [
+      "licenses",
+      "procurement",
+      "revenue",
+      "vacancies",
+      "website"
+    ]
+  },
+  "contracts": [
+    {
+      "contract_number": "67708737490150000530000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=275601",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/transkom-k-5147746422820"
+    },
+    {
+      "contract_number": "67708737490150000820000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=412629",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490150001020000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=476375",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/sogaz-1027739820921"
+    },
+    {
+      "contract_number": "67708737490150001370000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=773446",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/ehnergotekhmontazh-1153256004186"
+    },
+    {
+      "contract_number": "67708737490150001280000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=737834",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/sividzhi-1097746493448"
+    },
+    {
+      "contract_number": "67708737490150001110000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=647230",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/fbu-rs-fzht-1027700269739"
+    },
+    {
+      "contract_number": "67708737490150001140000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=650011",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/ehverayz-biznes-solyushns-1127747094133"
+    },
+    {
+      "contract_number": "67708737490150001350000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=772867",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/sovintekh-1133668016613"
+    },
+    {
+      "contract_number": "67708737490150001810000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1002772",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/nii-mostov-1027810336872"
+    },
+    {
+      "contract_number": "67708737490150001540000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=874338",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/fbu-rs-fzht-1027700269739"
+    },
+    {
+      "contract_number": "67708737490150001460000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7438840",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490150001480000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=837616",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/almaks-1157746276654"
+    },
+    {
+      "contract_number": "67708737490150001590000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=883079",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/promehks-i-d-1025000658440"
+    },
+    {
+      "contract_number": "67708737490160000180000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1288515",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/yucst-1122311001340"
+    },
+    {
+      "contract_number": "67708737490160001040000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1800064",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/promstroy-1147746186940"
+    },
+    {
+      "contract_number": "67708737490160000580000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1404210",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/promstroy-1147746186940"
+    },
+    {
+      "contract_number": "67708737490160000270000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1314643",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/pkf-nt-1067847205238"
+    },
+    {
+      "contract_number": "67708737490160000810000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1632041",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/aksilon-konsalting-1047796470644"
+    },
+    {
+      "contract_number": "67708737490160000760000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1492504",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/vniizht-1077758910900"
+    },
+    {
+      "contract_number": "67708737490160001290000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1943976",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/yurl-1147847067411"
+    },
+    {
+      "contract_number": "67708737490160001310000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1944258",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/fbu-rs-fzht-1027700269739"
+    },
+    {
+      "contract_number": "67708737490160000720000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1490911",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/ocrv-1025005327104"
+    },
+    {
+      "contract_number": "67708737490160000770000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1597154",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/ukbv-1136623001217"
+    },
+    {
+      "contract_number": "67708737490160000780000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1607436",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/pkf-nt-1067847205238"
+    },
+    {
+      "contract_number": "67708737490160000790000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1631091",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/zebra-pr-1047796481523"
+    },
+    {
+      "contract_number": "67708737490160000920000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1678092",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/fgup-vniims-1037700173598"
+    },
+    {
+      "contract_number": "67708737490160001330000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1944637",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/ukbv-1136623001217"
+    },
+    {
+      "contract_number": "67708737490160001350000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1944899",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/fbu-rs-fzht-1027700269739"
+    },
+    {
+      "contract_number": "67708737490160001020000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1777201",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/npo-specmash-1146183003273"
+    },
+    {
+      "contract_number": "67708737490160001010000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1753862",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/npk-ilma-ehko-1077847564376"
+    },
+    {
+      "contract_number": "67708737490160001030000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1784952",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/nao-infokom-1087746418033"
+    },
+    {
+      "contract_number": "67708737490160001050000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1807221",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/nao-infokom-1087746418033"
+    },
+    {
+      "contract_number": "67708737490160001110000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1889630",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/interkor-rus-1027739058270"
+    },
+    {
+      "contract_number": "67708737490160001360000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1944990",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/specmontazh-1057423510814"
+    },
+    {
+      "contract_number": "67708737490160001420000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1983582",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/rtk-1097746222782"
+    },
+    {
+      "contract_number": "67708737490160001410000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1983348",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/tekhnokom-1105249002704"
+    },
+    {
+      "contract_number": "67708737490160001810000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2461945",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/sk-modernizaciya-1076449000407"
+    },
+    {
+      "contract_number": "67708737490160001850000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2462609",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/pkf-nt-1067847205238"
+    },
+    {
+      "contract_number": "67708737490160001870000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2464227",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/sk-modernizaciya-1076449000407"
+    },
+    {
+      "contract_number": "67708737490160001830000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2462251",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/sk-modernizaciya-1076449000407"
+    },
+    {
+      "contract_number": "67708737490160001840000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2462499",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/sk-modernizaciya-1076449000407"
+    },
+    {
+      "contract_number": "67708737490160001580000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2226140",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/interkor-rus-1027739058270"
+    },
+    {
+      "contract_number": "67708737490160001630000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2274873",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/tekhmontazhnaladka-1135022004985"
+    },
+    {
+      "contract_number": "67708737490160001640000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2274932",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/ehkoservis-1127747270463"
+    },
+    {
+      "contract_number": "67708737490160001820000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2462084",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/sk-modernizaciya-1076449000407"
+    },
+    {
+      "contract_number": "67708737490160001660000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2323904",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/kogito-mk-1037789019454"
+    },
+    {
+      "contract_number": "67708737490160001680000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2336466",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/sk-modernizaciya-1076449000407"
+    },
+    {
+      "contract_number": "67708737490160002000000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2577927",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/promstroy-1147746186940"
+    },
+    {
+      "contract_number": "67708737490160001920000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2543774",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/zavod-78-1136685003256"
+    },
+    {
+      "contract_number": "67708737490160001990000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2576405",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://checko.ru/company/promstroy-1147746186940"
+    }
+  ],
+  "blocked_sources": [],
+  "api_enabled": false
+}
