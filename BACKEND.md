@@ -1,6 +1,6 @@
 # 1. Назначение документа
 
-`BACKEND.md` фиксирует backend-рамку `MVP` для `VRK Platform` и должен оставаться согласованным с [README.md](/Users/yura-posledov/cursor/vrk/README.md) и [docs/PRD-MVP.md](/Users/yura-posledov/cursor/vrk/docs/PRD-MVP.md).
+`BACKEND.md` фиксирует backend-рамку `MVP` для `VRK Platform` и должен оставаться согласованным с [README.md](README.md) и [docs/PRD-MVP.md](docs/PRD-MVP.md).
 
 Документ описывает:
 
