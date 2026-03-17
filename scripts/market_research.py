@@ -209,6 +209,24 @@ EXCLUDED_KEYWORDS = (
     "строительств",
 )
 
+EXPLICIT_IRRELEVANT_SUBJECT_PATTERNS = (
+    re.compile(r"программ", re.I),
+    re.compile(r"антивирус", re.I),
+    re.compile(r"асуфр|асутр|истк|варекс|техэксперт", re.I),
+    re.compile(r"сетев", re.I),
+    re.compile(r"удаленн\w+\s+администр", re.I),
+    re.compile(r"поставка\s+техническ\w*\s+газ", re.I),
+    re.compile(r"обслуживани\w+\s+здани", re.I),
+    re.compile(r"ремонт\w+\s+здани", re.I),
+    re.compile(r"дизайн-?концепц", re.I),
+    re.compile(r"годов\w+\s+отчет", re.I),
+    re.compile(r"оценк\w+\s+имуществ", re.I),
+    re.compile(r"кондиционер", re.I),
+    re.compile(r"автотранспорт|автомобил", re.I),
+    re.compile(r"пожарн\w+\s+сигнализац|пожарн\w+\s+автоматик", re.I),
+    re.compile(r"размещени\w+\s+в\s+гк", re.I),
+)
+
 WORK_COUNT_PATTERNS = (
     re.compile(
         r"(?P<count>\d{1,6})\s*(?P<unit>шт(?:\.|ук)?|ед(?:\.|иниц)?|вагон(?:ов|а)?|"
@@ -643,6 +661,13 @@ def evaluate_relevance(subject: str) -> float:
     if service_hits >= 2:
         return 0.7
     return 0.55
+
+
+def is_explicitly_irrelevant_subject(subject: str | None) -> bool:
+    text = normalize_whitespace(subject)
+    if not text:
+        return False
+    return any(pattern.search(text) for pattern in EXPLICIT_IRRELEVANT_SUBJECT_PATTERNS)
 
 
 def extract_work_count(subject: str) -> tuple[int | None, float | None]:
@@ -1531,7 +1556,24 @@ def extract_oldest_year_from_checko_api_payload(payload: dict[str, Any]) -> int 
     return min(years) if years else None
 
 
-def parse_procurement_periods(page_html: str) -> tuple[str | None, str | None]:
+def parse_procurement_details(page_html: str) -> tuple[str | None, str | None, str | None]:
+    parsed_sections: dict[str, str] = {}
+    for raw_title, raw_info in re.findall(r'<span class="section__title">(.*?)</span>\s*<span class="section__info">(.*?)</span>', page_html, re.S | re.I):
+        title = strip_tags(raw_title)
+        info = strip_tags(raw_info)
+        if title and info and title not in parsed_sections:
+            parsed_sections[title] = info
+
+    subject = (
+        parsed_sections.get("Предмет договора")
+        or parsed_sections.get("Предмет контракта")
+        or parsed_sections.get("Наименование закупки")
+    )
+    if not subject:
+        lot = parsed_sections.get("Лот")
+        if lot:
+            subject = re.sub(r"^Лот\s*№\s*\d+\s*", "", lot, flags=re.I).strip()
+
     candidate_values = re.findall(
         r"(?:Срок исполнения контракта|Срок действия контракта|Период выполнения работ|"
         r"Срок оказания услуг|Период оказания услуг|Дата начала исполнения контракта|"
@@ -1543,15 +1585,15 @@ def parse_procurement_periods(page_html: str) -> tuple[str | None, str | None]:
     for value in values:
         all_dates = re.findall(r"\d{2}\.\d{2}\.\d{4}|\d{1,2}\s+[а-я]+\s+\d{4}", value or "", re.I)
         if len(all_dates) >= 2:
-            return parse_russian_date(all_dates[0]), parse_russian_date(all_dates[1])
+            return normalize_whitespace(subject), parse_russian_date(all_dates[0]), parse_russian_date(all_dates[1])
         single_date = parse_russian_date(value)
         if single_date:
             if "по" in (value or "") and "с " in (value or ""):
                 all_dates = re.findall(r"\d{2}\.\d{2}\.\d{4}|\d{1,2}\s+[а-я]+\s+\d{4}", value or "", re.I)
                 if len(all_dates) >= 2:
-                    return parse_russian_date(all_dates[0]), parse_russian_date(all_dates[1])
-            return single_date, None
-    return None, None
+                    return normalize_whitespace(subject), parse_russian_date(all_dates[0]), parse_russian_date(all_dates[1])
+            return normalize_whitespace(subject), single_date, None
+    return normalize_whitespace(subject), None, None
 
 
 def build_contracts_data_url(customer_seed: CustomerSeed, law_type: str, year: int, page: int = 1) -> str:
@@ -1787,11 +1829,16 @@ class MarketResearchPipeline:
                     if contract.source_url:
                         procurement = self.fetcher.get(contract.source_url, seed.ogrn, "procurement_source")
                         if procurement.text and not procurement.blocked_reason:
-                            contract.contract_period_start, parsed_end = parse_procurement_periods(procurement.text)
+                            parsed_subject, parsed_start, parsed_end = parse_procurement_details(procurement.text)
+                            if parsed_subject:
+                                contract.contract_subject = parsed_subject
+                                contract.relevance_confidence = 0.0 if is_explicitly_irrelevant_subject(parsed_subject) else evaluate_relevance(parsed_subject)
+                                contract.extracted_work_count, contract.work_count_confidence = extract_work_count(parsed_subject)
+                            contract.contract_period_start = parsed_start
                             contract.contract_period_end = contract.contract_period_end or parsed_end
                             if "zakupki.gov.ru" in contract.source_url:
                                 contract.source_platform = "zakupki.gov.ru"
-                return api_contracts
+                return [contract for contract in api_contracts if contract.relevance_confidence > 0.0]
         contracts: list[ContractRecord] = []
         seen_keys: set[tuple[str, str | None]] = set()
         hard_blocked = False
@@ -1832,10 +1879,17 @@ class MarketResearchPipeline:
             if contract.source_url:
                 procurement = self.fetcher.get(contract.source_url, seed.ogrn, "procurement_source")
                 if procurement.text and not procurement.blocked_reason:
-                    contract.contract_period_start, contract.contract_period_end = parse_procurement_periods(procurement.text)
+                    parsed_subject, parsed_start, parsed_end = parse_procurement_details(procurement.text)
+                    if parsed_subject:
+                        contract.contract_subject = parsed_subject
+                        contract.relevance_confidence = 0.0 if is_explicitly_irrelevant_subject(parsed_subject) else evaluate_relevance(parsed_subject)
+                        contract.extracted_work_count, contract.work_count_confidence = extract_work_count(parsed_subject)
+                    contract.contract_period_start = parsed_start
+                    contract.contract_period_end = parsed_end
                     if "zakupki.gov.ru" in contract.source_url:
                         contract.source_platform = "zakupki.gov.ru"
-        return sorted(contracts, key=lambda item: (item.contract_date or "", item.contract_number))
+        filtered_contracts = [contract for contract in contracts if contract.relevance_confidence > 0.0]
+        return sorted(filtered_contracts, key=lambda item: (item.contract_date or "", item.contract_number))
 
     def _enrich_contractors(self, seed: CustomerSeed, contracts: list[ContractRecord]) -> dict[str, CompanyProfile]:
         profiles: dict[str, CompanyProfile] = {}

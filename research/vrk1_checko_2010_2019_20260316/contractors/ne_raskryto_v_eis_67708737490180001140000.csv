@@ -1,0 +1,2 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490180001140000,2018-03-13,223,Выполнение работ по ремонту станочного оборудования,1751240,,,,,0.55,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5153077,zakupki.gov.ru

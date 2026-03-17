@@ -1,0 +1,2 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490180000960000,2018-02-28,223,"Выполнение работ по сервисному обслуживанию устройств диагностики тормозного оборудования производства ОАО «Транспневматика», ОАО МТЗ «Трансмаш», ОЗТЭ Центр «Транспорт» и ЗАО НПП «ТОРМО»",10752992,,,,,0.7,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5887864,zakupki.gov.ru

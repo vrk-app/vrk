@@ -1,0 +1,2 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490190002210000,2019-06-21,223,Выполнение работ по модернизации стендов диагностики буксовых узлов колесных пар грузовых вагонов,7140835,,,,,0.95,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7156345,zakupki.gov.ru

@@ -1,0 +1,2 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490180002270000,2018-07-25,223,Выполнение работ по ремонту тепловоза ТГМ-23Д (зав. № 044) для продления срока службы,2790000,,,23,0.8,0.55,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5353650,zakupki.gov.ru

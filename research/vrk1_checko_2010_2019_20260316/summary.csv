@@ -1,34 +1,128 @@
 contractor_name,contractor_region,contracts_file,contractor_inn,total_contract_value,total_contract_count,total_work_count,org_type,employee_count,revenue_value,revenue_year,brigades_by_staff,brigades_by_revenue,source_card_url
-"ООО ""Промстрой""",город Москва,contractors/ooo_promstroi.csv,7710957615,47903673,4,,ООО,2067,27000000000,2024,207,338,https://www.rusprofile.ru/id/7159964
-"ООО ""ПКФ ""НТ""",город Санкт-Петербург,contractors/ooo_pkf_nt.csv,7805389720,23642950,3,,ООО,17,187000000,2024,2,3,https://www.rusprofile.ru/id/3970585
+Не раскрыто в ЕИС [67708737490180001890000],,contractors/ne_raskryto_v_eis_67708737490180001890000.csv,,179576270,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=9221874
+Не раскрыто в ЕИС [67708737490170003900000],,contractors/ne_raskryto_v_eis_67708737490170003900000.csv,,152476087,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6547005
+Не раскрыто в ЕИС [67708737490170004010000],,contractors/ne_raskryto_v_eis_67708737490170004010000.csv,,121933862,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7625582
+Не раскрыто в ЕИС [67708737490180001490000],,contractors/ne_raskryto_v_eis_67708737490180001490000.csv,,100000000,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5702508
+Не раскрыто в ЕИС [67708737490180002620000],,contractors/ne_raskryto_v_eis_67708737490180002620000.csv,,100000000,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5575808
+"ООО ""Техноком""",Нижегородская область,contractors/ooo_tehnokom.csv,5249107880,80435486,2,,ООО,3,25000000,2019,1,1,https://www.rusprofile.ru/id/588141
+"ООО ""Промстрой""",город Москва,contractors/ooo_promstroi.csv,7710957615,75741297,5,,ООО,2067,27000000000,2024,207,338,https://www.rusprofile.ru/id/7159964
+"ООО ""ПКФ ""НТ""",город Санкт-Петербург,contractors/ooo_pkf_nt.csv,7805389720,68395356,7,,ООО,17,187000000,2024,2,3,https://www.rusprofile.ru/id/3970585
+"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ ""ТРАНСТЕРРА""",,contractors/obschestvo_s_ogranichennoi_otvetstvennostyu_transterra.csv,5008045267,63717640,2,,ООО,,,,,,
+Не раскрыто в ЕИС [67708737490180001630000],,contractors/ne_raskryto_v_eis_67708737490180001630000.csv,,59000000,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7274860
+Не раскрыто в ЕИС [67708737490180000750000],,contractors/ne_raskryto_v_eis_67708737490180000750000.csv,,54171440,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5683587
+"ООО ""НПК ""Энергосервис-Резерв""",Омская область,contractors/ooo_npk_energoservis_rezerv.csv,5501216313,30564799,4,,ООО,9,399000000,2019,1,5,https://www.rusprofile.ru/id/3619112
+Не раскрыто в ЕИС [67708737490180003190000],,contractors/ne_raskryto_v_eis_67708737490180003190000.csv,,27000000,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5797477
+Не раскрыто в ЕИС [67708737490190002710000],,contractors/ne_raskryto_v_eis_67708737490190002710000.csv,,26000000,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=20242492
+Не раскрыто в ЕИС [67708737490180001750000],,contractors/ne_raskryto_v_eis_67708737490180001750000.csv,,24955020,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6197924
+Не раскрыто в ЕИС [67708737490190000150000],,contractors/ne_raskryto_v_eis_67708737490190000150000.csv,,23252079,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7074470
+Не раскрыто в ЕИС [67708737490180000010000],,contractors/ne_raskryto_v_eis_67708737490180000010000.csv,,22526727,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5866651
+Не раскрыто в ЕИС [67708737490190002480000],,contractors/ne_raskryto_v_eis_67708737490190002480000.csv,,22344153,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7298261
+Не раскрыто в ЕИС [67708737490190003860000],,contractors/ne_raskryto_v_eis_67708737490190003860000.csv,,19196553,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=12907710
+Не раскрыто в ЕИС [67708737490190003130000],,contractors/ne_raskryto_v_eis_67708737490190003130000.csv,,19149855,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7638557
+Не раскрыто в ЕИС [67708737490180002970000],,contractors/ne_raskryto_v_eis_67708737490180002970000.csv,,15565360,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5680095
 "ООО ""Завод № 78""",Свердловская область,contractors/ooo_zavod_o_78.csv,6685027450,15000000,1,,ООО,0,0,2022,0,0,https://www.rusprofile.ru/id/6696100
-"ООО ""РТК""",город Москва,contractors/ooo_rtk.csv,7707702649,6195000,1,,ООО,,18000000000,2025,,225,https://www.rusprofile.ru/id/1469668
+"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ ""ППС 52""",,contractors/obschestvo_s_ogranichennoi_otvetstvennostyu_pps_52.csv,4345451428,14934300,2,,ООО,,,,,,
+Не раскрыто в ЕИС [67708737490190000440000],,contractors/ne_raskryto_v_eis_67708737490190000440000.csv,,13805585,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=8206032
+Не раскрыто в ЕИС [67708737490180002960000],,contractors/ne_raskryto_v_eis_67708737490180002960000.csv,,12819449,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5675462
+Не раскрыто в ЕИС [67708737490180003310000],,contractors/ne_raskryto_v_eis_67708737490180003310000.csv,,12480000,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5900814
+Не раскрыто в ЕИС [67708737490190002600000],,contractors/ne_raskryto_v_eis_67708737490190002600000.csv,,11266364,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7387011
+Не раскрыто в ЕИС [67708737490180000960000],,contractors/ne_raskryto_v_eis_67708737490180000960000.csv,,10752992,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5887864
+Не раскрыто в ЕИС [67708737490190003080000],,contractors/ne_raskryto_v_eis_67708737490190003080000.csv,,10503403,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=11254920
+"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ ПРОИЗВОДСТВЕННОЕ ОБЪЕДИНЕНИЕ ""ВАГОНМАШ""",,contractors/obschestvo_s_ogranichennoi_otvetstvennostyu_proizvodstvennoe_obedinenie_vagonmash.csv,7722516206,9998376,1,120,ООО,,,,,,
+"Общество с ограниченной ответственностью ""Центр ремонта железнодорожного траспорта""",,contractors/obschestvo_s_ogranichennoi_otvetstvennostyu_tsentr_remonta_zheleznodorozhnogo_trasporta.csv,3257001971,9987520,1,110,ООО,,,,,,
+Не раскрыто в ЕИС [67708737490190002210000],,contractors/ne_raskryto_v_eis_67708737490190002210000.csv,,7140835,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7156345
+"ООО ""РТК""",город Москва,contractors/ooo_rtk.csv,7707702649,6195000,1,,ООО,3406,18000000000,2025,341,225,https://www.rusprofile.ru/id/1469668
+Не раскрыто в ЕИС [67708737490190002150000],,contractors/ne_raskryto_v_eis_67708737490190002150000.csv,,5914505,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=8146501
+Не раскрыто в ЕИС [67708737490190003390000],,contractors/ne_raskryto_v_eis_67708737490190003390000.csv,,5763169,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7827707
 "ООО ""Аксилон Консалтинг""",город Москва,contractors/ooo_aksilon_konsalting.csv,7708528930,5000000,1,,ООО,20,198000000,2024,2,3,https://www.rusprofile.ru/id/2488976
+Не раскрыто в ЕИС [67708737490190003710000],,contractors/ne_raskryto_v_eis_67708737490190003710000.csv,,4800000,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=8101068
+Не раскрыто в ЕИС [67708737490190003920000],,contractors/ne_raskryto_v_eis_67708737490190003920000.csv,,4228677,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=8298582
+Не раскрыто в ЕИС [67708737490180001540000],,contractors/ne_raskryto_v_eis_67708737490180001540000.csv,,4217630,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6028181
+Не раскрыто в ЕИС [67708737490190003100000],,contractors/ne_raskryto_v_eis_67708737490190003100000.csv,,4059600,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7602227
 "ООО ""Интеркор Рус""",Республика Дагестан,contractors/ooo_interkor_rus.csv,7701244745,3853088,2,,ООО,0,226000000,2018,0,3,https://www.rusprofile.ru/id/1354747
 "ООО ""Эверайз Бизнес Солюшнс""",город Москва,contractors/ooo_everaiz_biznes_solyushns.csv,7708773681,3540000,1,,ООО,1,0,2018,1,0,https://www.rusprofile.ru/id/6783377
-"ООО ""Когито МК""",город Москва,contractors/ooo_kogito_mk.csv,7708511164,3540000,1,,ООО,,0,2020,,0,https://www.rusprofile.ru/id/1409713
+"ООО ""Когито МК""",город Москва,contractors/ooo_kogito_mk.csv,7708511164,3540000,1,,ООО,1,0,2020,1,0,https://www.rusprofile.ru/id/1409713
+Не раскрыто в ЕИС [67708737490190002470000],,contractors/ne_raskryto_v_eis_67708737490190002470000.csv,,3528000,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7296904
 Не раскрыто в ЕИС [67708737490150001460000],,contractors/ne_raskryto_v_eis_67708737490150001460000.csv,,3500000,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7438840
+"ООО ""РЖТ-Путь""",Брянская область,contractors/ooo_rzht_put.csv,3257019680,3381843,1,,ООО,1,1100000,2024,1,1,https://www.rusprofile.ru/id/7356902
 "ООО СК "" Модернизация""",Саратовская область,contractors/ooo_sk_modernizatsiya.csv,6449041973,3367798,6,,ООО,8,61000000,2024,1,1,https://www.rusprofile.ru/id/4090864
 "ООО ""ЮРЛ""",город Санкт-Петербург,contractors/ooo_yurl.csv,7841497672,3050000,1,,ООО,17,20000000,2024,2,1,https://www.rusprofile.ru/id/7160898
+Не раскрыто в ЕИС [67708737490180003420000],,contractors/ne_raskryto_v_eis_67708737490180003420000.csv,,2986528,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6736567
+Не раскрыто в ЕИС [67708737490180001910000],,contractors/ne_raskryto_v_eis_67708737490180001910000.csv,,2965010,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5657476
 "АО ""Согаз""",город Москва,contractors/ao_sogaz.csv,7736035485,2911300,1,,АО,,,,,,https://www.rusprofile.ru/id/152336
+"ФБУ ""РС ФЖТ""",город Москва,contractors/fbu_rs_fzht.csv,7717096620,2878138,5,,ФБУ,,551000000,2012,,7,https://www.rusprofile.ru/id/401792
+Не раскрыто в ЕИС [67708737490190003170000],,contractors/ne_raskryto_v_eis_67708737490190003170000.csv,,2846500,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=8053712
+Не раскрыто в ЕИС [67708737490190002060000],,contractors/ne_raskryto_v_eis_67708737490190002060000.csv,,2801239,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=8029173
+Не раскрыто в ЕИС [67708737490180002270000],,contractors/ne_raskryto_v_eis_67708737490180002270000.csv,,2790000,1,23,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5353650
+Не раскрыто в ЕИС [67708737490180001640000],,contractors/ne_raskryto_v_eis_67708737490180001640000.csv,,2783707,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6790070
+"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ ""ТЕПЛОТЕХНИКА - ЦЕНТР""",,contractors/obschestvo_s_ogranichennoi_otvetstvennostyu_teplotehnika_tsentr.csv,3329021049,2486440,1,,ООО,,,,,,
+Не раскрыто в ЕИС [67708737490190003480000],,contractors/ne_raskryto_v_eis_67708737490190003480000.csv,,2421532,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7932761
 "ООО ""ОЦРВ""",город Москва,contractors/ooo_otsrv.csv,5042060280,2312800,1,,ООО,1201,6700000000,2025,121,84,https://www.rusprofile.ru/id/810477
-"ФБУ ""РС ФЖТ""",город Москва,contractors/fbu_rs_fzht.csv,7717096620,2203650,4,,ФБУ,,551000000,2012,,7,https://www.rusprofile.ru/id/401792
+Не раскрыто в ЕИС [67708737490190002960000],,contractors/ne_raskryto_v_eis_67708737490190002960000.csv,,2222222,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7518111
+Не раскрыто в ЕИС [67708737490180002300000],,contractors/ne_raskryto_v_eis_67708737490180002300000.csv,,2099386,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5671001
+"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ ""ВЕКТОР-Т""",,contractors/obschestvo_s_ogranichennoi_otvetstvennostyu_vektor_t.csv,4501164303,2072330,2,,ООО,,,,,,
+"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ НОВОСИБИРСКИЙ КРАНОВЫЙ ЗАВОД ""АВАНГАРД""",,contractors/obschestvo_s_ogranichennoi_otvetstvennostyu_novosibirskii_kranovyi_zavod_avangard.csv,5403006029,2066501,1,,ООО,,,,,,
+Не раскрыто в ЕИС [67708737490190002690000],,contractors/ne_raskryto_v_eis_67708737490190002690000.csv,,2049948,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7448601
+"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ ""ПРЕДПРИЯТИЕ ПО ВОЗВЕДЕНИЮ ОДНОЭТАЖНЫХ СТРОЕНИЙ , РЕМОНТУ МАШИН И МЕХАНИЗМОВ ""ВОСТЕХРЕМИМ""",,contractors/obschestvo_s_ogranichennoi_otvetstvennostyu_predpriyatie_po_vozvedeniyu_odnoetazhnyh_stroenii_remontu_mashin_i_mehanizmov_vostehremim.csv,6833015852,2020160,2,,ООО,,,,,,
 "ООО ""УКБВ""",Свердловская область,contractors/ooo_ukbv.csv,6623091790,1963195,2,,ООО,155,620000000,2024,16,8,https://www.rusprofile.ru/id/6647497
+Не раскрыто в ЕИС [67708737490190002390000],,contractors/ne_raskryto_v_eis_67708737490190002390000.csv,,1950000,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7279173
+"ООО ""Ремстан""",Ярославская область,contractors/ooo_remstan.csv,7604218387,1939164,2,,ООО,,18000000,2019,,1,https://www.rusprofile.ru/id/5758155
 "ООО ""Экосервис""",город Москва,contractors/ooo_ekoservis.csv,7718915127,1914000,1,,ООО,5,2500000,2022,1,1,https://www.rusprofile.ru/id/6622356
+"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ ""СЕВЕРО-ЗАПАДНАЯ ТЕПЛОВОЗНАЯ КОМПАНИЯ""",,contractors/obschestvo_s_ogranichennoi_otvetstvennostyu_severo_zapadnaya_teplovoznaya_kompaniya.csv,3528257761,1913965,1,,ООО,,,,,,
 "ООО ""Совинтех""",Московская область,contractors/ooo_sovinteh.csv,3665093184,1874950,1,,ООО,1,907000,2024,1,1,https://www.rusprofile.ru/id/6723509
-"ООО ""Зебра - ПР""",город Москва,contractors/ooo_zebra_pr.csv,7704524412,1376960,1,,ООО,,253000000,2024,,4,https://www.rusprofile.ru/id/3025213
+Не раскрыто в ЕИС [67708737490190002220000],,contractors/ne_raskryto_v_eis_67708737490190002220000.csv,,1860000,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7173876
+"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ НАУЧНО-ПРОИЗВОДСТВЕННАЯ КОМПАНИЯ ""ВЫМПЕЛ""",,contractors/obschestvo_s_ogranichennoi_otvetstvennostyu_nauchno_proizvodstvennaya_kompaniya_vympel.csv,2221171086,1835000,1,,ООО,,,,,,
+Не раскрыто в ЕИС [67708737490180001530000],,contractors/ne_raskryto_v_eis_67708737490180001530000.csv,,1760139,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6028194
+Не раскрыто в ЕИС [67708737490180001140000],,contractors/ne_raskryto_v_eis_67708737490180001140000.csv,,1751240,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5153077
+"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ ""ЦЕНТР ГИДРАВЛИЧЕСКИХ СИСТЕМ""",,contractors/obschestvo_s_ogranichennoi_otvetstvennostyu_tsentr_gidravlicheskih_sistem.csv,7604267955,1683079,1,,ООО,,,,,,
+Не раскрыто в ЕИС [67708737490190001620000],,contractors/ne_raskryto_v_eis_67708737490190001620000.csv,,1626102,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6834267
+Проектно-конструкторское бюро вагонного хозяйства – филиал открытого акционерного общества «Российские железные дороги»,,contractors/proektno_konstruktorskoe_byuro_vagonnogo_hozyaistva_filial_otkrytogo_aktsionernogo_obschestva_rossiiskie_zheleznye_dorogi.csv,7708503727,1618400,2,,,,,,,,
+Не раскрыто в ЕИС [67708737490190002230000],,contractors/ne_raskryto_v_eis_67708737490190002230000.csv,,1430000,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7173979
+"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ ""КОМПРЕССОРНЫЙ ЗАВОД""",,contractors/obschestvo_s_ogranichennoi_otvetstvennostyu_kompressornyi_zavod.csv,2311200574,1414412,1,,ООО,,,,,,
+Не раскрыто в ЕИС [67708737490190002560000],,contractors/ne_raskryto_v_eis_67708737490190002560000.csv,,1393245,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7348825
+"ООО ""Зебра - ПР""",город Москва,contractors/ooo_zebra_pr.csv,7704524412,1376960,1,,ООО,50,253000000,2024,5,4,https://www.rusprofile.ru/id/3025213
+"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ ""КОМЭНЕРГО""",,contractors/obschestvo_s_ogranichennoi_otvetstvennostyu_komenergo.csv,7604178198,1345200,2,,ООО,,,,,,
+Не раскрыто в ЕИС [67708737490190003240000],,contractors/ne_raskryto_v_eis_67708737490190003240000.csv,,1320000,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7710404
 "ООО ""Спецмонтаж""",Челябинская область,contractors/ooo_spetsmontazh.csv,7451214706,1300000,1,,ООО,,307000,2017,,1,https://www.rusprofile.ru/id/3935221
+"АО ""НИИАС""",город Москва,contractors/ao_niias.csv,7709752846,1230000,1,,АО,,7500000000,2022,,94,https://www.rusprofile.ru/id/986595
+"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ ""ИНЖЕНЕРНО - ТЕХНИЧЕСКИЙ СЕРВИС""",,contractors/obschestvo_s_ogranichennoi_otvetstvennostyu_inzhenerno_tehnicheskii_servis.csv,6671354400,1205882,1,,ООО,,,,,,
+Не раскрыто в ЕИС [67708737490190002050000],,contractors/ne_raskryto_v_eis_67708737490190002050000.csv,,1190000,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7667973
 "ООО ""Алмакс""",город Москва,contractors/ooo_almaks.csv,7725267621,1180000,1,,ООО,,0,2020,,0,https://www.rusprofile.ru/id/7460760
+Не раскрыто в ЕИС [67708737490170004000000],,contractors/ne_raskryto_v_eis_67708737490170004000000.csv,,1167796,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5251928
+Не раскрыто в ЕИС [67708737490190002540000],,contractors/ne_raskryto_v_eis_67708737490190002540000.csv,,1104000,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7348724
 "ООО ""Энерготехмонтаж""",Брянская область,contractors/ooo_energotehmontazh.csv,3257028765,1062733,1,,ООО,10,57000000,2024,1,1,https://www.rusprofile.ru/id/7646799
-"ООО ""Техноком""",Нижегородская область,contractors/ooo_tehnokom.csv,5249107880,944000,1,,ООО,3,25000000,2019,1,1,https://www.rusprofile.ru/id/588141
+"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ ""АДАМАНТ""",,contractors/obschestvo_s_ogranichennoi_otvetstvennostyu_adamant.csv,5190197489,961000,1,,ООО,,,,,,
+Не раскрыто в ЕИС [67708737490180002630000],,contractors/ne_raskryto_v_eis_67708737490180002630000.csv,,957999,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5410235
+"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ ""ГАРАНТ - СТРОЙ""",,contractors/obschestvo_s_ogranichennoi_otvetstvennostyu_garant_stroi.csv,3808096228,944000,1,,ООО,,,,,,
+Не раскрыто в ЕИС [67708737490190003890000],,contractors/ne_raskryto_v_eis_67708737490190003890000.csv,,942945,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=8260159
+Не раскрыто в ЕИС [67708737490190003190000],,contractors/ne_raskryto_v_eis_67708737490190003190000.csv,,940000,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7660917
+Не раскрыто в ЕИС [67708737490190002970000],,contractors/ne_raskryto_v_eis_67708737490190002970000.csv,,932414,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7518281
+"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ ""СФЕРА""",,contractors/obschestvo_s_ogranichennoi_otvetstvennostyu_sfera.csv,2724171460,901253,1,,ООО,,,,,,
+Не раскрыто в ЕИС [67708737490180003460000],,contractors/ne_raskryto_v_eis_67708737490180003460000.csv,,885000,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6004363
 "ООО ""Сивиджи""",город Москва,contractors/ooo_sividzhi.csv,7725675099,880000,1,,ООО,3,113000000,2021,1,2,https://www.rusprofile.ru/id/1611521
-"ООО ""Техмонтажналадка""",Московская область,contractors/ooo_tehmontazhnaladka.csv,5022043720,800000,1,,ООО,,219000000,2024,,3,https://www.rusprofile.ru/id/7115740
+Не раскрыто в ЕИС [67708737490180001120000],,contractors/ne_raskryto_v_eis_67708737490180001120000.csv,,809636,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5691101
+"ООО ""Техмонтажналадка""",Московская область,contractors/ooo_tehmontazhnaladka.csv,5022043720,800000,1,,ООО,1,219000000,2024,1,3,https://www.rusprofile.ru/id/7115740
+Не раскрыто в ЕИС [67708737490190003000000],,contractors/ne_raskryto_v_eis_67708737490190003000000.csv,,771400,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7547290
+Не раскрыто в ЕИС [67708737490180003010000],,contractors/ne_raskryto_v_eis_67708737490180003010000.csv,,754237,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5706273
 "ФГУП ""ВНИИМС""",город Москва,contractors/fgup_vniims.csv,7736042404,750000,1,,ФГУП,,763000000,2020,,10,https://www.rusprofile.ru/id/705175
+"ООО ""НИК""",Астраханская область,contractors/ooo_nik.csv,3025007490,700000,1,,ООО,6,637000,2021,1,1,https://www.rusprofile.ru/id/6891845
 "НАО ""Инфоком""",город Москва,contractors/nao_infokom.csv,7717615385,677945,2,,НАО,35,140000000,2024,4,2,https://www.rusprofile.ru/id/3972619
+Не раскрыто в ЕИС [67708737490190000210000],,contractors/ne_raskryto_v_eis_67708737490190000210000.csv,,676240,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6291286
+Не раскрыто в ЕИС [67708737490180002310000],,contractors/ne_raskryto_v_eis_67708737490180002310000.csv,,651282,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5235081
+Не раскрыто в ЕИС [67708737490180003110000],,contractors/ne_raskryto_v_eis_67708737490180003110000.csv,,631600,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5748457
+Не раскрыто в ЕИС [67708737490180002110000],,contractors/ne_raskryto_v_eis_67708737490180002110000.csv,,614780,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5151805
+"Общество с ограниченной ответственностью ""ПромТехЭнерго""",,contractors/obschestvo_s_ogranichennoi_otvetstvennostyu_promtehenergo.csv,3255049880,610000,1,,ООО,,,,,,
+Не раскрыто в ЕИС [67708737490190001070000],,contractors/ne_raskryto_v_eis_67708737490190001070000.csv,,599950,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6586605
 "АО ""Вниижт""",город Москва,contractors/ao_vniizht.csv,7717596862,590000,1,,АО,870,6000000000,2025,87,75,https://www.rusprofile.ru/id/7775553
+Не раскрыто в ЕИС [67708737490190000260000],,contractors/ne_raskryto_v_eis_67708737490190000260000.csv,,590000,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6317693
+Не раскрыто в ЕИС [67708737490190001630000],,contractors/ne_raskryto_v_eis_67708737490190001630000.csv,,582815,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6851045
+Не раскрыто в ЕИС [67708737490190001470000],,contractors/ne_raskryto_v_eis_67708737490190001470000.csv,,572250,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6779192
 Не раскрыто в ЕИС [67708737490150000820000],,contractors/ne_raskryto_v_eis_67708737490150000820000.csv,,568965,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=412629
 "ООО ""ЮЦСТ""",Краснодарский край,contractors/ooo_yutsst.csv,2311142474,554043,1,,ООО,12,507000000,2024,2,7,https://www.rusprofile.ru/id/6014421
 НИИ Мостов,город Санкт-Петербург,contractors/nii_mostov.csv,7812025114,545160,1,,ФГУП,,170000000,2016,,3,https://www.rusprofile.ru/id/3411990
+Не раскрыто в ЕИС [67708737490180003200000],,contractors/ne_raskryto_v_eis_67708737490180003200000.csv,,529820,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5821942
+"ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ ПКФ ""ПРОФТЕХНОЛОГИИ""",,contractors/obschestvo_s_ogranichennoi_otvetstvennostyu_pkf_proftehnologii.csv,,519200,1,,ООО,,,,,,
+Не раскрыто в ЕИС [67708737490190003760000],,contractors/ne_raskryto_v_eis_67708737490190003760000.csv,,502073,1,,,,,,,,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=8171675
 "ООО ""НПО Спецмаш""",Ростовская область,contractors/ooo_npo_spetsmash.csv,6150078222,397999,1,,ООО,25,71000000,2020,3,1,https://www.rusprofile.ru/id/7415217
 "ООО ""НПК""Илма Эко""",город Санкт-Петербург,contractors/ooo_npk_ilma_eko.csv,7839364185,339928,1,,ООО,0,5200000,2019,0,1,https://www.rusprofile.ru/id/1796524
 "ООО ""Промэкс и Д""",город Москва,contractors/ooo_promeks_i_d.csv,5003038273,309396,1,,ООО,,161000,2016,,1,https://www.rusprofile.ru/id/1137789

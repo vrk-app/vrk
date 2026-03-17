@@ -1,0 +1,2 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490190001070000,2019-03-12,223,"Оказание услуг по проведению поверки (калибровки) средств измерений, аттестации испытательного оборудования , ремонта и технического обслуживания средств измерений",599950,,,,,0.7,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6586605,zakupki.gov.ru

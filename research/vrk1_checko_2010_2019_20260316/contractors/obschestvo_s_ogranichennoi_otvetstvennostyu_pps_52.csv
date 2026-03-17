@@ -1,0 +1,3 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490170002720000,2017-08-08,223,Выполнение работ по подготовке вагонов – цистерн для проведения всех видов ремонта,500000,,,,,0.85,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3735264,zakupki.gov.ru
+67708737490180000340000,2018-01-30,223,Выполнение работ по подготовке вагонов – цистерн для проведения всех видов ремонта,14434300,,,,,0.85,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=4412080,zakupki.gov.ru

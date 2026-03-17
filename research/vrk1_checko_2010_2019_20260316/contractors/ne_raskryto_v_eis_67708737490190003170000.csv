@@ -1,0 +1,2 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490190003170000,2019-09-20,223,Выполнение работ по ремонту котельного оборудования,2846500,,,,,0.55,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=8053712,zakupki.gov.ru

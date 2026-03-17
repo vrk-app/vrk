@@ -1,0 +1,2 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490190003390000,2019-10-21,223,"Оказание услуг по изготовлению технической документации для ремонта железнодорожных путей необщего пользования, стрелочных переводов, крановых путей для вагонных ремонтных депо",5763169,,,,,0.95,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7827707,zakupki.gov.ru

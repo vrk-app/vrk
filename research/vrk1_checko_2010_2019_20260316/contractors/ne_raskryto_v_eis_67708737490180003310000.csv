@@ -1,0 +1,2 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490180003310000,2018-11-28,223,Оказание услуг по контролю за текущим состоянием вагонов,12480000,,,,,0.85,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5900814,zakupki.gov.ru

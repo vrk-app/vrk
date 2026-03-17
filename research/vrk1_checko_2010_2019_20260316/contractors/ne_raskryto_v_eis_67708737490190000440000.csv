@@ -1,0 +1,2 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490190000440000,2019-02-05,223,"Выполнение работ по сервисному обслуживанию и ремонту устройств диагностики тормозного оборудования производства ОАО «Транспневматика», ОАО МТЗ «Трансмаш», и ОЗТЭ Центр «Транспорт» , ООО «ОмЗТЭ» и ЗАО НПП",13805585,,,,,0.7,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=8206032,zakupki.gov.ru

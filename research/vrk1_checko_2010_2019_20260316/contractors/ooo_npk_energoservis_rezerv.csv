@@ -1,0 +1,5 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490170000350000,2017-03-09,223,Выполнение работ по текущему ремонту вибродиагностических установок,1433036,,,,,0.7,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2970635,zakupki.gov.ru
+67708737490170000360000,2017-03-09,223,Выполнение работ по текущему ремонту вибродиагностических установок,1964700,,,,,0.7,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2970838,zakupki.gov.ru
+67708737490170002100000,2017-08-16,223,Выполнение работ по модернизация стендов вибродиагностики колесных пар грузовых вагонов,22456503,,,,,0.95,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3626895,zakupki.gov.ru
+67708737490180002010000,2018-06-15,223,Оказание услуг по техническому обслуживанию технологического оборудования КРУ Лужская,4710560,,,,,0.7,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5036821,zakupki.gov.ru

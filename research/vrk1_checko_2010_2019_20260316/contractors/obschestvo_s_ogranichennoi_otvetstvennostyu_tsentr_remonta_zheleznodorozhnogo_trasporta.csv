@@ -1,0 +1,2 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490170003460000,2017-11-03,223,Оказание услуг по пост гарантийному ремонту поглощающих аппаратов ПМКП-110,9987520,,,110,0.8,0.55,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3945271,zakupki.gov.ru

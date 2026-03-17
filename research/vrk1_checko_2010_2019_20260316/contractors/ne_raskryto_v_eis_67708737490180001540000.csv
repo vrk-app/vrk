@@ -1,0 +1,2 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490180001540000,2018-04-26,223,Оказание услуг по метрологической поверке и ремонту приборов производства ООО «Микроакустика»,4217630,,,,,0.85,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6028181,zakupki.gov.ru

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-15T22:35:04+00:00",
+  "generated_at": "2026-03-17T11:22:46+00:00",
   "customer": {
     "name": "АО \"ВРК-1\" - Москва - ИНН 7708737490 - Гендиректор Дубаносов А. В.",
     "ogrn": "1117746294104",
@@ -16,64 +16,370 @@
   },
   "contracts": [
     {
-      "contract_number": "67708737490150000530000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=275601",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/transkom-k-5147746422820"
-    },
-    {
-      "contract_number": "67708737490150000820000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=412629",
-      "source_platform": "checko_contracts",
+      "contract_number": "67708737490180001890000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=9221874",
+      "source_platform": "zakupki.gov.ru",
       "contractor_card_url": null
     },
     {
-      "contract_number": "67708737490150001020000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=476375",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/sogaz-1027739820921"
+      "contract_number": "67708737490170003900000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6547005",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
     },
     {
-      "contract_number": "67708737490150001370000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=773446",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/ehnergotekhmontazh-1153256004186"
+      "contract_number": "67708737490170004010000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7625582",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
     },
     {
-      "contract_number": "67708737490150001280000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=737834",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/sividzhi-1097746493448"
+      "contract_number": "67708737490180001490000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5702508",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
     },
     {
-      "contract_number": "67708737490150001110000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=647230",
+      "contract_number": "67708737490180002620000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5575808",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490160001410000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1983348",
       "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/fbu-rs-fzht-1027700269739"
+      "contractor_card_url": "https://www.rusprofile.ru/id/588141"
+    },
+    {
+      "contract_number": "67708737490170002540000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=4259991",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": "https://www.rusprofile.ru/id/588141"
+    },
+    {
+      "contract_number": "67708737490160001040000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1800064",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/7159964"
+    },
+    {
+      "contract_number": "67708737490160000580000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1404210",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/7159964"
+    },
+    {
+      "contract_number": "67708737490160002000000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2577927",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/7159964"
+    },
+    {
+      "contract_number": "67708737490160001990000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2576405",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/7159964"
+    },
+    {
+      "contract_number": "67708737490170002800000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=4258682",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": "https://www.rusprofile.ru/id/7159964"
+    },
+    {
+      "contract_number": "67708737490160000270000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1314643",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/3970585"
+    },
+    {
+      "contract_number": "67708737490160000780000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1607436",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/3970585"
+    },
+    {
+      "contract_number": "67708737490160001850000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2462609",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/3970585"
+    },
+    {
+      "contract_number": "67708737490170000210000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2901775",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": "https://www.rusprofile.ru/id/3970585"
+    },
+    {
+      "contract_number": "67708737490170000080000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2851059",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": "https://www.rusprofile.ru/id/3970585"
+    },
+    {
+      "contract_number": "67708737490170000310000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=4299702",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": "https://www.rusprofile.ru/id/3970585"
+    },
+    {
+      "contract_number": "67708737490170001040000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=4099590",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": "https://www.rusprofile.ru/id/3970585"
+    },
+    {
+      "contract_number": "67708737490170002750000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3767394",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170002760000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3767471",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180001630000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7274860",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180000750000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5683587",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170000350000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2970635",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": "https://www.rusprofile.ru/id/3619112"
+    },
+    {
+      "contract_number": "67708737490170000360000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2970838",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": "https://www.rusprofile.ru/id/3619112"
+    },
+    {
+      "contract_number": "67708737490170002100000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3626895",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": "https://www.rusprofile.ru/id/3619112"
+    },
+    {
+      "contract_number": "67708737490180002010000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5036821",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": "https://www.rusprofile.ru/id/3619112"
+    },
+    {
+      "contract_number": "67708737490180003190000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5797477",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190002710000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=20242492",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180001750000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6197924",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190000150000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7074470",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180000010000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5866651",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190002480000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7298261",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190003860000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=12907710",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190003130000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7638557",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180002970000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5680095",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490160001920000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2543774",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/6696100"
+    },
+    {
+      "contract_number": "67708737490170002720000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3735264",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180000340000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=4412080",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190000440000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=8206032",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180002960000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5675462",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180003310000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5900814",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190002600000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7387011",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180000960000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5887864",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190003080000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=11254920",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170001890000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3520819",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170003460000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3945271",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190002210000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7156345",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490160001420000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1983582",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/1469668"
+    },
+    {
+      "contract_number": "67708737490190002150000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=8146501",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190003390000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7827707",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490160000810000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1632041",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/2488976"
+    },
+    {
+      "contract_number": "67708737490190003710000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=8101068",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190003920000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=8298582",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180001540000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6028181",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190003100000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7602227",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490160001110000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1889630",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/1354747"
+    },
+    {
+      "contract_number": "67708737490160001580000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2226140",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/1354747"
     },
     {
       "contract_number": "67708737490150001140000",
       "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=650011",
       "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/ehverayz-biznes-solyushns-1127747094133"
+      "contractor_card_url": "https://www.rusprofile.ru/id/6783377"
     },
     {
-      "contract_number": "67708737490150001350000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=772867",
+      "contract_number": "67708737490160001660000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2323904",
       "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/sovintekh-1133668016613"
+      "contractor_card_url": "https://www.rusprofile.ru/id/1409713"
     },
     {
-      "contract_number": "67708737490150001810000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1002772",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/nii-mostov-1027810336872"
-    },
-    {
-      "contract_number": "67708737490150001540000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=874338",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/fbu-rs-fzht-1027700269739"
+      "contract_number": "67708737490190002470000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7296904",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
     },
     {
       "contract_number": "67708737490150001460000",
@@ -82,238 +388,598 @@
       "contractor_card_url": null
     },
     {
-      "contract_number": "67708737490150001480000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=837616",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/almaks-1157746276654"
-    },
-    {
-      "contract_number": "67708737490150001590000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=883079",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/promehks-i-d-1025000658440"
-    },
-    {
-      "contract_number": "67708737490160000180000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1288515",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/yucst-1122311001340"
-    },
-    {
-      "contract_number": "67708737490160001040000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1800064",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/promstroy-1147746186940"
-    },
-    {
-      "contract_number": "67708737490160000580000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1404210",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/promstroy-1147746186940"
-    },
-    {
-      "contract_number": "67708737490160000270000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1314643",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/pkf-nt-1067847205238"
-    },
-    {
-      "contract_number": "67708737490160000810000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1632041",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/aksilon-konsalting-1047796470644"
-    },
-    {
-      "contract_number": "67708737490160000760000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1492504",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/vniizht-1077758910900"
-    },
-    {
-      "contract_number": "67708737490160001290000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1943976",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/yurl-1147847067411"
-    },
-    {
-      "contract_number": "67708737490160001310000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1944258",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/fbu-rs-fzht-1027700269739"
-    },
-    {
-      "contract_number": "67708737490160000720000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1490911",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/ocrv-1025005327104"
-    },
-    {
-      "contract_number": "67708737490160000770000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1597154",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/ukbv-1136623001217"
-    },
-    {
-      "contract_number": "67708737490160000780000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1607436",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/pkf-nt-1067847205238"
-    },
-    {
-      "contract_number": "67708737490160000790000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1631091",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/zebra-pr-1047796481523"
-    },
-    {
-      "contract_number": "67708737490160000920000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1678092",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/fgup-vniims-1037700173598"
-    },
-    {
-      "contract_number": "67708737490160001330000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1944637",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/ukbv-1136623001217"
-    },
-    {
-      "contract_number": "67708737490160001350000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1944899",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/fbu-rs-fzht-1027700269739"
-    },
-    {
-      "contract_number": "67708737490160001020000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1777201",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/npo-specmash-1146183003273"
-    },
-    {
-      "contract_number": "67708737490160001010000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1753862",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/npk-ilma-ehko-1077847564376"
-    },
-    {
-      "contract_number": "67708737490160001030000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1784952",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/nao-infokom-1087746418033"
-    },
-    {
-      "contract_number": "67708737490160001050000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1807221",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/nao-infokom-1087746418033"
-    },
-    {
-      "contract_number": "67708737490160001110000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1889630",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/interkor-rus-1027739058270"
-    },
-    {
-      "contract_number": "67708737490160001360000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1944990",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/specmontazh-1057423510814"
-    },
-    {
-      "contract_number": "67708737490160001420000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1983582",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/rtk-1097746222782"
-    },
-    {
-      "contract_number": "67708737490160001410000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1983348",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/tekhnokom-1105249002704"
+      "contract_number": "67708737490170003440000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3939127",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": "https://www.rusprofile.ru/id/7356902"
     },
     {
       "contract_number": "67708737490160001810000",
       "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2461945",
       "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/sk-modernizaciya-1076449000407"
-    },
-    {
-      "contract_number": "67708737490160001850000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2462609",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/pkf-nt-1067847205238"
+      "contractor_card_url": "https://www.rusprofile.ru/id/4090864"
     },
     {
       "contract_number": "67708737490160001870000",
       "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2464227",
       "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/sk-modernizaciya-1076449000407"
+      "contractor_card_url": "https://www.rusprofile.ru/id/4090864"
     },
     {
       "contract_number": "67708737490160001830000",
       "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2462251",
       "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/sk-modernizaciya-1076449000407"
+      "contractor_card_url": "https://www.rusprofile.ru/id/4090864"
     },
     {
       "contract_number": "67708737490160001840000",
       "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2462499",
       "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/sk-modernizaciya-1076449000407"
-    },
-    {
-      "contract_number": "67708737490160001580000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2226140",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/interkor-rus-1027739058270"
-    },
-    {
-      "contract_number": "67708737490160001630000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2274873",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/tekhmontazhnaladka-1135022004985"
-    },
-    {
-      "contract_number": "67708737490160001640000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2274932",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/ehkoservis-1127747270463"
+      "contractor_card_url": "https://www.rusprofile.ru/id/4090864"
     },
     {
       "contract_number": "67708737490160001820000",
       "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2462084",
       "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/sk-modernizaciya-1076449000407"
-    },
-    {
-      "contract_number": "67708737490160001660000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2323904",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/kogito-mk-1037789019454"
+      "contractor_card_url": "https://www.rusprofile.ru/id/4090864"
     },
     {
       "contract_number": "67708737490160001680000",
       "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2336466",
       "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/sk-modernizaciya-1076449000407"
+      "contractor_card_url": "https://www.rusprofile.ru/id/4090864"
     },
     {
-      "contract_number": "67708737490160002000000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2577927",
+      "contract_number": "67708737490160001290000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1943976",
       "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/promstroy-1147746186940"
+      "contractor_card_url": "https://www.rusprofile.ru/id/7160898"
     },
     {
-      "contract_number": "67708737490160001920000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2543774",
-      "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/zavod-78-1136685003256"
+      "contract_number": "67708737490180003420000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6736567",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
     },
     {
-      "contract_number": "67708737490160001990000",
-      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2576405",
+      "contract_number": "67708737490180001910000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5657476",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490150001020000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=476375",
       "source_platform": "checko_contracts",
-      "contractor_card_url": "https://checko.ru/company/promstroy-1147746186940"
+      "contractor_card_url": "https://www.rusprofile.ru/id/152336"
+    },
+    {
+      "contract_number": "67708737490150001110000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=647230",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/401792"
+    },
+    {
+      "contract_number": "67708737490150001540000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=874338",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/401792"
+    },
+    {
+      "contract_number": "67708737490160001310000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1944258",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/401792"
+    },
+    {
+      "contract_number": "67708737490160001350000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1944899",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/401792"
+    },
+    {
+      "contract_number": "67708737490170001150000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3376127",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": "https://www.rusprofile.ru/id/401792"
+    },
+    {
+      "contract_number": "67708737490190003170000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=8053712",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190002060000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=8029173",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180002270000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5353650",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180001640000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6790070",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170001120000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=4126178",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190003480000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7932761",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490160000720000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1490911",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/810477"
+    },
+    {
+      "contract_number": "67708737490190002960000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7518111",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180002300000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5671001",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170001610000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3455489",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170003530000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3971893",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170003240000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3909073",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190002690000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7448601",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170001650000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3489408",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170001970000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3543037",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490160000770000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1597154",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/6647497"
+    },
+    {
+      "contract_number": "67708737490160001330000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1944637",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/6647497"
+    },
+    {
+      "contract_number": "67708737490190002390000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7279173",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170001680000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3499880",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": "https://www.rusprofile.ru/id/5758155"
+    },
+    {
+      "contract_number": "67708737490180001760000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=4950779",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": "https://www.rusprofile.ru/id/5758155"
+    },
+    {
+      "contract_number": "67708737490160001640000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2274932",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/6622356"
+    },
+    {
+      "contract_number": "67708737490170001910000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3532458",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490150001350000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=772867",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/6723509"
+    },
+    {
+      "contract_number": "67708737490190002220000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7173876",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170000600000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3081563",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180001530000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6028194",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180001140000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5153077",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170002630000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3710907",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190001620000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6834267",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170003060000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3879199",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170003590000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=4456034",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190002230000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7173979",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170003490000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3952692",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190002560000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7348825",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490160000790000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1631091",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/3025213"
+    },
+    {
+      "contract_number": "67708737490170002520000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3710593",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170002610000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3710665",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190003240000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7710404",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490160001360000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1944990",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/3935221"
+    },
+    {
+      "contract_number": "67708737490170001170000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3376481",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": "https://www.rusprofile.ru/id/986595"
+    },
+    {
+      "contract_number": "67708737490180001960000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5029906",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190002050000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7667973",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490150001480000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=837616",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/7460760"
+    },
+    {
+      "contract_number": "67708737490170004000000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5251928",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190002540000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7348724",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490150001370000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=773446",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/7646799"
+    },
+    {
+      "contract_number": "67708737490170003340000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3921946",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180002630000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5410235",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170001960000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3541471",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190003890000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=8260159",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190003190000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7660917",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190002970000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7518281",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170003760000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=4052718",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180003460000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6004363",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490150001280000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=737834",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/1611521"
+    },
+    {
+      "contract_number": "67708737490180001120000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5691101",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490160001630000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=2274873",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/7115740"
+    },
+    {
+      "contract_number": "67708737490190003000000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7547290",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180003010000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5706273",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490160000920000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1678092",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/705175"
+    },
+    {
+      "contract_number": "67708737490170002420000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3655016",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": "https://www.rusprofile.ru/id/6891845"
+    },
+    {
+      "contract_number": "67708737490160001030000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1784952",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/3972619"
+    },
+    {
+      "contract_number": "67708737490160001050000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1807221",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/3972619"
+    },
+    {
+      "contract_number": "67708737490190000210000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6291286",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180002310000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5235081",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180003110000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5748457",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490180002110000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5151805",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170003470000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3947735",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190001070000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6586605",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490160000760000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1492504",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/7775553"
+    },
+    {
+      "contract_number": "67708737490190000260000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6317693",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190001630000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6851045",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190001470000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=6779192",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490150000820000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=412629",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490160000180000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1288515",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/6014421"
+    },
+    {
+      "contract_number": "67708737490150001810000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1002772",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/3411990"
+    },
+    {
+      "contract_number": "67708737490180003200000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5821942",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490170003540000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3971960",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490190003760000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=8171675",
+      "source_platform": "zakupki.gov.ru",
+      "contractor_card_url": null
+    },
+    {
+      "contract_number": "67708737490160001020000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1777201",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/7415217"
+    },
+    {
+      "contract_number": "67708737490160001010000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=1753862",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/1796524"
+    },
+    {
+      "contract_number": "67708737490150001590000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=883079",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/1137789"
+    },
+    {
+      "contract_number": "67708737490150000530000",
+      "source_url": "https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=275601",
+      "source_platform": "checko_contracts",
+      "contractor_card_url": "https://www.rusprofile.ru/id/9243087"
     }
   ],
   "blocked_sources": [],

@@ -1,0 +1,2 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490180003010000,2018-10-26,223,Оказание информационно-справочных услуг по предоставлению «Анализа эксплуатации инновационного полувагона модели 12-196-02» за 2016-2018 гг.,754237,,,,,0.85,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=5706273,zakupki.gov.ru

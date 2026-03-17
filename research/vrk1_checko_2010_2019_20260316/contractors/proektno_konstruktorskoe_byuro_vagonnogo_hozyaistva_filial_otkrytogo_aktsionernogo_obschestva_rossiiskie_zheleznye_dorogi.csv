@@ -1,0 +1,3 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490170003060000,2017-10-18,223,Выполнение работ по ремонту грузовых вагонов,500000,,,,,0.85,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=3879199,zakupki.gov.ru
+67708737490170003590000,2017-11-16,223,Оказание услуг по изготовлению нормативно-технической документации,1118400,,,,,0.55,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=4456034,zakupki.gov.ru

@@ -1,0 +1,2 @@
+contract_number,contract_date,law_type,contract_subject,contract_value,contract_period_start,contract_period_end,extracted_work_count,work_count_confidence,relevance_confidence,source_url,source_platform
+67708737490190002470000,2019-07-15,223,Выполнение проектных работ по техническому перевооружению котельной ВЧДР Ишим,3528000,,,,,0.55,https://zakupki.gov.ru/epz/contractfz223/card/contract-info.html?id=7296904,zakupki.gov.ru
