@@ -1,3 +1,13 @@
+# Загрузка переменных из .env
+include .env
+
+# URL базы данных
+DB_URL := postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSL_MODE)
+
+# Путь к миграциям
+MIGRATIONS_PATH := migrations
+
+
 run:
 	go run cmd/api/main.go
 
@@ -14,3 +24,40 @@ create-db:
 		-p 5432:5432 \
 		postgres:17-alpine
 	@echo "$(GREEN)PostgreSQL started on port 5432$(NC)"
+
+stop-db:
+	@echo "Stopping PostgreSQL..."
+	docker stop db
+	@echo "PostgreSQL stopped"
+
+rm-db: stop-db
+	@echo "Removing PostgreSQL container..."
+	docker rm db
+	@echo "Container removed"
+
+reset-db: rm-db create-db
+	@echo "Database reset complete"
+
+migrate-up:
+	@echo "Applying migrations..."
+	migrate -path $(MIGRATIONS_PATH) -database "$(DB_URL)" up
+	@echo "Migrations applied successfully"
+
+migrate-down:
+	@echo "Rolling back last migration..."
+	migrate -path $(MIGRATIONS_PATH) -database "$(DB_URL)" down 1
+	@echo "Migration rolled back"
+
+migrate-down-all:
+	@echo "Rolling back ALL migrations..."
+	migrate -path $(MIGRATIONS_PATH) -database "$(DB_URL)" down -all
+	@echo "All migrations rolled back"
+
+migrate-create:
+	migrate create -ext sql -dir $(MIGRATIONS_PATH) -seq $(name)
+
+migrate-version:
+	migrate -path $(MIGRATIONS_PATH) -database "$(DB_URL)" version
+
+migrate-force:
+	migrate -path $(MIGRATIONS_PATH) -database "$(DB_URL)" force $(version)
