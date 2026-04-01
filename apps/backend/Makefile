@@ -69,3 +69,4 @@ migrate-force:
 
 install-tools:
 	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.19.1
+	go install github.com/sqlc-dev/sqlc/cmd/sqlc@1.30.0
