@@ -7,10 +7,8 @@ package generated
 
 import (
 	"context"
-	"database/sql"
-	"time"
 
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const countEquipment = `-- name: CountEquipment :one
@@ -18,7 +16,7 @@ SELECT COUNT(*) FROM equipment
 `
 
 func (q *Queries) CountEquipment(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countEquipment)
+	row := q.db.QueryRow(ctx, countEquipment)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -36,28 +34,28 @@ RETURNING id, factory_number, inventory_number, manufacture_year, registration_y
 `
 
 type CreateEquipmentParams struct {
-	FactoryNumber         string         `json:"factoryNumber"`
-	InventoryNumber       sql.NullString `json:"inventoryNumber"`
-	ManufactureYear       time.Time      `json:"manufactureYear"`
-	RegistrationYear      sql.NullTime   `json:"registrationYear"`
-	EquipmentDictionaryID uuid.UUID      `json:"equipmentDictionaryId"`
-	OrganizationID        uuid.UUID      `json:"organizationId"`
-	StatusID              int16          `json:"statusId"`
+	FactoryNumber         string      `json:"factoryNumber"`
+	InventoryNumber       *string     `json:"inventoryNumber"`
+	ManufactureYear       pgtype.Date `json:"manufactureYear"`
+	RegistrationYear      pgtype.Date `json:"registrationYear"`
+	EquipmentDictionaryID pgtype.UUID `json:"equipmentDictionaryId"`
+	OrganizationID        pgtype.UUID `json:"organizationId"`
+	StatusID              int16       `json:"statusId"`
 }
 
 type CreateEquipmentRow struct {
-	ID                    uuid.UUID      `json:"id"`
-	FactoryNumber         string         `json:"factoryNumber"`
-	InventoryNumber       sql.NullString `json:"inventoryNumber"`
-	ManufactureYear       time.Time      `json:"manufactureYear"`
-	RegistrationYear      sql.NullTime   `json:"registrationYear"`
-	EquipmentDictionaryID uuid.UUID      `json:"equipmentDictionaryId"`
-	OrganizationID        uuid.UUID      `json:"organizationId"`
-	StatusID              int16          `json:"statusId"`
+	ID                    pgtype.UUID `json:"id"`
+	FactoryNumber         string      `json:"factoryNumber"`
+	InventoryNumber       *string     `json:"inventoryNumber"`
+	ManufactureYear       pgtype.Date `json:"manufactureYear"`
+	RegistrationYear      pgtype.Date `json:"registrationYear"`
+	EquipmentDictionaryID pgtype.UUID `json:"equipmentDictionaryId"`
+	OrganizationID        pgtype.UUID `json:"organizationId"`
+	StatusID              int16       `json:"statusId"`
 }
 
 func (q *Queries) CreateEquipment(ctx context.Context, arg CreateEquipmentParams) (CreateEquipmentRow, error) {
-	row := q.db.QueryRowContext(ctx, createEquipment,
+	row := q.db.QueryRow(ctx, createEquipment,
 		arg.FactoryNumber,
 		arg.InventoryNumber,
 		arg.ManufactureYear,
@@ -84,8 +82,8 @@ const deleteEquipment = `-- name: DeleteEquipment :exec
 DELETE FROM equipment WHERE id = $1
 `
 
-func (q *Queries) DeleteEquipment(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, deleteEquipment, id)
+func (q *Queries) DeleteEquipment(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteEquipment, id)
 	return err
 }
 
@@ -93,8 +91,8 @@ const equipmentExists = `-- name: EquipmentExists :one
 SELECT EXISTS(SELECT 1 FROM equipment WHERE id = $1)
 `
 
-func (q *Queries) EquipmentExists(ctx context.Context, id uuid.UUID) (bool, error) {
-	row := q.db.QueryRowContext(ctx, equipmentExists, id)
+func (q *Queries) EquipmentExists(ctx context.Context, id pgtype.UUID) (bool, error) {
+	row := q.db.QueryRow(ctx, equipmentExists, id)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
@@ -107,18 +105,18 @@ FROM equipment WHERE id = $1
 `
 
 type GetEquipmentByIDRow struct {
-	ID                    uuid.UUID      `json:"id"`
-	FactoryNumber         string         `json:"factoryNumber"`
-	InventoryNumber       sql.NullString `json:"inventoryNumber"`
-	ManufactureYear       time.Time      `json:"manufactureYear"`
-	RegistrationYear      sql.NullTime   `json:"registrationYear"`
-	EquipmentDictionaryID uuid.UUID      `json:"equipmentDictionaryId"`
-	OrganizationID        uuid.UUID      `json:"organizationId"`
-	StatusID              int16          `json:"statusId"`
+	ID                    pgtype.UUID `json:"id"`
+	FactoryNumber         string      `json:"factoryNumber"`
+	InventoryNumber       *string     `json:"inventoryNumber"`
+	ManufactureYear       pgtype.Date `json:"manufactureYear"`
+	RegistrationYear      pgtype.Date `json:"registrationYear"`
+	EquipmentDictionaryID pgtype.UUID `json:"equipmentDictionaryId"`
+	OrganizationID        pgtype.UUID `json:"organizationId"`
+	StatusID              int16       `json:"statusId"`
 }
 
-func (q *Queries) GetEquipmentByID(ctx context.Context, id uuid.UUID) (GetEquipmentByIDRow, error) {
-	row := q.db.QueryRowContext(ctx, getEquipmentByID, id)
+func (q *Queries) GetEquipmentByID(ctx context.Context, id pgtype.UUID) (GetEquipmentByIDRow, error) {
+	row := q.db.QueryRow(ctx, getEquipmentByID, id)
 	var i GetEquipmentByIDRow
 	err := row.Scan(
 		&i.ID,
@@ -147,18 +145,18 @@ type ListEquipmentParams struct {
 }
 
 type ListEquipmentRow struct {
-	ID                    uuid.UUID      `json:"id"`
-	FactoryNumber         string         `json:"factoryNumber"`
-	InventoryNumber       sql.NullString `json:"inventoryNumber"`
-	ManufactureYear       time.Time      `json:"manufactureYear"`
-	RegistrationYear      sql.NullTime   `json:"registrationYear"`
-	EquipmentDictionaryID uuid.UUID      `json:"equipmentDictionaryId"`
-	OrganizationID        uuid.UUID      `json:"organizationId"`
-	StatusID              int16          `json:"statusId"`
+	ID                    pgtype.UUID `json:"id"`
+	FactoryNumber         string      `json:"factoryNumber"`
+	InventoryNumber       *string     `json:"inventoryNumber"`
+	ManufactureYear       pgtype.Date `json:"manufactureYear"`
+	RegistrationYear      pgtype.Date `json:"registrationYear"`
+	EquipmentDictionaryID pgtype.UUID `json:"equipmentDictionaryId"`
+	OrganizationID        pgtype.UUID `json:"organizationId"`
+	StatusID              int16       `json:"statusId"`
 }
 
 func (q *Queries) ListEquipment(ctx context.Context, arg ListEquipmentParams) ([]ListEquipmentRow, error) {
-	rows, err := q.db.QueryContext(ctx, listEquipment, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listEquipment, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -179,9 +177,6 @@ func (q *Queries) ListEquipment(ctx context.Context, arg ListEquipmentParams) ([
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -205,29 +200,29 @@ RETURNING id, factory_number, inventory_number, manufacture_year, registration_y
 `
 
 type UpdateEquipmentParams struct {
-	ID                    uuid.UUID      `json:"id"`
-	FactoryNumber         string         `json:"factoryNumber"`
-	InventoryNumber       sql.NullString `json:"inventoryNumber"`
-	ManufactureYear       time.Time      `json:"manufactureYear"`
-	RegistrationYear      sql.NullTime   `json:"registrationYear"`
-	EquipmentDictionaryID uuid.UUID      `json:"equipmentDictionaryId"`
-	OrganizationID        uuid.UUID      `json:"organizationId"`
-	StatusID              int16          `json:"statusId"`
+	ID                    pgtype.UUID `json:"id"`
+	FactoryNumber         string      `json:"factoryNumber"`
+	InventoryNumber       *string     `json:"inventoryNumber"`
+	ManufactureYear       pgtype.Date `json:"manufactureYear"`
+	RegistrationYear      pgtype.Date `json:"registrationYear"`
+	EquipmentDictionaryID pgtype.UUID `json:"equipmentDictionaryId"`
+	OrganizationID        pgtype.UUID `json:"organizationId"`
+	StatusID              int16       `json:"statusId"`
 }
 
 type UpdateEquipmentRow struct {
-	ID                    uuid.UUID      `json:"id"`
-	FactoryNumber         string         `json:"factoryNumber"`
-	InventoryNumber       sql.NullString `json:"inventoryNumber"`
-	ManufactureYear       time.Time      `json:"manufactureYear"`
-	RegistrationYear      sql.NullTime   `json:"registrationYear"`
-	EquipmentDictionaryID uuid.UUID      `json:"equipmentDictionaryId"`
-	OrganizationID        uuid.UUID      `json:"organizationId"`
-	StatusID              int16          `json:"statusId"`
+	ID                    pgtype.UUID `json:"id"`
+	FactoryNumber         string      `json:"factoryNumber"`
+	InventoryNumber       *string     `json:"inventoryNumber"`
+	ManufactureYear       pgtype.Date `json:"manufactureYear"`
+	RegistrationYear      pgtype.Date `json:"registrationYear"`
+	EquipmentDictionaryID pgtype.UUID `json:"equipmentDictionaryId"`
+	OrganizationID        pgtype.UUID `json:"organizationId"`
+	StatusID              int16       `json:"statusId"`
 }
 
 func (q *Queries) UpdateEquipment(ctx context.Context, arg UpdateEquipmentParams) (UpdateEquipmentRow, error) {
-	row := q.db.QueryRowContext(ctx, updateEquipment,
+	row := q.db.QueryRow(ctx, updateEquipment,
 		arg.ID,
 		arg.FactoryNumber,
 		arg.InventoryNumber,

@@ -2,13 +2,9 @@ package organization
 
 import (
     "context"
-    "database/sql"
-    "fmt"
     "time"
 
     "github.com/google/uuid"
-
-    "backend/internal/db/generated"
 )
 
 type OrganizationService interface {
@@ -20,384 +16,170 @@ type OrganizationService interface {
 }
 
 type organizationService struct {
-    organizationRepository OrganizationRepository
+    repository OrganizationRepository
 }
 
-func NewService(organizationRepository OrganizationRepository) OrganizationService {
-    return &organizationService{organizationRepository: organizationRepository}
+func NewService(repository OrganizationRepository) OrganizationService {
+    return &organizationService{repository: repository}
 }
 
 func (s *organizationService) Create(ctx context.Context, req CreateRequest) (*OrganizationResponse, error) {
-    if req.Name == "" {
-        return nil, ErrNameRequired
-    }
-    if req.INN == "" {
-        return nil, ErrINNRequired
-    }
-    if len(req.INN) != 10 {
-        return nil, ErrInvalidINN
-    }
-    if req.KPP == "" {
-        return nil, ErrKPPRequired
-    }
-    if len(req.KPP) != 9 {
-        return nil, ErrInvalidKPP
-    }
-    if req.Address == "" {
-        return nil, ErrAddressRequired
-    }
-    if req.PropertyTypeID == "" {
-        return nil, ErrPropertyTypeRequired
-    }
-    if req.RoleID == "" {
-        return nil, ErrRoleRequired
-    }
-    if req.DirectorID == "" {
-        return nil, ErrDirectorRequired
-    }
+    id := uuid.New()
 
-    // Парсинг UUID полей
-    propertyTypeID, err := uuid.Parse(req.PropertyTypeID)
-    if err != nil {
-        return nil, fmt.Errorf("%w: property_type_id", ErrInvalidUUID)
-    }
+	propertyTypeID, _ := uuid.Parse(req.PropertyTypeID)
+	roleID, _ := uuid.Parse(req.RoleID)
+	directorID, _ := uuid.Parse(req.DirectorID)
 
-    roleID, err := uuid.Parse(req.RoleID)
-    if err != nil {
-        return nil, fmt.Errorf("%w: role_id", ErrInvalidUUID)
-    }
+	var parentID *uuid.UUID
+	if req.ParentID != nil {
+		p, _ := uuid.Parse(*req.ParentID)
+		parentID = &p
+	}
 
-    var directorID uuid.NullUUID // костыль пока нет schema.yaml для sqlc
-    if req.DirectorID != "" {
-        id, err := uuid.Parse(req.DirectorID)
-        if err != nil {
-            return nil, fmt.Errorf("%w: director_id", ErrInvalidUUID)
-        }
-        directorID = uuid.NullUUID{UUID: id, Valid: true}
-    }
+	var issueDate *time.Time
+	if req.POAIssueDate != nil {
+		t, _ := time.Parse("2006-01-02", *req.POAIssueDate)
+		issueDate = &t
+	}
 
+	var expDate *time.Time
+	if req.POAExpirationDate != nil {
+		t, _ := time.Parse("2006-01-02", *req.POAExpirationDate)
+		expDate = &t
+	}
 
-    var parentID uuid.NullUUID
-    if req.ParentID != nil && *req.ParentID != "" {
-        id, err := uuid.Parse(*req.ParentID)
-        if err != nil {
-            return nil, fmt.Errorf("%w: parent_id", ErrInvalidUUID)
-        }
-        parentID = uuid.NullUUID{UUID: id, Valid: true}
-    }
+	model := Organization{
+		ID:                    id,
+		PropertyTypeID:        propertyTypeID,
+		Name:                  req.Name,
+		Inn:                   req.INN,
+		Kpp:                   req.KPP,
+		Address:               req.Address,
+		RoleID:                roleID,
+		DirectorID:            directorID,
+		ParentID:              parentID,
+		ShortName:             req.ShortName,
+		PowerOfAttorneyNumber: req.PowerOfAttorneyNumber,
+		PoaIssueDate:          issueDate,
+		PoaExpirationDate:     expDate,
+		Logo:                  req.Logo,
+	}
 
-    // Парсинг дат
-    var poaIssueDate, poaExpirationDate *time.Time
-    if req.POAIssueDate != nil && *req.POAIssueDate != "" {
-        t, err := time.Parse("2006-01-02", *req.POAIssueDate)
-        if err == nil {
-            poaIssueDate = &t
-        }
-    }
-    if req.POAExpirationDate != nil && *req.POAExpirationDate != "" {
-        t, err := time.Parse("2006-01-02", *req.POAExpirationDate)
-        if err == nil {
-            poaExpirationDate = &t
-        }
-    }
+	org, err := s.repository.Create(ctx, model)
+	if err != nil {
+		return nil, err
+	}
 
-    params := generated.CreateOrganizationParams{
-        PropertyTypeID:        propertyTypeID,
-        Name:                  req.Name,
-        Inn:                   req.INN,
-        Kpp:                   req.KPP,
-        Address:               req.Address,
-        RoleID:                roleID,
-        DirectorID:            directorID,
-        ParentID:              parentID,
-    }
-
-    if req.ShortName != nil {
-        params.ShortName = sql.NullString{String: *req.ShortName, Valid: true}
-    }
-    if req.PowerOfAttorneyNumber != nil {
-        params.PowerOfAttorneyNumber = sql.NullString{String: *req.PowerOfAttorneyNumber, Valid: true}
-    }
-    if poaIssueDate != nil {
-        params.PoaIssueDate = sql.NullTime{Time: *poaIssueDate, Valid: true}
-    }
-    if poaExpirationDate != nil {
-        params.PoaExpirationDate = sql.NullTime{Time: *poaExpirationDate, Valid: true}
-    }
-    if req.Logo != nil {
-        params.Logo = sql.NullString{String: *req.Logo, Valid: true}
-    }
-
-    org, err := s.organizationRepository.Create(ctx, params)
-    if err != nil {
-        return nil, err
-    }
-
-    return toResponse(fromCreateRow(org)), nil
+	return toResponse(*org), nil
 }
 
 func (s *organizationService) GetByID(ctx context.Context, id string) (*OrganizationResponse, error) {
-    orgID, err := uuid.Parse(id)
-    if err != nil {
-        return nil, fmt.Errorf("%w: %v", ErrInvalidID, err)
-    }
-
-    org, err := s.organizationRepository.GetByID(ctx, orgID)
-    if err != nil {
-        return nil, err
-    }
-
-    return toResponse(fromGetByIDRow(org)), nil
+	orgID, _ := uuid.Parse(id)
+	org, err := s.repository.GetByID(ctx, orgID)
+	if err != nil {
+		return nil, err
+	}
+	return toResponse(*org), nil
 }
 
 func (s *organizationService) Update(ctx context.Context, id string, req UpdateRequest) (*OrganizationResponse, error) {
-    orgID, err := uuid.Parse(id)
-    if err != nil {
-        return nil, fmt.Errorf("%w: %v", ErrInvalidID, err)
-    }
+	orgID, err := uuid.Parse(id)
+	if err != nil {
+		return nil, ErrInvalidID
+	}
 
-    exists, err := s.organizationRepository.Exists(ctx, orgID)
-    if err != nil {
-        return nil, err
-    }
-    if !exists {
-        return nil, ErrNotFound
-    }
+	current, err := s.repository.GetByID(ctx, orgID)
+	if err != nil {
+		return nil, err
+	}
 
-    current, err := s.organizationRepository.GetByID(ctx, orgID)
-    if err != nil {
-        return nil, err
-    }
+	if req.Name != nil {
+		current.Name = *req.Name
+	}
+	if req.INN != nil {
+		current.Inn = *req.INN
+	}
+	if req.KPP != nil {
+		current.Kpp = *req.KPP
+	}
+	if req.Address != nil {
+		current.Address = *req.Address
+	}
 
-    propertyTypeID := current.PropertyTypeID
-    if req.PropertyTypeID != nil && *req.PropertyTypeID != "" {
-        id, err := uuid.Parse(*req.PropertyTypeID)
-        if err != nil {
-            return nil, fmt.Errorf("%w: property_type_id", ErrInvalidUUID)
-        }
-        propertyTypeID = id
-    }
+	if req.ShortName != nil {
+		current.ShortName = req.ShortName
+	}
 
-    roleID := current.RoleID
-    if req.RoleID != nil && *req.RoleID != "" {
-        id, err := uuid.Parse(*req.RoleID)
-        if err != nil {
-            return nil, fmt.Errorf("%w: role_id", ErrInvalidUUID)
-        }
-        roleID = id
-    }
+	org, err := s.repository.Update(ctx, *current)
+	if err != nil {
+		return nil, err
+	}
 
-    name := current.Name
-    if req.Name != nil {
-        name = *req.Name
-    }
-
-    inn := current.Inn
-    if req.INN != nil {
-        inn = *req.INN
-    }
-
-    kpp := current.Kpp
-    if req.KPP != nil {
-        kpp = *req.KPP
-    }
-
-    address := current.Address
-    if req.Address != nil {
-        address = *req.Address
-    }
-
-    directorID := uuid.NullUUID{Valid: current.DirectorID.Valid}
-    if current.DirectorID.Valid {
-        directorID.UUID = current.DirectorID.UUID
-    }
-    if req.DirectorID != nil && *req.DirectorID != "" {
-        id, err := uuid.Parse(*req.DirectorID)
-        if err != nil {
-            return nil, fmt.Errorf("%w: director_id", ErrInvalidUUID)
-        }
-        directorID = uuid.NullUUID{UUID: id, Valid: true}
-    }
-
-    parentID := uuid.NullUUID{Valid: current.ParentID.Valid}
-    if current.ParentID.Valid {
-        parentID.UUID = current.ParentID.UUID
-    }
-    if req.ParentID != nil && *req.ParentID != "" {
-        id, err := uuid.Parse(*req.ParentID)
-        if err != nil {
-            return nil, fmt.Errorf("%w: parent_id", ErrInvalidUUID)
-        }
-        parentID = uuid.NullUUID{UUID: id, Valid: true}
-    }
-
-    shortName := current.ShortName
-    if req.ShortName != nil {
-        shortName = sql.NullString{String: *req.ShortName, Valid: true}
-    }
-
-    powerOfAttorneyNumber := current.PowerOfAttorneyNumber
-    if req.PowerOfAttorneyNumber != nil {
-        powerOfAttorneyNumber = sql.NullString{String: *req.PowerOfAttorneyNumber, Valid: true}
-    }
-
-    poaIssueDate := current.PoaIssueDate
-    if req.POAIssueDate != nil && *req.POAIssueDate != "" {
-        t, err := time.Parse("2006-01-02", *req.POAIssueDate)
-        if err == nil {
-            poaIssueDate = sql.NullTime{Time: t, Valid: true}
-        }
-    }
-
-    poaExpirationDate := current.PoaExpirationDate
-    if req.POAExpirationDate != nil && *req.POAExpirationDate != "" {
-        t, err := time.Parse("2006-01-02", *req.POAExpirationDate)
-        if err == nil {
-            poaExpirationDate = sql.NullTime{Time: t, Valid: true}
-        }
-    }
-
-    logo := current.Logo
-    if req.Logo != nil {
-        logo = sql.NullString{String: *req.Logo, Valid: true}
-    }
-
-    params := generated.UpdateOrganizationParams{
-        ID:                    orgID,
-        PropertyTypeID:        propertyTypeID,
-        RoleID:                roleID,
-        Name:                  name,
-        Inn:                   inn,
-        Kpp:                   kpp,
-        Address:               address,
-        DirectorID:            directorID,
-        ParentID:              parentID,
-        ShortName:             shortName,
-        PowerOfAttorneyNumber: powerOfAttorneyNumber,
-        PoaIssueDate:          poaIssueDate,
-        PoaExpirationDate:     poaExpirationDate,
-        Logo:                  logo,
-    }
-
-    org, err := s.organizationRepository.Update(ctx, params)
-    if err != nil {
-        return nil, err
-    }
-
-    return toResponse(fromUpdateRow(org)), nil
+	return toResponse(*org), nil
 }
 
 func (s *organizationService) Delete(ctx context.Context, id string) error {
-    orgID, err := uuid.Parse(id)
-    if err != nil {
-        return fmt.Errorf("%w: %v", ErrInvalidID, err)
-    }
-    return s.organizationRepository.Delete(ctx, orgID)
+	orgID, _ := uuid.Parse(id)
+	return s.repository.Delete(ctx, orgID)
 }
-
 
 func (s *organizationService) List(ctx context.Context, limit, offset int32) ([]*OrganizationResponse, int64, error) {
     if limit <= 0 {
         limit = 10
-    } // нужно задавать из конфига/констант
-    if limit > 100 {
-        limit = 100
     }
-    if offset < 0 {
-        offset = 0
-    }
+	items, total, err := s.repository.List(ctx, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
 
-    items, total, err := s.organizationRepository.List(ctx, limit, offset)
-    if err != nil {
-        return nil, 0, err
-    }
+	res := make([]*OrganizationResponse, len(items))
+	for i := range items {
+		res[i] = toResponse(items[i])
+	}
 
-    responses := make([]*OrganizationResponse, len(items))
-    for i := range items {
-        responses[i] = toResponse(fromListRow(&items[i]))
-    }
-
-    return responses, total, nil
+	return res, total, nil
 }
 
 // toResponse
-type orgModel struct {
-	ID            uuid.UUID
-	PropertyTypeID uuid.UUID
-	Name          string
-	Inn           string
-	Kpp           string
-	Address       string
-	RoleID        uuid.UUID
-	DirectorID    uuid.NullUUID
-	ParentID      uuid.NullUUID
-	ShortName     sql.NullString
-	PowerOfAttorneyNumber sql.NullString
-	PoaIssueDate  sql.NullTime
-	PoaExpirationDate sql.NullTime
-	Logo          sql.NullString
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
-}
-
-func fromCreateRow(r *generated.CreateOrganizationRow) orgModel {
-	return orgModel{
-		ID: r.ID, PropertyTypeID: r.PropertyTypeID, Name: r.Name,
-		Inn: r.Inn, Kpp: r.Kpp, Address: r.Address,
-		RoleID: r.RoleID, DirectorID: r.DirectorID,
-		ParentID: r.ParentID, ShortName: r.ShortName,
-		PowerOfAttorneyNumber: r.PowerOfAttorneyNumber,
-		PoaIssueDate: r.PoaIssueDate, PoaExpirationDate: r.PoaExpirationDate,
-		Logo: r.Logo, CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt,
-	}
-}
-
-func fromListRow(r *generated.ListOrganizationsRow) orgModel {
-	return fromCreateRow((*generated.CreateOrganizationRow)(r))
-}
-
-func fromUpdateRow(r *generated.UpdateOrganizationRow) orgModel {
-	return fromCreateRow((*generated.CreateOrganizationRow)(r))
-}
-
-func fromGetByIDRow(r *generated.GetOrganizationByIDRow) orgModel {
-	return fromCreateRow((*generated.CreateOrganizationRow)(r))
-}
-
-func toResponse(m orgModel) *OrganizationResponse {
+func toResponse(m Organization) *OrganizationResponse {
 	resp := &OrganizationResponse{
-		ID: m.ID.String(),
+		ID:             m.ID.String(),
 		PropertyTypeID: m.PropertyTypeID.String(),
-		Name: m.Name,
-		INN: m.Inn,
-		KPP: m.Kpp,
-		Address: m.Address,
-		RoleID: m.RoleID.String(),
-		DirectorID: m.DirectorID.UUID.String(),
-		CreatedAt: m.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: m.UpdatedAt.Format(time.RFC3339),
+		Name:           m.Name,
+		INN:            m.Inn,
+		KPP:            m.Kpp,
+		Address:        m.Address,
+		RoleID:         m.RoleID.String(),
+		DirectorID:     m.DirectorID.String(),
+		CreatedAt:      m.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:      m.UpdatedAt.Format(time.RFC3339),
 	}
 
-	if m.ShortName.Valid {
-		resp.ShortName = &m.ShortName.String
-	}
-	if m.ParentID.Valid {
-		id := m.ParentID.UUID.String()
+	if m.ParentID != nil {
+		id := m.ParentID.String()
 		resp.ParentID = &id
 	}
-	if m.PowerOfAttorneyNumber.Valid {
-		resp.PowerOfAttorneyNumber = &m.PowerOfAttorneyNumber.String
+
+	if m.ShortName != nil {
+		resp.ShortName = m.ShortName
 	}
-	if m.PoaIssueDate.Valid {
-		d := m.PoaIssueDate.Time.Format("2006-01-02")
+
+	if m.PowerOfAttorneyNumber != nil {
+		resp.PowerOfAttorneyNumber = m.PowerOfAttorneyNumber
+	}
+
+	if m.PoaIssueDate != nil {
+		d := m.PoaIssueDate.Format("2006-01-02")
 		resp.POAIssueDate = &d
 	}
-	if m.PoaExpirationDate.Valid {
-		d := m.PoaExpirationDate.Time.Format("2006-01-02")
+
+	if m.PoaExpirationDate != nil {
+		d := m.PoaExpirationDate.Format("2006-01-02")
 		resp.POAExpirationDate = &d
 	}
-	if m.Logo.Valid {
-		resp.Logo = &m.Logo.String
+
+	if m.Logo != nil {
+		resp.Logo = m.Logo
 	}
 
 	return resp

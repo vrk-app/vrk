@@ -1,0 +1,1061 @@
+basePath: /api/v1
+definitions:
+  equipment.CreateRequest:
+    properties:
+      equipmentDictionaryId:
+        type: string
+      factoryNumber:
+        maxLength: 50
+        type: string
+      inventoryNumber:
+        type: string
+      manufactureYear:
+        type: string
+      organizationId:
+        type: string
+      registrationYear:
+        type: string
+      statusId:
+        maximum: 5
+        minimum: 1
+        type: integer
+    required:
+    - equipmentDictionaryId
+    - factoryNumber
+    - manufactureYear
+    - organizationId
+    - statusId
+    type: object
+  equipment.EquipmentResponse:
+    properties:
+      createdAt:
+        type: string
+      equipmentDictionaryId:
+        type: string
+      factoryNumber:
+        type: string
+      id:
+        type: string
+      inventoryNumber:
+        type: string
+      manufactureYear:
+        type: string
+      organizationId:
+        type: string
+      registrationYear:
+        type: string
+      statusId:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  equipment.Meta:
+    properties:
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  equipment.Response:
+    properties:
+      data: {}
+      error:
+        type: string
+      meta:
+        $ref: '#/definitions/equipment.Meta'
+      success:
+        type: boolean
+    type: object
+  equipment.UpdateRequest:
+    properties:
+      equipmentDictionaryId:
+        type: string
+      factoryNumber:
+        type: string
+      inventoryNumber:
+        type: string
+      manufactureYear:
+        type: string
+      organizationId:
+        type: string
+      registrationYear:
+        type: string
+      statusId:
+        type: integer
+    type: object
+  measuringinstrument.CreateRequest:
+    properties:
+      certificateNumber:
+        maxLength: 100
+        type: string
+      documentProviderOrganization:
+        maxLength: 100
+        type: string
+      documentUrl:
+        maxLength: 255
+        type: string
+      lastOperationDate:
+        type: string
+      metrologicalOperationTypeId:
+        type: string
+      nextOperationDate:
+        type: string
+      organizationId:
+        type: string
+      registryNumber:
+        maxLength: 50
+        type: string
+      standardId:
+        type: string
+    required:
+    - certificateNumber
+    - documentProviderOrganization
+    - documentUrl
+    - metrologicalOperationTypeId
+    - organizationId
+    - registryNumber
+    type: object
+  measuringinstrument.MeasuringInstrumentResponse:
+    properties:
+      certificateNumber:
+        type: string
+      createdAt:
+        type: string
+      documentProviderOrganization:
+        type: string
+      documentUrl:
+        type: string
+      id:
+        type: string
+      lastOperationDate:
+        type: string
+      metrologicalOperationTypeId:
+        type: string
+      nextOperationDate:
+        type: string
+      organizationId:
+        type: string
+      registryNumber:
+        type: string
+      standardId:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  measuringinstrument.Meta:
+    properties:
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  measuringinstrument.Response:
+    properties:
+      data: {}
+      error:
+        type: string
+      meta:
+        $ref: '#/definitions/measuringinstrument.Meta'
+      success:
+        type: boolean
+    type: object
+  measuringinstrument.UpdateRequest:
+    properties:
+      certificateNumber:
+        type: string
+      documentProviderOrganization:
+        type: string
+      documentUrl:
+        type: string
+      lastOperationDate:
+        type: string
+      metrologicalOperationTypeId:
+        type: string
+      nextOperationDate:
+        type: string
+      organizationId:
+        type: string
+      registryNumber:
+        type: string
+      standardId:
+        type: string
+    type: object
+  organization.CreateRequest:
+    properties:
+      address:
+        maxLength: 100
+        type: string
+      directorId:
+        type: string
+      inn:
+        type: string
+      kpp:
+        type: string
+      logo:
+        type: string
+      name:
+        maxLength: 200
+        type: string
+      parentId:
+        type: string
+      poaExpirationDate:
+        type: string
+      poaissueDate:
+        type: string
+      powerOfAttorneyNumber:
+        type: string
+      propertyTypeId:
+        type: string
+      roleId:
+        type: string
+      shortName:
+        type: string
+    required:
+    - address
+    - directorId
+    - inn
+    - kpp
+    - name
+    - propertyTypeId
+    - roleId
+    type: object
+  organization.Meta:
+    properties:
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  organization.OrganizationResponse:
+    properties:
+      address:
+        type: string
+      createdAt:
+        type: string
+      directorId:
+        type: string
+      id:
+        type: string
+      inn:
+        type: string
+      kpp:
+        type: string
+      logo:
+        type: string
+      name:
+        type: string
+      parentId:
+        type: string
+      poaExpirationDate:
+        type: string
+      poaIssueDate:
+        type: string
+      powerOfAttorneyNumber:
+        type: string
+      propertyTypeId:
+        type: string
+      roleId:
+        type: string
+      shortName:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  organization.Response:
+    properties:
+      data: {}
+      error:
+        type: string
+      meta:
+        $ref: '#/definitions/organization.Meta'
+      success:
+        type: boolean
+    type: object
+  organization.UpdateRequest:
+    properties:
+      address:
+        type: string
+      directorId:
+        type: string
+      inn:
+        type: string
+      kpp:
+        type: string
+      logo:
+        type: string
+      name:
+        type: string
+      parentId:
+        type: string
+      poaExpirationDate:
+        type: string
+      poaIssueDate:
+        type: string
+      powerOfAttorneyNumber:
+        type: string
+      propertyTypeId:
+        type: string
+      roleId:
+        type: string
+      shortName:
+        type: string
+    type: object
+  standard.CreateRequest:
+    properties:
+      certificateNumber:
+        maxLength: 100
+        type: string
+      documentProviderOrganization:
+        maxLength: 100
+        type: string
+      documentUrl:
+        maxLength: 255
+        type: string
+      lastOperationDate:
+        type: string
+      metrologicalCharacteristics:
+        type: string
+      model:
+        maxLength: 50
+        type: string
+      nextOperationDate:
+        type: string
+    required:
+    - certificateNumber
+    - documentProviderOrganization
+    - documentUrl
+    - metrologicalCharacteristics
+    - model
+    type: object
+  standard.Meta:
+    properties:
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  standard.Response:
+    properties:
+      data: {}
+      error:
+        type: string
+      meta:
+        $ref: '#/definitions/standard.Meta'
+      success:
+        type: boolean
+    type: object
+  standard.StandardResponse:
+    properties:
+      certificateNumber:
+        type: string
+      createdAt:
+        type: string
+      documentProviderOrganization:
+        type: string
+      documentUrl:
+        type: string
+      id:
+        type: string
+      lastOperationDate:
+        type: string
+      metrologicalCharacteristics:
+        type: string
+      model:
+        type: string
+      nextOperationDate:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  standard.UpdateRequest:
+    properties:
+      certificateNumber:
+        type: string
+      documentProviderOrganization:
+        type: string
+      documentUrl:
+        type: string
+      lastOperationDate:
+        type: string
+      metrologicalCharacteristics:
+        type: string
+      model:
+        type: string
+      nextOperationDate:
+        type: string
+    type: object
+info:
+  contact: {}
+  title: VRK API
+paths:
+  /equipment:
+    get:
+      description: Возвращает список оборудования с пагинацией
+      parameters:
+      - default: 10
+        description: Количество записей на странице
+        in: query
+        maximum: 100
+        minimum: 1
+        name: limit
+        type: integer
+      - default: 0
+        description: Смещение
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный ответ
+          schema:
+            allOf:
+            - $ref: '#/definitions/equipment.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/equipment.EquipmentResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/equipment.Meta'
+              type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/equipment.Response'
+      summary: Получить список оборудования
+      tags:
+      - equipment
+    post:
+      consumes:
+      - application/json
+      description: Создает новую единицу оборудования
+      parameters:
+      - description: Данные оборудования
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/equipment.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Оборудование создано
+          schema:
+            allOf:
+            - $ref: '#/definitions/equipment.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/equipment.EquipmentResponse'
+              type: object
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/equipment.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/equipment.Response'
+      summary: Создать оборудование
+      tags:
+      - equipment
+  /equipment/{id}:
+    delete:
+      description: Удаляет оборудование по ID
+      parameters:
+      - description: ID оборудования
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Успешное удаление
+        "404":
+          description: Оборудование не найдено
+          schema:
+            $ref: '#/definitions/equipment.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/equipment.Response'
+      summary: Удалить оборудование
+      tags:
+      - equipment
+    get:
+      description: Возвращает информацию об оборудовании
+      parameters:
+      - description: ID оборудования
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный ответ
+          schema:
+            allOf:
+            - $ref: '#/definitions/equipment.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/equipment.EquipmentResponse'
+              type: object
+        "404":
+          description: Оборудование не найдено
+          schema:
+            $ref: '#/definitions/equipment.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/equipment.Response'
+      summary: Получить оборудование по ID
+      tags:
+      - equipment
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные оборудования
+      parameters:
+      - description: ID оборудования
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Данные для обновления
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/equipment.UpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное обновление
+          schema:
+            allOf:
+            - $ref: '#/definitions/equipment.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/equipment.EquipmentResponse'
+              type: object
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/equipment.Response'
+        "404":
+          description: Оборудование не найдено
+          schema:
+            $ref: '#/definitions/equipment.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/equipment.Response'
+      summary: Обновить оборудование
+      tags:
+      - equipment
+  /measuring-instruments:
+    get:
+      description: Возвращает список средств измерения с пагинацией
+      parameters:
+      - default: 10
+        description: Количество записей на странице
+        in: query
+        maximum: 100
+        minimum: 1
+        name: limit
+        type: integer
+      - default: 0
+        description: Смещение
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный ответ
+          schema:
+            allOf:
+            - $ref: '#/definitions/measuringinstrument.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/measuringinstrument.MeasuringInstrumentResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/measuringinstrument.Meta'
+              type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+      summary: Получить список средств измерения
+      tags:
+      - equipment
+    post:
+      consumes:
+      - application/json
+      description: Создает новое средство измерения (СИ)
+      parameters:
+      - description: Данные средства измерения
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/measuringinstrument.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Средство измерения создано
+          schema:
+            allOf:
+            - $ref: '#/definitions/measuringinstrument.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/measuringinstrument.MeasuringInstrumentResponse'
+              type: object
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+      summary: Создать средство измерения
+      tags:
+      - equipment
+  /measuring-instruments/{id}:
+    get:
+      description: Возвращает информацию о средстве измерения
+      parameters:
+      - description: ID средства измерения
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный ответ
+          schema:
+            allOf:
+            - $ref: '#/definitions/measuringinstrument.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/measuringinstrument.MeasuringInstrumentResponse'
+              type: object
+        "404":
+          description: Средство измерения не найдено
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+      summary: Получить средство измерения по ID
+      tags:
+      - equipment
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные средства измерения
+      parameters:
+      - description: ID средства измерения
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Данные для обновления
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/measuringinstrument.UpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное обновление
+          schema:
+            allOf:
+            - $ref: '#/definitions/measuringinstrument.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/measuringinstrument.MeasuringInstrumentResponse'
+              type: object
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+        "404":
+          description: Средство измерения не найдено
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+      summary: Обновить средство измерения
+      tags:
+      - equipment
+  /organizations:
+    get:
+      description: Возвращает список организаций с пагинацией
+      parameters:
+      - default: 10
+        description: Количество записей на странице
+        in: query
+        maximum: 100
+        minimum: 1
+        name: limit
+        type: integer
+      - default: 0
+        description: Смещение
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный ответ
+          schema:
+            allOf:
+            - $ref: '#/definitions/organization.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/organization.OrganizationResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/organization.Meta'
+              type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/organization.Response'
+      summary: Получить список организаций
+      tags:
+      - organizations
+    post:
+      consumes:
+      - application/json
+      description: Создает новую организацию (заказчика или подрядчика)
+      parameters:
+      - description: Данные организации
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/organization.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Организация создана
+          schema:
+            allOf:
+            - $ref: '#/definitions/organization.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/organization.OrganizationResponse'
+              type: object
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/organization.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/organization.Response'
+      summary: Создать организацию
+      tags:
+      - organizations
+  /organizations/{id}:
+    delete:
+      description: Удаляет организацию по ID
+      parameters:
+      - description: ID организации
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Успешное удаление
+        "404":
+          description: Организация не найдена
+          schema:
+            $ref: '#/definitions/organization.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/organization.Response'
+      summary: Удалить организацию
+      tags:
+      - organizations
+    get:
+      description: Возвращает информацию об организации
+      parameters:
+      - description: ID организации
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный ответ
+          schema:
+            allOf:
+            - $ref: '#/definitions/organization.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/organization.OrganizationResponse'
+              type: object
+        "404":
+          description: Организация не найдена
+          schema:
+            $ref: '#/definitions/organization.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/organization.Response'
+      summary: Получить организацию по ID
+      tags:
+      - organizations
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные организации
+      parameters:
+      - description: ID организации
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Данные для обновления
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/organization.UpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное обновление
+          schema:
+            allOf:
+            - $ref: '#/definitions/organization.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/organization.OrganizationResponse'
+              type: object
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/organization.Response'
+        "404":
+          description: Организация не найдена
+          schema:
+            $ref: '#/definitions/organization.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/organization.Response'
+      summary: Обновить организацию
+      tags:
+      - organizations
+  /standards:
+    get:
+      description: Возвращает список эталонов с пагинацией
+      parameters:
+      - default: 10
+        description: Количество записей на странице
+        in: query
+        maximum: 100
+        minimum: 1
+        name: limit
+        type: integer
+      - default: 0
+        description: Смещение
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный ответ
+          schema:
+            allOf:
+            - $ref: '#/definitions/standard.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/standard.StandardResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/standard.Meta'
+              type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/standard.Response'
+      summary: Получить список эталонов
+      tags:
+      - equipment
+    post:
+      consumes:
+      - application/json
+      description: Создает новый эталон для метрологической поверки
+      parameters:
+      - description: Данные эталона
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/standard.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Эталон создан
+          schema:
+            allOf:
+            - $ref: '#/definitions/standard.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/standard.StandardResponse'
+              type: object
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/standard.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/standard.Response'
+      summary: Создать эталон
+      tags:
+      - equipment
+  /standards/{id}:
+    delete:
+      description: Удаляет эталон по ID
+      parameters:
+      - description: ID эталона
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Успешное удаление
+        "404":
+          description: Эталон не найден
+          schema:
+            $ref: '#/definitions/standard.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/standard.Response'
+      summary: Удалить эталон
+      tags:
+      - equipment
+    get:
+      description: Возвращает информацию об эталоне
+      parameters:
+      - description: ID эталона
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный ответ
+          schema:
+            allOf:
+            - $ref: '#/definitions/standard.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/standard.StandardResponse'
+              type: object
+        "404":
+          description: Эталон не найден
+          schema:
+            $ref: '#/definitions/standard.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/standard.Response'
+      summary: Получить эталон по ID
+      tags:
+      - equipment
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные эталона
+      parameters:
+      - description: ID эталона
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Данные для обновления
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/standard.UpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное обновление
+          schema:
+            allOf:
+            - $ref: '#/definitions/standard.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/standard.StandardResponse'
+              type: object
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/standard.Response'
+        "404":
+          description: Эталон не найден
+          schema:
+            $ref: '#/definitions/standard.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/standard.Response'
+      summary: Обновить эталон
+      tags:
+      - equipment
+swagger: "2.0"

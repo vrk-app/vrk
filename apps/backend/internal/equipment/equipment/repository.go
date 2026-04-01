@@ -3,82 +3,146 @@ package equipment
 import (
     "context"
     "fmt"
+    "time"
 
     "github.com/google/uuid"
+    "github.com/jackc/pgx/v5/pgtype"
 
     "backend/internal/db/generated"
 )
 
 type EquipmentRepository interface {
-    Create(ctx context.Context, params generated.CreateEquipmentParams) (*generated.CreateEquipmentRow, error)
-    GetByID(ctx context.Context, id uuid.UUID) (*generated.GetEquipmentByIDRow, error)
-    Update(ctx context.Context, params generated.UpdateEquipmentParams) (*generated.UpdateEquipmentRow, error)
+    Create(ctx context.Context, m Equipment) (*Equipment, error)
+    GetByID(ctx context.Context, id uuid.UUID) (*Equipment, error)
+    Update(ctx context.Context, m Equipment) (*Equipment, error)
     Delete(ctx context.Context, id uuid.UUID) error
-    List(ctx context.Context, limit, offset int32) ([]generated.ListEquipmentRow, int64, error)
+    List(ctx context.Context, limit, offset int32) ([]Equipment, int64, error)
     Exists(ctx context.Context, id uuid.UUID) (bool, error)
 }
 
 type equipmentRepository struct {
-    queries *generated.Queries
+    q *generated.Queries
 }
 
-func NewRepository(queries *generated.Queries) EquipmentRepository {
-    return &equipmentRepository{queries: queries}
+func NewRepository(q *generated.Queries) EquipmentRepository {
+    return &equipmentRepository{q: q}
 }
 
-func (r *equipmentRepository) Create(ctx context.Context, params generated.CreateEquipmentParams) (*generated.CreateEquipmentRow, error) {
-    eq, err := r.queries.CreateEquipment(ctx, params)
+// Хелперы для конвертации (аналогичные организации)
+func toPGUUID(id uuid.UUID) pgtype.UUID {
+    return pgtype.UUID{Bytes: id, Valid: true}
+}
+
+func toNullPGUUID(id *uuid.UUID) pgtype.UUID {
+    if id == nil {
+        return pgtype.UUID{}
+    }
+    return pgtype.UUID{Bytes: *id, Valid: true}
+}
+
+func toNullDate(t *time.Time) pgtype.Date {
+    if t == nil {
+        return pgtype.Date{}
+    }
+    return pgtype.Date{Time: *t, Valid: true}
+}
+
+func fromNullUUID(v pgtype.UUID) *uuid.UUID {
+    if !v.Valid {
+        return nil
+    }
+    id := uuid.UUID(v.Bytes)
+    return &id
+}
+
+func fromNullDate(v pgtype.Date) *time.Time {
+    if !v.Valid {
+        return nil
+    }
+    return &v.Time
+}
+
+
+func mapRow(r *generated.CreateEquipmentRow) *Equipment {
+    return &Equipment{
+        ID:                    uuid.UUID(r.ID.Bytes),
+        FactoryNumber:         r.FactoryNumber,
+        InventoryNumber:       r.InventoryNumber,
+        ManufactureYear:       r.ManufactureYear.Time,
+        RegistrationYear:      fromNullDate(r.RegistrationYear),
+        EquipmentDictionaryID: uuid.UUID(r.EquipmentDictionaryID.Bytes),
+        OrganizationID:        uuid.UUID(r.OrganizationID.Bytes),
+        StatusID:              r.StatusID,      
+    }
+}
+
+func (r *equipmentRepository) Create(ctx context.Context, m Equipment) (*Equipment, error) {
+    params := generated.CreateEquipmentParams{
+        FactoryNumber:         m.FactoryNumber,
+        InventoryNumber:       m.InventoryNumber,
+        ManufactureYear:       pgtype.Date{Time: m.ManufactureYear, Valid: true},
+        RegistrationYear:      toNullDate(m.RegistrationYear),
+        EquipmentDictionaryID: toPGUUID(m.EquipmentDictionaryID),
+        OrganizationID:        toPGUUID(m.OrganizationID),
+        StatusID:              m.StatusID,
+    }
+
+    row, err := r.q.CreateEquipment(ctx, params)
     if err != nil {
         return nil, fmt.Errorf("%w: %v", ErrCreateFailed, err)
     }
-    return &eq, nil
+    return mapRow(&row), nil
 }
 
-func (r *equipmentRepository) GetByID(ctx context.Context, id uuid.UUID) (*generated.GetEquipmentByIDRow, error) {
-    eq, err := r.queries.GetEquipmentByID(ctx, id)
+func (r *equipmentRepository) GetByID(ctx context.Context, id uuid.UUID) (*Equipment, error) {
+    row, err := r.q.GetEquipmentByID(ctx, toPGUUID(id))
     if err != nil {
         return nil, fmt.Errorf("%w: %v", ErrNotFound, err)
     }
-    return &eq, nil
+    return mapRow((*generated.CreateEquipmentRow)(&row)), nil
 }
 
-func (r *equipmentRepository) Update(ctx context.Context, params generated.UpdateEquipmentParams) (*generated.UpdateEquipmentRow, error) {
-    eq, err := r.queries.UpdateEquipment(ctx, params)
+func (r *equipmentRepository) Update(ctx context.Context, m Equipment) (*Equipment, error) {
+    params := generated.UpdateEquipmentParams{
+        ID:                    toPGUUID(m.ID),
+        FactoryNumber:         m.FactoryNumber,
+        InventoryNumber:       m.InventoryNumber,
+        ManufactureYear:       pgtype.Date{Time: m.ManufactureYear, Valid: true},
+        RegistrationYear:      toNullDate(m.RegistrationYear),
+        EquipmentDictionaryID: toPGUUID(m.EquipmentDictionaryID),
+        OrganizationID:        toPGUUID(m.OrganizationID),
+        StatusID:              m.StatusID,
+    }
+
+    row, err := r.q.UpdateEquipment(ctx, params)
     if err != nil {
         return nil, fmt.Errorf("%w: %v", ErrUpdateFailed, err)
     }
-    return &eq, nil
+    return mapRow((*generated.CreateEquipmentRow)(&row)), nil
 }
 
 func (r *equipmentRepository) Delete(ctx context.Context, id uuid.UUID) error {
-    err := r.queries.DeleteEquipment(ctx, id)
-    if err != nil {
-        return fmt.Errorf("%w: %v", ErrDeleteFailed, err)
-    }
-    return nil
+    return r.q.DeleteEquipment(ctx, toPGUUID(id))
 }
 
-func (r *equipmentRepository) List(ctx context.Context, limit, offset int32) ([]generated.ListEquipmentRow, int64, error) {
-    items, err := r.queries.ListEquipment(ctx, generated.ListEquipmentParams{
+func (r *equipmentRepository) Exists(ctx context.Context, id uuid.UUID) (bool, error) {
+    return r.q.EquipmentExists(ctx, toPGUUID(id))
+}
+
+func (r *equipmentRepository) List(ctx context.Context, limit, offset int32) ([]Equipment, int64, error) {
+    rows, err := r.q.ListEquipment(ctx, generated.ListEquipmentParams{
         Limit:  limit,
         Offset: offset,
     })
     if err != nil {
-        return nil, 0, fmt.Errorf("%w: %v", ErrListFailed, err)
+        return nil, 0, err
     }
 
-    total, err := r.queries.CountEquipment(ctx)
-    if err != nil {
-        return nil, 0, fmt.Errorf("%w: %v", ErrListFailed, err)
-    }
+    total, _ := r.q.CountEquipment(ctx)
 
-    return items, total, nil
-}
-
-func (r *equipmentRepository) Exists(ctx context.Context, id uuid.UUID) (bool, error) {
-    exists, err := r.queries.EquipmentExists(ctx, id)
-    if err != nil {
-        return false, fmt.Errorf("%w: %v", ErrCheckExistsFailed, err)
+    result := make([]Equipment, len(rows))
+    for i := range rows {
+        result[i] = *mapRow((*generated.CreateEquipmentRow)(&rows[i]))
     }
-    return exists, nil
+    return result, total, nil
 }

@@ -7,9 +7,8 @@ package generated
 
 import (
 	"context"
-	"database/sql"
 
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const countMeasuringInstruments = `-- name: CountMeasuringInstruments :one
@@ -17,7 +16,7 @@ SELECT COUNT(*) FROM measuring_instruments
 `
 
 func (q *Queries) CountMeasuringInstruments(ctx context.Context) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countMeasuringInstruments)
+	row := q.db.QueryRow(ctx, countMeasuringInstruments)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -37,32 +36,32 @@ RETURNING id, registry_number, metrological_operation_type_id, certificate_numbe
 `
 
 type CreateMeasuringInstrumentParams struct {
-	RegistryNumber               string        `json:"registryNumber"`
-	MetrologicalOperationTypeID  uuid.UUID     `json:"metrologicalOperationTypeId"`
-	CertificateNumber            string        `json:"certificateNumber"`
-	LastOperationDate            sql.NullTime  `json:"lastOperationDate"`
-	NextOperationDate            sql.NullTime  `json:"nextOperationDate"`
-	DocumentProviderOrganization string        `json:"documentProviderOrganization"`
-	DocumentUrl                  string        `json:"documentUrl"`
-	StandardID                   uuid.NullUUID `json:"standardId"`
-	OrganizationID               uuid.UUID     `json:"organizationId"`
+	RegistryNumber               string      `json:"registryNumber"`
+	MetrologicalOperationTypeID  pgtype.UUID `json:"metrologicalOperationTypeId"`
+	CertificateNumber            string      `json:"certificateNumber"`
+	LastOperationDate            pgtype.Date `json:"lastOperationDate"`
+	NextOperationDate            pgtype.Date `json:"nextOperationDate"`
+	DocumentProviderOrganization string      `json:"documentProviderOrganization"`
+	DocumentUrl                  string      `json:"documentUrl"`
+	StandardID                   pgtype.UUID `json:"standardId"`
+	OrganizationID               pgtype.UUID `json:"organizationId"`
 }
 
 type CreateMeasuringInstrumentRow struct {
-	ID                           uuid.UUID     `json:"id"`
-	RegistryNumber               string        `json:"registryNumber"`
-	MetrologicalOperationTypeID  uuid.UUID     `json:"metrologicalOperationTypeId"`
-	CertificateNumber            string        `json:"certificateNumber"`
-	LastOperationDate            sql.NullTime  `json:"lastOperationDate"`
-	NextOperationDate            sql.NullTime  `json:"nextOperationDate"`
-	DocumentProviderOrganization string        `json:"documentProviderOrganization"`
-	DocumentUrl                  string        `json:"documentUrl"`
-	StandardID                   uuid.NullUUID `json:"standardId"`
-	OrganizationID               uuid.UUID     `json:"organizationId"`
+	ID                           pgtype.UUID `json:"id"`
+	RegistryNumber               string      `json:"registryNumber"`
+	MetrologicalOperationTypeID  pgtype.UUID `json:"metrologicalOperationTypeId"`
+	CertificateNumber            string      `json:"certificateNumber"`
+	LastOperationDate            pgtype.Date `json:"lastOperationDate"`
+	NextOperationDate            pgtype.Date `json:"nextOperationDate"`
+	DocumentProviderOrganization string      `json:"documentProviderOrganization"`
+	DocumentUrl                  string      `json:"documentUrl"`
+	StandardID                   pgtype.UUID `json:"standardId"`
+	OrganizationID               pgtype.UUID `json:"organizationId"`
 }
 
 func (q *Queries) CreateMeasuringInstrument(ctx context.Context, arg CreateMeasuringInstrumentParams) (CreateMeasuringInstrumentRow, error) {
-	row := q.db.QueryRowContext(ctx, createMeasuringInstrument,
+	row := q.db.QueryRow(ctx, createMeasuringInstrument,
 		arg.RegistryNumber,
 		arg.MetrologicalOperationTypeID,
 		arg.CertificateNumber,
@@ -93,8 +92,8 @@ const deleteMeasuringInstrument = `-- name: DeleteMeasuringInstrument :exec
 DELETE FROM measuring_instruments WHERE id = $1
 `
 
-func (q *Queries) DeleteMeasuringInstrument(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, deleteMeasuringInstrument, id)
+func (q *Queries) DeleteMeasuringInstrument(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteMeasuringInstrument, id)
 	return err
 }
 
@@ -106,20 +105,20 @@ FROM measuring_instruments WHERE id = $1
 `
 
 type GetMeasuringInstrumentByIDRow struct {
-	ID                           uuid.UUID     `json:"id"`
-	RegistryNumber               string        `json:"registryNumber"`
-	MetrologicalOperationTypeID  uuid.UUID     `json:"metrologicalOperationTypeId"`
-	CertificateNumber            string        `json:"certificateNumber"`
-	LastOperationDate            sql.NullTime  `json:"lastOperationDate"`
-	NextOperationDate            sql.NullTime  `json:"nextOperationDate"`
-	DocumentProviderOrganization string        `json:"documentProviderOrganization"`
-	DocumentUrl                  string        `json:"documentUrl"`
-	StandardID                   uuid.NullUUID `json:"standardId"`
-	OrganizationID               uuid.UUID     `json:"organizationId"`
+	ID                           pgtype.UUID `json:"id"`
+	RegistryNumber               string      `json:"registryNumber"`
+	MetrologicalOperationTypeID  pgtype.UUID `json:"metrologicalOperationTypeId"`
+	CertificateNumber            string      `json:"certificateNumber"`
+	LastOperationDate            pgtype.Date `json:"lastOperationDate"`
+	NextOperationDate            pgtype.Date `json:"nextOperationDate"`
+	DocumentProviderOrganization string      `json:"documentProviderOrganization"`
+	DocumentUrl                  string      `json:"documentUrl"`
+	StandardID                   pgtype.UUID `json:"standardId"`
+	OrganizationID               pgtype.UUID `json:"organizationId"`
 }
 
-func (q *Queries) GetMeasuringInstrumentByID(ctx context.Context, id uuid.UUID) (GetMeasuringInstrumentByIDRow, error) {
-	row := q.db.QueryRowContext(ctx, getMeasuringInstrumentByID, id)
+func (q *Queries) GetMeasuringInstrumentByID(ctx context.Context, id pgtype.UUID) (GetMeasuringInstrumentByIDRow, error) {
+	row := q.db.QueryRow(ctx, getMeasuringInstrumentByID, id)
 	var i GetMeasuringInstrumentByIDRow
 	err := row.Scan(
 		&i.ID,
@@ -151,20 +150,20 @@ type ListMeasuringInstrumentsParams struct {
 }
 
 type ListMeasuringInstrumentsRow struct {
-	ID                           uuid.UUID     `json:"id"`
-	RegistryNumber               string        `json:"registryNumber"`
-	MetrologicalOperationTypeID  uuid.UUID     `json:"metrologicalOperationTypeId"`
-	CertificateNumber            string        `json:"certificateNumber"`
-	LastOperationDate            sql.NullTime  `json:"lastOperationDate"`
-	NextOperationDate            sql.NullTime  `json:"nextOperationDate"`
-	DocumentProviderOrganization string        `json:"documentProviderOrganization"`
-	DocumentUrl                  string        `json:"documentUrl"`
-	StandardID                   uuid.NullUUID `json:"standardId"`
-	OrganizationID               uuid.UUID     `json:"organizationId"`
+	ID                           pgtype.UUID `json:"id"`
+	RegistryNumber               string      `json:"registryNumber"`
+	MetrologicalOperationTypeID  pgtype.UUID `json:"metrologicalOperationTypeId"`
+	CertificateNumber            string      `json:"certificateNumber"`
+	LastOperationDate            pgtype.Date `json:"lastOperationDate"`
+	NextOperationDate            pgtype.Date `json:"nextOperationDate"`
+	DocumentProviderOrganization string      `json:"documentProviderOrganization"`
+	DocumentUrl                  string      `json:"documentUrl"`
+	StandardID                   pgtype.UUID `json:"standardId"`
+	OrganizationID               pgtype.UUID `json:"organizationId"`
 }
 
 func (q *Queries) ListMeasuringInstruments(ctx context.Context, arg ListMeasuringInstrumentsParams) ([]ListMeasuringInstrumentsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listMeasuringInstruments, arg.Limit, arg.Offset)
+	rows, err := q.db.Query(ctx, listMeasuringInstruments, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -188,9 +187,6 @@ func (q *Queries) ListMeasuringInstruments(ctx context.Context, arg ListMeasurin
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -201,8 +197,8 @@ const measuringInstrumentExists = `-- name: MeasuringInstrumentExists :one
 SELECT EXISTS(SELECT 1 FROM measuring_instruments WHERE id = $1)
 `
 
-func (q *Queries) MeasuringInstrumentExists(ctx context.Context, id uuid.UUID) (bool, error) {
-	row := q.db.QueryRowContext(ctx, measuringInstrumentExists, id)
+func (q *Queries) MeasuringInstrumentExists(ctx context.Context, id pgtype.UUID) (bool, error) {
+	row := q.db.QueryRow(ctx, measuringInstrumentExists, id)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
@@ -227,33 +223,33 @@ RETURNING id, registry_number, metrological_operation_type_id, certificate_numbe
 `
 
 type UpdateMeasuringInstrumentParams struct {
-	ID                           uuid.UUID     `json:"id"`
-	RegistryNumber               string        `json:"registryNumber"`
-	MetrologicalOperationTypeID  uuid.UUID     `json:"metrologicalOperationTypeId"`
-	CertificateNumber            string        `json:"certificateNumber"`
-	LastOperationDate            sql.NullTime  `json:"lastOperationDate"`
-	NextOperationDate            sql.NullTime  `json:"nextOperationDate"`
-	DocumentProviderOrganization string        `json:"documentProviderOrganization"`
-	DocumentUrl                  string        `json:"documentUrl"`
-	StandardID                   uuid.NullUUID `json:"standardId"`
-	OrganizationID               uuid.UUID     `json:"organizationId"`
+	ID                           pgtype.UUID `json:"id"`
+	RegistryNumber               string      `json:"registryNumber"`
+	MetrologicalOperationTypeID  pgtype.UUID `json:"metrologicalOperationTypeId"`
+	CertificateNumber            string      `json:"certificateNumber"`
+	LastOperationDate            pgtype.Date `json:"lastOperationDate"`
+	NextOperationDate            pgtype.Date `json:"nextOperationDate"`
+	DocumentProviderOrganization string      `json:"documentProviderOrganization"`
+	DocumentUrl                  string      `json:"documentUrl"`
+	StandardID                   pgtype.UUID `json:"standardId"`
+	OrganizationID               pgtype.UUID `json:"organizationId"`
 }
 
 type UpdateMeasuringInstrumentRow struct {
-	ID                           uuid.UUID     `json:"id"`
-	RegistryNumber               string        `json:"registryNumber"`
-	MetrologicalOperationTypeID  uuid.UUID     `json:"metrologicalOperationTypeId"`
-	CertificateNumber            string        `json:"certificateNumber"`
-	LastOperationDate            sql.NullTime  `json:"lastOperationDate"`
-	NextOperationDate            sql.NullTime  `json:"nextOperationDate"`
-	DocumentProviderOrganization string        `json:"documentProviderOrganization"`
-	DocumentUrl                  string        `json:"documentUrl"`
-	StandardID                   uuid.NullUUID `json:"standardId"`
-	OrganizationID               uuid.UUID     `json:"organizationId"`
+	ID                           pgtype.UUID `json:"id"`
+	RegistryNumber               string      `json:"registryNumber"`
+	MetrologicalOperationTypeID  pgtype.UUID `json:"metrologicalOperationTypeId"`
+	CertificateNumber            string      `json:"certificateNumber"`
+	LastOperationDate            pgtype.Date `json:"lastOperationDate"`
+	NextOperationDate            pgtype.Date `json:"nextOperationDate"`
+	DocumentProviderOrganization string      `json:"documentProviderOrganization"`
+	DocumentUrl                  string      `json:"documentUrl"`
+	StandardID                   pgtype.UUID `json:"standardId"`
+	OrganizationID               pgtype.UUID `json:"organizationId"`
 }
 
 func (q *Queries) UpdateMeasuringInstrument(ctx context.Context, arg UpdateMeasuringInstrumentParams) (UpdateMeasuringInstrumentRow, error) {
-	row := q.db.QueryRowContext(ctx, updateMeasuringInstrument,
+	row := q.db.QueryRow(ctx, updateMeasuringInstrument,
 		arg.ID,
 		arg.RegistryNumber,
 		arg.MetrologicalOperationTypeID,

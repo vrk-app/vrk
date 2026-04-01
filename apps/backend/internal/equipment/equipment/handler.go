@@ -16,6 +16,17 @@ func NewHandler(service EquipmentService) *EquipmentHandler {
     return &EquipmentHandler{service: service}
 }
 
+// Create создает новое оборудование
+// @Summary      Создать оборудование
+// @Description  Создает новую единицу оборудования
+// @Tags         equipment
+// @Accept       json
+// @Produce      json
+// @Param        request body CreateRequest true "Данные оборудования"
+// @Success      201  {object}  Response{data=EquipmentResponse}  "Оборудование создано"
+// @Failure      400  {object}  Response  "Неверный запрос"
+// @Failure      500  {object}  Response  "Внутренняя ошибка сервера"
+// @Router       /equipment [post]
 func (h *EquipmentHandler) Create(w http.ResponseWriter, r *http.Request) {
     var req CreateRequest
     if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -30,6 +41,16 @@ func (h *EquipmentHandler) Create(w http.ResponseWriter, r *http.Request) {
     sendSuccess(w, http.StatusCreated, resp, nil)
 }
 
+// GetByID возвращает оборудование по ID
+// @Summary      Получить оборудование по ID
+// @Description  Возвращает информацию об оборудовании
+// @Tags         equipment
+// @Produce      json
+// @Param        id   path      string  true  "ID оборудования"
+// @Success      200  {object}  Response{data=EquipmentResponse}  "Успешный ответ"
+// @Failure      404  {object}  Response  "Оборудование не найдено"
+// @Failure      500  {object}  Response  "Внутренняя ошибка сервера"
+// @Router       /equipment/{id} [get]
 func (h *EquipmentHandler) GetByID(w http.ResponseWriter, r *http.Request) {
     id := chi.URLParam(r, "id")
     if id == "" {
@@ -44,6 +65,19 @@ func (h *EquipmentHandler) GetByID(w http.ResponseWriter, r *http.Request) {
     sendSuccess(w, http.StatusOK, resp, nil)
 }
 
+// Update обновляет оборудование
+// @Summary      Обновить оборудование
+// @Description  Обновляет данные оборудования
+// @Tags         equipment
+// @Accept       json
+// @Produce      json
+// @Param        id       path      string         true  "ID оборудования"
+// @Param        request  body      UpdateRequest  true  "Данные для обновления"
+// @Success      200      {object}  Response{data=EquipmentResponse}  "Успешное обновление"
+// @Failure      400      {object}  Response  "Неверный запрос"
+// @Failure      404      {object}  Response  "Оборудование не найдено"
+// @Failure      500      {object}  Response  "Внутренняя ошибка сервера"
+// @Router       /equipment/{id} [put]
 func (h *EquipmentHandler) Update(w http.ResponseWriter, r *http.Request) {
     id := chi.URLParam(r, "id")
     if id == "" {
@@ -63,6 +97,15 @@ func (h *EquipmentHandler) Update(w http.ResponseWriter, r *http.Request) {
     sendSuccess(w, http.StatusOK, resp, nil)
 }
 
+// Delete удаляет оборудование
+// @Summary      Удалить оборудование
+// @Description  Удаляет оборудование по ID
+// @Tags         equipment
+// @Param        id   path      string  true  "ID оборудования"
+// @Success      204  "Успешное удаление"
+// @Failure      404  {object}  Response  "Оборудование не найдено"
+// @Failure      500  {object}  Response  "Внутренняя ошибка сервера"
+// @Router       /equipment/{id} [delete]
 func (h *EquipmentHandler) Delete(w http.ResponseWriter, r *http.Request) {
     id := chi.URLParam(r, "id")
     if id == "" {
@@ -76,6 +119,16 @@ func (h *EquipmentHandler) Delete(w http.ResponseWriter, r *http.Request) {
     sendSuccess(w, http.StatusNoContent, nil, nil)
 }
 
+// List возвращает список оборудования
+// @Summary      Получить список оборудования
+// @Description  Возвращает список оборудования с пагинацией
+// @Tags         equipment
+// @Produce      json
+// @Param        limit   query     int  false  "Количество записей на странице"  default(10)  minimum(1)  maximum(100)
+// @Param        offset  query     int  false  "Смещение"                        default(0)   minimum(0)
+// @Success      200     {object}  Response{data=[]EquipmentResponse,meta=Meta}  "Успешный ответ"
+// @Failure      500     {object}  Response  "Внутренняя ошибка сервера"
+// @Router       /equipment [get]
 func (h *EquipmentHandler) List(w http.ResponseWriter, r *http.Request) {
     limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
     offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))

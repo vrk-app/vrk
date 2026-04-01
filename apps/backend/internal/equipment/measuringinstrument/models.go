@@ -1,5 +1,27 @@
 package measuringinstrument
 
+import (
+    "time"
+
+    "github.com/google/uuid"
+)
+
+// MeasuringInstrument — модель для работы со средствами измерения
+type MeasuringInstrument struct {
+    ID                          uuid.UUID
+    RegistryNumber              string
+    MetrologicalOperationTypeID uuid.UUID
+    CertificateNumber           string
+    LastOperationDate           *time.Time
+    NextOperationDate           *time.Time
+    DocumentProviderOrganization string
+    DocumentURL                 string
+    StandardID                  *uuid.UUID
+    OrganizationID              uuid.UUID
+    CreatedAt                   time.Time
+    UpdatedAt                   time.Time
+}
+
 // CreateRequest DTO для создания средства измерения
 type CreateRequest struct {
     RegistryNumber                string  `json:"registryNumber" validate:"required,max=50"`

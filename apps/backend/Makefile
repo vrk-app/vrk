@@ -16,7 +16,7 @@ sqlc-generate:
 run: sqlc-generate
 	go run cmd/api/main.go
 
-build: sqlc-generate
+build: sqlc-generate swagger
 	go build -o bin/vrk cmd/api/main.go
 
 create-db:
@@ -69,4 +69,13 @@ migrate-force:
 
 install-tools:
 	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.19.1
-	go install github.com/sqlc-dev/sqlc/cmd/sqlc@1.30.0
+	go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0
+	go install github.com/swaggo/swag/cmd/swag@v1.16.6
+
+swagger:
+	@echo "Generating Swagger documentation..."
+	swag init -g cmd/api/main.go -o docs/swagger
+	@echo "Swagger documentation generated at docs/swagger/"
+
+swagger-clean:
+	rm -rf docs/swagger

@@ -12,6 +12,8 @@ import (
 	"backend/internal/infrastructure/config"
 )
 
+// @title VRK API
+// @BasePath /api/v1
 func main() {
 	cfg, err := config.Load()
 	if err != nil {

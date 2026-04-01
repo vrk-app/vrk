@@ -2,237 +2,183 @@ package measuringinstrument
 
 import (
     "context"
-    "database/sql"
-    "fmt"
     "time"
 
     "github.com/google/uuid"
-
-    "backend/internal/db/generated"
 )
 
 type MeasuringInstrumentService interface {
     Create(ctx context.Context, req CreateRequest) (*MeasuringInstrumentResponse, error)
+    List(ctx context.Context, limit, offset int32) ([]*MeasuringInstrumentResponse, int64, error)
     GetByID(ctx context.Context, id string) (*MeasuringInstrumentResponse, error)
     Update(ctx context.Context, id string, req UpdateRequest) (*MeasuringInstrumentResponse, error)
     Delete(ctx context.Context, id string) error
-    List(ctx context.Context, limit, offset int32) ([]*MeasuringInstrumentResponse, int64, error)
 }
 
 type measuringInstrumentService struct {
-    repo MeasuringInstrumentRepository
+    repository MeasuringInstrumentRepository
 }
 
-func NewService(repo MeasuringInstrumentRepository) MeasuringInstrumentService {
-    return &measuringInstrumentService{repo: repo}
+func NewService(repository MeasuringInstrumentRepository) MeasuringInstrumentService {
+    return &measuringInstrumentService{repository: repository}
 }
 
 func (s *measuringInstrumentService) Create(ctx context.Context, req CreateRequest) (*MeasuringInstrumentResponse, error) {
-    // Валидация
-    if req.RegistryNumber == "" {
-        return nil, ErrRegistryNumberRequired
-    }
-    if req.MetrologicalOperationTypeID == "" {
-        return nil, ErrMetrologicalTypeRequired
-    }
-    if req.CertificateNumber == "" {
-        return nil, ErrCertificateNumberRequired
-    }
-    if req.DocumentProviderOrganization == "" {
-        return nil, ErrDocumentProviderRequired
-    }
-    if req.DocumentURL == "" {
-        return nil, ErrDocumentURLRequired
-    }
-    if req.OrganizationID == "" {
-        return nil, ErrOrganizationRequired
-    }
+    id := uuid.New()
 
     // Парсинг UUID
     metrologicalTypeID, err := uuid.Parse(req.MetrologicalOperationTypeID)
     if err != nil {
-        return nil, fmt.Errorf("%w: metrological_operation_type_id", ErrInvalidUUID)
+        return nil, ErrInvalidUUID
     }
     orgID, err := uuid.Parse(req.OrganizationID)
     if err != nil {
-        return nil, fmt.Errorf("%w: organization_id", ErrInvalidUUID)
+        return nil, ErrInvalidUUID
     }
 
-    // standard_id может быть NULL
-    var standardID uuid.NullUUID
+    // standard_id (опционально)
+    var standardID *uuid.UUID
     if req.StandardID != nil && *req.StandardID != "" {
-        id, err := uuid.Parse(*req.StandardID)
+        sid, err := uuid.Parse(*req.StandardID)
         if err != nil {
-            return nil, fmt.Errorf("%w: standard_id", ErrInvalidUUID)
+            return nil, ErrInvalidUUID
         }
-        standardID = uuid.NullUUID{UUID: id, Valid: true}
+        standardID = &sid
     }
 
-
-    // Парсинг дат (опционально)
-    var lastOpDate, nextOpDate sql.NullTime
+    // Даты
+    var lastOpDate, nextOpDate *time.Time
     if req.LastOperationDate != nil && *req.LastOperationDate != "" {
         t, err := time.Parse("2006-01-02", *req.LastOperationDate)
         if err == nil {
-            lastOpDate = sql.NullTime{Time: t, Valid: true}
+            lastOpDate = &t
         }
     }
     if req.NextOperationDate != nil && *req.NextOperationDate != "" {
         t, err := time.Parse("2006-01-02", *req.NextOperationDate)
         if err == nil {
-            nextOpDate = sql.NullTime{Time: t, Valid: true}
+            nextOpDate = &t
         }
     }
 
-    params := generated.CreateMeasuringInstrumentParams{
-        RegistryNumber:                req.RegistryNumber,
-        MetrologicalOperationTypeID:   metrologicalTypeID,
-        CertificateNumber:             req.CertificateNumber,
-        LastOperationDate:             lastOpDate,
-        NextOperationDate:             nextOpDate,
-        DocumentProviderOrganization:  req.DocumentProviderOrganization,
-        DocumentUrl:                   req.DocumentURL,
-        StandardID:                    standardID,
-        OrganizationID:                orgID,
+    model := MeasuringInstrument{
+        ID:                          id,
+        RegistryNumber:              req.RegistryNumber,
+        MetrologicalOperationTypeID: metrologicalTypeID,
+        CertificateNumber:           req.CertificateNumber,
+        LastOperationDate:           lastOpDate,
+        NextOperationDate:           nextOpDate,
+        DocumentProviderOrganization: req.DocumentProviderOrganization,
+        DocumentURL:                 req.DocumentURL,
+        StandardID:                  standardID,
+        OrganizationID:              orgID,
     }
 
-    mi, err := s.repo.Create(ctx, params)
+    mi, err := s.repository.Create(ctx, model)
     if err != nil {
         return nil, err
     }
 
-    return toResponse(fromCreateRow(mi)), nil
+    return toResponse(mi), nil
 }
 
 func (s *measuringInstrumentService) GetByID(ctx context.Context, id string) (*MeasuringInstrumentResponse, error) {
     miID, err := uuid.Parse(id)
     if err != nil {
-        return nil, fmt.Errorf("%w: %v", ErrInvalidID, err)
+        return nil, ErrInvalidID
     }
-    mi, err := s.repo.GetByID(ctx, miID)
+
+    mi, err := s.repository.GetByID(ctx, miID)
     if err != nil {
         return nil, err
     }
-    return toResponse(fromGetByIDRow(mi)), nil
+
+    return toResponse(mi), nil
 }
 
 func (s *measuringInstrumentService) Update(ctx context.Context, id string, req UpdateRequest) (*MeasuringInstrumentResponse, error) {
     miID, err := uuid.Parse(id)
     if err != nil {
-        return nil, fmt.Errorf("%w: %v", ErrInvalidID, err)
+        return nil, ErrInvalidID
     }
 
-    exists, err := s.repo.Exists(ctx, miID)
-    if err != nil {
-        return nil, err
-    }
-    if !exists {
-        return nil, ErrNotFound
-    }
-
-    // Получаем текущую запись
-    current, err := s.repo.GetByID(ctx, miID)
+    current, err := s.repository.GetByID(ctx, miID)
     if err != nil {
         return nil, err
     }
 
-    // Обновляем поля
-    registryNumber := current.RegistryNumber
     if req.RegistryNumber != nil {
-        registryNumber = *req.RegistryNumber
+        current.RegistryNumber = *req.RegistryNumber
     }
-
-    metrologicalTypeID := current.MetrologicalOperationTypeID
     if req.MetrologicalOperationTypeID != nil {
-        id, err := uuid.Parse(*req.MetrologicalOperationTypeID)
+        tid, err := uuid.Parse(*req.MetrologicalOperationTypeID)
         if err != nil {
-            return nil, fmt.Errorf("%w: metrological_operation_type_id", ErrInvalidUUID)
+            return nil, ErrInvalidUUID
         }
-        metrologicalTypeID = id
+        current.MetrologicalOperationTypeID = tid
     }
-
-    certificateNumber := current.CertificateNumber
     if req.CertificateNumber != nil {
-        certificateNumber = *req.CertificateNumber
+        current.CertificateNumber = *req.CertificateNumber
     }
-
-    documentProvider := current.DocumentProviderOrganization
+    if req.LastOperationDate != nil {
+        if *req.LastOperationDate == "" {
+            current.LastOperationDate = nil
+        } else {
+            t, err := time.Parse("2006-01-02", *req.LastOperationDate)
+            if err == nil {
+                current.LastOperationDate = &t
+            }
+        }
+    }
+    if req.NextOperationDate != nil {
+        if *req.NextOperationDate == "" {
+            current.NextOperationDate = nil
+        } else {
+            t, err := time.Parse("2006-01-02", *req.NextOperationDate)
+            if err == nil {
+                current.NextOperationDate = &t
+            }
+        }
+    }
     if req.DocumentProviderOrganization != nil {
-        documentProvider = *req.DocumentProviderOrganization
+        current.DocumentProviderOrganization = *req.DocumentProviderOrganization
     }
-
-    documentURL := current.DocumentUrl
     if req.DocumentURL != nil {
-        documentURL = *req.DocumentURL
+        current.DocumentURL = *req.DocumentURL
     }
-
-    orgID := current.OrganizationID
+    if req.StandardID != nil {
+        if *req.StandardID == "" {
+            current.StandardID = nil
+        } else {
+            sid, err := uuid.Parse(*req.StandardID)
+            if err != nil {
+                return nil, ErrInvalidUUID
+            }
+            current.StandardID = &sid
+        }
+    }
     if req.OrganizationID != nil {
-        id, err := uuid.Parse(*req.OrganizationID)
+        oid, err := uuid.Parse(*req.OrganizationID)
         if err != nil {
-            return nil, fmt.Errorf("%w: organization_id", ErrInvalidUUID)
+            return nil, ErrInvalidUUID
         }
-        orgID = id
+        current.OrganizationID = oid
     }
 
-    var standardID uuid.NullUUID
-    if req.StandardID != nil && *req.StandardID != "" {
-        id, err := uuid.Parse(*req.StandardID)
-        if err != nil {
-            return nil, fmt.Errorf("%w: standard_id", ErrInvalidUUID)
-        }
-        standardID = uuid.NullUUID{UUID: id, Valid: true}
-    } else {
-		standardID = current.StandardID
-	}
-
-
-    // Парсинг дат (опционально)
-    var lastOpDate, nextOpDate sql.NullTime
-    if req.LastOperationDate != nil && *req.LastOperationDate != "" {
-        t, err := time.Parse("2006-01-02", *req.LastOperationDate)
-        if err == nil {
-            lastOpDate = sql.NullTime{Time: t, Valid: true}
-        }
-    } else {
-		lastOpDate = current.LastOperationDate
-	}
-    if req.NextOperationDate != nil && *req.NextOperationDate != "" {
-        t, err := time.Parse("2006-01-02", *req.NextOperationDate)
-        if err == nil {
-            nextOpDate = sql.NullTime{Time: t, Valid: true}
-        }
-    } else {
-		nextOpDate = current.NextOperationDate
-	}
-
-    params := generated.UpdateMeasuringInstrumentParams{
-        ID:                          miID,
-        RegistryNumber:              registryNumber,
-        MetrologicalOperationTypeID: metrologicalTypeID,
-        CertificateNumber:           certificateNumber,
-        LastOperationDate:           lastOpDate,
-        NextOperationDate:           nextOpDate,
-        DocumentProviderOrganization: documentProvider,
-        DocumentUrl:                 documentURL,
-        StandardID:                  standardID,
-        OrganizationID:              orgID,
-    }
-
-    mi, err := s.repo.Update(ctx, params)
+    mi, err := s.repository.Update(ctx, *current)
     if err != nil {
         return nil, err
     }
 
-    return toResponse(fromUpdateRow(mi)), nil
+    return toResponse(mi), nil
 }
 
 func (s *measuringInstrumentService) Delete(ctx context.Context, id string) error {
     miID, err := uuid.Parse(id)
     if err != nil {
-        return fmt.Errorf("%w: %v", ErrInvalidID, err)
+        return ErrInvalidID
     }
-    return s.repo.Delete(ctx, miID)
+    return s.repository.Delete(ctx, miID)
 }
 
 func (s *measuringInstrumentService) List(ctx context.Context, limit, offset int32) ([]*MeasuringInstrumentResponse, int64, error) {
@@ -246,84 +192,45 @@ func (s *measuringInstrumentService) List(ctx context.Context, limit, offset int
         offset = 0
     }
 
-    items, total, err := s.repo.List(ctx, limit, offset)
+    items, total, err := s.repository.List(ctx, limit, offset)
     if err != nil {
         return nil, 0, err
     }
 
-    responses := make([]*MeasuringInstrumentResponse, len(items))
+    res := make([]*MeasuringInstrumentResponse, len(items))
     for i := range items {
-        responses[i] = toResponse(fromListRow(&items[i]))
+        res[i] = toResponse(&items[i])
     }
-    return responses, total, nil
+
+    return res, total, nil
 }
 
-// ---- внутренние типы и конвертеры ----
-type miModel struct {
-    ID                          uuid.UUID
-    RegistryNumber              string
-    MetrologicalOperationTypeID uuid.UUID
-    CertificateNumber           string
-    LastOperationDate           sql.NullTime
-    NextOperationDate           sql.NullTime
-    DocumentProviderOrganization string
-    DocumentURL                 string
-    StandardID                  uuid.NullUUID
-    OrganizationID              uuid.UUID
-    CreatedAt                   time.Time
-    UpdatedAt                   time.Time
-}
-
-func fromCreateRow(r *generated.CreateMeasuringInstrumentRow) miModel {
-    return miModel{
-        ID:                          r.ID,
-        RegistryNumber:              r.RegistryNumber,
-        MetrologicalOperationTypeID: r.MetrologicalOperationTypeID,
-        CertificateNumber:           r.CertificateNumber,
-        LastOperationDate:           r.LastOperationDate,
-        NextOperationDate:           r.NextOperationDate,
-        DocumentProviderOrganization: r.DocumentProviderOrganization,
-        DocumentURL:                 r.DocumentUrl,
-        StandardID:                  r.StandardID,
-        OrganizationID:              r.OrganizationID,
-    }
-}
-
-func fromListRow(r *generated.ListMeasuringInstrumentsRow) miModel {
-    return fromCreateRow((*generated.CreateMeasuringInstrumentRow)(r))
-}
-
-func fromUpdateRow(r *generated.UpdateMeasuringInstrumentRow) miModel {
-    return fromCreateRow((*generated.CreateMeasuringInstrumentRow)(r))
-}
-
-func fromGetByIDRow(r *generated.GetMeasuringInstrumentByIDRow) miModel {
-    return fromCreateRow((*generated.CreateMeasuringInstrumentRow)(r))
-}
-
-func toResponse(m miModel) *MeasuringInstrumentResponse {
+// toResponse преобразует MeasuringInstrument в MeasuringInstrumentResponse
+func toResponse(mi *MeasuringInstrument) *MeasuringInstrumentResponse {
     resp := &MeasuringInstrumentResponse{
-        ID:                            m.ID.String(),
-        RegistryNumber:                m.RegistryNumber,
-        MetrologicalOperationTypeID:   m.MetrologicalOperationTypeID.String(),
-        CertificateNumber:             m.CertificateNumber,
-        DocumentProviderOrganization:  m.DocumentProviderOrganization,
-        DocumentURL:                   m.DocumentURL,
-        OrganizationID:                m.OrganizationID.String(),
-        CreatedAt:                     m.CreatedAt.Format(time.RFC3339),
-        UpdatedAt:                     m.UpdatedAt.Format(time.RFC3339),
+        ID:                            mi.ID.String(),
+        RegistryNumber:                mi.RegistryNumber,
+        MetrologicalOperationTypeID:   mi.MetrologicalOperationTypeID.String(),
+        CertificateNumber:             mi.CertificateNumber,
+        DocumentProviderOrganization:  mi.DocumentProviderOrganization,
+        DocumentURL:                   mi.DocumentURL,
+        OrganizationID:                mi.OrganizationID.String(),
+        CreatedAt:                     mi.CreatedAt.Format(time.RFC3339),
+        UpdatedAt:                     mi.UpdatedAt.Format(time.RFC3339),
     }
-    if m.LastOperationDate.Valid {
-        date := m.LastOperationDate.Time.Format("2006-01-02")
-        resp.LastOperationDate = &date
+
+    if mi.LastOperationDate != nil {
+        d := mi.LastOperationDate.Format("2006-01-02")
+        resp.LastOperationDate = &d
     }
-    if m.NextOperationDate.Valid {
-        date := m.NextOperationDate.Time.Format("2006-01-02")
-        resp.NextOperationDate = &date
+    if mi.NextOperationDate != nil {
+        d := mi.NextOperationDate.Format("2006-01-02")
+        resp.NextOperationDate = &d
     }
-    if m.StandardID.Valid {
-        id := m.StandardID.UUID.String()
+    if mi.StandardID != nil {
+        id := mi.StandardID.String()
         resp.StandardID = &id
     }
+
     return resp
 }

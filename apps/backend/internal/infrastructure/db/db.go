@@ -1,37 +1,38 @@
 package db
 
 import (
-	"database/sql"
-	"fmt"
-	"log"
-	"time"
+    "context"
+    "fmt"
+    "time"
 
-	_ "github.com/lib/pq"
+    "github.com/jackc/pgx/v5/pgxpool"
 )
 
-func Connect(dsn string) (*sql.DB, error) {
-	db, err := sql.Open("postgres", dsn)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open database: %w", err)
-	}
+func Connect(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
+    config, err := pgxpool.ParseConfig(dsn)
+    if err != nil {
+        return nil, fmt.Errorf("failed to parse DSN: %w", err)
+    }
 
-	// Настройка пула соединений
-	db.SetMaxOpenConns(25)
-	db.SetMaxIdleConns(5)
-	db.SetConnMaxLifetime(5 * time.Minute)
+    config.MaxConns = 25
+    config.MinConns = 5
+    config.MaxConnLifetime = 5 * time.Minute
+    config.MaxConnIdleTime = 1 * time.Minute
 
-	// Проверка подключения
-	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("failed to ping database: %w", err)
-	}
+    pool, err := pgxpool.NewWithConfig(ctx, config)
+    if err != nil {
+        return nil, fmt.Errorf("failed to create pool: %w", err)
+    }
 
-	log.Println("Database connected successfully")
-	return db, nil
+    if err := pool.Ping(ctx); err != nil {
+        return nil, fmt.Errorf("failed to ping database: %w", err)
+    }
+
+    return pool, nil
 }
 
-func Close(db *sql.DB) error {
-	if db != nil {
-		return db.Close()
-	}
-	return nil
+func Close(pool *pgxpool.Pool) {
+    if pool != nil {
+        pool.Close()
+    }
 }

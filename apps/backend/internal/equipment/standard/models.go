@@ -1,5 +1,24 @@
 package standard
 
+import (
+    "time"
+
+    "github.com/google/uuid"
+)
+
+type Standard struct {
+    ID                          uuid.UUID
+    Model                       string
+    CertificateNumber           string
+    LastOperationDate           *time.Time
+    NextOperationDate           *time.Time
+    DocumentProviderOrganization string
+    DocumentURL                 string
+    MetrologicalCharacteristics string
+    CreatedAt                   time.Time
+    UpdatedAt                   time.Time
+}
+
 type CreateRequest struct {
     Model                         string  `json:"model" validate:"required,max=50"`
     CertificateNumber             string  `json:"certificateNumber" validate:"required,max=100"`

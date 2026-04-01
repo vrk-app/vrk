@@ -1,5 +1,30 @@
 package organization
 
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
+type Organization struct {
+    ID                    uuid.UUID
+    PropertyTypeID        uuid.UUID
+    Name                  string
+    Inn                   string
+    Kpp                   string
+    Address               string
+    RoleID                uuid.UUID
+    DirectorID            uuid.UUID
+    ParentID              *uuid.UUID
+    ShortName             *string
+    PowerOfAttorneyNumber *string
+    PoaIssueDate          *time.Time
+    PoaExpirationDate     *time.Time
+    Logo                  *string
+    CreatedAt             time.Time
+    UpdatedAt             time.Time
+}
+
 type CreateRequest struct {
     PropertyTypeID          string  `json:"propertyTypeId" validate:"required"`
     Name                    string  `json:"name" validate:"required,max=200"`

@@ -1,5 +1,22 @@
 package equipment
 
+import (
+    "time"
+
+    "github.com/google/uuid"
+)
+
+type Equipment struct {
+    ID                    uuid.UUID
+    FactoryNumber         string
+    InventoryNumber       *string
+    ManufactureYear       time.Time
+    RegistrationYear      *time.Time
+    EquipmentDictionaryID uuid.UUID
+    OrganizationID        uuid.UUID
+    StatusID              int16
+}
+
 type CreateRequest struct {
     FactoryNumber        string  `json:"factoryNumber" validate:"required,max=50"`
     InventoryNumber      *string `json:"inventoryNumber,omitempty"`

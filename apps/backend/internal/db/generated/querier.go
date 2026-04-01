@@ -7,7 +7,7 @@ package generated
 import (
 	"context"
 
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
@@ -17,18 +17,18 @@ type Querier interface {
 	CreateEquipment(ctx context.Context, arg CreateEquipmentParams) (CreateEquipmentRow, error)
 	CreateMeasuringInstrument(ctx context.Context, arg CreateMeasuringInstrumentParams) (CreateMeasuringInstrumentRow, error)
 	CreateStandard(ctx context.Context, arg CreateStandardParams) (CreateStandardRow, error)
-	DeleteEquipment(ctx context.Context, id uuid.UUID) error
-	DeleteMeasuringInstrument(ctx context.Context, id uuid.UUID) error
-	DeleteStandard(ctx context.Context, id uuid.UUID) error
-	EquipmentExists(ctx context.Context, id uuid.UUID) (bool, error)
-	GetEquipmentByID(ctx context.Context, id uuid.UUID) (GetEquipmentByIDRow, error)
-	GetMeasuringInstrumentByID(ctx context.Context, id uuid.UUID) (GetMeasuringInstrumentByIDRow, error)
-	GetStandardByID(ctx context.Context, id uuid.UUID) (GetStandardByIDRow, error)
+	DeleteEquipment(ctx context.Context, id pgtype.UUID) error
+	DeleteMeasuringInstrument(ctx context.Context, id pgtype.UUID) error
+	DeleteStandard(ctx context.Context, id pgtype.UUID) error
+	EquipmentExists(ctx context.Context, id pgtype.UUID) (bool, error)
+	GetEquipmentByID(ctx context.Context, id pgtype.UUID) (GetEquipmentByIDRow, error)
+	GetMeasuringInstrumentByID(ctx context.Context, id pgtype.UUID) (GetMeasuringInstrumentByIDRow, error)
+	GetStandardByID(ctx context.Context, id pgtype.UUID) (GetStandardByIDRow, error)
 	ListEquipment(ctx context.Context, arg ListEquipmentParams) ([]ListEquipmentRow, error)
 	ListMeasuringInstruments(ctx context.Context, arg ListMeasuringInstrumentsParams) ([]ListMeasuringInstrumentsRow, error)
 	ListStandards(ctx context.Context, arg ListStandardsParams) ([]ListStandardsRow, error)
-	MeasuringInstrumentExists(ctx context.Context, id uuid.UUID) (bool, error)
-	StandardExists(ctx context.Context, id uuid.UUID) (bool, error)
+	MeasuringInstrumentExists(ctx context.Context, id pgtype.UUID) (bool, error)
+	StandardExists(ctx context.Context, id pgtype.UUID) (bool, error)
 	UpdateEquipment(ctx context.Context, arg UpdateEquipmentParams) (UpdateEquipmentRow, error)
 	UpdateMeasuringInstrument(ctx context.Context, arg UpdateMeasuringInstrumentParams) (UpdateMeasuringInstrumentRow, error)
 	UpdateStandard(ctx context.Context, arg UpdateStandardParams) (UpdateStandardRow, error)

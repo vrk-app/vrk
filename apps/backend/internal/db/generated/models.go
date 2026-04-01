@@ -5,266 +5,263 @@
 package generated
 
 import (
-	"database/sql"
-	"time"
-
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Agreement struct {
-	ID                 uuid.UUID    `json:"id"`
-	Source             string       `json:"source"`
-	FactoryID          uuid.UUID    `json:"factoryId"`
-	OrganizationID     uuid.UUID    `json:"organizationId"`
-	Number             string       `json:"number"`
-	StartDate          time.Time    `json:"startDate"`
-	EndDate            time.Time    `json:"endDate"`
-	SubjectOfAgreement string       `json:"subjectOfAgreement"`
-	ScheduleID         uuid.UUID    `json:"scheduleId"`
-	CreatedAt          sql.NullTime `json:"createdAt"`
-	UpdatedAt          sql.NullTime `json:"updatedAt"`
+	ID                 pgtype.UUID        `json:"id"`
+	Source             string             `json:"source"`
+	FactoryID          pgtype.UUID        `json:"factoryId"`
+	OrganizationID     pgtype.UUID        `json:"organizationId"`
+	Number             pgtype.Numeric     `json:"number"`
+	StartDate          pgtype.Date        `json:"startDate"`
+	EndDate            pgtype.Date        `json:"endDate"`
+	SubjectOfAgreement string             `json:"subjectOfAgreement"`
+	ScheduleID         pgtype.UUID        `json:"scheduleId"`
+	CreatedAt          pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt          pgtype.Timestamptz `json:"updatedAt"`
 }
 
 type AgreementWorksCost struct {
-	ID                 uuid.UUID     `json:"id"`
-	AgreementID        uuid.UUID     `json:"agreementId"`
-	EquipmentID        uuid.NullUUID `json:"equipmentId"`
-	ServiceID          uuid.UUID     `json:"serviceId"`
-	NormHour           int32         `json:"normHour"`
-	MaterialUsedAmount int32         `json:"materialUsedAmount"`
-	Price              int32         `json:"price"`
-	CreatedAt          sql.NullTime  `json:"createdAt"`
+	ID                 pgtype.UUID        `json:"id"`
+	AgreementID        pgtype.UUID        `json:"agreementId"`
+	EquipmentID        pgtype.UUID        `json:"equipmentId"`
+	ServiceID          pgtype.UUID        `json:"serviceId"`
+	NormHour           int32              `json:"normHour"`
+	MaterialUsedAmount int32              `json:"materialUsedAmount"`
+	Price              int32              `json:"price"`
+	CreatedAt          pgtype.Timestamptz `json:"createdAt"`
 }
 
 type Application struct {
-	ID                          uuid.UUID    `json:"id"`
-	ApplicationTypeID           uuid.UUID    `json:"applicationTypeId"`
-	ResponsibleBrigadeID        uuid.UUID    `json:"responsibleBrigadeId"`
-	ResponsibleUserContractorID uuid.UUID    `json:"responsibleUserContractorId"`
-	UserClientID                uuid.UUID    `json:"userClientId"`
-	AgreementID                 uuid.UUID    `json:"agreementId"`
-	Number                      string       `json:"number"`
-	StatusID                    int16        `json:"statusId"`
-	CreatedAt                   sql.NullTime `json:"createdAt"`
-	UpdatedAt                   sql.NullTime `json:"updatedAt"`
+	ID                          pgtype.UUID        `json:"id"`
+	ApplicationTypeID           pgtype.UUID        `json:"applicationTypeId"`
+	ResponsibleBrigadeID        pgtype.UUID        `json:"responsibleBrigadeId"`
+	ResponsibleUserContractorID pgtype.UUID        `json:"responsibleUserContractorId"`
+	UserClientID                pgtype.UUID        `json:"userClientId"`
+	AgreementID                 pgtype.UUID        `json:"agreementId"`
+	Number                      pgtype.Numeric     `json:"number"`
+	StatusID                    int16              `json:"statusId"`
+	CreatedAt                   pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt                   pgtype.Timestamptz `json:"updatedAt"`
 }
 
 type ApplicationEquipment struct {
-	ID            uuid.UUID    `json:"id"`
-	ApplicationID uuid.UUID    `json:"applicationId"`
-	EquipmentID   uuid.UUID    `json:"equipmentId"`
-	CreatedAt     sql.NullTime `json:"createdAt"`
+	ID            pgtype.UUID        `json:"id"`
+	ApplicationID pgtype.UUID        `json:"applicationId"`
+	EquipmentID   pgtype.UUID        `json:"equipmentId"`
+	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
 }
 
 type ApplicationStatus struct {
-	ID        int16        `json:"id"`
-	Status    string       `json:"status"`
-	CreatedAt sql.NullTime `json:"createdAt"`
+	ID        int16              `json:"id"`
+	Status    string             `json:"status"`
+	CreatedAt pgtype.Timestamptz `json:"createdAt"`
 }
 
 type ApplicationType struct {
-	ID        uuid.UUID    `json:"id"`
-	Type      string       `json:"type"`
-	CreatedAt sql.NullTime `json:"createdAt"`
+	ID        pgtype.UUID        `json:"id"`
+	Type      string             `json:"type"`
+	CreatedAt pgtype.Timestamptz `json:"createdAt"`
 }
 
 type Equipment struct {
-	ID                    uuid.UUID      `json:"id"`
-	FactoryNumber         string         `json:"factoryNumber"`
-	InventoryNumber       sql.NullString `json:"inventoryNumber"`
-	ManufactureYear       time.Time      `json:"manufactureYear"`
-	RegistrationYear      sql.NullTime   `json:"registrationYear"`
-	EquipmentDictionaryID uuid.UUID      `json:"equipmentDictionaryId"`
-	OrganizationID        uuid.UUID      `json:"organizationId"`
-	StatusID              int16          `json:"statusId"`
-	CreatedAt             sql.NullTime   `json:"createdAt"`
-	UpdatedAt             sql.NullTime   `json:"updatedAt"`
+	ID                    pgtype.UUID        `json:"id"`
+	FactoryNumber         string             `json:"factoryNumber"`
+	InventoryNumber       *string            `json:"inventoryNumber"`
+	ManufactureYear       pgtype.Date        `json:"manufactureYear"`
+	RegistrationYear      pgtype.Date        `json:"registrationYear"`
+	EquipmentDictionaryID pgtype.UUID        `json:"equipmentDictionaryId"`
+	OrganizationID        pgtype.UUID        `json:"organizationId"`
+	StatusID              int16              `json:"statusId"`
+	CreatedAt             pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt             pgtype.Timestamptz `json:"updatedAt"`
 }
 
 type EquipmentDictionary struct {
-	ID                  uuid.UUID      `json:"id"`
-	Manufacturer        string         `json:"manufacturer"`
-	ClassificationID    uuid.UUID      `json:"classificationId"`
-	FullName            string         `json:"fullName"`
-	Model               string         `json:"model"`
-	IsMetrological      bool           `json:"isMetrological"`
-	FifRegistration     sql.NullString `json:"fifRegistration"`
-	TechnicalConditions sql.NullString `json:"technicalConditions"`
-	CreatedAt           sql.NullTime   `json:"createdAt"`
+	ID                  pgtype.UUID        `json:"id"`
+	Manufacturer        string             `json:"manufacturer"`
+	ClassificationID    pgtype.UUID        `json:"classificationId"`
+	FullName            string             `json:"fullName"`
+	Model               string             `json:"model"`
+	IsMetrological      bool               `json:"isMetrological"`
+	FifRegistration     *string            `json:"fifRegistration"`
+	TechnicalConditions *string            `json:"technicalConditions"`
+	CreatedAt           pgtype.Timestamptz `json:"createdAt"`
 }
 
 type EquipmentStatus struct {
-	ID        int16        `json:"id"`
-	Status    string       `json:"status"`
-	CreatedAt sql.NullTime `json:"createdAt"`
+	ID        int16              `json:"id"`
+	Status    string             `json:"status"`
+	CreatedAt pgtype.Timestamptz `json:"createdAt"`
 }
 
 type Material struct {
-	ID          uuid.UUID    `json:"id"`
-	Name        string       `json:"name"`
-	Amount      string       `json:"amount"`
-	Unit        string       `json:"unit"`
-	Price       int32        `json:"price"`
-	WarehouseID uuid.UUID    `json:"warehouseId"`
-	CreatedAt   sql.NullTime `json:"createdAt"`
+	ID          pgtype.UUID        `json:"id"`
+	Name        string             `json:"name"`
+	Amount      pgtype.Numeric     `json:"amount"`
+	Unit        string             `json:"unit"`
+	Price       int32              `json:"price"`
+	WarehouseID pgtype.UUID        `json:"warehouseId"`
+	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
 }
 
 type MaterialsServiceType struct {
-	ID            uuid.UUID     `json:"id"`
-	MaterialID    uuid.NullUUID `json:"materialId"`
-	ServiceTypeID uuid.UUID     `json:"serviceTypeId"`
-	CreatedAt     sql.NullTime  `json:"createdAt"`
+	ID            pgtype.UUID        `json:"id"`
+	MaterialID    pgtype.UUID        `json:"materialId"`
+	ServiceTypeID pgtype.UUID        `json:"serviceTypeId"`
+	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
 }
 
 type MeasuringInstrument struct {
-	ID                           uuid.UUID     `json:"id"`
-	RegistryNumber               string        `json:"registryNumber"`
-	MetrologicalOperationTypeID  uuid.UUID     `json:"metrologicalOperationTypeId"`
-	CertificateNumber            string        `json:"certificateNumber"`
-	LastOperationDate            sql.NullTime  `json:"lastOperationDate"`
-	NextOperationDate            sql.NullTime  `json:"nextOperationDate"`
-	DocumentProviderOrganization string        `json:"documentProviderOrganization"`
-	DocumentUrl                  string        `json:"documentUrl"`
-	StandardID                   uuid.NullUUID `json:"standardId"`
-	OrganizationID               uuid.UUID     `json:"organizationId"`
-	CreatedAt                    sql.NullTime  `json:"createdAt"`
-	UpdatedAt                    sql.NullTime  `json:"updatedAt"`
+	ID                           pgtype.UUID        `json:"id"`
+	RegistryNumber               string             `json:"registryNumber"`
+	MetrologicalOperationTypeID  pgtype.UUID        `json:"metrologicalOperationTypeId"`
+	CertificateNumber            string             `json:"certificateNumber"`
+	LastOperationDate            pgtype.Date        `json:"lastOperationDate"`
+	NextOperationDate            pgtype.Date        `json:"nextOperationDate"`
+	DocumentProviderOrganization string             `json:"documentProviderOrganization"`
+	DocumentUrl                  string             `json:"documentUrl"`
+	StandardID                   pgtype.UUID        `json:"standardId"`
+	OrganizationID               pgtype.UUID        `json:"organizationId"`
+	CreatedAt                    pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt                    pgtype.Timestamptz `json:"updatedAt"`
 }
 
 type MeasuringInstrumentsStandard struct {
-	ID                    uuid.UUID    `json:"id"`
-	MeasuringInstrumentID uuid.UUID    `json:"measuringInstrumentId"`
-	StandardID            uuid.UUID    `json:"standardId"`
-	CreatedAt             sql.NullTime `json:"createdAt"`
+	ID                    pgtype.UUID        `json:"id"`
+	MeasuringInstrumentID pgtype.UUID        `json:"measuringInstrumentId"`
+	StandardID            pgtype.UUID        `json:"standardId"`
+	CreatedAt             pgtype.Timestamptz `json:"createdAt"`
 }
 
 type MetrologicalType struct {
-	ID                        uuid.UUID    `json:"id"`
-	MetrologicalOperationType string       `json:"metrologicalOperationType"`
-	CreatedAt                 sql.NullTime `json:"createdAt"`
+	ID                        pgtype.UUID        `json:"id"`
+	MetrologicalOperationType string             `json:"metrologicalOperationType"`
+	CreatedAt                 pgtype.Timestamptz `json:"createdAt"`
 }
 
 type OrganizationRole struct {
-	ID        uuid.UUID    `json:"id"`
-	Title     string       `json:"title"`
-	CreatedAt sql.NullTime `json:"createdAt"`
-	UpdatedAt sql.NullTime `json:"updatedAt"`
+	ID        pgtype.UUID        `json:"id"`
+	Title     string             `json:"title"`
+	CreatedAt pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt pgtype.Timestamptz `json:"updatedAt"`
 }
 
 type OrganizationUnit struct {
-	ID                    uuid.UUID      `json:"id"`
-	PropertyTypeID        uuid.UUID      `json:"propertyTypeId"`
-	RoleID                uuid.UUID      `json:"roleId"`
-	Name                  string         `json:"name"`
-	ShortName             sql.NullString `json:"shortName"`
-	Inn                   string         `json:"inn"`
-	Kpp                   string         `json:"kpp"`
-	Address               string         `json:"address"`
-	DirectorID            uuid.NullUUID  `json:"directorId"`
-	ParentID              uuid.NullUUID  `json:"parentId"`
-	PowerOfAttorneyNumber sql.NullString `json:"powerOfAttorneyNumber"`
-	PoaIssueDate          sql.NullTime   `json:"poaIssueDate"`
-	PoaExpirationDate     sql.NullTime   `json:"poaExpirationDate"`
-	Logo                  sql.NullString `json:"logo"`
-	CreatedAt             time.Time      `json:"createdAt"`
-	UpdatedAt             time.Time      `json:"updatedAt"`
+	ID                    pgtype.UUID        `json:"id"`
+	PropertyTypeID        pgtype.UUID        `json:"propertyTypeId"`
+	RoleID                pgtype.UUID        `json:"roleId"`
+	Name                  string             `json:"name"`
+	ShortName             *string            `json:"shortName"`
+	Inn                   string             `json:"inn"`
+	Kpp                   string             `json:"kpp"`
+	Address               string             `json:"address"`
+	DirectorID            pgtype.UUID        `json:"directorId"`
+	ParentID              pgtype.UUID        `json:"parentId"`
+	PowerOfAttorneyNumber *string            `json:"powerOfAttorneyNumber"`
+	PoaIssueDate          pgtype.Date        `json:"poaIssueDate"`
+	PoaExpirationDate     pgtype.Date        `json:"poaExpirationDate"`
+	Logo                  *string            `json:"logo"`
+	CreatedAt             pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt             pgtype.Timestamptz `json:"updatedAt"`
 }
 
 type PermissionLevel struct {
-	ID              uuid.UUID    `json:"id"`
-	PermissionLevel string       `json:"permissionLevel"`
-	CreatedAt       sql.NullTime `json:"createdAt"`
+	ID              pgtype.UUID        `json:"id"`
+	PermissionLevel string             `json:"permissionLevel"`
+	CreatedAt       pgtype.Timestamptz `json:"createdAt"`
 }
 
 type PermissionType struct {
-	ID             uuid.UUID    `json:"id"`
-	PermissionType string       `json:"permissionType"`
-	CreatedAt      sql.NullTime `json:"createdAt"`
+	ID             pgtype.UUID        `json:"id"`
+	PermissionType string             `json:"permissionType"`
+	CreatedAt      pgtype.Timestamptz `json:"createdAt"`
 }
 
 type PropertyType struct {
-	ID           uuid.UUID    `json:"id"`
-	PropertyType string       `json:"propertyType"`
-	CreatedAt    sql.NullTime `json:"createdAt"`
-	UpdatedAt    sql.NullTime `json:"updatedAt"`
+	ID           pgtype.UUID        `json:"id"`
+	PropertyType string             `json:"propertyType"`
+	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt    pgtype.Timestamptz `json:"updatedAt"`
 }
 
 type RolePermission struct {
-	ID                uuid.UUID    `json:"id"`
-	RoleID            uuid.UUID    `json:"roleId"`
-	PermissionTypeID  uuid.UUID    `json:"permissionTypeId"`
-	PermissionLevelID uuid.UUID    `json:"permissionLevelId"`
-	CreatedAt         sql.NullTime `json:"createdAt"`
+	ID                pgtype.UUID        `json:"id"`
+	RoleID            pgtype.UUID        `json:"roleId"`
+	PermissionTypeID  pgtype.UUID        `json:"permissionTypeId"`
+	PermissionLevelID pgtype.UUID        `json:"permissionLevelId"`
+	CreatedAt         pgtype.Timestamptz `json:"createdAt"`
 }
 
 type Schedule struct {
-	ID             uuid.UUID     `json:"id"`
-	EquipmentID    uuid.NullUUID `json:"equipmentId"`
-	CompletionDate time.Time     `json:"completionDate"`
-	Price          int32         `json:"price"`
-	CreatedAt      sql.NullTime  `json:"createdAt"`
+	ID             pgtype.UUID        `json:"id"`
+	EquipmentID    pgtype.UUID        `json:"equipmentId"`
+	CompletionDate pgtype.Date        `json:"completionDate"`
+	Price          int32              `json:"price"`
+	CreatedAt      pgtype.Timestamptz `json:"createdAt"`
 }
 
 type ServiceType struct {
-	ID                    uuid.UUID    `json:"id"`
-	Name                  string       `json:"name"`
-	UsageClassificationID uuid.UUID    `json:"usageClassificationId"`
-	NormHourAmount        int32        `json:"normHourAmount"`
-	CreatedAt             sql.NullTime `json:"createdAt"`
+	ID                    pgtype.UUID        `json:"id"`
+	Name                  string             `json:"name"`
+	UsageClassificationID pgtype.UUID        `json:"usageClassificationId"`
+	NormHourAmount        int32              `json:"normHourAmount"`
+	CreatedAt             pgtype.Timestamptz `json:"createdAt"`
 }
 
 type Standard struct {
-	ID                           uuid.UUID    `json:"id"`
-	Model                        string       `json:"model"`
-	CertificateNumber            string       `json:"certificateNumber"`
-	LastOperationDate            sql.NullTime `json:"lastOperationDate"`
-	NextOperationDate            sql.NullTime `json:"nextOperationDate"`
-	DocumentProviderOrganization string       `json:"documentProviderOrganization"`
-	DocumentUrl                  string       `json:"documentUrl"`
-	MetrologicalCharacteristics  string       `json:"metrologicalCharacteristics"`
-	CreatedAt                    sql.NullTime `json:"createdAt"`
-	UpdatedAt                    sql.NullTime `json:"updatedAt"`
+	ID                           pgtype.UUID        `json:"id"`
+	Model                        string             `json:"model"`
+	CertificateNumber            string             `json:"certificateNumber"`
+	LastOperationDate            pgtype.Date        `json:"lastOperationDate"`
+	NextOperationDate            pgtype.Date        `json:"nextOperationDate"`
+	DocumentProviderOrganization string             `json:"documentProviderOrganization"`
+	DocumentUrl                  string             `json:"documentUrl"`
+	MetrologicalCharacteristics  string             `json:"metrologicalCharacteristics"`
+	CreatedAt                    pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt                    pgtype.Timestamptz `json:"updatedAt"`
 }
 
 type UsageClassification struct {
-	ID             uuid.UUID    `json:"id"`
-	Classification string       `json:"classification"`
-	CreatedAt      sql.NullTime `json:"createdAt"`
+	ID             pgtype.UUID        `json:"id"`
+	Classification string             `json:"classification"`
+	CreatedAt      pgtype.Timestamptz `json:"createdAt"`
 }
 
 type User struct {
-	ID             uuid.UUID      `json:"id"`
-	Name           string         `json:"name"`
-	Surname        string         `json:"surname"`
-	Patronymic     sql.NullString `json:"patronymic"`
-	Email          string         `json:"email"`
-	PhoneNumber    string         `json:"phoneNumber"`
-	Password       string         `json:"password"`
-	Title          string         `json:"title"`
-	OrganizationID uuid.UUID      `json:"organizationId"`
-	RoleID         uuid.UUID      `json:"roleId"`
-	CreatedAt      sql.NullTime   `json:"createdAt"`
-	UpdatedAt      sql.NullTime   `json:"updatedAt"`
+	ID             pgtype.UUID        `json:"id"`
+	Name           string             `json:"name"`
+	Surname        string             `json:"surname"`
+	Patronymic     *string            `json:"patronymic"`
+	Email          string             `json:"email"`
+	PhoneNumber    string             `json:"phoneNumber"`
+	Password       string             `json:"password"`
+	Title          string             `json:"title"`
+	OrganizationID pgtype.UUID        `json:"organizationId"`
+	RoleID         pgtype.UUID        `json:"roleId"`
+	CreatedAt      pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt      pgtype.Timestamptz `json:"updatedAt"`
 }
 
 type UserPermission struct {
-	ID                uuid.UUID    `json:"id"`
-	UserID            uuid.UUID    `json:"userId"`
-	PermissionTypeID  uuid.UUID    `json:"permissionTypeId"`
-	PermissionLevelID uuid.UUID    `json:"permissionLevelId"`
-	CreatedAt         sql.NullTime `json:"createdAt"`
+	ID                pgtype.UUID        `json:"id"`
+	UserID            pgtype.UUID        `json:"userId"`
+	PermissionTypeID  pgtype.UUID        `json:"permissionTypeId"`
+	PermissionLevelID pgtype.UUID        `json:"permissionLevelId"`
+	CreatedAt         pgtype.Timestamptz `json:"createdAt"`
 }
 
 type UserRole struct {
-	ID        uuid.UUID    `json:"id"`
-	Title     string       `json:"title"`
-	CreatedAt sql.NullTime `json:"createdAt"`
+	ID        pgtype.UUID        `json:"id"`
+	Title     string             `json:"title"`
+	CreatedAt pgtype.Timestamptz `json:"createdAt"`
 }
 
 type Warehouse struct {
-	ID             uuid.UUID      `json:"id"`
-	Name           string         `json:"name"`
-	OrganizationID uuid.UUID      `json:"organizationId"`
-	Location       sql.NullString `json:"location"`
-	CreatedAt      sql.NullTime   `json:"createdAt"`
+	ID             pgtype.UUID        `json:"id"`
+	Name           string             `json:"name"`
+	OrganizationID pgtype.UUID        `json:"organizationId"`
+	Location       *string            `json:"location"`
+	CreatedAt      pgtype.Timestamptz `json:"createdAt"`
 }
