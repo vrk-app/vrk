@@ -8,12 +8,16 @@ import (
 	"net/http"
 	"time"
 
-	"backend/internal/auth"
-	"backend/internal/pkg/config"
-	"backend/internal/pkg/db"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+
+	"backend/internal/db/generated"
+    "backend/internal/auth/organization"
+	"backend/internal/equipment/equipment"
+	"backend/internal/equipment/measuringinstrument"
+	"backend/internal/equipment/standard"
+	"backend/internal/infrastructure/config"
+	"backend/internal/infrastructure/db"
 )
 
 type App struct {
@@ -30,8 +34,30 @@ func New(cfg *config.Config) (*App, error) {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
-	// Инициализация модулей
-	authHandler := auth.NewHandler()
+    // Создание sqlc queries
+    queries := generated.New(database)
+
+    // Инициализация репозиториев и сервисов
+    // Organization
+    orgRepo := organization.NewRepository(queries)
+    orgService := organization.NewService(orgRepo)
+    orgHandler := organization.NewHandler(orgService)
+
+    // Equipment
+    eqRepo := equipment.NewRepository(queries)
+    eqService := equipment.NewService(eqRepo)
+    eqHandler := equipment.NewHandler(eqService)
+
+    // Standard
+    stdRepo := standard.NewRepository(queries)
+    stdService := standard.NewService(stdRepo)
+    stdHandler := standard.NewHandler(stdService)
+
+    // Measuring Instrument
+    miRepo := measuringinstrument.NewRepository(queries)
+    miService := measuringinstrument.NewService(miRepo)
+    miHandler := measuringinstrument.NewHandler(miService)
+
 
 	// router
 	router := chi.NewRouter()
@@ -40,9 +66,10 @@ func New(cfg *config.Config) (*App, error) {
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.RequestID)
+	router.Use(middleware.RealIP)
 
 	// Routes
-	router.Get("/ping", authHandler.PingHandler)
+	registerRoutes(router, orgHandler, eqHandler, stdHandler, miHandler)
 
 	// Настройка сервера
 	server := &http.Server{
@@ -59,6 +86,46 @@ func New(cfg *config.Config) (*App, error) {
 		db:     database,
 		cfg:    cfg,
 	}, nil
+}
+
+func registerRoutes(r *chi.Mux,
+					organizationHandler *organization.OrganizationHandler,
+					eqHandler *equipment.EquipmentHandler,
+					stdHandler *standard.StandardHandler,
+					miHandler *measuringinstrument.MeasuringInstrumentHandler) {
+    r.Route("/api/v1", func(r chi.Router) {
+        r.Route("/organizations", func(r chi.Router) {
+            r.Get("/", organizationHandler.List)
+            r.Post("/", organizationHandler.Create)
+			r.Get("/{id}", organizationHandler.GetByID)
+			r.Patch("/{id}", organizationHandler.Update)
+			r.Delete("/{id}", organizationHandler.Delete)
+        })
+
+        r.Route("/equipment", func(r chi.Router) {
+            r.Get("/", eqHandler.List)
+            r.Post("/", eqHandler.Create)
+            r.Get("/{id}", eqHandler.GetByID)
+            r.Patch("/{id}", eqHandler.Update)
+            r.Delete("/{id}", eqHandler.Delete)
+        })
+
+        r.Route("/standards", func(r chi.Router) {
+            r.Get("/", stdHandler.List)
+            r.Post("/", stdHandler.Create)
+            r.Get("/{id}", stdHandler.GetByID)
+            r.Patch("/{id}", stdHandler.Update)
+            r.Delete("/{id}", stdHandler.Delete)
+        })
+
+        r.Route("/measuring-instruments", func(r chi.Router) {
+            r.Get("/", miHandler.List)
+            r.Post("/", miHandler.Create)
+            r.Get("/{id}", miHandler.GetByID)
+            r.Patch("/{id}", miHandler.Update)
+            r.Delete("/{id}", miHandler.Delete)
+        })
+    })
 }
 
 func (a *App) Run(ctx context.Context) error {
@@ -85,9 +152,4 @@ func (a *App) Shutdown(ctx context.Context) error {
 	}
 
 	return a.server.Shutdown(ctx)
-}
-
-// GetDB возвращает подключение к БД
-func (a *App) GetDB() *sql.DB {
-	return a.db
 }

@@ -7,13 +7,13 @@ BEGIN;
 
 CREATE TABLE application_types (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    type VARCHAR(10) NOT NULL UNIQUE,
+    type VARCHAR(20) NOT NULL UNIQUE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE application_statuses (
     id SMALLSERIAL PRIMARY KEY, -- int с автоинкрементом
-    status VARCHAR(10) NOT NULL UNIQUE,
+    status VARCHAR(20) NOT NULL UNIQUE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

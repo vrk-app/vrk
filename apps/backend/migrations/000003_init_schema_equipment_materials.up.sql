@@ -13,7 +13,7 @@ CREATE TABLE usage_classifications (
 
 CREATE TABLE equipment_status (
     id SMALLINT PRIMARY KEY,
-    status VARCHAR(10) NOT NULL UNIQUE,
+    status VARCHAR(30) NOT NULL UNIQUE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -100,7 +100,8 @@ CREATE TABLE standards (
     document_provider_organization VARCHAR(100) NOT NULL,
     document_url VARCHAR(255) NOT NULL,
     metrological_characteristics TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE measuring_instruments (
@@ -114,7 +115,8 @@ CREATE TABLE measuring_instruments (
     document_url VARCHAR(255) NOT NULL,
     standard_id UUID REFERENCES standards(id) ON DELETE SET NULL,
     organization_id UUID NOT NULL REFERENCES organization_units(id) ON DELETE RESTRICT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE measuring_instruments_standards (

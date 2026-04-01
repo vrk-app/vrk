@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"backend/internal/app"
-	"backend/internal/pkg/config"
+	"backend/internal/infrastructure/config"
 )
 
 func main() {

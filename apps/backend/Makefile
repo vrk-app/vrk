@@ -8,10 +8,15 @@ DB_URL := postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?
 MIGRATIONS_PATH := migrations
 
 
-run:
+sqlc-generate:
+	@echo "Generating sqlc code..."
+	sqlc generate
+	@echo "SQLC code generated"
+
+run: sqlc-generate
 	go run cmd/api/main.go
 
-build:
+build: sqlc-generate
 	go build -o bin/vrk cmd/api/main.go
 
 create-db:
@@ -61,3 +66,6 @@ migrate-version:
 
 migrate-force:
 	migrate -path $(MIGRATIONS_PATH) -database "$(DB_URL)" force $(version)
+
+install-tools:
+	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.19.1

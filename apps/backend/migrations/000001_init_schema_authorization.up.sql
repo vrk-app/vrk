@@ -61,8 +61,8 @@ CREATE TABLE organization_units (
     poa_issue_date DATE,
     poa_expiration_date DATE,
     logo VARCHAR(255), -- Ссылка на файл в S3
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
 -- =============================================================================
