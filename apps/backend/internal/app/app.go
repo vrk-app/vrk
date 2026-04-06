@@ -17,6 +17,7 @@ import (
 	"backend/internal/equipment/equipment"
 	"backend/internal/equipment/measuringinstrument"
 	"backend/internal/equipment/standard"
+	"backend/internal/application/agreement"
 	"backend/internal/infrastructure/config"
 	"backend/internal/infrastructure/db"
 
@@ -62,6 +63,9 @@ func New(cfg *config.Config) (*App, error) {
     miService := measuringinstrument.NewService(miRepo)
     miHandler := measuringinstrument.NewHandler(miService)
 
+	agreementRepo := agreement.NewRepository(queries)
+	agreementService := agreement.NewService(agreementRepo)
+	agreementHandler := agreement.NewHandler(agreementService)
 
 	// router
 	router := chi.NewRouter()
@@ -73,7 +77,7 @@ func New(cfg *config.Config) (*App, error) {
 	router.Use(middleware.RealIP)
 
 	// Routes
-	registerRoutes(router, orgHandler, eqHandler, stdHandler, miHandler)
+	registerRoutes(router, orgHandler, eqHandler, stdHandler, miHandler, agreementHandler)
 
 	// Настройка сервера
 	server := &http.Server{
@@ -97,6 +101,7 @@ func registerRoutes(r *chi.Mux,
 					eqHandler *equipment.EquipmentHandler,
 					stdHandler *standard.StandardHandler,
 					miHandler *measuringinstrument.MeasuringInstrumentHandler,
+					agreementHandler *agreement.AgreementHandler,
 					) {
 	// Swagger UI
     r.Get("/swagger/*", httpSwagger.Handler(
@@ -135,6 +140,14 @@ func registerRoutes(r *chi.Mux,
             r.Patch("/{id}", miHandler.Update)
             r.Delete("/{id}", miHandler.Delete)
         })
+		// Agreements
+		r.Route("/agreements", func(r chi.Router) {
+			r.Get("/", agreementHandler.List)
+			r.Post("/", agreementHandler.Create)
+			r.Get("/{id}", agreementHandler.GetByID)
+			r.Put("/{id}", agreementHandler.Update)
+			r.Delete("/{id}", agreementHandler.Delete)
+		})
     })
 }
 

@@ -70,7 +70,7 @@ func (s *organizationService) Create(ctx context.Context, req CreateRequest) (*O
 		return nil, err
 	}
 
-	return toResponse(*org), nil
+	return toResponseFromOrganization(*org), nil
 }
 
 func (s *organizationService) GetByID(ctx context.Context, id string) (*OrganizationResponse, error) {
@@ -79,7 +79,7 @@ func (s *organizationService) GetByID(ctx context.Context, id string) (*Organiza
 	if err != nil {
 		return nil, err
 	}
-	return toResponse(*org), nil
+	return toResponseFromOrganizationWithDetails(*org), nil
 }
 
 func (s *organizationService) Update(ctx context.Context, id string, req UpdateRequest) (*OrganizationResponse, error) {
@@ -88,34 +88,78 @@ func (s *organizationService) Update(ctx context.Context, id string, req UpdateR
 		return nil, ErrInvalidID
 	}
 
-	current, err := s.repository.GetByID(ctx, orgID)
-	if err != nil {
-		return nil, err
-	}
+    current, err := s.repository.GetByIDForUpdate(ctx, orgID)
+    if err != nil {
+        return nil, err
+    }
 
-	if req.Name != nil {
-		current.Name = *req.Name
-	}
-	if req.INN != nil {
-		current.Inn = *req.INN
-	}
-	if req.KPP != nil {
-		current.Kpp = *req.KPP
-	}
-	if req.Address != nil {
-		current.Address = *req.Address
-	}
+    if req.Name != nil {
+        current.Name = *req.Name
+    }
+    if req.INN != nil {
+        current.Inn = *req.INN
+    }
+    if req.KPP != nil {
+        current.Kpp = *req.KPP
+    }
+    if req.Address != nil {
+        current.Address = *req.Address
+    }
+    if req.ShortName != nil {
+        current.ShortName = req.ShortName
+    }
+    if req.PowerOfAttorneyNumber != nil {
+        current.PowerOfAttorneyNumber = req.PowerOfAttorneyNumber
+    }
+    if req.Logo != nil {
+        current.Logo = req.Logo
+    }
 
-	if req.ShortName != nil {
-		current.ShortName = req.ShortName
-	}
+    if req.PropertyTypeID != nil && *req.PropertyTypeID != "" {
+        current.PropertyTypeID = uuid.MustParse(*req.PropertyTypeID)
+    }
+
+    if req.RoleID != nil && *req.RoleID != "" {
+        current.RoleID = uuid.MustParse(*req.RoleID)
+    }
+
+    if req.DirectorID != nil && *req.DirectorID != "" {
+        current.DirectorID = uuid.MustParse(*req.DirectorID)
+    }
+
+    if req.ParentID != nil {
+        if *req.ParentID == "" {
+            current.ParentID = nil
+        } else {
+            p, _ := uuid.Parse(*req.ParentID)
+            current.ParentID = &p
+        }
+    }
+
+    if req.POAIssueDate != nil {
+        if *req.POAIssueDate == "" {
+            current.PoaIssueDate = nil
+        } else {
+            t, _ := time.Parse("2006-01-02", *req.POAIssueDate)
+            current.PoaIssueDate = &t
+        }
+    }
+
+    if req.POAExpirationDate != nil {
+        if *req.POAExpirationDate == "" {
+            current.PoaExpirationDate = nil
+        } else {
+            t, _ := time.Parse("2006-01-02", *req.POAExpirationDate)
+            current.PoaExpirationDate = &t
+        }
+    }
 
 	org, err := s.repository.Update(ctx, *current)
 	if err != nil {
 		return nil, err
 	}
 
-	return toResponse(*org), nil
+	return toResponseFromOrganization(*org), nil
 }
 
 func (s *organizationService) Delete(ctx context.Context, id string) error {
@@ -134,25 +178,20 @@ func (s *organizationService) List(ctx context.Context, limit, offset int32) ([]
 
 	res := make([]*OrganizationResponse, len(items))
 	for i := range items {
-		res[i] = toResponse(items[i])
+		res[i] = toResponseFromOrganizationWithDetails(items[i])
 	}
 
 	return res, total, nil
 }
 
 // toResponse
-func toResponse(m Organization) *OrganizationResponse {
+func toResponseFromOrganization(m Organization) *OrganizationResponse {
 	resp := &OrganizationResponse{
 		ID:             m.ID.String(),
-		PropertyTypeID: m.PropertyTypeID.String(),
 		Name:           m.Name,
 		INN:            m.Inn,
 		KPP:            m.Kpp,
 		Address:        m.Address,
-		RoleID:         m.RoleID.String(),
-		DirectorID:     m.DirectorID.String(),
-		CreatedAt:      m.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:      m.UpdatedAt.Format(time.RFC3339),
 	}
 
 	if m.ParentID != nil {
@@ -180,6 +219,48 @@ func toResponse(m Organization) *OrganizationResponse {
 
 	if m.Logo != nil {
 		resp.Logo = m.Logo
+	}
+
+	return resp
+}
+
+func toResponseFromOrganizationWithDetails(row OrganizationWithDetails) *OrganizationResponse {
+	resp := &OrganizationResponse{
+		ID:           row.ID.String(),
+		PropertyType: row.PropertyTypeName,
+		Name:         row.Name,
+		INN:          row.Inn,
+		KPP:          row.Kpp,
+		Address:      row.Address,
+		Role:         row.RoleTitle,
+		DirectorName: row.DirectorName,
+	}
+
+	if row.ParentID != nil {
+		id := row.ParentID.String()
+		resp.ParentID = &id
+	}
+
+	if row.ShortName != nil {
+		resp.ShortName = row.ShortName
+	}
+
+	if row.PowerOfAttorneyNumber != nil {
+		resp.PowerOfAttorneyNumber = row.PowerOfAttorneyNumber
+	}
+
+	if row.PoaIssueDate != nil {
+		d := row.PoaIssueDate.Format("2006-01-02")
+		resp.POAIssueDate = &d
+	}
+
+	if row.PoaExpirationDate != nil {
+		d := row.PoaExpirationDate.Format("2006-01-02")
+		resp.POAExpirationDate = &d
+	}
+
+	if row.Logo != nil {
+		resp.Logo = row.Logo
 	}
 
 	return resp

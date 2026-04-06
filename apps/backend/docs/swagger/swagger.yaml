@@ -1,5 +1,94 @@
 basePath: /api/v1
 definitions:
+  agreement.AgreementResponse:
+    properties:
+      endDate:
+        type: string
+      factoryId:
+        type: string
+      id:
+        type: string
+      number:
+        type: integer
+      organizationId:
+        type: string
+      scheduleId:
+        type: string
+      source:
+        type: string
+      startDate:
+        type: string
+      subjectOfAgreement:
+        type: string
+    type: object
+  agreement.CreateRequest:
+    properties:
+      endDate:
+        description: формат "2006-01-02"
+        type: string
+      factoryId:
+        type: string
+      number:
+        type: integer
+      organizationId:
+        type: string
+      scheduleId:
+        type: string
+      source:
+        type: string
+      startDate:
+        description: формат "2006-01-02"
+        type: string
+      subjectOfAgreement:
+        type: string
+    required:
+    - endDate
+    - factoryId
+    - number
+    - organizationId
+    - scheduleId
+    - source
+    - startDate
+    - subjectOfAgreement
+    type: object
+  agreement.Meta:
+    properties:
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  agreement.Response:
+    properties:
+      data: {}
+      error:
+        type: string
+      meta:
+        $ref: '#/definitions/agreement.Meta'
+      success:
+        type: boolean
+    type: object
+  agreement.UpdateRequest:
+    properties:
+      endDate:
+        type: string
+      factoryId:
+        type: string
+      number:
+        type: integer
+      organizationId:
+        type: string
+      scheduleId:
+        type: string
+      source:
+        type: string
+      startDate:
+        type: string
+      subjectOfAgreement:
+        type: string
+    type: object
   equipment.CreateRequest:
     properties:
       equipmentDictionaryId:
@@ -396,6 +485,177 @@ info:
   contact: {}
   title: VRK API
 paths:
+  /agreements:
+    get:
+      description: Возвращает список договоров с пагинацией
+      parameters:
+      - default: 10
+        description: Количество записей на странице
+        in: query
+        maximum: 100
+        minimum: 1
+        name: limit
+        type: integer
+      - default: 0
+        description: Смещение
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный ответ
+          schema:
+            allOf:
+            - $ref: '#/definitions/agreement.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/agreement.AgreementResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/agreement.Meta'
+              type: object
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/agreement.Response'
+      summary: Получить список договоров
+      tags:
+      - agreements
+    post:
+      consumes:
+      - application/json
+      description: Создает новый договор между заказчиком и подрядчиком
+      parameters:
+      - description: Данные договора
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/agreement.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Договор создан
+          schema:
+            allOf:
+            - $ref: '#/definitions/agreement.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/agreement.AgreementResponse'
+              type: object
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/agreement.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/agreement.Response'
+      summary: Создать договор
+      tags:
+      - agreements
+  /agreements/{id}:
+    delete:
+      description: Удаляет договор по ID
+      parameters:
+      - description: ID договора
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Успешное удаление
+        "404":
+          description: Договор не найден
+          schema:
+            $ref: '#/definitions/agreement.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/agreement.Response'
+      summary: Удалить договор
+      tags:
+      - agreements
+    get:
+      description: Возвращает информацию о договоре
+      parameters:
+      - description: ID договора
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный ответ
+          schema:
+            allOf:
+            - $ref: '#/definitions/agreement.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/agreement.AgreementResponse'
+              type: object
+        "404":
+          description: Договор не найден
+          schema:
+            $ref: '#/definitions/agreement.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/agreement.Response'
+      summary: Получить договор по ID
+      tags:
+      - agreements
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные существующего договора
+      parameters:
+      - description: ID договора
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Данные для обновления
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/agreement.UpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное обновление
+          schema:
+            allOf:
+            - $ref: '#/definitions/agreement.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/agreement.AgreementResponse'
+              type: object
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/agreement.Response'
+        "404":
+          description: Договор не найден
+          schema:
+            $ref: '#/definitions/agreement.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/agreement.Response'
+      summary: Обновить договор
+      tags:
+      - agreements
   /equipment:
     get:
       description: Возвращает список оборудования с пагинацией

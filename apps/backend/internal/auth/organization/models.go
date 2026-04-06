@@ -21,8 +21,26 @@ type Organization struct {
     PoaIssueDate          *time.Time
     PoaExpirationDate     *time.Time
     Logo                  *string
-    CreatedAt             time.Time
-    UpdatedAt             time.Time
+}
+
+type OrganizationWithDetails struct {
+    ID                    uuid.UUID
+    PropertyTypeName      string
+    PropertyTypeID        uuid.UUID
+    Name                  string
+    Inn                   string
+    Kpp                   string
+    Address               string
+    RoleTitle             string
+    RoleID                uuid.UUID
+    DirectorName          string
+    DirectorID            uuid.UUID
+    ParentID              *uuid.UUID
+    ShortName             *string
+    PowerOfAttorneyNumber *string
+    PoaIssueDate          *time.Time
+    PoaExpirationDate     *time.Time
+    Logo                  *string
 }
 
 type CreateRequest struct {
@@ -59,23 +77,20 @@ type UpdateRequest struct {
 
 type OrganizationResponse struct {
     ID                      string  `json:"id"`
-    PropertyTypeID          string  `json:"propertyTypeId"`
+    PropertyType            string  `json:"propertyType"`
     Name                    string  `json:"name"`
     ShortName               *string `json:"shortName,omitempty"`
     INN                     string  `json:"inn"`
     KPP                     string  `json:"kpp"`
     Address                 string  `json:"address"`
     ParentID                *string `json:"parentId,omitempty"`
-    RoleID                  string  `json:"roleId"`
-    DirectorID              string  `json:"directorId"`
+    Role                    string  `json:"role"`
+    DirectorName            string  `json:"directorName"`
     PowerOfAttorneyNumber   *string `json:"powerOfAttorneyNumber,omitempty"`
     POAIssueDate            *string `json:"poaIssueDate,omitempty"`
     POAExpirationDate       *string `json:"poaExpirationDate,omitempty"`
     Logo                    *string `json:"logo,omitempty"`
-    CreatedAt               string  `json:"createdAt"`
-    UpdatedAt               string  `json:"updatedAt"`
 }
-
 type ListFilter struct {
     Limit  int32
     Offset int32

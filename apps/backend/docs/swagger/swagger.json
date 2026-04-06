@@ -6,6 +6,280 @@
     },
     "basePath": "/api/v1",
     "paths": {
+        "/agreements": {
+            "get": {
+                "description": "Возвращает список договоров с пагинацией",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "agreements"
+                ],
+                "summary": "Получить список договоров",
+                "parameters": [
+                    {
+                        "maximum": 100,
+                        "minimum": 1,
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Количество записей на странице",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 0,
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Смещение",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/agreement.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/agreement.AgreementResponse"
+                                            }
+                                        },
+                                        "meta": {
+                                            "$ref": "#/definitions/agreement.Meta"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Создает новый договор между заказчиком и подрядчиком",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "agreements"
+                ],
+                "summary": "Создать договор",
+                "parameters": [
+                    {
+                        "description": "Данные договора",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/agreement.CreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Договор создан",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/agreement.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/agreement.AgreementResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/agreements/{id}": {
+            "get": {
+                "description": "Возвращает информацию о договоре",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "agreements"
+                ],
+                "summary": "Получить договор по ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID договора",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешный ответ",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/agreement.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/agreement.AgreementResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Договор не найден",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Обновляет данные существующего договора",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "agreements"
+                ],
+                "summary": "Обновить договор",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID договора",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Данные для обновления",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/agreement.UpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное обновление",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/agreement.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/agreement.AgreementResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Договор не найден",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Удаляет договор по ID",
+                "tags": [
+                    "agreements"
+                ],
+                "summary": "Удалить договор",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID договора",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Успешное удаление"
+                    },
+                    "404": {
+                        "description": "Договор не найден",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/equipment": {
             "get": {
                 "description": "Возвращает список оборудования с пагинацией",
@@ -1071,6 +1345,137 @@
         }
     },
     "definitions": {
+        "agreement.AgreementResponse": {
+            "type": "object",
+            "properties": {
+                "endDate": {
+                    "type": "string"
+                },
+                "factoryId": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "integer"
+                },
+                "organizationId": {
+                    "type": "string"
+                },
+                "scheduleId": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "subjectOfAgreement": {
+                    "type": "string"
+                }
+            }
+        },
+        "agreement.CreateRequest": {
+            "type": "object",
+            "required": [
+                "endDate",
+                "factoryId",
+                "number",
+                "organizationId",
+                "scheduleId",
+                "source",
+                "startDate",
+                "subjectOfAgreement"
+            ],
+            "properties": {
+                "endDate": {
+                    "description": "формат \"2006-01-02\"",
+                    "type": "string"
+                },
+                "factoryId": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "integer"
+                },
+                "organizationId": {
+                    "type": "string"
+                },
+                "scheduleId": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "startDate": {
+                    "description": "формат \"2006-01-02\"",
+                    "type": "string"
+                },
+                "subjectOfAgreement": {
+                    "type": "string"
+                }
+            }
+        },
+        "agreement.Meta": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "agreement.Response": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "type": "string"
+                },
+                "meta": {
+                    "$ref": "#/definitions/agreement.Meta"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "agreement.UpdateRequest": {
+            "type": "object",
+            "properties": {
+                "endDate": {
+                    "type": "string"
+                },
+                "factoryId": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "integer"
+                },
+                "organizationId": {
+                    "type": "string"
+                },
+                "scheduleId": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "startDate": {
+                    "type": "string"
+                },
+                "subjectOfAgreement": {
+                    "type": "string"
+                }
+            }
+        },
         "equipment.CreateRequest": {
             "type": "object",
             "required": [

@@ -13,10 +13,11 @@ import (
 
 type OrganizationRepository interface {
 	Create(ctx context.Context, m Organization) (*Organization, error)
-	GetByID(ctx context.Context, id uuid.UUID) (*Organization, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*OrganizationWithDetails, error)
+	GetByIDForUpdate(ctx context.Context, id uuid.UUID) (*Organization, error)
 	Update(ctx context.Context, m Organization) (*Organization, error)
 	Delete(ctx context.Context, id uuid.UUID) error
-	List(ctx context.Context, limit, offset int32) ([]Organization, int64, error)
+	List(ctx context.Context, limit, offset int32) ([]OrganizationWithDetails, int64, error)
 	Exists(ctx context.Context, id uuid.UUID) (bool, error)
 }
 
@@ -87,12 +88,36 @@ func (r *organizationRepository) Create(ctx context.Context, m Organization) (*O
 	return mapRow(&row), nil
 }
 
-func (r *organizationRepository) GetByID(ctx context.Context, id uuid.UUID) (*Organization, error) {
+func (r *organizationRepository) GetByID(ctx context.Context, id uuid.UUID) (*OrganizationWithDetails, error) {
 	row, err := r.q.GetOrganizationByID(ctx, toPGUUID(id))
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrNotFound, err)
 	}
-	return mapRow((*generated.CreateOrganizationRow)(&row)), nil
+	return mapRowWithDetails(&row), nil
+}
+
+func (r *organizationRepository) GetByIDForUpdate(ctx context.Context, id uuid.UUID) (*Organization, error) {
+    row, err := r.q.GetOrganizationByID(ctx, toPGUUID(id))
+    if err != nil {
+        return nil, fmt.Errorf("%w: %v", ErrNotFound, err)
+    }
+    
+    return &Organization{
+        ID:                    uuid.UUID(row.ID.Bytes),
+        PropertyTypeID:        uuid.UUID(row.PropertyTypeID.Bytes),
+        Name:                  row.Name,
+        Inn:                   row.Inn,
+        Kpp:                   row.Kpp,
+        Address:               row.Address,
+        RoleID:                uuid.UUID(row.RoleID.Bytes),
+        DirectorID:            uuid.UUID(row.DirectorID.Bytes),
+        ParentID:              fromNullUUID(row.ParentID),
+        ShortName:             row.ShortName,
+        PowerOfAttorneyNumber: row.PowerOfAttorneyNumber,
+        PoaIssueDate:          fromNullDate(row.PoaIssueDate),
+        PoaExpirationDate:     fromNullDate(row.PoaExpirationDate),
+        Logo:                  row.Logo,
+    }, nil
 }
 
 func (r *organizationRepository) Update(ctx context.Context, m Organization) (*Organization, error) {
@@ -129,7 +154,7 @@ func (r *organizationRepository) Exists(ctx context.Context, id uuid.UUID) (bool
 	return r.q.OrganizationExists(ctx, toPGUUID(id))
 }
 
-func (r *organizationRepository) List(ctx context.Context, limit, offset int32) ([]Organization, int64, error) {
+func (r *organizationRepository) List(ctx context.Context, limit, offset int32) ([]OrganizationWithDetails, int64, error) {
 	rows, err := r.q.ListOrganizations(ctx, generated.ListOrganizationsParams{
 		Limit:  limit,
 		Offset: offset,
@@ -140,9 +165,9 @@ func (r *organizationRepository) List(ctx context.Context, limit, offset int32) 
 
 	total, _ := r.q.CountOrganizations(ctx)
 
-	result := make([]Organization, len(rows))
+	result := make([]OrganizationWithDetails, len(rows))
 	for i := range rows {
-		result[i] = *mapRow((*generated.CreateOrganizationRow)(&rows[i]))
+		result[i] = *mapRowWithDetails((*generated.GetOrganizationByIDRow)(&rows[i]))
 	}
 
 	return result, total, nil
@@ -165,7 +190,46 @@ func mapRow(r *generated.CreateOrganizationRow) *Organization {
 		PoaIssueDate:          fromNullDate(r.PoaIssueDate),
 		PoaExpirationDate:     fromNullDate(r.PoaExpirationDate),
 		Logo:                  r.Logo,
-		CreatedAt:             r.CreatedAt.Time,
-		UpdatedAt:             r.UpdatedAt.Time,
+	}
+}
+func mapRowWithDetails(r *generated.GetOrganizationByIDRow) *OrganizationWithDetails {
+	var parentID *uuid.UUID
+	if r.ParentID.Valid {
+		id := uuid.UUID(r.ParentID.Bytes)
+		parentID = &id
+	}
+
+	propertyTypeName := ""
+	if r.PropertyTypeName != nil {
+		propertyTypeName = *r.PropertyTypeName
+	}
+
+	roleTitle := ""
+	if r.RoleTitle != nil {
+		roleTitle = *r.RoleTitle
+	}
+
+	directorName := ""
+	if r.DirectorName != nil {
+		if v, ok := r.DirectorName.(string); ok {
+			directorName = v
+		}
+	}
+
+	return &OrganizationWithDetails{
+		ID:                    uuid.UUID(r.ID.Bytes),
+		PropertyTypeName:      propertyTypeName,
+		Name:                  r.Name,
+		Inn:                   r.Inn,
+		Kpp:                   r.Kpp,
+		Address:               r.Address,
+		RoleTitle:             roleTitle,
+		DirectorName:          directorName,
+		ParentID:              parentID,
+		ShortName:             r.ShortName,
+		PowerOfAttorneyNumber: r.PowerOfAttorneyNumber,
+		PoaIssueDate:          fromNullDate(r.PoaIssueDate),
+		PoaExpirationDate:     fromNullDate(r.PoaExpirationDate),
+		Logo:                  r.Logo,
 	}
 }
