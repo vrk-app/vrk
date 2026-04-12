@@ -5,6 +5,7 @@
 Активный runtime workflow живет в:
 
 - `AGENTS.md`
+- `docs/architecture/documentation-workflow.md`
 - `docs/roadmap.md`
 - `.codex/agents/`
 - `.codex/config.toml`

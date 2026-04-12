@@ -10,9 +10,10 @@
 3. оркестрирует bounded subagents;
 4. реализует один feature slice за раз;
 5. собирает evidence;
-6. запускает **fresh verifier**;
-7. делает минимальный safe fix-cycle до `PASS`;
-8. оставляет чистый handoff для следующей сессии и следующего этапа.
+6. синхронизирует каноническую документацию и диаграммы по принятым решениям;
+7. запускает **fresh verifier**;
+8. делает минимальный safe fix-cycle до `PASS`;
+9. оставляет чистый handoff для следующей сессии и следующего этапа.
 
 ---
 
@@ -48,6 +49,8 @@
 - Fresh verifier **никогда** не переиспользуется как previous verifier session.
 - Subagent tree держим **shallow**: root orchestrator -> leaf subagents.
 - Recursive orchestration leaf-агентами запрещена.
+- Существенный documentation drift по измененному slice считается proof gap.
+- Если решение меняет канонически задокументированное поведение или архитектуру, docs обновляются в том же slice, а не откладываются молча.
 - Нельзя объявлять этап завершенным, пока:
   - все stage acceptance criteria не доказаны,
   - `feature_list.json` по этапу не имеет незакрытых обязательных пунктов,
@@ -75,6 +78,7 @@
 
 1. **Re-sync**
    - прочитать `AGENTS.md`
+   - прочитать `docs/architecture/documentation-workflow.md`
    - прочитать roadmap stage section
    - прочитать `progress.md`, `feature_list.json`, `git log`
    - поднять app/dev stack
@@ -90,25 +94,33 @@
    - один integration builder владеет основным изменением
    - optional: до 3 worker children c явным file/module ownership
    - builder не делегирует orchestration вниз
+   - builder обязан синхронизировать канонические docs, если в slice меняется или уточняется зафиксированное решение
 
 4. **Evidence**
    - builder пакует evidence
    - raw outputs, screenshots, logs, query traces, curl traces, test outputs сохраняются в `raw/`
 
-5. **Verify**
+5. **Doc-sync**
+   - обновляются канонические docs по измененному behavior / architecture / workflow / contract
+   - для нетривиальных flows и state machines добавляются или обновляются диаграммы
+   - `evidence.*` перечисляет doc updates и diagram refs
+
+6. **Verify**
    - один fresh verifier
    - verifier не меняет production code
    - verifier пишет `verdict.json`
+   - verifier считает существенный documentation drift proof gap
    - если не PASS: пишет `problems.md`
 
-6. **Fix**
+7. **Fix**
    - один fixer применяет smallest safe change set
-   - builder/parent обновляет evidence
+   - builder/parent обновляет docs и evidence, если это требуется для закрытия proof gap
    - запускается новый fresh verifier
 
-7. **Close / continue**
+8. **Close / continue**
    - `progress.md` обновлен
    - `feature_list.json` отражает только реально доказанные пункты
+   - канонические docs отражают принятые решения текущего slice
    - сделан осмысленный git commit
    - если stage DoD не достигнут — начинается новый slice
 
@@ -631,12 +643,14 @@ Rules:
 - Use gpt-5.4 with xhigh reasoning for the main run and every custom subagent.
 - Keep the tree shallow: only the top-level stage orchestrator may spawn leaf subagents.
 - Before coding, re-sync with AGENTS.md, docs/roadmap.md, .agent/stages/<stage-id>/progress.md, feature_list.json, git log, and smoke tests.
+- Read docs/architecture/documentation-workflow.md before freezing or changing product/architecture/workflow decisions.
 - Freeze the stage spec before implementation.
 - Work one sprint contract at a time.
 - Use bounded fan-out only when it reduces risk:
   - up to 3 read-only explorers before spec freeze;
   - up to 3 workers with explicit disjoint ownership after spec freeze.
 - Keep one integration builder as the owner of the implementation and evidence bundle.
+- Sync canonical docs and diagrams for decisions made in the slice before asking for proof.
 - Run a fresh verifier after each evidence pack.
 - If verifier fails, apply the smallest safe fix set and verify again with a fresh verifier.
 - Do not mark anything done without proof.

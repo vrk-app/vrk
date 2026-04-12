@@ -16,6 +16,8 @@ Rules:
 - if helpers are used, keep ownership explicit
 - rerun relevant tests
 - update evidence.md and evidence.json with real proof
+- sync canonical docs when the slice changes or clarifies documented behavior, architecture, workflows, or contracts
+- add or refresh Mermaid diagrams for non-trivial flows or state machines when the docs would otherwise be unclear
 - preserve the builder role as the single integration owner
 - if the slice touches apps/web or frontend/UI paths, invoke $vrk-web-ui-workflow and follow docs/design/ui-workflow.md
 - for frontend slices, capture prompt/brief source, changed UI files, and web-design-guidelines results in evidence

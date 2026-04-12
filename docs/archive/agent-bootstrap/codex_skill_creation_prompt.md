@@ -47,6 +47,8 @@ What the skill must create or manage
 5. Optional config snippet for:
    .codex/config.toml
 6. A managed workflow block for repo-root `AGENTS.md`.
+7. A repo-level documentation workflow source of truth under:
+   docs/architecture/documentation-workflow.md
 
 Stage artifact contract
 For each stage create and maintain:
@@ -64,6 +66,7 @@ Behavioral contract of the harness
 A stage run must follow this loop:
 1. re-sync context from:
    - AGENTS.md
+   - docs/architecture/documentation-workflow.md
    - docs/roadmap.md
    - .agent/stages/<stage-id>/progress.md
    - .agent/stages/<stage-id>/feature_list.json
@@ -74,16 +77,18 @@ A stage run must follow this loop:
 4. choose exactly one sprint contract
 5. implement that sprint contract
 6. pack evidence
-7. run a fresh verifier
-8. if FAIL:
+7. sync canonical docs and diagrams for decisions made in the slice
+8. run a fresh verifier
+9. if FAIL:
    - write verdict.json
    - write problems.md
    - apply the smallest safe fix set
+   - refresh docs if the proof gap is documentation drift
    - refresh evidence
    - rerun a fresh verifier
-9. update progress
-10. commit
-11. continue until the stage definition of done is proven
+10. update progress
+11. commit
+12. continue until the stage definition of done is proven
 
 Subagent policy
 Create project-scoped custom subagents for these roles:
@@ -109,10 +114,12 @@ Role rules
   - owns the main implementation
   - may receive help from bounded workers only if file ownership is explicit
   - owns evidence pack
+  - syncs canonical docs when the slice changes documented behavior or decisions
 - Verifier:
   - fresh session every time
   - may write only verification artifacts
   - must not edit production code
+  - treats material documentation drift as a proof gap
 - Fixer:
   - applies the smallest safe change set from problems.md
   - does not rewrite unrelated code
@@ -134,6 +141,7 @@ Best-practice requirements to encode
 - Structured handoff artifacts beat implicit memory
 - One feature slice at a time
 - Never mark tests/features as passing without proof
+- Do not leave material documentation drift unresolved
 - Start each resumed session by reading progress, feature list, and git log
 - Run smoke checks before starting new implementation
 - End each session in a clean mergeable state

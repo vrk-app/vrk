@@ -5,14 +5,31 @@ Use the repo-local VRK stage harness for roadmap execution.
 
 Core rules:
 - roadmap source of truth: docs/roadmap.md
+- documentation workflow source of truth: docs/architecture/documentation-workflow.md
 - durable stage artifacts: .agent/stages/<stage-id>/
 - one top-level stage orchestrator per stage run
 - bounded leaf subagents only
 - one integration builder owns implementation + evidence
 - every verify pass must use a fresh verifier
 - verifier must not edit production code
+- if implementation or clarified decisions drift from docs, update the canonical docs in the same slice
+- close substantial work with doc-sync; keep technical docs readable and add diagrams for non-trivial flows
 - do not mark features or stages done without proof
 <!-- END VRK MVP STAGE ORCHESTRATOR -->
+
+## Documentation Workflow
+
+Before closing substantial product, architecture, workflow, or integration work, read:
+
+- `docs/architecture/documentation-workflow.md`
+
+Apply these rules:
+
+- If the agent made or clarified a decision that changes documented behavior, architecture, contracts, or operating steps, sync the canonical docs in the same slice.
+- Stage artifacts capture handoff and proof, but they do not replace canonical product and technical documentation.
+- Prefer updating the narrowest source of truth: ADR/source-of-truth docs for architecture, `docs/design/*` for UI rules, Swagger/OpenAPI for API contract, `README.md` / onboarding docs for setup and runtime behavior.
+- Add Mermaid diagrams for non-trivial state machines, request/approval flows, sync flows, orchestration paths, and cross-module interactions.
+- Do not leave silent documentation drift behind; if a doc update must be deferred, record the exact gap and reason in the stage artifacts.
 
 ## UI Workflow Policy
 
@@ -29,6 +46,7 @@ Before generating or refactoring UI, Storybook stories, layout, forms, tables, c
 
 - `docs/design/serviceops-design-system.md`
 - `docs/design/ui-workflow.md`
+- `docs/architecture/frontend-architecture.md`
 - `docs/design/storybook-component-backlog.md` for Storybook/component-library tasks
 
 Use the design-system doc as the canonical source for:

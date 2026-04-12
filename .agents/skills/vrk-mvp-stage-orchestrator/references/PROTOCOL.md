@@ -18,12 +18,13 @@ The protocol combines:
 At the start of every resumed or new stage session:
 
 1. read `AGENTS.md`
-2. read `docs/roadmap.md`
-3. read `.agent/stages/<stage-id>/progress.md`
-4. read `.agent/stages/<stage-id>/feature_list.json`
-5. read recent git history
-6. run app startup or `init.sh` equivalent if present
-7. run smoke checks before choosing new work
+2. read `docs/architecture/documentation-workflow.md`
+3. read `docs/roadmap.md`
+4. read `.agent/stages/<stage-id>/progress.md`
+5. read `.agent/stages/<stage-id>/feature_list.json`
+6. read recent git history
+7. run app startup or `init.sh` equivalent if present
+8. run smoke checks before choosing new work
 
 If smoke fails, fix the broken baseline before implementing new functionality.
 
@@ -79,6 +80,16 @@ If the slice touches `apps/web` or frontend/UI paths:
 
 Exactly 1 fresh verifier per verify pass.
 
+### Documentation sync
+
+Before verification:
+
+- update canonical docs if the slice changed or clarified a documented decision
+- add or refresh diagrams for non-trivial flows and state machines
+- record doc changes in evidence
+
+Material documentation drift on the changed slice is a proof gap.
+
 ### Proof probes
 
 If needed, use up to 3 read-only explorers for disjoint proof gaps, but the verifier remains the sole verdict owner.
@@ -100,6 +111,7 @@ Before ending a session:
 - no half-migrated schema work
 - no knowingly broken smoke path
 - no undocumented local-only assumptions
+- no unresolved material documentation drift on the changed slice
 - no stale `progress.md`
 - no feature marked done without proof
 - no unresolved web-design-guidelines findings for proven frontend slices

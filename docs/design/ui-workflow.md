@@ -12,13 +12,14 @@
 Для новых web-компонентов, страниц и UI-рефакторингов использовать один и тот же поток:
 
 1. Прочитать `docs/design/serviceops-design-system.md`.
-2. Для Storybook/component-library задач прочитать `docs/design/storybook-component-backlog.md`.
-3. Прочитать repo-root `.impeccable.md`.
-4. Если контекст недостаточен, запустить `$impeccable teach`.
-5. Для net-new UI или крупных новых поверхностей использовать `$impeccable craft`.
-6. Для финального выравнивания использовать `$polish`.
-7. Прогнать `$web-design-guidelines` по измененным UI-файлам.
-8. Не считать UI slice завершенным, пока findings не закрыты или не задокументированы как сознательно принятые исключения.
+2. Прочитать `docs/architecture/frontend-architecture.md`.
+3. Для Storybook/component-library задач прочитать `docs/design/storybook-component-backlog.md`.
+4. Прочитать repo-root `.impeccable.md`.
+5. Если контекст недостаточен, запустить `$impeccable teach`.
+6. Для net-new UI или крупных новых поверхностей использовать `$impeccable craft`.
+7. Для финального выравнивания использовать `$polish`.
+8. Прогнать `$web-design-guidelines` по измененным UI-файлам.
+9. Не считать UI slice завершенным, пока findings не закрыты или не задокументированы как сознательно принятые исключения.
 
 ## Инструменты
 
@@ -42,6 +43,7 @@
 ## Repo-local artifacts
 
 - Design system source of truth: [`docs/design/serviceops-design-system.md`](/Users/yura-posledov/cursor/vrk/docs/design/serviceops-design-system.md)
+- Frontend architecture baseline: [`docs/architecture/frontend-architecture.md`](/Users/yura-posledov/cursor/vrk/docs/architecture/frontend-architecture.md)
 - Shared design context: [`.impeccable.md`](/Users/yura-posledov/cursor/vrk/.impeccable.md)
 - Storybook source backlog: [`docs/design/storybook-component-backlog.md`](/Users/yura-posledov/cursor/vrk/docs/design/storybook-component-backlog.md)
 - Standalone design skill: [`.agents/skills/vrk-web-ui-design`](/Users/yura-posledov/cursor/vrk/.agents/skills/vrk-web-ui-design)
@@ -60,6 +62,7 @@
 Если slice затрагивает `apps/web` или другие frontend-пути:
 
 - builder обязан использовать `$vrk-web-ui-workflow`;
+- builder обязан сверить slice boundaries и data-layer assumptions с `docs/architecture/frontend-architecture.md`;
 - builder обязан сверить tokens и component rules с `docs/design/serviceops-design-system.md`;
 - builder обязан сверить Storybook/component scope с `docs/design/storybook-component-backlog.md`, если slice относится к component library или showcase stories;
 - verifier обязан проверить review gate через `$web-design-guidelines`;

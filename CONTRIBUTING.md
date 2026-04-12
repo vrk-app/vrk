@@ -22,6 +22,7 @@
 
 - не выходить за рамки `docs/PRD-MVP.md` и `docs/roadmap.md` без явного решения;
 - не объявлять stage или feature завершенными без evidence и verifier pass;
+- не оставлять содержательный documentation drift между кодом, stage evidence и каноническими docs;
 - не тащить в PR случайные локальные файлы, временные артефакты и машинно-зависимые правки.
 
 ## 2. Source Of Truth Перед Работой
@@ -33,6 +34,8 @@
 3. `docs/PRD-MVP.md`;
 4. `docs/roadmap.md`;
 5. `README.md` и `BACKEND.md` как доменное пояснение, но не как разрешение расширять MVP.
+
+Если PR меняет product behavior, architecture/workflow contract, API expectations или operating instructions, в том же PR нужно обновить соответствующие канонические docs. Stage artifacts и PR description не заменяют такие обновления.
 
 Если PR сознательно меняет архитектурное решение, scope MVP или contract между модулями, это нужно явно описать в PR и при необходимости оформить отдельным ADR.
 
@@ -170,6 +173,7 @@ BREAKING CHANGE: request status response now returns enum code and label
 
 - обновляй только те stage artifacts в `.agent/stages/<stage-id>/`, для которых у тебя есть реальное доказательство;
 - не помечай feature как done без evidence;
+- если slice принял новое решение или устранил расхождение с документацией, синхронизируй канонические docs в том же PR;
 - не смешивай в одном PR production change и unrelated cleanup нескольких stage directories.
 
 ## 7. Pull Request
@@ -254,6 +258,7 @@ PR должен быть reviewer-friendly и содержать:
 ### 8.2. Для docs-only изменений
 
 - проверь, что текст не противоречит `README.md`, `docs/roadmap.md` и `docs/architecture/source-of-truth.md`;
+- для workflow/architecture docs также проверь согласованность с `docs/architecture/documentation-workflow.md` и `AGENTS.md`;
 - не смешивай docs cleanup с кодовыми изменениями, если это разные задачи.
 
 ### 8.3. Для будущих UI изменений

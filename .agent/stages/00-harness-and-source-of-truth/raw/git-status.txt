@@ -1,12 +1,47 @@
-?? .agent/
-?? .agents/
-?? .codex/
-?? AGENTS.md
-?? SKILL.md
-?? codex_skill_creation_prompt.md
-?? docs/architecture/
-?? docs/testing/
-?? record/
-?? roadmap_mvp.md
-?? roadmap_mvp_codex.md
-?? vrk-mvp-stage-orchestrator/
+## codex/stage00-runtime-proof-refresh
+ M .agent/stages/00-harness-and-source-of-truth/evidence.json
+ M .agent/stages/00-harness-and-source-of-truth/evidence.md
+ M .agent/stages/00-harness-and-source-of-truth/feature_list.json
+ M .agent/stages/00-harness-and-source-of-truth/problems.md
+ M .agent/stages/00-harness-and-source-of-truth/progress.md
+ M .agent/stages/00-harness-and-source-of-truth/raw/doc-inventory.txt
+ M .agent/stages/00-harness-and-source-of-truth/raw/git-log.txt
+ M .agent/stages/00-harness-and-source-of-truth/raw/git-status.txt
+ M .agent/stages/00-harness-and-source-of-truth/sprint_contract.md
+ M .agent/stages/00-harness-and-source-of-truth/stage_spec.md
+ M .agent/stages/00-harness-and-source-of-truth/verdict.json
+ M .agents/skills/vrk-mvp-stage-orchestrator/SKILL.md
+ M .agents/skills/vrk-mvp-stage-orchestrator/references/ARTIFACTS.md
+ M .agents/skills/vrk-mvp-stage-orchestrator/references/PROTOCOL.md
+ M .agents/skills/vrk-mvp-stage-orchestrator/references/SUBAGENTS.md
+ M .codex/agents/vrk_stage_builder.toml
+ M .codex/agents/vrk_stage_explorer.toml
+ M .codex/agents/vrk_stage_fixer.toml
+ M .codex/agents/vrk_stage_spec_freezer.toml
+ M .codex/agents/vrk_stage_verifier.toml
+ M AGENTS.md
+ M CONTRIBUTING.md
+ M README.md
+ M docs/architecture/source-of-truth.md
+ M docs/archive/agent-bootstrap/README.md
+ M docs/archive/agent-bootstrap/assets/agents/vrk_stage_builder.toml
+ M docs/archive/agent-bootstrap/assets/agents/vrk_stage_explorer.toml
+ M docs/archive/agent-bootstrap/assets/agents/vrk_stage_fixer.toml
+ M docs/archive/agent-bootstrap/assets/agents/vrk_stage_spec_freezer.toml
+ M docs/archive/agent-bootstrap/assets/agents/vrk_stage_verifier.toml
+ M docs/archive/agent-bootstrap/assets/templates/evidence.json
+ M docs/archive/agent-bootstrap/assets/templates/evidence.md
+ M docs/archive/agent-bootstrap/assets/templates/sprint_contract.md
+ M docs/archive/agent-bootstrap/assets/templates/stage_spec.md
+ M docs/archive/agent-bootstrap/bootstrap_stage.py
+ M docs/archive/agent-bootstrap/codex_skill_creation_prompt.md
+ M docs/design/ui-workflow.md
+ D docs/quickstart-local-setup.md
+ M docs/roadmap.md
+ M docs/testing/test-strategy.md
+?? .agent/stages/00-harness-and-source-of-truth/raw/bootstrap-reference-audit.txt
+?? .agent/stages/00-harness-and-source-of-truth/raw/harness-runtime-check.json
+?? .agents/skills/vrk-mvp-stage-orchestrator/scripts/
+?? docs/architecture/documentation-workflow.md
+?? docs/architecture/frontend-architecture.md
+?? docs/onboarding.md

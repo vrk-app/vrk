@@ -1,75 +1,104 @@
 # Evidence
 
 - Stage ID: 00-harness-and-source-of-truth
+- Sprint Contract ID: slice-003-fresh-verify-stage00
 
 ## Commands run
 
-- `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/bootstrap_stage.py install`
-- `cp .codex/config.vrk-example.toml .codex/config.toml`
-- `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/bootstrap_stage.py init-stage --stage-id 00-harness-and-source-of-truth --stage-name "Harness and source of truth"`
-- `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/bootstrap_stage.py status --stage-id 00-harness-and-source-of-truth`
-- bootstrap init-stage loop for original roadmap stages `01..06`
-- manual renumbering of durable stage directories to `00..07` and insertion of `01-ui-storybook-foundation`
-- repo inspection commands against `README.md`, `docs/PRD-MVP.md`, `BACKEND.md`, `apps/backend/`, and `git log`
+- `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 00-harness-and-source-of-truth > .agent/stages/00-harness-and-source-of-truth/raw/harness-runtime-check.json`
+- `find .agent/stages -maxdepth 1 -mindepth 1 -type d | sort > .agent/stages/00-harness-and-source-of-truth/raw/stage-directories.txt`
+- `git status --short --branch > .agent/stages/00-harness-and-source-of-truth/raw/git-status.txt`
+- `git log --oneline --decorate -n 12 > .agent/stages/00-harness-and-source-of-truth/raw/git-log.txt`
+- `find AGENTS.md README.md CONTRIBUTING.md docs/architecture docs/testing docs/design -type f | sort > .agent/stages/00-harness-and-source-of-truth/raw/doc-inventory.txt`
+- `rg -n "docs/archive/agent-bootstrap|bootstrap-install\\.json|roadmap_mvp\\.md" AGENTS.md README.md CONTRIBUTING.md docs .agents .codex .agent/stages/00-harness-and-source-of-truth > .agent/stages/00-harness-and-source-of-truth/raw/bootstrap-reference-audit.txt || true`
+- repo inspection commands against `AGENTS.md`, `README.md`, `CONTRIBUTING.md`, `docs/roadmap.md`, `docs/architecture/documentation-workflow.md`, `docs/architecture/source-of-truth.md`, `docs/architecture/frontend-architecture.md`, `docs/design/ui-workflow.md`, `docs/onboarding.md`, and `.agent/stages/00-harness-and-source-of-truth/*`
 - `go test ./...` in `apps/backend` (blocked: `go` command missing)
 - `go build ./...` in `apps/backend` (blocked: `go` command missing)
-- `npx skills add pbakaus/impeccable -g --skill impeccable --skill polish -y --copy`
-- `npx skills add vercel-labs/agent-skills -g --skill web-design-guidelines -y --copy`
-- `curl -fsSL https://vercel.com/design/guidelines/install | bash`
-- copy official Codex-flavored `impeccable`, `polish`, and `web-design-guidelines` into `~/.codex/skills`
-- copy official Cursor-flavored `impeccable` and `polish` into `~/.cursor/skills`
-- initialize `.agents/skills/vrk-web-ui-workflow` via `init_skill.py`
 
 ## Tests run
 
-- Harness install/status check: passed
+- Harness runtime self-check: passed
 - Stage directory seeding check: passed
-- Document inventory check for architecture/testing docs: passed
+- Documentation workflow / canonical doc alignment review: passed
+- Active bootstrap-reference audit: passed
+- Fresh Stage 00 verifier review: passed
+- Document inventory check for architecture/testing/docs coverage: passed
 - Backend compile/smoke check: blocked by missing Go toolchain in the current environment
-- Global UI tool discovery check: passed
-- Project wrapper skill discovery check: passed
 
-## UI / API flows exercised
+## Canonical docs updated
 
-- repo-local harness bootstrap flow
-- Stage 00 artifact seeding flow
-- roadmap stage directory seeding flow
-- roadmap renumbering and Storybook foundation stage insertion flow
-- source-of-truth freeze based on current repo documents and backend structure
-- global UI workflow installation and discovery flow
-- repo-local UI workflow wrapper/harness integration flow
+- `AGENTS.md`
+- `README.md`
+- `CONTRIBUTING.md`
+- `docs/roadmap.md`
+- `docs/architecture/documentation-workflow.md`
+- `docs/architecture/source-of-truth.md`
+- `docs/architecture/frontend-architecture.md`
+- `docs/testing/test-strategy.md`
+- `docs/design/ui-workflow.md`
+- `docs/design/storybook-component-backlog.md`
+- `docs/onboarding.md`
+
+## Decisions verified
+
+- Stage 00 proof uses the active repo-local runtime harness and `verify_harness.py`; archived bootstrap materials remain provenance/recovery only.
+- Documentation sync is a repo-level requirement and verifier proof-gap rule, not optional follow-up cleanup.
+- `docs/architecture/frontend-architecture.md` is part of the UI source-of-truth stack for future `apps/web` work and is now referenced consistently from repo guidance.
+- Onboarding for the current runnable baseline lives in `docs/onboarding.md`, replacing the removed `docs/quickstart-local-setup.md`.
+
+## Diagram refs
+
+- `docs/architecture/documentation-workflow.md` - Mermaid flowchart for the doc-sync loop inside the stage workflow.
+- `docs/architecture/frontend-architecture.md` - Mermaid dependency graph for the target `apps/web` layered architecture.
 
 ## Artifacts collected
 
+- `AGENTS.md`
+- `README.md`
+- `CONTRIBUTING.md`
+- `docs/roadmap.md`
+- `docs/architecture/documentation-workflow.md`
 - `docs/architecture/source-of-truth.md`
+- `docs/architecture/frontend-architecture.md`
 - `docs/architecture/adr/0001-stack-boundaries.md`
 - `docs/architecture/adr/0002-mvp-scope-guardrails.md`
 - `docs/architecture/adr/0003-request-status-model.md`
 - `docs/architecture/adr/0004-offline-sync-approach.md`
 - `docs/testing/test-strategy.md`
-- `.impeccable.md`
 - `docs/design/ui-workflow.md`
 - `docs/design/storybook-component-backlog.md`
+- `docs/onboarding.md`
+- `.impeccable.md`
 - `.agents/skills/vrk-web-ui-design/`
 - `.agents/skills/vrk-web-ui-workflow/`
 - `.agents/skills/vendor/impeccable/`
 - `.agents/skills/vendor/polish/`
+- `.agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py`
+- `docs/archive/agent-bootstrap/`
 - `.agent/stages/01-ui-storybook-foundation/`
-- `.agent/stages/00-harness-and-source-of-truth/raw/bootstrap-install.json`
-- `.agent/stages/00-harness-and-source-of-truth/raw/stage00-status.json`
+- `.agent/stages/00-harness-and-source-of-truth/raw/harness-runtime-check.json`
 - `.agent/stages/00-harness-and-source-of-truth/raw/stage-directories.txt`
 - `.agent/stages/00-harness-and-source-of-truth/raw/doc-inventory.txt`
+- `.agent/stages/00-harness-and-source-of-truth/raw/bootstrap-reference-audit.txt`
+- `.agent/stages/00-harness-and-source-of-truth/raw/bootstrap-install.json`
 - `.agent/stages/00-harness-and-source-of-truth/raw/backend-go-test.txt`
 - `.agent/stages/00-harness-and-source-of-truth/raw/backend-go-build.txt`
-- `.agent/stages/00-harness-and-source-of-truth/raw/global-skills.json`
-- `.agent/stages/00-harness-and-source-of-truth/raw/project-skills.json`
-- `.agent/stages/00-harness-and-source-of-truth/raw/ui-tool-install.txt`
-- `.agent/stages/00-harness-and-source-of-truth/raw/ui-workflow-inventory.txt`
+- `.agent/stages/00-harness-and-source-of-truth/raw/git-status.txt`
+- `.agent/stages/00-harness-and-source-of-truth/raw/git-log.txt`
+
+## Criteria mapping
+
+- `stage00-harness-installed`: `AGENTS.md`, `.codex/config.toml`, `.codex/agents/`, `.agents/skills/vrk-mvp-stage-orchestrator/`, `raw/harness-runtime-check.json`
+- `stage00-stage-directories-seeded`: `.agent/stages/`, `raw/stage-directories.txt`, `raw/harness-runtime-check.json`
+- `stage00-source-of-truth-frozen`: `docs/architecture/source-of-truth.md`, `raw/doc-inventory.txt`
+- `stage00-adrs-frozen`: `docs/architecture/adr/0001-stack-boundaries.md`, `docs/architecture/adr/0002-mvp-scope-guardrails.md`, `docs/architecture/adr/0003-request-status-model.md`, `docs/architecture/adr/0004-offline-sync-approach.md`
+- `stage00-test-strategy-baseline`: `docs/testing/test-strategy.md`, `raw/backend-go-test.txt`, `raw/backend-go-build.txt`
+- `stage00-storybook-backlog-integrated`: `docs/design/storybook-component-backlog.md`, `AGENTS.md`, `docs/design/ui-workflow.md`, `.agent/stages/01-ui-storybook-foundation/`
+- `stage00-fresh-verifier-pass`: `raw/harness-runtime-check.json`, `raw/git-status.txt`, `verdict.json`, `problems.md`, `progress.md`
 
 ## Notes / limitations
 
-- Fresh verifier has not been run yet in this session, so Stage 00 cannot be marked complete.
 - The current execution environment does not provide `go`, so backend compile/test smoke could not be completed locally.
 - `roadmap_mvp.md` previously duplicated the Codex-oriented roadmap text; for agent execution the authoritative file is now `docs/roadmap.md`.
-- Storybook backlog integration updates the durable stage map to `00..07`; Stage 00 still requires a fresh verifier before closure.
-- `quick_validate.py` for the wrapper skill could not be used as-is because the local Python environment does not have `yaml` installed; discovery was verified via `npx skills ls` instead.
+- Storybook backlog integration updates the durable stage map to `00..07`; Stage 00 now closes with this verifier pass and hands off to Stage 01.
+- `docs/archive/agent-bootstrap/` and `raw/bootstrap-install.json` are retained only as historical provenance and manual recovery material; they are no longer part of the active runtime proof path.

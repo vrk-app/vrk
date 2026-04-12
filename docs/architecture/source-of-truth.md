@@ -18,12 +18,19 @@
    - код и структура в `apps/backend/`
 2. Операционный roadmap для агента:
    - `docs/roadmap.md`
+   - `docs/architecture/documentation-workflow.md`
 3. Архивные bootstrap и исторические материалы:
    - `docs/archive/agent-bootstrap/`
 
 Если описание в более позднем документе противоречит уже существующему коду и структуре репозитория, приоритет у репозитория и PRD. Любое сознательное отклонение должно оформляться отдельным ADR до изменения кода.
 
 Архивные bootstrap-материалы полезны только для восстановления harness или анализа его происхождения; они не задают текущий runtime workflow.
+
+## Documentation drift policy
+
+Если в ходе работы принято решение, которое меняет или уточняет уже задокументированное поведение, приоритет остается у текущего repo state и явно принятого решения, но агент обязан синхронно обновить канонические docs в том же slice. Нельзя оставлять расхождение между кодом, stage evidence и технической документацией как “потом поправим”.
+
+Подробные правила doc-sync и требований к диаграммам заданы в `docs/architecture/documentation-workflow.md`.
 
 ## UI-specific source of truth
 
@@ -32,13 +39,15 @@
 1. `AGENTS.md`
 2. `docs/design/ui-workflow.md`
 3. `docs/design/serviceops-design-system.md`
-4. `.impeccable.md`
+4. `docs/architecture/frontend-architecture.md`
+5. `.impeccable.md`
 
 Назначение слоев:
 
 - `AGENTS.md` фиксирует repo-level policy и обязательные workflow правила.
 - `docs/design/ui-workflow.md` фиксирует канонический UI pipeline и review gate.
 - `docs/design/serviceops-design-system.md` фиксирует токены, визуальные паттерны и правила reusable компонентов.
+- `docs/architecture/frontend-architecture.md` фиксирует целевую layered architecture, data boundaries и frontend coding conventions для будущего `apps/web`.
 - `.impeccable.md` задает общий tone и brand context для UI-генерации.
 
 Если будущая shared UI-библиотека или `apps/web` вводят реализованные primitives, их фактическое API имеет приоритет над более старой дизайн-докой до синхронного обновления документации.
@@ -75,8 +84,10 @@
 Следующие файлы и каталоги являются обязательной долговременной памятью для последующих stage-runs:
 
 - `AGENTS.md`
+- `docs/architecture/documentation-workflow.md`
 - `docs/design/ui-workflow.md`
 - `docs/design/serviceops-design-system.md`
+- `docs/architecture/frontend-architecture.md`
 - `.agents/skills/vrk-mvp-stage-orchestrator/`
 - `.codex/agents/`
 - `.codex/config.toml`

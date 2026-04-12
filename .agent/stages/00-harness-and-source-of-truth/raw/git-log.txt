@@ -1,5 +1,10 @@
-8d8572e feat(api): small fixes + agreement CRUD
+897a8bf (HEAD -> codex/stage00-runtime-proof-refresh, origin/codex/stage-harness-docs, codex/stage-harness-docs) chore(config): add VRK stage harness and repo guidance
+8d8572e (origin/main, main) feat(api): small fixes + agreement CRUD
 249643e feat(api): add swagger
 6a6bc52 feat(backend): add Dockerfile
 f916a4b feat(api): add CRUD for organizations, equipment, standards, measuring instruments
 e936d0c chore(backend): add initial migrations
+e1ede7b chore(backend): initialize project
+8cae952 feat(app): enrich vrk1 research export
+1ee4746 fix(config): avoid overwriting research exports (#2)
+81332bb chore: initialize repository

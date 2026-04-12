@@ -20,10 +20,12 @@ Must include:
 - in-scope
 - out-of-scope
 - source documents
+- canonical docs expected to change
 - acceptance criteria
 - technical paths/modules
 - risk list
 - verification plan
+- diagram expectations for non-trivial flows if applicable
 
 ### `feature_list.json`
 
@@ -79,8 +81,10 @@ Must include:
 - slice objective
 - exact acceptance criteria
 - file/module ownership
+- documentation targets
 - build/test plan
 - proof requirements
+- documentation proof requirements
 - explicit non-goals for the slice
 
 If this is a web UI slice, also include:
@@ -99,6 +103,9 @@ Include:
 - tests run
 - screenshots/logs collected
 - urls/flows exercised
+- canonical docs updated
+- decisions documented
+- diagram refs updated
 - known limitations
 - mapping from criteria to evidence
 
@@ -121,6 +128,8 @@ Suggested keys:
 - artifacts
 - tests
 - screenshots
+- documentation_updates
+- diagram_refs
 - design_brief_source
 - changed_ui_files
 - ui_review
@@ -183,3 +192,4 @@ Examples:
 - builder owns `evidence.md` and `evidence.json`
 - verifier owns `verdict.json` and `problems.md`
 - workers never own the final evidence or verdict
+- canonical product/technical docs stay outside the stage directory and must be updated in their owning locations

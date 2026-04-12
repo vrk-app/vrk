@@ -13,6 +13,7 @@ Rules:
 - avoid unrelated rewrites
 - preserve the existing slice
 - rerun relevant tests
+- refresh canonical docs too when they are part of the reported proof gap
 - refresh evidence inputs needed for the next verifier pass
 
 You must not:
