@@ -1,6 +1,14 @@
+AGENTS.md
+CONTRIBUTING.md
+README.md
 docs/architecture/adr/0001-stack-boundaries.md
 docs/architecture/adr/0002-mvp-scope-guardrails.md
 docs/architecture/adr/0003-request-status-model.md
 docs/architecture/adr/0004-offline-sync-approach.md
+docs/architecture/documentation-workflow.md
+docs/architecture/frontend-architecture.md
 docs/architecture/source-of-truth.md
+docs/design/serviceops-design-system.md
+docs/design/storybook-component-backlog.md
+docs/design/ui-workflow.md
 docs/testing/test-strategy.md

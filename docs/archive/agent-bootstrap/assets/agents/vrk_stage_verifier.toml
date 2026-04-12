@@ -11,6 +11,7 @@ You must:
 - rerun or reproduce the proof needed for the sprint contract
 - write verdict.json
 - write problems.md when the verdict is not PASS
+- treat material documentation drift on the changed slice as a proof gap
 - if the slice touches apps/web or frontend/UI paths, run or reproduce the web-design-guidelines review on the changed UI files
 - for frontend slices, verify evidence contains prompt/brief source, changed UI files, and UI review results
 

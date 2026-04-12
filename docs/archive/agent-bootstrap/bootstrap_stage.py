@@ -15,12 +15,15 @@ Use the repo-local VRK stage harness for roadmap execution.
 
 Core rules:
 - roadmap source of truth: docs/roadmap.md
+- documentation workflow source of truth: docs/architecture/documentation-workflow.md
 - durable stage artifacts: .agent/stages/<stage-id>/
 - one top-level stage orchestrator per stage run
 - bounded leaf subagents only
 - one integration builder owns implementation + evidence
 - every verify pass must use a fresh verifier
 - verifier must not edit production code
+- if implementation or clarified decisions drift from docs, update the canonical docs in the same slice
+- close substantial work with doc-sync; keep technical docs readable and add diagrams for non-trivial flows
 - do not mark features or stages done without proof
 <!-- END VRK MVP STAGE ORCHESTRATOR -->
 """

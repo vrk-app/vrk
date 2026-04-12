@@ -1,7 +1,7 @@
 # Test Strategy
 
 Статус: draft baseline  
-Обновлено: 2026-04-11
+Обновлено: 2026-04-12
 
 ## Назначение
 
@@ -20,8 +20,10 @@
 
 - каждый stage-run начинает с re-sync и smoke существующего baseline;
 - evidence должно храниться в `.agent/stages/<stage-id>/evidence.*` и `raw/`;
+- если slice меняет или уточняет задокументированное поведение, evidence должно фиксировать doc-sync и обновленные канонические docs;
 - stage нельзя закрывать без свежего verifier-pass;
 - verifier не правит production code;
+- существенный documentation drift по измененному slice считается proof gap;
 - если baseline smoke падает, следующий stage сначала чинит baseline, а не строит новую функциональность поверх него.
 
 ## Слои проверки
@@ -30,9 +32,11 @@
 
 Для Stage 00 обязательны:
 
+- runtime self-check через `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 00-harness-and-source-of-truth`;
 - проверка наличия `AGENTS.md`, `.agents/skills`, `.codex/agents`, `.codex/config.toml`;
 - проверка существования `.agent/stages/00..07`;
 - проверка, что source-of-truth, ADR и stage artifacts реально созданы.
+- bootstrap archive используется только как historical provenance или ручной recovery path, а не как обязательный шаг runtime-проверки.
 
 ### 2. Backend checks
 
@@ -69,12 +73,14 @@
 - проверка допустимых статусных переходов;
 - проверка ограничений one-contractor and one-work-type per request;
 - проверка договорной маршрутизации;
+- проверка, что канонические docs и диаграммы обновлены, если slice менял workflow или contract;
 - проверка acceptance/reporting flows по evidence, а не только по коду.
 
 ## Минимальные stage gates
 
 ### Stage 00
 
+- runtime self-check проходит без обращения к bootstrap installer flow;
 - harness установлен;
 - stage directories seeded;
 - source-of-truth и ADR заморожены;

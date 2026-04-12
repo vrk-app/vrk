@@ -15,7 +15,7 @@
 - зафиксировать ADR по стеку, scope guardrails, статусной модели заявки и offline sync;
 - зафиксировать `docs/testing/test-strategy.md`;
 - встроить Storybook/UI source backlog в repo-local workflow;
-- собрать evidence по bootstrap и текущим инфраструктурным ограничениям среды.
+- собрать evidence по активному runtime harness и текущим инфраструктурным ограничениям среды.
 
 ## Out of scope
 
@@ -58,14 +58,16 @@
 ## Risks
 
 - в текущей среде отсутствует `go`, поэтому backend build/test smoke не доказан;
+- historical bootstrap bundle сохранен только как recovery/provenance path и не должен восприниматься как активная runtime зависимость;
 - исторический дубликат `roadmap_mvp.md` удален, а операционный источник истины для агента теперь находится в `docs/roadmap.md`;
 - текущий seed статусов в backend расходится с целевой моделью из PRD и должен быть нормализован на последующих стадиях;
 - без отдельного свежего verifier-pass Stage 00 нельзя формально закрыть.
 
 ## Verification plan
 
-- при необходимости сверить archived bootstrap bundle в `docs/archive/agent-bootstrap/`;
+- запустить runtime self-check через `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 00-harness-and-source-of-truth`;
 - проверить наличие всех stage directories через `find .agent/stages`;
 - проверить наличие и содержательное заполнение docs/architecture и docs/testing;
 - зафиксировать попытку backend smoke (`go test`, `go build`) и документировать блокировку среды;
-- подготовить evidence bundle и оставить verdict в `PENDING` до отдельного verifier-pass.
+- использовать archived bootstrap bundle в `docs/archive/agent-bootstrap/` только как historical provenance при необходимости;
+- подготовить evidence bundle, выполнить fresh verifier-pass и зафиксировать итоговый verdict в `verdict.json`.

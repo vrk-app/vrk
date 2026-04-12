@@ -15,8 +15,10 @@ VRK Platform - это единая цифровая платформа для у
 Перед генерацией или изменением UI, Storybook stories и component APIs сначала читать:
 
 - `AGENTS.md`
+- `docs/architecture/frontend-architecture.md`
 - `docs/design/serviceops-design-system.md`
 - `docs/design/ui-workflow.md`
+- `.impeccable.md`
 
 ## Текущее состояние runtime
 
@@ -26,11 +28,11 @@ VRK Platform - это единая цифровая платформа для у
 - при появлении `apps/web`, `apps/field` или любого другого JS/TS workspace версия Node должна фиксироваться уже на уровне репозитория через `.nvmrc` или `.node-version`, а package manager и lockfile должны коммититься вместе с workspace;
 - repo-level policy по Node нельзя выводить из глобального `nvm default` или другого пользовательского shell setup.
 
-## Quickstart / Local Setup
+## Onboarding / Local Setup
 
 Для локального старта текущего runnable baseline используйте отдельный документ:
 
-- [`docs/quickstart-local-setup.md`](docs/quickstart-local-setup.md)
+- [`docs/onboarding.md`](docs/onboarding.md)
 - [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
 Он описывает только то, что реально можно поднять сейчас: `apps/backend` на Go + PostgreSQL + migrations + Swagger, без full-stack допущений про будущие `apps/web` и `apps/field`.

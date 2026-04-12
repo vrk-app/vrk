@@ -30,6 +30,7 @@ Must do:
 - return findings with exact paths/symbols
 - mention open risks
 - suggest acceptance criteria or proof checks
+- point out canonical docs or diagrams that may need sync when relevant
 
 Must not:
 
@@ -55,6 +56,7 @@ Must do:
 - convert ambiguous intent into testable criteria
 - keep one slice small enough for one builder cycle
 - preserve required scope without inventing post-MVP scope
+- identify which canonical docs and diagrams must be updated if the slice lands
 
 Must not:
 
@@ -82,6 +84,8 @@ Must do:
 - request bounded workers only when ownership is explicit
 - rerun relevant tests
 - pack real evidence
+- sync canonical docs when the slice changes or clarifies documented decisions
+- add or refresh Mermaid diagrams for non-trivial flows/states when docs would otherwise be hard to follow
 - if the slice touches apps/web or frontend/UI paths, invoke `$vrk-web-ui-workflow`
 - for frontend slices, include prompt/brief source, changed UI files, and UI review output in evidence
 
@@ -110,6 +114,7 @@ Must do:
 - reproduce and verify the contract
 - state clearly whether the slice is proven
 - write precise failure diagnostics if not pass
+- treat material documentation drift on the changed slice as a proof gap
 - if the slice touches apps/web or frontend/UI paths, rerun or reproduce the `$web-design-guidelines` gate
 - verify frontend evidence includes prompt/brief source, changed UI files, and UI review output
 
@@ -131,6 +136,7 @@ Must do:
 - preserve the rest of the slice
 - keep changes minimal and auditable
 - refresh relevant tests/evidence before another verifier run
+- refresh canonical docs too when they are part of the reported proof gap
 
 Must not:
 

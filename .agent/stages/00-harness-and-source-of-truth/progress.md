@@ -46,11 +46,24 @@
 - Removed the repo-local Cursor mirror, deleted the duplicate `roadmap_mvp.md`, and dropped stale bootstrap residues such as `.codex/config.vrk-example.toml` and `__pycache__/`.
 - Updated active Codex-facing docs so the runtime workflow points only to the installed harness and the archive location for manual recovery.
 
+### 2026-04-12T07:04:30Z
+
+- Added a repo-local runtime self-check at `.agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py` so Stage 00 can prove the active harness without invoking archived bootstrap installers.
+- Refreshed `docs/testing/test-strategy.md`, `stage_spec.md`, `sprint_contract.md`, `feature_list.json`, `evidence.md`, and `evidence.json` so current proof points at runtime harness artifacts instead of legacy bootstrap flow.
+- Preserved `docs/archive/agent-bootstrap/` and `raw/bootstrap-install.json` strictly as historical provenance and manual recovery material.
+- Stage 00 still needs a fresh verifier-owned verdict update before it can be formally closed.
+
+### 2026-04-12T11:21:39Z
+
+- Re-ran the Stage 00 runtime self-check, refreshed `raw/` proof artifacts (`harness-runtime-check.json`, `stage-directories.txt`, `git-status.txt`, `git-log.txt`, `doc-inventory.txt`, `bootstrap-reference-audit.txt`), and reconfirmed that the harness and stage directory layout still pass.
+- Reviewed the canonical docs touched in this branch and synced UI guidance so `AGENTS.md`, `README.md`, and `docs/design/ui-workflow.md` now all reference `docs/architecture/frontend-architecture.md`; also added a Mermaid doc-sync loop diagram to `docs/architecture/documentation-workflow.md`.
+- Executed the closing verifier pass for Stage 00, marked `stage00-fresh-verifier-pass` as proven, and updated `verdict.json` / `problems.md` to reflect a final `PASS`.
+- Kept the missing `go` toolchain as a documented non-blocking environment limitation for later runtime stages, not as a Stage 00 proof gap.
+
 ### Remaining
 
-- Run a fresh verifier for Stage 00 and update `verdict.json` / `problems.md` accordingly.
-- If verifier confirms the bundle, move to Stage 01 with the seeded stage artifacts.
+- None for Stage 00. The stage is closed with a PASS verifier result.
 
 ### Next recommended sprint contract
 
-- `slice-002-fresh-verify-stage00`
+- `01-ui-storybook-foundation / slice-001-storybook-scaffold-and-foundations`

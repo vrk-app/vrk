@@ -19,8 +19,13 @@ TBD
 
 - docs/roadmap.md
 - AGENTS.md
+- docs/architecture/documentation-workflow.md
 - progress.md
 - feature_list.json
+
+## Canonical docs expected to change
+
+- TBD
 
 ## Acceptance criteria
 
@@ -35,5 +40,9 @@ TBD
 - TBD
 
 ## Verification plan
+
+- TBD
+
+## Diagram expectations
 
 - TBD

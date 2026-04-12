@@ -15,6 +15,10 @@ TBD
 
 - TBD
 
+## Documentation targets
+
+- TBD
+
 ## Build / test plan
 
 - TBD
@@ -22,6 +26,11 @@ TBD
 ## Proof requirements
 
 - TBD
+
+## Documentation proof requirements
+
+- canonical docs updated where the slice changed or clarified behavior
+- Mermaid diagrams added or refreshed for non-trivial flows if applicable
 
 ## UI Proof Requirements (if applicable)
 

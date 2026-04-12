@@ -18,6 +18,12 @@
 
 - TBD
 
+## Documentation sync
+
+- canonical docs updated: TBD
+- decisions documented: TBD
+- diagram refs: TBD
+
 ## UI Review (if applicable)
 
 - prompt or brief source: TBD

@@ -35,6 +35,12 @@ AGENTS.md
 
 The harness is already installed in this repository. Bootstrap materials used to install or reseed it are archived under `docs/archive/agent-bootstrap/` and are not part of the default runtime workflow.
 
+Runtime self-check for the active harness is available via:
+
+```text
+python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id <stage-id>
+```
+
 ## Commands supported by this skill
 
 Treat the following phrases as commands when the user invokes this skill:
@@ -92,6 +98,8 @@ Minimum files:
 
 These files are the source of truth for cross-session handoff. Session-local todo UI is helpful but never authoritative.
 
+Canonical product and technical docs are separate from stage artifacts. Use `docs/architecture/documentation-workflow.md` for doc-sync rules and diagram expectations.
+
 ## Top-level workflow
 
 ### 1. Re-sync at the start of every stage session
@@ -99,12 +107,13 @@ These files are the source of truth for cross-session handoff. Session-local tod
 Before making changes:
 
 1. read `AGENTS.md`
-2. read the relevant section of `docs/roadmap.md`
-3. read `.agent/stages/<stage-id>/progress.md`
-4. read `.agent/stages/<stage-id>/feature_list.json`
-5. read recent `git log`
-6. start the app or dev stack if available
-7. run smoke checks before new implementation
+2. read `docs/architecture/documentation-workflow.md`
+3. read the relevant section of `docs/roadmap.md`
+4. read `.agent/stages/<stage-id>/progress.md`
+5. read `.agent/stages/<stage-id>/feature_list.json`
+6. read recent `git log`
+7. start the app or dev stack if available
+8. run smoke checks before new implementation
 
 Do not start coding until you understand the current repo state.
 
@@ -132,6 +141,7 @@ After the spec is frozen:
   - integration logic
   - evidence bundle composition
   - final stage slice coherence
+- if the slice changes or clarifies documented behavior, architecture, workflow, or contracts, the builder must update the canonical docs in the same slice
 
 The parent stage orchestrator owns phase transitions. The builder does not become a second orchestrator.
 
@@ -151,6 +161,8 @@ After implementation for the current sprint contract:
 - record screenshots if UI behavior matters
 - update `evidence.md`
 - update `evidence.json`
+- list canonical docs updated for the slice
+- include diagram refs for any new or changed non-trivial flow/state docs
 
 For web UI slices also record:
 
@@ -161,7 +173,16 @@ For web UI slices also record:
 
 Never mark a feature as done based on code inspection alone.
 
-### 5. Fresh verification is mandatory
+### 5. Documentation sync is mandatory
+
+Before asking for proof:
+
+- update the narrowest canonical docs that own the changed decision
+- do not leave material documentation drift behind
+- add or refresh Mermaid diagrams for non-trivial flows, state machines, and cross-module interactions
+- keep stage artifacts as proof and handoff, not as a substitute for canonical docs
+
+### 6. Fresh verification is mandatory
 
 For each verification pass:
 
@@ -171,17 +192,19 @@ For each verification pass:
 - the verifier writes:
   - `verdict.json`
   - `problems.md` if not `PASS`
+- the verifier must treat material documentation drift on the changed slice as a proof gap
 
 For web UI slices the verifier must also rerun or reproduce the `$web-design-guidelines` gate and treat unresolved findings as proof gaps.
 
 Fresh means a new verifier session, not a resumed verifier.
 
-### 6. Fix minimally, then verify again
+### 7. Fix minimally, then verify again
 
 If the verifier returns a failure:
 
 - spawn exactly **1 fixer**
 - apply the smallest safe change set
+- refresh docs if the proof gap is caused by documentation drift or an undocumented decision
 - refresh evidence
 - run a **new fresh verifier**
 
@@ -190,12 +213,13 @@ Repeat until:
 - the sprint contract is proven, and
 - the stage is either complete or ready for the next sprint contract
 
-### 7. Close each session cleanly
+### 8. Close each session cleanly
 
 At the end of each session:
 
 - update `progress.md`
 - update only truly proven `passes` entries in `feature_list.json`
+- leave canonical docs consistent with the decisions made in the slice
 - leave the repo in a clean mergeable state
 - make a descriptive git commit when appropriate
 
@@ -206,6 +230,8 @@ At the end of each session:
 - Do not let child agents recursively orchestrate.
 - Do not let workers write `verdict.json` or own evidence.
 - Do not let the verifier edit production code.
+- Do not treat stage artifacts as the only place where product or technical decisions live.
+- Do not leave material documentation drift unresolved when the slice changed the decision.
 - Do not expand scope beyond roadmap MVP guardrails.
 - Do not skip smoke tests on resumed sessions when app startup is available.
 - Do not use `$frontend-design` directly when Impeccable is available for the same UI task.
@@ -245,10 +271,12 @@ Use $vrk-mvp-stage-orchestrator to run stage <stage-id> from docs/roadmap.md.
 
 You are the top-level stage orchestrator.
 Re-sync with AGENTS.md, docs/roadmap.md, stage artifacts, git log, and smoke tests.
+Read docs/architecture/documentation-workflow.md before freezing or changing decisions.
 Freeze the stage spec before implementation.
 Work one sprint contract at a time.
 Use bounded leaf subagents only when they reduce risk.
 Keep one builder as the integration owner.
+Sync canonical docs and diagrams before asking for proof.
 Require fresh verification for every verify pass.
 Do not mark anything done without proof.
 ```
