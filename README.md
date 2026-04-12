@@ -10,6 +10,31 @@ VRK Platform - это единая цифровая платформа для у
 
 Ключевая идея продукта - заменить разрозненные таблицы, мессенджеры, бумажные чек-листы и отдельные учетные системы единой экосистемой, адаптированной под реальные процессы вагоноремонтных и производственных предприятий.
 
+## UI Source Of Truth
+
+Перед генерацией или изменением UI, Storybook stories и component APIs сначала читать:
+
+- `AGENTS.md`
+- `docs/design/serviceops-design-system.md`
+- `docs/design/ui-workflow.md`
+
+## Текущее состояние runtime
+
+- текущий baseline репозитория состоит только из backend-контура в `apps/backend`;
+- в репозитории пока нет `package.json`, lockfile и repo-level pin для Node.js;
+- значит, Node.js не является обязательной runtime-зависимостью для текущего baseline и локально здесь нечего обновлять через `npm` или `pnpm`;
+- при появлении `apps/web`, `apps/field` или любого другого JS/TS workspace версия Node должна фиксироваться уже на уровне репозитория через `.nvmrc` или `.node-version`, а package manager и lockfile должны коммититься вместе с workspace;
+- repo-level policy по Node нельзя выводить из глобального `nvm default` или другого пользовательского shell setup.
+
+## Quickstart / Local Setup
+
+Для локального старта текущего runnable baseline используйте отдельный документ:
+
+- [`docs/quickstart-local-setup.md`](docs/quickstart-local-setup.md)
+- [`CONTRIBUTING.md`](CONTRIBUTING.md)
+
+Он описывает только то, что реально можно поднять сейчас: `apps/backend` на Go + PostgreSQL + migrations + Swagger, без full-stack допущений про будущие `apps/web` и `apps/field`.
+
 ## Для кого создается продукт
 
 ### Заказчики
@@ -456,7 +481,7 @@ VRK Platform - это единая цифровая платформа для у
 
 - веб-интерфейсы: `Next.js + TypeScript + Redux`;
 - мобильное приложение инженера: мультиплатформенный клиент с офлайн-хранилищем и синхронизацией;
-- backend: распределенный монолит или модульный backend на `Java` или `Go`;
+- backend: распределенный монолит или модульный backend на `Go`;
 - инфраструктура: централизованная авторизация, API для кабинетов и мобильного клиента, файловое хранилище, сервис уведомлений, модуль аналитики.
 
 На старте критично заложить:

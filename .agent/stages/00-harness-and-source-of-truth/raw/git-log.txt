@@ -1,0 +1,5 @@
+8d8572e feat(api): small fixes + agreement CRUD
+249643e feat(api): add swagger
+6a6bc52 feat(backend): add Dockerfile
+f916a4b feat(api): add CRUD for organizations, equipment, standards, measuring instruments
+e936d0c chore(backend): add initial migrations

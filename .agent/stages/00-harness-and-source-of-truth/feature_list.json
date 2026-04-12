@@ -1,0 +1,118 @@
+[
+  {
+    "id": "stage00-harness-installed",
+    "category": "functional",
+    "description": "Repo-local VRK harness installed and activated via AGENTS.md, .agents/skills, .codex/agents, and .codex/config.toml.",
+    "steps": [
+      "Verify AGENTS.md contains the managed harness block",
+      "Verify .agents/skills/vrk-mvp-stage-orchestrator exists",
+      "Verify .codex/agents contains stage agent definitions",
+      "Verify .codex/config.toml exists and matches the harness example"
+    ],
+    "passes": true,
+    "evidence_refs": [
+      "AGENTS.md",
+      ".agents/skills/vrk-mvp-stage-orchestrator/",
+      ".codex/agents/",
+      ".codex/config.toml",
+      ".agent/stages/00-harness-and-source-of-truth/raw/bootstrap-install.json"
+    ]
+  },
+  {
+    "id": "stage00-stage-directories-seeded",
+    "category": "functional",
+    "description": "Stage directories for roadmap stages 00 through 07 are seeded under .agent/stages, including the inserted UI Storybook foundation stage.",
+    "steps": [
+      "Run bootstrap init-stage for Stage 00",
+      "Seed or renumber Stage 01 through Stage 07 directories",
+      "Verify all expected stage directories exist"
+    ],
+    "passes": true,
+    "evidence_refs": [
+      ".agent/stages/",
+      ".agent/stages/00-harness-and-source-of-truth/raw/stage-directories.txt",
+      ".agent/stages/00-harness-and-source-of-truth/raw/stage00-status.json"
+    ]
+  },
+  {
+    "id": "stage00-source-of-truth-frozen",
+    "category": "documentation",
+    "description": "A source-of-truth document resolves precedence between repo state, PRD, roadmap, and legacy descriptions.",
+    "steps": [
+      "Inspect README.md, docs/PRD-MVP.md, BACKEND.md, and apps/backend/",
+      "Write docs/architecture/source-of-truth.md",
+      "Explicitly resolve current repo-vs-legacy ambiguities"
+    ],
+    "passes": true,
+    "evidence_refs": [
+      "docs/architecture/source-of-truth.md",
+      ".agent/stages/00-harness-and-source-of-truth/raw/doc-inventory.txt"
+    ]
+  },
+  {
+    "id": "stage00-adrs-frozen",
+    "category": "documentation",
+    "description": "ADR documents exist for stack boundaries, MVP scope guardrails, request status model, and offline sync approach.",
+    "steps": [
+      "Create stack ADR",
+      "Create scope guardrails ADR",
+      "Create request status model ADR",
+      "Create offline sync approach ADR"
+    ],
+    "passes": true,
+    "evidence_refs": [
+      "docs/architecture/adr/0001-stack-boundaries.md",
+      "docs/architecture/adr/0002-mvp-scope-guardrails.md",
+      "docs/architecture/adr/0003-request-status-model.md",
+      "docs/architecture/adr/0004-offline-sync-approach.md"
+    ]
+  },
+  {
+    "id": "stage00-test-strategy-baseline",
+    "category": "documentation",
+    "description": "A baseline test strategy exists and records current verification constraints and future stage gates.",
+    "steps": [
+      "Document current backend-only baseline",
+      "Document required checks for Stage 00 and later stages",
+      "Record environment gaps that block runtime smoke today"
+    ],
+    "passes": true,
+    "evidence_refs": [
+      "docs/testing/test-strategy.md",
+      ".agent/stages/00-harness-and-source-of-truth/raw/backend-go-test.txt",
+      ".agent/stages/00-harness-and-source-of-truth/raw/backend-go-build.txt"
+    ]
+  },
+  {
+    "id": "stage00-storybook-backlog-integrated",
+    "category": "documentation",
+    "description": "The Storybook component backlog is documented and wired into AGENTS/UI workflow guidance as a repo-local source of truth.",
+    "steps": [
+      "Write docs/design/storybook-component-backlog.md",
+      "Link the backlog from AGENTS.md and docs/design/ui-workflow.md",
+      "Seed a dedicated Stage 01 for Storybook/UI foundation"
+    ],
+    "passes": true,
+    "evidence_refs": [
+      "docs/design/storybook-component-backlog.md",
+      "AGENTS.md",
+      "docs/design/ui-workflow.md",
+      ".agent/stages/01-ui-storybook-foundation/"
+    ]
+  },
+  {
+    "id": "stage00-fresh-verifier-pass",
+    "category": "verification",
+    "description": "A fresh verifier validates the Stage 00 artifacts and records a final PASS in verdict.json.",
+    "steps": [
+      "Run a fresh verifier against Stage 00 artifacts",
+      "Review verdict.json and problems.md",
+      "Confirm all required criteria are proven"
+    ],
+    "passes": false,
+    "evidence_refs": [
+      ".agent/stages/00-harness-and-source-of-truth/verdict.json",
+      ".agent/stages/00-harness-and-source-of-truth/problems.md"
+    ]
+  }
+]

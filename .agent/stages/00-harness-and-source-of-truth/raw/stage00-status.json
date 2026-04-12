@@ -1,0 +1,17 @@
+{
+  "stage_id": "00-harness-and-source-of-truth",
+  "stage_dir": "/Users/yura-posledov/cursor/vrk/.agent/stages/00-harness-and-source-of-truth",
+  "exists": true,
+  "missing": [],
+  "present": [
+    "stage_spec.md",
+    "feature_list.json",
+    "progress.md",
+    "sprint_contract.md",
+    "evidence.md",
+    "evidence.json",
+    "verdict.json",
+    "problems.md",
+    "raw/README.md"
+  ]
+}

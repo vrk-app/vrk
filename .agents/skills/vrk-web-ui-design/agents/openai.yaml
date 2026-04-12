@@ -1,0 +1,4 @@
+interface:
+  display_name: "VRK Web UI Design"
+  short_description: "Design VRK web UI with review gate"
+  default_prompt: "Use $vrk-web-ui-design to build this VRK web component or page."

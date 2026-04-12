@@ -1,0 +1,6 @@
+docs/architecture/adr/0001-stack-boundaries.md
+docs/architecture/adr/0002-mvp-scope-guardrails.md
+docs/architecture/adr/0003-request-status-model.md
+docs/architecture/adr/0004-offline-sync-approach.md
+docs/architecture/source-of-truth.md
+docs/testing/test-strategy.md
