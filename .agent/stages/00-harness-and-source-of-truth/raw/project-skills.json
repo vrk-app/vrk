@@ -1,0 +1,20 @@
+[
+  {
+    "name": "vrk-mvp-stage-orchestrator",
+    "path": "/Users/yura-posledov/cursor/vrk/.agents/skills/vrk-mvp-stage-orchestrator",
+    "scope": "project",
+    "agents": [
+      "Codex",
+      "Cursor"
+    ]
+  },
+  {
+    "name": "vrk-web-ui-workflow",
+    "path": "/Users/yura-posledov/cursor/vrk/.agents/skills/vrk-web-ui-workflow",
+    "scope": "project",
+    "agents": [
+      "Codex",
+      "Cursor"
+    ]
+  }
+]

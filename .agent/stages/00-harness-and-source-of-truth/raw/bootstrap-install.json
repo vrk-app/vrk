@@ -1,0 +1,7 @@
+{
+  "installed": true,
+  "repo_root": "/Users/yura-posledov/cursor/vrk",
+  "agents_dir": "/Users/yura-posledov/cursor/vrk/.codex/agents",
+  "config_example": "/Users/yura-posledov/cursor/vrk/.codex/config.vrk-example.toml",
+  "agents_md": "/Users/yura-posledov/cursor/vrk/AGENTS.md"
+}

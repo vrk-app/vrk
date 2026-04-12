@@ -1,0 +1,10 @@
+[
+  {
+    "id": "seed-me",
+    "category": "functional",
+    "description": "Replace this placeholder with a real, testable stage feature.",
+    "steps": [],
+    "passes": false,
+    "evidence_refs": []
+  }
+]

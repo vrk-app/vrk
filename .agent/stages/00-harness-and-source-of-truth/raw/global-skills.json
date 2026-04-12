@@ -1,0 +1,85 @@
+[
+  {
+    "name": "impeccable",
+    "path": "/Users/yura-posledov/.agents/skills/impeccable",
+    "scope": "global",
+    "agents": [
+      "Claude Code",
+      "Codex"
+    ]
+  },
+  {
+    "name": "polish",
+    "path": "/Users/yura-posledov/.agents/skills/polish",
+    "scope": "global",
+    "agents": [
+      "Claude Code",
+      "Codex"
+    ]
+  },
+  {
+    "name": "web-design-guidelines",
+    "path": "/Users/yura-posledov/.agents/skills/web-design-guidelines",
+    "scope": "global",
+    "agents": [
+      "Claude Code",
+      "Codex"
+    ]
+  },
+  {
+    "name": "develop-web-game",
+    "path": "/Users/yura-posledov/.codex/skills/develop-web-game",
+    "scope": "global",
+    "agents": [
+      "Codex"
+    ]
+  },
+  {
+    "name": "explaining-code",
+    "path": "/Users/yura-posledov/.codex/skills/explaining-code",
+    "scope": "global",
+    "agents": [
+      "Codex"
+    ]
+  },
+  {
+    "name": "frontend-design",
+    "path": "/Users/yura-posledov/.codex/skills/frontend-design",
+    "scope": "global",
+    "agents": [
+      "Codex"
+    ]
+  },
+  {
+    "name": "frontend-skill",
+    "path": "/Users/yura-posledov/.codex/skills/frontend-skill",
+    "scope": "global",
+    "agents": [
+      "Codex"
+    ]
+  },
+  {
+    "name": "native-app-designer",
+    "path": "/Users/yura-posledov/.codex/skills/native-app-designer",
+    "scope": "global",
+    "agents": [
+      "Codex"
+    ]
+  },
+  {
+    "name": "sora",
+    "path": "/Users/yura-posledov/.codex/skills/sora",
+    "scope": "global",
+    "agents": [
+      "Codex"
+    ]
+  },
+  {
+    "name": "vibe-matcher",
+    "path": "/Users/yura-posledov/.codex/skills/vibe-matcher",
+    "scope": "global",
+    "agents": [
+      "Codex"
+    ]
+  }
+]

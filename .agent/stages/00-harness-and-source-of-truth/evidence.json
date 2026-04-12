@@ -1,0 +1,77 @@
+{
+  "stage_id": "00-harness-and-source-of-truth",
+  "sprint_contract_id": "slice-001-harness-bootstrap-and-doc-freeze",
+  "commands": [
+    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/bootstrap_stage.py install",
+    "cp .codex/config.vrk-example.toml .codex/config.toml",
+    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/bootstrap_stage.py init-stage --stage-id 00-harness-and-source-of-truth --stage-name 'Harness and source of truth'",
+    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/bootstrap_stage.py status --stage-id 00-harness-and-source-of-truth",
+    "bootstrap init-stage loop for original roadmap stages 01..06",
+    "manual renumbering of durable stage directories to 00..07 and insertion of 01-ui-storybook-foundation",
+    "repo inspection commands for README.md, docs/PRD-MVP.md, BACKEND.md, apps/backend, and git log",
+    "go test ./... (blocked: go command missing)",
+    "go build ./... (blocked: go command missing)",
+    "npx skills add pbakaus/impeccable -g --skill impeccable --skill polish -y --copy",
+    "npx skills add vercel-labs/agent-skills -g --skill web-design-guidelines -y --copy",
+    "curl -fsSL https://vercel.com/design/guidelines/install | bash",
+    "copy official Codex-flavored impeccable, polish, and web-design-guidelines into ~/.codex/skills",
+    "copy official Cursor-flavored impeccable and polish into ~/.cursor/skills",
+    "initialize .agents/skills/vrk-web-ui-workflow via init_skill.py",
+    "npx skills ls -g --json",
+    "npx skills ls --json"
+  ],
+  "tests": [
+    {
+      "name": "harness-install-status",
+      "status": "passed"
+    },
+    {
+      "name": "stage-directory-seeding",
+      "status": "passed"
+    },
+    {
+      "name": "document-inventory",
+      "status": "passed"
+    },
+    {
+      "name": "backend-go-smoke",
+      "status": "blocked",
+      "reason": "go command missing in the current environment"
+    },
+    {
+      "name": "global-ui-tool-discovery",
+      "status": "passed"
+    },
+    {
+      "name": "project-wrapper-skill-discovery",
+      "status": "passed"
+    }
+  ],
+  "artifacts": [
+    "docs/architecture/source-of-truth.md",
+    "docs/architecture/adr/0001-stack-boundaries.md",
+    "docs/architecture/adr/0002-mvp-scope-guardrails.md",
+    "docs/architecture/adr/0003-request-status-model.md",
+    "docs/architecture/adr/0004-offline-sync-approach.md",
+    "docs/testing/test-strategy.md",
+    ".impeccable.md",
+    "docs/design/ui-workflow.md",
+    "docs/design/storybook-component-backlog.md",
+    ".agents/skills/vrk-web-ui-design/",
+    ".agents/skills/vrk-web-ui-workflow/",
+    ".agents/skills/vendor/impeccable/",
+    ".agents/skills/vendor/polish/",
+    ".agent/stages/01-ui-storybook-foundation/",
+    ".agent/stages/00-harness-and-source-of-truth/raw/bootstrap-install.json",
+    ".agent/stages/00-harness-and-source-of-truth/raw/stage00-status.json",
+    ".agent/stages/00-harness-and-source-of-truth/raw/stage-directories.txt",
+    ".agent/stages/00-harness-and-source-of-truth/raw/doc-inventory.txt",
+    ".agent/stages/00-harness-and-source-of-truth/raw/backend-go-test.txt",
+    ".agent/stages/00-harness-and-source-of-truth/raw/backend-go-build.txt",
+    ".agent/stages/00-harness-and-source-of-truth/raw/global-skills.json",
+    ".agent/stages/00-harness-and-source-of-truth/raw/project-skills.json",
+    ".agent/stages/00-harness-and-source-of-truth/raw/ui-tool-install.txt",
+    ".agent/stages/00-harness-and-source-of-truth/raw/ui-workflow-inventory.txt"
+  ],
+  "updated_at": "2026-04-12T05:23:02Z"
+}

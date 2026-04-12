@@ -1,0 +1,96 @@
+[
+  {
+    "id": "stage01-storybook-scaffold",
+    "category": "functional",
+    "description": "apps/web and Storybook are scaffolded as a reproducible UI foundation for future stages.",
+    "steps": [
+      "Create apps/web scaffold with agreed frontend stack",
+      "Install and configure Storybook",
+      "Provide reproducible dev/build commands for Storybook"
+    ],
+    "passes": false,
+    "evidence_refs": [
+      "apps/web/",
+      ".agent/stages/01-ui-storybook-foundation/evidence.md"
+    ]
+  },
+  {
+    "id": "stage01-backlog-and-story-helpers",
+    "category": "documentation",
+    "description": "The Storybook component backlog, design tokens, enums, mock data, and story helpers are frozen as the source of truth for component-library work.",
+    "steps": [
+      "Use docs/design/storybook-component-backlog.md as source backlog",
+      "Implement token bridge from docs/design/serviceops-design-system.md",
+      "Create shared enums, mock data, and story helper utilities"
+    ],
+    "passes": false,
+    "evidence_refs": [
+      "docs/design/storybook-component-backlog.md",
+      "docs/design/serviceops-design-system.md",
+      "apps/web/",
+      ".agent/stages/01-ui-storybook-foundation/evidence.md"
+    ]
+  },
+  {
+    "id": "stage01-foundations",
+    "category": "functional",
+    "description": "Foundation docs surfaces are implemented in Storybook via TokenDocs and IconGallery.",
+    "steps": [
+      "Implement TokenDocs stories",
+      "Implement IconGallery stories",
+      "Capture evidence that foundation docs are navigable in Storybook"
+    ],
+    "passes": false,
+    "evidence_refs": [
+      "apps/web/",
+      ".agent/stages/01-ui-storybook-foundation/evidence.md"
+    ]
+  },
+  {
+    "id": "stage01-wave1-primitives",
+    "category": "functional",
+    "description": "Wave 1 primitives are implemented with the required story states and without parallel component families.",
+    "steps": [
+      "Implement base UI primitives from Wave 1",
+      "Implement layout/navigation primitives from Wave 1",
+      "Implement auth and request-list baseline components from Wave 1"
+    ],
+    "passes": false,
+    "evidence_refs": [
+      "docs/design/storybook-component-backlog.md",
+      "apps/web/",
+      ".agent/stages/01-ui-storybook-foundation/evidence.md"
+    ]
+  },
+  {
+    "id": "stage01-showcase-baseline",
+    "category": "functional",
+    "description": "Minimal showcase stories prove that the Stage 01 foundation composes into meaningful VRK page slices.",
+    "steps": [
+      "Compose AuthPage showcase baseline",
+      "Compose RequestsPage showcase baseline",
+      "Record screenshots or Storybook references for the composed slices"
+    ],
+    "passes": false,
+    "evidence_refs": [
+      "apps/web/",
+      ".agent/stages/01-ui-storybook-foundation/evidence.md"
+    ]
+  },
+  {
+    "id": "stage01-ui-review-pass",
+    "category": "verification",
+    "description": "Changed UI files pass the mandatory UI review gate and the stage receives a fresh verifier verdict.",
+    "steps": [
+      "Run $web-design-guidelines on changed UI files",
+      "Update evidence with the review result",
+      "Run a fresh verifier for Stage 01"
+    ],
+    "passes": false,
+    "evidence_refs": [
+      ".agent/stages/01-ui-storybook-foundation/evidence.md",
+      ".agent/stages/01-ui-storybook-foundation/verdict.json",
+      ".agent/stages/01-ui-storybook-foundation/problems.md"
+    ]
+  }
+]

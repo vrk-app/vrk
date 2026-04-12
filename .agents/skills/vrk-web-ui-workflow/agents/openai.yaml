@@ -1,0 +1,4 @@
+interface:
+  display_name: "VRK Web UI Workflow"
+  short_description: "Generate and review VRK web UI slices"
+  default_prompt: "Use $vrk-web-ui-workflow to implement and verify this VRK web UI task."

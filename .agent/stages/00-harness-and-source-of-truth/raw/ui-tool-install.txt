@@ -1,0 +1,35 @@
+-rw-r--r--@ 1 yura-posledov  staff  6939 Apr 11 17:35 /Users/yura-posledov/.cursor/commands/web-interface-guidelines.md
+
+/Users/yura-posledov/.codex/skills/impeccable:
+total 48
+drwxr-xr-x@  5 yura-posledov  staff    160 Apr 11 17:41 .
+drwxr-xr-x@ 24 yura-posledov  staff    768 Apr 11 17:41 ..
+-rw-r--r--@  1 yura-posledov  staff  21926 Apr 11 17:41 SKILL.md
+drwxr-xr-x@ 11 yura-posledov  staff    352 Apr 11 17:41 reference
+drwxr-xr-x@  3 yura-posledov  staff     96 Apr 11 17:41 scripts
+
+/Users/yura-posledov/.codex/skills/polish:
+total 24
+drwxr-xr-x@  3 yura-posledov  staff    96 Apr 11 17:41 .
+drwxr-xr-x@ 24 yura-posledov  staff   768 Apr 11 17:41 ..
+-rw-r--r--@  1 yura-posledov  staff  9528 Apr 11 17:41 SKILL.md
+
+/Users/yura-posledov/.codex/skills/web-design-guidelines:
+total 8
+drwxr-xr-x@  3 yura-posledov  staff    96 Apr 11 17:41 .
+drwxr-xr-x@ 24 yura-posledov  staff   768 Apr 11 17:41 ..
+-rwxr-xr-x@  1 yura-posledov  staff  1231 Apr 11 17:41 SKILL.md
+
+/Users/yura-posledov/.cursor/skills/impeccable:
+total 48
+drwxr-xr-x@  5 yura-posledov  staff    160 Apr 11 17:43 .
+drwxr-xr-x@  4 yura-posledov  staff    128 Apr 11 17:43 ..
+-rw-r--r--@  1 yura-posledov  staff  21897 Apr 11 17:43 SKILL.md
+drwxr-xr-x@ 11 yura-posledov  staff    352 Apr 11 17:43 reference
+drwxr-xr-x@  3 yura-posledov  staff     96 Apr 11 17:43 scripts
+
+/Users/yura-posledov/.cursor/skills/polish:
+total 24
+drwxr-xr-x@ 3 yura-posledov  staff    96 Apr 11 17:43 .
+drwxr-xr-x@ 4 yura-posledov  staff   128 Apr 11 17:43 ..
+-rw-r--r--@ 1 yura-posledov  staff  9502 Apr 11 17:43 SKILL.md

@@ -1,0 +1,12 @@
+{
+  "status": "PENDING",
+  "summary": "Stage 00 bootstrap and source-of-truth documents are prepared, but no fresh verifier pass has been executed yet.",
+  "failed_criteria": [
+    "stage00-fresh-verifier-pass"
+  ],
+  "proof_gaps": [
+    "Fresh verifier run is still required before Stage 00 can be marked complete.",
+    "Backend compile/test smoke could not be executed in this environment because the go toolchain is unavailable."
+  ],
+  "last_verified_at": null
+}

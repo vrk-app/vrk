@@ -1,0 +1,8 @@
+.agent/stages/00-harness-and-source-of-truth
+.agent/stages/01-ui-storybook-foundation
+.agent/stages/02-platform-foundation
+.agent/stages/03-identity-master-data
+.agent/stages/04-request-core-and-customer-cabinet
+.agent/stages/05-contractor-execution
+.agent/stages/06-field-engineer-offline
+.agent/stages/07-acceptance-reporting-hardening-release

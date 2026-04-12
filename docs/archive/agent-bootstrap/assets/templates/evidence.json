@@ -1,0 +1,11 @@
+{
+  "stage_id": "{{STAGE_ID}}",
+  "sprint_contract_id": "slice-001",
+  "commands": [],
+  "tests": [],
+  "artifacts": [],
+  "design_brief_source": null,
+  "changed_ui_files": [],
+  "ui_review": null,
+  "updated_at": null
+}
