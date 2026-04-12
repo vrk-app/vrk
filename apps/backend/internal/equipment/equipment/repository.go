@@ -13,10 +13,10 @@ import (
 
 type EquipmentRepository interface {
     Create(ctx context.Context, m Equipment) (*Equipment, error)
-    GetByID(ctx context.Context, id uuid.UUID) (*Equipment, error)
+    GetByID(ctx context.Context, id uuid.UUID) (*EquipmentWithDetails, error)
     Update(ctx context.Context, m Equipment) (*Equipment, error)
     Delete(ctx context.Context, id uuid.UUID) error
-    List(ctx context.Context, limit, offset int32) ([]Equipment, int64, error)
+    List(ctx context.Context, limit, offset int32) ([]EquipmentWithDetails, int64, error)
     Exists(ctx context.Context, id uuid.UUID) (bool, error)
 }
 
@@ -28,7 +28,6 @@ func NewRepository(q *generated.Queries) EquipmentRepository {
     return &equipmentRepository{q: q}
 }
 
-// Хелперы для конвертации (аналогичные организации)
 func toPGUUID(id uuid.UUID) pgtype.UUID {
     return pgtype.UUID{Bytes: id, Valid: true}
 }
@@ -75,6 +74,49 @@ func mapRow(r *generated.CreateEquipmentRow) *Equipment {
         StatusID:              r.StatusID,      
     }
 }
+func mapRowWithDetails(r *generated.GetEquipmentByIDRow) *EquipmentWithDetails {
+    equipmentName := ""
+    if r.EquipmentName != nil {
+        equipmentName = *r.EquipmentName
+    }
+    model := ""
+    if r.Model != nil {
+        model = *r.Model
+    }
+    manufacturer := ""
+    if r.Manufacturer != nil {
+        manufacturer = *r.Manufacturer
+    }
+    usageClassification := ""
+    if r.UsageClassification != nil {
+        usageClassification = *r.UsageClassification
+    }
+    organizationName := ""
+    if r.OrganizationName != nil {
+        organizationName = *r.OrganizationName
+    }
+    statusName := ""
+    if r.StatusName != nil {
+        statusName = *r.StatusName
+    }
+
+    return &EquipmentWithDetails{
+        ID:                    uuid.UUID(r.ID.Bytes),
+        FactoryNumber:         r.FactoryNumber,
+        InventoryNumber:       r.InventoryNumber,
+        ManufactureYear:       r.ManufactureYear.Time,
+        RegistrationYear:      fromNullDate(r.RegistrationYear),
+        EquipmentDictionaryID: uuid.UUID(r.EquipmentDictionaryID.Bytes),
+        EquipmentName:         equipmentName,
+        Model:                 model,
+        Manufacturer:          manufacturer,
+        UsageClassification:   usageClassification,
+        OrganizationID:        uuid.UUID(r.OrganizationID.Bytes),
+        OrganizationName:      organizationName,
+        StatusID:              r.StatusID,
+        StatusName:            statusName,
+    }
+}
 
 func (r *equipmentRepository) Create(ctx context.Context, m Equipment) (*Equipment, error) {
     params := generated.CreateEquipmentParams{
@@ -94,12 +136,12 @@ func (r *equipmentRepository) Create(ctx context.Context, m Equipment) (*Equipme
     return mapRow(&row), nil
 }
 
-func (r *equipmentRepository) GetByID(ctx context.Context, id uuid.UUID) (*Equipment, error) {
+func (r *equipmentRepository) GetByID(ctx context.Context, id uuid.UUID) (*EquipmentWithDetails, error) {
     row, err := r.q.GetEquipmentByID(ctx, toPGUUID(id))
     if err != nil {
         return nil, fmt.Errorf("%w: %v", ErrNotFound, err)
     }
-    return mapRow((*generated.CreateEquipmentRow)(&row)), nil
+    return mapRowWithDetails(&row), nil
 }
 
 func (r *equipmentRepository) Update(ctx context.Context, m Equipment) (*Equipment, error) {
@@ -129,7 +171,7 @@ func (r *equipmentRepository) Exists(ctx context.Context, id uuid.UUID) (bool, e
     return r.q.EquipmentExists(ctx, toPGUUID(id))
 }
 
-func (r *equipmentRepository) List(ctx context.Context, limit, offset int32) ([]Equipment, int64, error) {
+func (r *equipmentRepository) List(ctx context.Context, limit, offset int32) ([]EquipmentWithDetails, int64, error) {
     rows, err := r.q.ListEquipment(ctx, generated.ListEquipmentParams{
         Limit:  limit,
         Offset: offset,
@@ -140,9 +182,9 @@ func (r *equipmentRepository) List(ctx context.Context, limit, offset int32) ([]
 
     total, _ := r.q.CountEquipment(ctx)
 
-    result := make([]Equipment, len(rows))
+    result := make([]EquipmentWithDetails, len(rows))
     for i := range rows {
-        result[i] = *mapRow((*generated.CreateEquipmentRow)(&rows[i]))
+        result[i] = *mapRowWithDetails((*generated.GetEquipmentByIDRow)(&rows[i]))
     }
     return result, total, nil
 }

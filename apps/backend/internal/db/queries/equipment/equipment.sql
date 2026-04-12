@@ -9,15 +9,50 @@ RETURNING id, factory_number, inventory_number, manufacture_year, registration_y
     equipment_dictionary_id, organization_id, status_id;
 
 -- name: GetEquipmentByID :one
-SELECT id, factory_number, inventory_number, manufacture_year, registration_year,
-    equipment_dictionary_id, organization_id, status_id
-FROM equipment WHERE id = $1;
+SELECT 
+    e.id,
+    e.factory_number,
+    e.inventory_number,
+    e.manufacture_year,
+    e.registration_year,
+    e.equipment_dictionary_id,
+    ed.full_name as equipment_name,
+    ed.model,
+    ed.manufacturer,
+    uc.classification as usage_classification,
+    e.organization_id,
+    ou.name as organization_name,
+    e.status_id,
+    es.status as status_name
+FROM equipment e
+LEFT JOIN equipment_dictionaries ed ON e.equipment_dictionary_id = ed.id
+LEFT JOIN usage_classifications uc ON ed.classification_id = uc.id
+LEFT JOIN organization_units ou ON e.organization_id = ou.id
+LEFT JOIN equipment_status es ON e.status_id = es.id
+WHERE e.id = $1;
 
 -- name: ListEquipment :many
-SELECT id, factory_number, inventory_number, manufacture_year, registration_year,
-    equipment_dictionary_id, organization_id, status_id
-FROM equipment
-ORDER BY created_at DESC
+SELECT 
+    e.id,
+    e.factory_number,
+    e.inventory_number,
+    e.manufacture_year,
+    e.registration_year,
+    e.equipment_dictionary_id,
+    ed.full_name as equipment_name,
+    ed.model,
+    ed.manufacturer,
+    uc.classification as usage_classification,
+    e.organization_id,
+    ou.name as organization_name,
+    e.status_id,
+    es.status as status_name
+FROM equipment e
+LEFT JOIN equipment_dictionaries ed ON e.equipment_dictionary_id = ed.id
+LEFT JOIN usage_classifications uc ON ed.classification_id = uc.id
+LEFT JOIN organization_units ou ON e.organization_id = ou.id
+LEFT JOIN equipment_status es ON e.status_id = es.id
+ORDER BY e.created_at DESC
 LIMIT $1 OFFSET $2;
 
 -- name: UpdateEquipment :one

@@ -79,3 +79,10 @@ swagger:
 
 swagger-clean:
 	rm -rf docs/swagger
+
+all: install-tools create-db wait-for-db migrate-up run
+
+wait-for-db:
+	@echo "Waiting for PostgreSQL to be ready..."
+	@sleep 3
+	@echo "PostgreSQL is ready"

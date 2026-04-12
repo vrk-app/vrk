@@ -17,6 +17,25 @@ type Equipment struct {
     StatusID              int16
 }
 
+type EquipmentWithDetails struct {
+    ID                    uuid.UUID
+    FactoryNumber         string
+    InventoryNumber       *string
+    ManufactureYear       time.Time
+    RegistrationYear      *time.Time
+    EquipmentDictionaryID uuid.UUID
+    EquipmentName         string  // full_name
+    Model                 string
+    Manufacturer          string
+    UsageClassification   string
+    OrganizationID        uuid.UUID
+    OrganizationName      string
+    StatusID              int16
+    StatusName            string
+    CreatedAt             time.Time
+    UpdatedAt             time.Time
+}
+
 type CreateRequest struct {
     FactoryNumber        string  `json:"factoryNumber" validate:"required,max=50"`
     InventoryNumber      *string `json:"inventoryNumber,omitempty"`
@@ -36,20 +55,20 @@ type UpdateRequest struct {
     OrganizationID       *string `json:"organizationId,omitempty"`
     StatusID             *int16  `json:"statusId,omitempty"`
 }
-
 type EquipmentResponse struct {
     ID                   string  `json:"id"`
     FactoryNumber        string  `json:"factoryNumber"`
     InventoryNumber      *string `json:"inventoryNumber,omitempty"`
     ManufactureYear      string  `json:"manufactureYear"`
     RegistrationYear     *string `json:"registrationYear,omitempty"`
-    EquipmentDictionaryID string `json:"equipmentDictionaryId"`
-    OrganizationID       string  `json:"organizationId"`
+    EquipmentName        string  `json:"equipmentName"`
+    Model                string  `json:"model"`
+    Manufacturer         string  `json:"manufacturer"`
+    UsageClassification  string  `json:"usageClassification"`
+    OrganizationName     string  `json:"organizationName"`
     StatusID             int16   `json:"statusId"`
-    CreatedAt            string  `json:"createdAt"`
-    UpdatedAt            string  `json:"updatedAt"`
+    StatusName           string  `json:"statusName"`
 }
-
 type ListFilter struct {
     Limit  int32
     Offset int32

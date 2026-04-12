@@ -99,9 +99,27 @@ func (q *Queries) EquipmentExists(ctx context.Context, id pgtype.UUID) (bool, er
 }
 
 const getEquipmentByID = `-- name: GetEquipmentByID :one
-SELECT id, factory_number, inventory_number, manufacture_year, registration_year,
-    equipment_dictionary_id, organization_id, status_id
-FROM equipment WHERE id = $1
+SELECT 
+    e.id,
+    e.factory_number,
+    e.inventory_number,
+    e.manufacture_year,
+    e.registration_year,
+    e.equipment_dictionary_id,
+    ed.full_name as equipment_name,
+    ed.model,
+    ed.manufacturer,
+    uc.classification as usage_classification,
+    e.organization_id,
+    ou.name as organization_name,
+    e.status_id,
+    es.status as status_name
+FROM equipment e
+LEFT JOIN equipment_dictionaries ed ON e.equipment_dictionary_id = ed.id
+LEFT JOIN usage_classifications uc ON ed.classification_id = uc.id
+LEFT JOIN organization_units ou ON e.organization_id = ou.id
+LEFT JOIN equipment_status es ON e.status_id = es.id
+WHERE e.id = $1
 `
 
 type GetEquipmentByIDRow struct {
@@ -111,8 +129,14 @@ type GetEquipmentByIDRow struct {
 	ManufactureYear       pgtype.Date `json:"manufactureYear"`
 	RegistrationYear      pgtype.Date `json:"registrationYear"`
 	EquipmentDictionaryID pgtype.UUID `json:"equipmentDictionaryId"`
+	EquipmentName         *string     `json:"equipmentName"`
+	Model                 *string     `json:"model"`
+	Manufacturer          *string     `json:"manufacturer"`
+	UsageClassification   *string     `json:"usageClassification"`
 	OrganizationID        pgtype.UUID `json:"organizationId"`
+	OrganizationName      *string     `json:"organizationName"`
 	StatusID              int16       `json:"statusId"`
+	StatusName            *string     `json:"statusName"`
 }
 
 func (q *Queries) GetEquipmentByID(ctx context.Context, id pgtype.UUID) (GetEquipmentByIDRow, error) {
@@ -125,17 +149,40 @@ func (q *Queries) GetEquipmentByID(ctx context.Context, id pgtype.UUID) (GetEqui
 		&i.ManufactureYear,
 		&i.RegistrationYear,
 		&i.EquipmentDictionaryID,
+		&i.EquipmentName,
+		&i.Model,
+		&i.Manufacturer,
+		&i.UsageClassification,
 		&i.OrganizationID,
+		&i.OrganizationName,
 		&i.StatusID,
+		&i.StatusName,
 	)
 	return i, err
 }
 
 const listEquipment = `-- name: ListEquipment :many
-SELECT id, factory_number, inventory_number, manufacture_year, registration_year,
-    equipment_dictionary_id, organization_id, status_id
-FROM equipment
-ORDER BY created_at DESC
+SELECT 
+    e.id,
+    e.factory_number,
+    e.inventory_number,
+    e.manufacture_year,
+    e.registration_year,
+    e.equipment_dictionary_id,
+    ed.full_name as equipment_name,
+    ed.model,
+    ed.manufacturer,
+    uc.classification as usage_classification,
+    e.organization_id,
+    ou.name as organization_name,
+    e.status_id,
+    es.status as status_name
+FROM equipment e
+LEFT JOIN equipment_dictionaries ed ON e.equipment_dictionary_id = ed.id
+LEFT JOIN usage_classifications uc ON ed.classification_id = uc.id
+LEFT JOIN organization_units ou ON e.organization_id = ou.id
+LEFT JOIN equipment_status es ON e.status_id = es.id
+ORDER BY e.created_at DESC
 LIMIT $1 OFFSET $2
 `
 
@@ -151,8 +198,14 @@ type ListEquipmentRow struct {
 	ManufactureYear       pgtype.Date `json:"manufactureYear"`
 	RegistrationYear      pgtype.Date `json:"registrationYear"`
 	EquipmentDictionaryID pgtype.UUID `json:"equipmentDictionaryId"`
+	EquipmentName         *string     `json:"equipmentName"`
+	Model                 *string     `json:"model"`
+	Manufacturer          *string     `json:"manufacturer"`
+	UsageClassification   *string     `json:"usageClassification"`
 	OrganizationID        pgtype.UUID `json:"organizationId"`
+	OrganizationName      *string     `json:"organizationName"`
 	StatusID              int16       `json:"statusId"`
+	StatusName            *string     `json:"statusName"`
 }
 
 func (q *Queries) ListEquipment(ctx context.Context, arg ListEquipmentParams) ([]ListEquipmentRow, error) {
@@ -171,8 +224,14 @@ func (q *Queries) ListEquipment(ctx context.Context, arg ListEquipmentParams) ([
 			&i.ManufactureYear,
 			&i.RegistrationYear,
 			&i.EquipmentDictionaryID,
+			&i.EquipmentName,
+			&i.Model,
+			&i.Manufacturer,
+			&i.UsageClassification,
 			&i.OrganizationID,
+			&i.OrganizationName,
 			&i.StatusID,
+			&i.StatusName,
 		); err != nil {
 			return nil, err
 		}

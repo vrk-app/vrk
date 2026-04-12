@@ -117,9 +117,7 @@ definitions:
     type: object
   equipment.EquipmentResponse:
     properties:
-      createdAt:
-        type: string
-      equipmentDictionaryId:
+      equipmentName:
         type: string
       factoryNumber:
         type: string
@@ -129,13 +127,19 @@ definitions:
         type: string
       manufactureYear:
         type: string
-      organizationId:
+      manufacturer:
+        type: string
+      model:
+        type: string
+      organizationName:
         type: string
       registrationYear:
         type: string
       statusId:
         type: integer
-      updatedAt:
+      statusName:
+        type: string
+      usageClassification:
         type: string
     type: object
   equipment.Meta:
@@ -325,9 +329,7 @@ definitions:
     properties:
       address:
         type: string
-      createdAt:
-        type: string
-      directorId:
+      directorName:
         type: string
       id:
         type: string
@@ -347,13 +349,11 @@ definitions:
         type: string
       powerOfAttorneyNumber:
         type: string
-      propertyTypeId:
+      propertyType:
         type: string
-      roleId:
+      role:
         type: string
       shortName:
-        type: string
-      updatedAt:
         type: string
     type: object
   organization.Response:

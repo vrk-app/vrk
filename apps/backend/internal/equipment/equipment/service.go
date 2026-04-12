@@ -26,7 +26,6 @@ func NewService(repository EquipmentRepository) EquipmentService {
 func (s *equipmentService) Create(ctx context.Context, req CreateRequest) (*EquipmentResponse, error) {
     id := uuid.New()
 
-    // Парсинг UUID
     equipmentDictID, err := uuid.Parse(req.EquipmentDictionaryID)
     if err != nil {
         return nil, err
@@ -35,14 +34,11 @@ func (s *equipmentService) Create(ctx context.Context, req CreateRequest) (*Equi
     if err != nil {
         return nil, err
     }
-
-    // Год выпуска
     manufactureYear, err := time.Parse("2006", req.ManufactureYear)
     if err != nil {
         return nil, ErrManufactureYearRequired
     }
 
-    // Регистрационный год (опционально)
     var registrationYear *time.Time
     if req.RegistrationYear != nil && *req.RegistrationYear != "" {
         t, err := time.Parse("2006", *req.RegistrationYear)
@@ -50,8 +46,6 @@ func (s *equipmentService) Create(ctx context.Context, req CreateRequest) (*Equi
             registrationYear = &t
         }
     }
-
-    // Инвентарный номер (опционально)
     var inventoryNumber *string = req.InventoryNumber
 
     model := Equipment{
@@ -70,7 +64,12 @@ func (s *equipmentService) Create(ctx context.Context, req CreateRequest) (*Equi
         return nil, err
     }
 
-    return toResponse(eq), nil
+    full, err := s.repository.GetByID(ctx, eq.ID)
+    if err != nil {
+        return toResponseFromEquipment(eq), nil
+    }
+
+    return toResponse(full), nil
 }
 
 func (s *equipmentService) GetByID(ctx context.Context, id string) (*EquipmentResponse, error) {
@@ -98,51 +97,66 @@ func (s *equipmentService) Update(ctx context.Context, id string, req UpdateRequ
         return nil, err
     }
 
-    // Обновляем поля, если переданы
+    model := Equipment{
+        ID:                    eqID,
+        FactoryNumber:         current.FactoryNumber,
+        InventoryNumber:       current.InventoryNumber,
+        ManufactureYear:       current.ManufactureYear,
+        RegistrationYear:      current.RegistrationYear,
+        EquipmentDictionaryID: current.EquipmentDictionaryID,
+        OrganizationID:        current.OrganizationID,
+        StatusID:              current.StatusID,
+    }
+
     if req.FactoryNumber != nil {
-        current.FactoryNumber = *req.FactoryNumber
+        model.FactoryNumber = *req.FactoryNumber
     }
     if req.InventoryNumber != nil {
-        current.InventoryNumber = req.InventoryNumber
+        model.InventoryNumber = req.InventoryNumber
     }
     if req.ManufactureYear != nil {
         t, err := time.Parse("2006", *req.ManufactureYear)
         if err == nil {
-            current.ManufactureYear = t
+            model.ManufactureYear = t
         }
     }
     if req.RegistrationYear != nil {
         if *req.RegistrationYear == "" {
-            current.RegistrationYear = nil
+            model.RegistrationYear = nil
         } else {
             t, err := time.Parse("2006", *req.RegistrationYear)
             if err == nil {
-                current.RegistrationYear = &t
+                model.RegistrationYear = &t
             }
         }
     }
     if req.EquipmentDictionaryID != nil {
         id, err := uuid.Parse(*req.EquipmentDictionaryID)
         if err == nil {
-            current.EquipmentDictionaryID = id
+            model.EquipmentDictionaryID = id
         }
     }
     if req.OrganizationID != nil {
         id, err := uuid.Parse(*req.OrganizationID)
         if err == nil {
-            current.OrganizationID = id
+            model.OrganizationID = id
         }
     }
     if req.StatusID != nil {
-        current.StatusID = *req.StatusID
+        model.StatusID = *req.StatusID
     }
 
-    eq, err := s.repository.Update(ctx, *current)
+    eq, err := s.repository.Update(ctx, model)
     if err != nil {
         return nil, err
     }
 
-    return toResponse(eq), nil
+    full, err := s.repository.GetByID(ctx, eq.ID)
+    if err != nil {
+        return toResponseFromEquipment(eq), nil
+    }
+
+    return toResponse(full), nil
 }
 
 func (s *equipmentService) Delete(ctx context.Context, id string) error {
@@ -178,14 +192,37 @@ func (s *equipmentService) List(ctx context.Context, limit, offset int32) ([]*Eq
 }
 
 // toResponse
-func toResponse(eq *Equipment) *EquipmentResponse {
+func toResponse(eq *EquipmentWithDetails) *EquipmentResponse {
     resp := &EquipmentResponse{
-        ID:                    eq.ID.String(),
-        FactoryNumber:         eq.FactoryNumber,
-        EquipmentDictionaryID: eq.EquipmentDictionaryID.String(),
-        OrganizationID:        eq.OrganizationID.String(),
-        StatusID:              eq.StatusID,
-        ManufactureYear:       eq.ManufactureYear.Format("2006"),
+        ID:                  eq.ID.String(),
+        FactoryNumber:       eq.FactoryNumber,
+        ManufactureYear:     eq.ManufactureYear.Format("2006"),
+        EquipmentName:       eq.EquipmentName,
+        Model:               eq.Model,
+        Manufacturer:        eq.Manufacturer,
+        UsageClassification: eq.UsageClassification,
+        OrganizationName:    eq.OrganizationName,
+        StatusID:            eq.StatusID,
+        StatusName:          eq.StatusName,
+    }
+
+    if eq.InventoryNumber != nil {
+        resp.InventoryNumber = eq.InventoryNumber
+    }
+    if eq.RegistrationYear != nil {
+        year := eq.RegistrationYear.Format("2006")
+        resp.RegistrationYear = &year
+    }
+
+    return resp
+}
+
+func toResponseFromEquipment(eq *Equipment) *EquipmentResponse {
+    resp := &EquipmentResponse{
+        ID:              eq.ID.String(),
+        FactoryNumber:   eq.FactoryNumber,
+        ManufactureYear: eq.ManufactureYear.Format("2006"),
+        StatusID:        eq.StatusID,
     }
 
     if eq.InventoryNumber != nil {

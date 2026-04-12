@@ -1524,10 +1524,7 @@ const docTemplate = `{
         "equipment.EquipmentResponse": {
             "type": "object",
             "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "equipmentDictionaryId": {
+                "equipmentName": {
                     "type": "string"
                 },
                 "factoryNumber": {
@@ -1542,7 +1539,13 @@ const docTemplate = `{
                 "manufactureYear": {
                     "type": "string"
                 },
-                "organizationId": {
+                "manufacturer": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "organizationName": {
                     "type": "string"
                 },
                 "registrationYear": {
@@ -1551,7 +1554,10 @@ const docTemplate = `{
                 "statusId": {
                     "type": "integer"
                 },
-                "updatedAt": {
+                "statusName": {
+                    "type": "string"
+                },
+                "usageClassification": {
                     "type": "string"
                 }
             }
@@ -1832,10 +1838,7 @@ const docTemplate = `{
                 "address": {
                     "type": "string"
                 },
-                "createdAt": {
-                    "type": "string"
-                },
-                "directorId": {
+                "directorName": {
                     "type": "string"
                 },
                 "id": {
@@ -1865,16 +1868,13 @@ const docTemplate = `{
                 "powerOfAttorneyNumber": {
                     "type": "string"
                 },
-                "propertyTypeId": {
+                "propertyType": {
                     "type": "string"
                 },
-                "roleId": {
+                "role": {
                     "type": "string"
                 },
                 "shortName": {
-                    "type": "string"
-                },
-                "updatedAt": {
                     "type": "string"
                 }
             }
