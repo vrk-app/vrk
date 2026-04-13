@@ -1,49 +1,59 @@
 # Sprint Contract
 
 - Stage ID: 01-ui-storybook-foundation
-- Slice ID: slice-001-storybook-scaffold-and-foundations
+- Slice ID: slice-002-wave1-shell-auth-request-showcases
 
 ## Objective
 
-Поднять `apps/web` и Storybook как reproducible UI harness, подключить token/story helper foundation и доказать workflow на foundations плюс первом батче Wave 1 компонентов.
+Закрыть оставшийся Stage 01 exit gate поверх уже доказанного scaffold: реализовать layout/navigation baseline, auth baseline, request-list baseline и showcase stories, которые докажут composability без ухода в Stage 02 runtime/integration work.
 
 ## Acceptance criteria
 
-- `apps/web` scaffold существует и содержит Storybook scripts/config.
-- Shared story helpers покрывают базовые enums и mock data из backlog.
-- `TokenDocs` и `IconGallery` реализованы и доступны в Storybook.
-- Первый batch Wave 1 компонентов реализован как минимум для доказательства workflow:
-  - `Button`
-  - `InputField`
-  - `Badge`
-  - `Card`
-- Для компонентов из текущего slice есть required stories для соответствующих states.
-- Evidence содержит commands run, screenshots/story references и `$web-design-guidelines` result.
+- Layout/navigation Wave 1 baseline реализован в Storybook:
+  - `AppShell`
+  - `SidebarNav`
+  - `TopBar`
+  - `Breadcrumbs`
+  - `PageHeader`
+- Auth baseline реализован в Storybook:
+  - `AuthSplitLayout`
+  - `LoginForm`
+  - `ConsentRow`
+- Request-list baseline реализован в Storybook:
+  - `RequestStatusBadge`
+  - `RequestListItem`
+  - `RequestList`
+- Composed showcase stories существуют и не тянут Stage 02 runtime wiring:
+  - `Showcases/AuthPage`
+  - `Showcases/RequestsPage`
+- Для компонентов и showcases из текущего slice есть required stories/states по source backlog.
+- Evidence содержит commands run, story references или screenshots, changed UI files и `$web-design-guidelines` result.
 
 ## File / module ownership
 
 - `apps/web/`
-- `docs/design/storybook-component-backlog.md`
+- `docs/architecture/frontend-architecture.md`
 - `.agent/stages/01-ui-storybook-foundation/`
 
 ## Build / test plan
 
-- scaffold frontend app and Storybook config;
-- run install/build/story smoke for `apps/web`;
-- capture screenshots or Storybook evidence for foundations and the first Wave 1 stories;
+- implement the remaining Stage 01 Wave 1 shell/auth/request-list surfaces in `apps/web`;
+- compose `AuthPage` and `RequestsPage` Storybook showcases on top of reusable primitives;
+- run `pnpm run web:typecheck`, `pnpm run web:lint`, `pnpm run web:build`, `pnpm run storybook:build`, and `pnpm run web:smoke`;
+- capture Storybook references for the new layout/auth/request-list and showcase stories;
 - run `$web-design-guidelines` on changed UI files.
 
 ## Proof requirements
 
-- reproducible Storybook commands recorded in `evidence.md`;
-- screenshots or equivalent visual proof for `TokenDocs`, `IconGallery`, and the first Wave 1 stories;
-- changed UI files list;
-- UI review result;
-- updated `feature_list.json`, `progress.md`, `evidence.md`, and `evidence.json`.
+- reproducible Storybook/build commands recorded in `evidence.md`;
+- Storybook references or screenshots for shell/auth/request-list stories and both showcases;
+- changed UI files list and design-brief sources captured in `evidence.json`;
+- UI review result with closed findings, if any;
+- updated `feature_list.json`, `progress.md`, `evidence.md`, `evidence.json`, and fresh verifier verdict for the current slice.
 
 ## Non-goals
 
-- completion of the full Storybook backlog;
-- backend integration or API data wiring;
+- backend integration, real auth/session wiring, or API data loading;
 - `apps/field` work;
-- P1/P2 component delivery in this slice.
+- dashboard, messenger, registry, or reporting surfaces outside the Stage 01 exit gate;
+- P1/P2 backlog items from the Storybook source document.

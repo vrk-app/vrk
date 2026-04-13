@@ -1,7 +1,7 @@
 # VRK Storybook Component Backlog
 
 Статус: proposed source backlog  
-Обновлено: 2026-04-12
+Обновлено: 2026-04-13
 
 ## Назначение
 
@@ -223,7 +223,8 @@
 ### LAY-01 AppShell [P0]
 
 - Назначение: общий каркас приложения: `sidebar + topbar + content`.
-- Обязательные props: `sidebar`, `header`, `children`, `mobileSidebarOpen`.
+- Обязательные props: `sidebar`, `header`, `children`.
+- Story-only control: состояние mobile drawer может экспонироваться в Storybook как внешний control для связки `TopBar` + `SidebarNav`, но не обязано быть runtime-prop самого `AppShell`.
 - Состояния: `desktop`, `mobile with drawer`.
 - Stories: `DesktopShell`, `MobileShell`.
 
@@ -231,16 +232,18 @@
 
 - Назначение: левое меню с разделами и нижним блоком.
 - Обязательные props: `items`, `activeKey`, `footerItems`, `collapsed`, `mobileOpen`.
-- Состояния: `active item`, `long labels`, `mobile drawer`.
-- Stories: `Default`, `ActiveRequests`, `Collapsed`, `MobileDrawer`.
+- Состояния: `active item`, `long labels`, `mobile drawer`, `collapsed + mobile drawer`.
+- Stories: `Default`, `ActiveRequests`, `Collapsed`, `MobileDrawer`, `CollapsedMobileDrawer`.
 - Примечание: базовый CRM-shell с вертикальной навигацией закреплен в ТЗ.
 
 ### LAY-03 TopBar [P0]
 
 - Назначение: хлебные крошки / поиск / уведомления / профиль.
-- Обязательные props: `searchValue`, `notificationsCount`, `user`, `breadcrumbs`, `onSearch`, `onNotificationsClick`, `onUserMenu`.
-- Состояния: `with notifications`, `without notifications`, `long username`.
-- Stories: `Default`, `WithUnreadCount`, `LongUserName`.
+- Обязательные props: `searchValue`, `notificationsCount`, `user`, `breadcrumbs`.
+- Опциональные callbacks: `onSearch`, `onNotificationsClick`, `onUserMenu`.
+- Состояния: `with notifications`, `without notifications`, `long username`, `search unavailable`.
+- Stories: `Default`, `WithUnreadCount`, `WithoutNotifications`, `LongUserName`, `SearchUnavailable`.
+- Примечание: если `onSearch` не передан, поиск должен отображаться как явно недоступный, а не как фальшиво интерактивный control.
 
 ### LAY-04 Breadcrumbs [P0]
 
@@ -316,9 +319,10 @@
 ### REQ-04 RequestListItem [P0]
 
 - Назначение: карточка одной заявки в списке.
-- Обязательные props: `requestNumber`, `createdAt`, `title`, `enterprise`, `contractor`, `contract`, `sum`, `status`, `progressPercent`, `selected`, `noteLink`.
-- Состояния: `default`, `selected`, `long text`, `without note`.
-- Stories: `Base`, `Selected`, `LongEnterpriseName`, `WithoutNote`, `Completed`.
+- Обязательные props: `requestNumber`, `createdAt`, `title`, `enterprise`, `contractor`, `contract`, `sum`, `status`, `progressPercent`, `selected`, `note`.
+- Состояния: `default`, `selected`, `long text`, `without note`, `0%`, `overflow input`.
+- Stories: `Base`, `Selected`, `LongEnterpriseName`, `WithoutNote`, `Completed`, `ZeroProgress`, `OverflowInput`.
+- Примечание: `note` — это текстовое примечание строки. Если в slice нет реального перехода, компонент не должен обещать ссылку или другое ложное действие.
 
 ### REQ-05 RequestList [P0]
 

@@ -1,13 +1,13 @@
 # Архитектура фронтенда и практики разработки
 
-Статус: accepted target baseline  
+Статус: accepted baseline  
 Обновлено: 2026-04-12
 
 ## Назначение
 
-Этот документ фиксирует целевую архитектуру и инженерные практики для будущего `apps/web` в VRK.
+Этот документ фиксирует архитектуру и инженерные практики для `apps/web` в VRK.
 
-Важно: на текущем этапе репозиторий еще не содержит `apps/web`, поэтому этот файл описывает target baseline для `Stage 01` и `Stage 02`, а не текущий runnable workspace. Пока в репозитории реально существует только `apps/backend`.
+Важно: после Stage 01 в репозитории уже существует `apps/web`, но его текущий runnable baseline ограничен Storybook-first UI foundation: shared primitives, Wave 1 shell/auth/request-list slices и showcase stories без реального business/runtime wiring. Полноценный business/runtime контур `apps/web` остается задачей Stage 02.
 
 ## Смежные документы
 
@@ -42,6 +42,31 @@
 
 Этот документ описывает прежде всего `apps/web`.
 `apps/field` будет отдельным контуром, но базовые правила по типизации, data layer, naming и doc-sync должны по возможности оставаться согласованными.
+
+### 1.1. Текущий Stage 01 baseline
+
+Сейчас `apps/web` состоит из трех согласованных, но намеренно разделенных слоев:
+
+- `Next.js` App Router app для минимального landing shell и будущего runtime growth path;
+- reusable base в `shared/*`: design tokens, story helpers и UI primitives;
+- Vite-backed Storybook harness с Wave 1 slices в `widgets/*` и `entities/*` для layout/navigation, auth baseline, request-list baseline и showcase-композиций без раннего смешивания со Stage 02 runtime wiring.
+
+```mermaid
+flowchart LR
+    A["docs/design/serviceops-design-system.md"] --> B["apps/web/shared/config + shared/storybook"]
+    B --> C["apps/web/shared/ui primitives"]
+    C --> D["widgets/OperatorShell + widgets/Auth"]
+    C --> E["entities/Request"]
+    D --> F["stories/layout + stories/auth + stories/showcases"]
+    E --> G["stories/requests + stories/showcases"]
+    C --> H["stories/foundations + stories/primitives"]
+    F --> I["Storybook proof harness (react-vite)"]
+    G --> I
+    H --> I
+    C --> J["apps/web/app minimal Next.js shell"]
+```
+
+Диаграмма фиксирует Stage 01 contract: design tokens и story helpers питают shared primitives, поверх которых уже собраны Wave 1 `widgets` и `entities`, а runtime shell остается минимальным и не тянет business integration раньше Stage 02.
 
 ## 2. Архитектурный каркас: Adapted FSD для `apps/web`
 

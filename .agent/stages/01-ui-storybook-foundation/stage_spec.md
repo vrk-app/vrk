@@ -73,7 +73,7 @@
 
 - установить зависимости и зафиксировать reproducible Storybook commands;
 - прогнать install/build/story smoke для `apps/web`;
-- собрать screenshot evidence для foundations и Wave 1 showcase stories;
+- собрать Storybook story references и/или screenshot evidence для foundations и Wave 1 showcase stories;
 - прогнать `$web-design-guidelines` по changed UI files;
 - обновить `evidence.md`, `evidence.json`, `feature_list.json`, `progress.md`, `verdict.json`;
 - не закрывать Stage 01 без fresh verifier pass.

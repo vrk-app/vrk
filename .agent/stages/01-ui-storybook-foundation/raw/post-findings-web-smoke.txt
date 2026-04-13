@@ -1,0 +1,147 @@
+
+> vrk-platform@ web:smoke /Users/yura-posledov/cursor/vrk
+> pnpm run web:lint && pnpm run web:typecheck && pnpm run web:build && pnpm run storybook:build
+
+
+> vrk-platform@ web:lint /Users/yura-posledov/cursor/vrk
+> pnpm --filter @vrk/web lint
+
+
+> @vrk/web@0.1.0 lint /Users/yura-posledov/cursor/vrk/apps/web
+> eslint .
+
+
+> vrk-platform@ web:typecheck /Users/yura-posledov/cursor/vrk
+> pnpm --filter @vrk/web typecheck
+
+
+> @vrk/web@0.1.0 typecheck /Users/yura-posledov/cursor/vrk/apps/web
+> tsc --noEmit
+
+
+> vrk-platform@ web:build /Users/yura-posledov/cursor/vrk
+> pnpm --filter @vrk/web build
+
+
+> @vrk/web@0.1.0 build /Users/yura-posledov/cursor/vrk/apps/web
+> next build
+
+   ▲ Next.js 15.5.15
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 897ms
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/5) ...
+   Generating static pages (1/5) 
+   Generating static pages (2/5) 
+   Generating static pages (3/5) 
+ ✓ Generating static pages (5/5)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /                                    3.44 kB         105 kB
+└ ○ /_not-found                            996 B         103 kB
++ First Load JS shared by all             102 kB
+  ├ chunks/155-76b6758d4d8b5d3a.js       45.6 kB
+  ├ chunks/b58405f4-f4dd9784c134e5cb.js  54.2 kB
+  └ other shared chunks (total)          1.84 kB
+
+
+○  (Static)  prerendered as static content
+
+
+> vrk-platform@ storybook:build /Users/yura-posledov/cursor/vrk
+> pnpm --filter @vrk/web build-storybook
+
+
+> @vrk/web@0.1.0 build-storybook /Users/yura-posledov/cursor/vrk/apps/web
+> storybook build --quiet
+
+@storybook/core v8.5.8
+
+info => Cleaning outputDir: storybook-static
+info => Loading presets
+info => Building manager..
+info => Manager built ([38;2;181;126;229m70 ms[39m)
+info => Building preview..
+info Using tsconfig paths for react-docgen
+vite v6.4.2 building for production...
+transforming...
+info => Copying static files: public at storybook-static
+✓ 1788 modules transformed.
+../../node_modules/.pnpm/@storybook+core@8.5.8/node_modules/@storybook/core/dist/preview/runtime.js (3212:15): Use of eval in "../../node_modules/.pnpm/@storybook+core@8.5.8/node_modules/@storybook/core/dist/preview/runtime.js" is strongly discouraged as it poses security risks and may cause issues with minification.
+../../node_modules/.pnpm/@storybook+core@8.5.8/node_modules/@storybook/core/dist/preview/runtime.js (3214:16): Use of eval in "../../node_modules/.pnpm/@storybook+core@8.5.8/node_modules/@storybook/core/dist/preview/runtime.js" is strongly discouraged as it poses security risks and may cause issues with minification.
+rendering chunks...
+computing gzip size...
+storybook-static/iframe.html                                     17.56 kB │ gzip:   4.98 kB
+storybook-static/assets/preview-D_ONve_k.css                     34.71 kB │ gzip:   6.77 kB
+storybook-static/assets/_commonjsHelpers-CqkleIqs.js              0.12 kB │ gzip:   0.13 kB
+storybook-static/assets/preview-RZjC-8Wk.js                       0.16 kB │ gzip:   0.16 kB
+storybook-static/assets/preview-Br-h4d84.js                       0.17 kB │ gzip:   0.15 kB
+storybook-static/assets/plus-B5WjSABa.js                          0.34 kB │ gzip:   0.26 kB
+storybook-static/assets/arrow-right-BNK57h43.js                   0.35 kB │ gzip:   0.27 kB
+storybook-static/assets/arrow-up-right-Dg6NhD2R.js                0.35 kB │ gzip:   0.27 kB
+storybook-static/assets/search-C1j-D1RM.js                        0.35 kB │ gzip:   0.28 kB
+storybook-static/assets/index-D5921mV4.js                         0.46 kB │ gzip:   0.30 kB
+storybook-static/assets/bell-Bs5RhjE5.js                          0.47 kB │ gzip:   0.35 kB
+storybook-static/assets/preview-DGUiP6tS.js                       0.71 kB │ gzip:   0.50 kB
+storybook-static/assets/chunk-XP5HYGXS-B_VsWcPe.js                0.72 kB │ gzip:   0.40 kB
+storybook-static/assets/jsx-runtime-D_zvdyIk.js                   0.73 kB │ gzip:   0.46 kB
+storybook-static/assets/index-DrFu-skq.js                         0.77 kB │ gzip:   0.47 kB
+storybook-static/assets/mail-BQULaEYW.js                          0.78 kB │ gzip:   0.41 kB
+storybook-static/assets/preview-CucEcrdc.js                       0.79 kB │ gzip:   0.51 kB
+storybook-static/assets/preview-tKaMWhZ9.js                       0.84 kB │ gzip:   0.55 kB
+storybook-static/assets/Breadcrumbs.stories-uGPkmku1.js           1.04 kB │ gzip:   0.55 kB
+storybook-static/assets/StoryFrame-Dpmol3gz.js                    1.11 kB │ gzip:   0.52 kB
+storybook-static/assets/AuthPage.stories-BRWs5oJp.js              1.50 kB │ gzip:   0.90 kB
+storybook-static/assets/sparkles-DP5kxdPd.js                      1.50 kB │ gzip:   0.61 kB
+storybook-static/assets/createLucideIcon-CEWBtQ_y.js              1.86 kB │ gzip:   0.80 kB
+storybook-static/assets/preview-DFqPQBk3.js                       2.12 kB │ gzip:   1.17 kB
+storybook-static/assets/RequestsPage.stories-C6O6JViy.js          2.45 kB │ gzip:   1.36 kB
+storybook-static/assets/LoginForm.stories-JGjsYW8L.js             2.45 kB │ gzip:   1.11 kB
+storybook-static/assets/ConsentRow.stories-Ir4tqIN6.js            2.46 kB │ gzip:   1.16 kB
+storybook-static/assets/RequestListItem.stories-drPRl5qS.js       2.52 kB │ gzip:   0.84 kB
+storybook-static/assets/PageHeader.stories-zmvb0ZEE.js            2.57 kB │ gzip:   1.12 kB
+storybook-static/assets/AuthSplitLayout.stories-DPOjDWgB.js       2.58 kB │ gzip:   1.21 kB
+storybook-static/assets/IconGallery.stories-USbL4FqC.js           2.67 kB │ gzip:   1.16 kB
+storybook-static/assets/Card.stories-DCiNaTSL.js                  2.67 kB │ gzip:   1.12 kB
+storybook-static/assets/RequestStatusBadge.stories-dPaqCXC4.js    2.81 kB │ gzip:   0.89 kB
+storybook-static/assets/TopBar.stories-B_gK4BN-.js                3.19 kB │ gzip:   1.37 kB
+storybook-static/assets/RequestList.stories-WR6qck_o.js           3.32 kB │ gzip:   1.14 kB
+storybook-static/assets/preview-1l6V4UsQ.js                       3.50 kB │ gzip:   1.69 kB
+storybook-static/assets/SidebarNav.stories-CRrNueKh.js            4.38 kB │ gzip:   1.76 kB
+storybook-static/assets/Badge.stories-R0Y_EtM8.js                 4.47 kB │ gzip:   1.64 kB
+storybook-static/assets/preview-D77C14du.js                       5.03 kB │ gzip:   1.86 kB
+storybook-static/assets/Button.stories-B7m-bCk0.js                5.49 kB │ gzip:   1.88 kB
+storybook-static/assets/InputField.stories-DcFIveEs.js            5.50 kB │ gzip:   1.75 kB
+storybook-static/assets/AppShell.stories-BbRh8_uX.js              5.78 kB │ gzip:   2.50 kB
+storybook-static/assets/InputField-CtNDeDUH.js                    6.90 kB │ gzip:   2.40 kB
+storybook-static/assets/preview-BWzBA1C2.js                       7.62 kB │ gzip:   1.56 kB
+storybook-static/assets/index-CHwwgPiT.js                         7.92 kB │ gzip:   3.10 kB
+storybook-static/assets/preview-BBWR9nbA.js                       8.12 kB │ gzip:   3.10 kB
+storybook-static/assets/RequestList--z2xep8y.js                  11.60 kB │ gzip:   3.68 kB
+storybook-static/assets/TokenDocs.stories-CKZ2oCIm.js            11.72 kB │ gzip:   3.57 kB
+storybook-static/assets/fixtures-C55M1Nv4.js                     12.46 kB │ gzip:   3.78 kB
+storybook-static/assets/LoginForm-Ndv0Ufuo.js                    13.27 kB │ gzip:   4.17 kB
+storybook-static/assets/TopBar-DDkKByWx.js                       17.14 kB │ gzip:   4.27 kB
+storybook-static/assets/cn-BQHNewu7.js                           26.69 kB │ gzip:   8.42 kB
+storybook-static/assets/Color-YHDXOIA2-kMyrbIap.js               29.36 kB │ gzip:  11.07 kB
+storybook-static/assets/matchers-57EZJSQE-DWPG-1WF.js            29.75 kB │ gzip:  10.28 kB
+storybook-static/assets/entry-preview-BtYRNKWi.js                29.83 kB │ gzip:   9.72 kB
+storybook-static/assets/index-DgH-xKnr.js                        57.15 kB │ gzip:  16.28 kB
+storybook-static/assets/react-18-B_XZLN24.js                    185.73 kB │ gzip:  58.19 kB
+storybook-static/assets/iframe-DnJv9ewJ.js                      199.71 kB │ gzip:  67.65 kB
+storybook-static/assets/entry-preview-docs-DsSRoWXx.js          247.01 kB │ gzip:  73.42 kB
+storybook-static/assets/axe-CpEqoGoD.js                         582.57 kB │ gzip: 160.58 kB
+storybook-static/assets/index-DTcPxgFZ.js                       661.53 kB │ gzip: 156.54 kB
+storybook-static/assets/DocsRenderer-CFRXHY34-DdqmNziu.js       875.13 kB │ gzip: 273.05 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.81s
+info => Preview built ([38;2;181;126;229m5.26 s[39m)
+info => Output directory: /Users/yura-posledov/cursor/vrk/apps/web/storybook-static

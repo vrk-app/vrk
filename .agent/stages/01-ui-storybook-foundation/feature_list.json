@@ -8,7 +8,7 @@
       "Install and configure Storybook",
       "Provide reproducible dev/build commands for Storybook"
     ],
-    "passes": false,
+    "passes": true,
     "evidence_refs": [
       "apps/web/",
       ".agent/stages/01-ui-storybook-foundation/evidence.md"
@@ -23,7 +23,7 @@
       "Implement token bridge from docs/design/serviceops-design-system.md",
       "Create shared enums, mock data, and story helper utilities"
     ],
-    "passes": false,
+    "passes": true,
     "evidence_refs": [
       "docs/design/storybook-component-backlog.md",
       "docs/design/serviceops-design-system.md",
@@ -40,7 +40,7 @@
       "Implement IconGallery stories",
       "Capture evidence that foundation docs are navigable in Storybook"
     ],
-    "passes": false,
+    "passes": true,
     "evidence_refs": [
       "apps/web/",
       ".agent/stages/01-ui-storybook-foundation/evidence.md"
@@ -55,7 +55,7 @@
       "Implement layout/navigation primitives from Wave 1",
       "Implement auth and request-list baseline components from Wave 1"
     ],
-    "passes": false,
+    "passes": true,
     "evidence_refs": [
       "docs/design/storybook-component-backlog.md",
       "apps/web/",
@@ -71,7 +71,7 @@
       "Compose RequestsPage showcase baseline",
       "Record screenshots or Storybook references for the composed slices"
     ],
-    "passes": false,
+    "passes": true,
     "evidence_refs": [
       "apps/web/",
       ".agent/stages/01-ui-storybook-foundation/evidence.md"
@@ -86,7 +86,7 @@
       "Update evidence with the review result",
       "Run a fresh verifier for Stage 01"
     ],
-    "passes": false,
+    "passes": true,
     "evidence_refs": [
       ".agent/stages/01-ui-storybook-foundation/evidence.md",
       ".agent/stages/01-ui-storybook-foundation/verdict.json",

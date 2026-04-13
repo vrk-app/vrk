@@ -1,0 +1,30 @@
+
+> vrk-platform@ storybook /Users/yura-posledov/cursor/vrk
+> pnpm --filter @vrk/web storybook
+
+
+> @vrk/web@0.1.0 storybook /Users/yura-posledov/cursor/vrk/apps/web
+> storybook dev -p 6006 --ci
+
+@storybook/core v8.5.8
+
+info => Serving static files from ././public at /
+info => Starting manager..
+info => Starting preview..
+info Using tsconfig paths for react-docgen
+╭─────────────────────────────────────────────────────────────────────╮
+│                                                                     │
+│   [38;2;162;224;94mStorybook 8.5.8 for react-vite started[39m                            │
+│   116 ms for manager and 275 ms for preview                         │
+│                                                                     │
+│   Local:            http://localhost:6006/                          │
+│   On your network:  http://192.168.0.116:6006/                      │
+│                                                                     │
+│   [38;2;243;173;56mA new version (10.3.5) is available![39m                              │
+│                                                                     │
+│   Upgrade now: [38;2;162;224;94mnpx storybook@latest upgrade[39m                         │
+│                                                                     │
+│   Read full changelog:                                              │
+│   https://github.com/storybookjs/storybook/blob/main/CHANGELOG.md   │
+│                                                                     │
+╰─────────────────────────────────────────────────────────────────────╯

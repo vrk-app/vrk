@@ -1,0 +1,14 @@
+{
+  "name": "vrk-platform",
+  "private": true,
+  "packageManager": "pnpm@10.27.0",
+  "scripts": {
+    "web:dev": "pnpm --filter @vrk/web dev",
+    "web:lint": "pnpm --filter @vrk/web lint",
+    "web:typecheck": "pnpm --filter @vrk/web typecheck",
+    "web:build": "pnpm --filter @vrk/web build",
+    "storybook": "pnpm --filter @vrk/web storybook",
+    "storybook:build": "pnpm --filter @vrk/web build-storybook",
+    "web:smoke": "pnpm run web:lint && pnpm run web:typecheck && pnpm run web:build && pnpm run storybook:build"
+  }
+}

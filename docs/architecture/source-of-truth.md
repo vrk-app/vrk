@@ -57,8 +57,8 @@
 - Реальный backend уже существует в `apps/backend/` и реализуется на Go.
 - API собирается как REST-сервис на `chi`; OpenAPI/Swagger уже генерируется в `apps/backend/docs/swagger/`.
 - Данные хранятся в PostgreSQL; миграции лежат в `apps/backend/migrations/`.
-- Текущий репозиторий пока не содержит `apps/web` и `apps/field`, значит web- и field-контуры являются следующими этапами, а не текущим baseline.
-- Отсутствие `package.json`, lockfile и repo-level pin версии Node.js означает, что Node-политика пока не задана на уровне репозитория и не должна выводиться из глобальной локальной конфигурации разработчика.
+- Stage 01 уже добавил `apps/web` как Storybook-first UI foundation с foundations, Wave 1 shell/auth/request-list slices и showcase stories; `apps/field` по-прежнему отсутствует и остается следующим этапом roadmap.
+- Repo-level Node/pnpm policy теперь зафиксирована через `.nvmrc`, `package.json`, `pnpm-workspace.yaml` и `pnpm-lock.yaml`.
 - Конфигурация backend строится через `.env` и `apps/backend/.env.example`.
 
 ## Разрешение текущих неоднозначностей

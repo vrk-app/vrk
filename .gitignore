@@ -4,3 +4,9 @@ __pycache__/
 .env
 .venv/
 venv/
+node_modules/
+.next/
+storybook-static/
+dist/
+coverage/
+*.tsbuildinfo
