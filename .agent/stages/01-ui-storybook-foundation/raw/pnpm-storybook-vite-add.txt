@@ -1,0 +1,6 @@
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Progress: resolved 999, reused 863, downloaded 1, added 0
+ WARN  4 deprecated subdependencies found: glob@10.5.0, glob@7.2.3, inflight@1.0.6, rimraf@3.0.2
+.                                        |  +29 +++
+Progress: resolved 1000, reused 864, downloaded 2, added 29, done
+Done in 2s using pnpm v10.27.0

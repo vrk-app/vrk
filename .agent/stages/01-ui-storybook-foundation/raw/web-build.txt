@@ -1,0 +1,33 @@
+
+> vrk-platform@ web:build /Users/yura-posledov/cursor/vrk
+> pnpm --filter @vrk/web build
+
+
+> @vrk/web@0.1.0 build /Users/yura-posledov/cursor/vrk/apps/web
+> next build
+
+   ▲ Next.js 15.5.15
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 897ms
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/5) ...
+   Generating static pages (1/5) 
+   Generating static pages (2/5) 
+   Generating static pages (3/5) 
+ ✓ Generating static pages (5/5)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ○ /                                    3.44 kB         105 kB
+└ ○ /_not-found                            996 B         103 kB
++ First Load JS shared by all             102 kB
+  ├ chunks/155-76b6758d4d8b5d3a.js       45.6 kB
+  ├ chunks/b58405f4-f4dd9784c134e5cb.js  54.2 kB
+  └ other shared chunks (total)          1.84 kB
+
+
+○  (Static)  prerendered as static content
+

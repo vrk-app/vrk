@@ -1,0 +1,43 @@
+# Post-review UI Review
+
+- Checked at: `2026-04-12T22:50:12Z`
+- Guideline source: `.agent/stages/01-ui-storybook-foundation/raw/post-review-web-interface-guidelines-source.md`
+- Result: `PASS`
+
+## Scope
+
+- `apps/web/.storybook/preview.ts`
+- `apps/web/app/layout.tsx`
+- `apps/web/app/page.tsx`
+- `apps/web/entities/Request/ui/RequestList.tsx`
+- `apps/web/stories/auth/AuthSplitLayout.stories.tsx`
+- `apps/web/stories/auth/ConsentRow.stories.tsx`
+- `apps/web/stories/auth/LoginForm.stories.tsx`
+- `apps/web/stories/layout/AppShell.stories.tsx`
+- `apps/web/stories/layout/SidebarNav.stories.tsx`
+- `apps/web/stories/layout/TopBar.stories.tsx`
+- `apps/web/stories/requests/RequestList.stories.tsx`
+- `apps/web/stories/showcases/AuthPage.stories.tsx`
+- `apps/web/stories/showcases/RequestsPage.stories.tsx`
+- `apps/web/widgets/Auth/ui/AuthSplitLayout.tsx`
+- `apps/web/widgets/Auth/ui/ConsentRow.tsx`
+- `apps/web/widgets/Auth/ui/LoginForm.tsx`
+- `apps/web/widgets/OperatorShell/ui/Breadcrumbs.tsx`
+- `apps/web/widgets/OperatorShell/ui/SidebarNav.tsx`
+- `apps/web/widgets/OperatorShell/ui/TopBar.tsx`
+
+## Closed findings
+
+- `LoginForm` now renders a semantic `<form>`, submits via Enter, keeps the submit button truthful, and separates field-level errors from a form-level server error.
+- `ConsentRow` now exposes a real checkbox API for controlled and uncontrolled usage, with `aria-describedby`, `disabled`, `required`, and a single clickable hit target.
+- `AuthSplitLayout` now proves the required `mobile stacked` state instead of hiding the illustration below `lg`.
+- `TopBar` and `SidebarNav` now expose real controlled APIs for mobile menu state and drawer dismissal; stories prove the interactive contract and add the missing `without notifications` / `long labels` states.
+- `Breadcrumbs` now marks the current item with `aria-current="page"`.
+- `RequestList` now exposes a usable pagination callback, clamps impossible ranges, and proves the out-of-range state in Storybook.
+- Storybook now receives the same typography baseline as the Next shell.
+- The landing-page CTA no longer points to a hardcoded local loopback URL and falls back to a local runbook when no published Storybook URL is configured.
+
+## Notes
+
+- `apps/web/.storybook/main.ts` remains a pre-existing local diff and was not changed in this fix cycle.
+- No new guideline violations were found in the reviewed files.

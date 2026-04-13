@@ -1,0 +1,27 @@
+Scope: all 2 workspace projects
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Progress: resolved 25, reused 16, downloaded 8, added 0
+Progress: resolved 286, reused 219, downloaded 29, added 0
+Progress: resolved 691, reused 549, downloaded 32, added 0
+Progress: resolved 947, reused 805, downloaded 32, added 0
+ WARN  3 deprecated subdependencies found: glob@7.2.3, inflight@1.0.6, rimraf@3.0.2
+Packages: +837
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 952, reused 810, downloaded 32, added 480
+Progress: resolved 952, reused 810, downloaded 32, added 835
+Progress: resolved 952, reused 810, downloaded 32, added 837, done
+.../esbuild@0.25.12/node_modules/esbuild postinstall$ node install.js
+.../esbuild@0.25.12/node_modules/esbuild postinstall: Done
+ WARN  Issues with peer dependencies found
+apps/web
+└─┬ @storybook/nextjs 8.5.8
+  └── ✕ unmet peer next@"^13.5.0 || ^14.0.0 || ^15.0.0": found 16.2.3
+
+╭ Warning ─────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│   Ignored build scripts: core-js-pure@3.49.0.                                │
+│   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+│   to run scripts.                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Done in 7.5s using pnpm v10.27.0

@@ -22,11 +22,11 @@ VRK Platform - это единая цифровая платформа для у
 
 ## Текущее состояние runtime
 
-- текущий baseline репозитория состоит только из backend-контура в `apps/backend`;
-- в репозитории пока нет `package.json`, lockfile и repo-level pin для Node.js;
-- значит, Node.js не является обязательной runtime-зависимостью для текущего baseline и локально здесь нечего обновлять через `npm` или `pnpm`;
-- при появлении `apps/web`, `apps/field` или любого другого JS/TS workspace версия Node должна фиксироваться уже на уровне репозитория через `.nvmrc` или `.node-version`, а package manager и lockfile должны коммититься вместе с workspace;
-- repo-level policy по Node нельзя выводить из глобального `nvm default` или другого пользовательского shell setup.
+- текущий baseline репозитория состоит из backend-контура в `apps/backend` и Storybook-first UI foundation в `apps/web`;
+- web-контур Stage 01 уже включает reusable UI, semantic tokens, shared story helpers, Wave 1 shell/auth/request-list slices и showcase stories, но всё ещё без runtime/business integration;
+- в репозитории зафиксированы `.nvmrc`, `package.json`, `pnpm-workspace.yaml` и `pnpm-lock.yaml`, поэтому Node/pnpm policy теперь задается на уровне репозитория;
+- для UI baseline используются команды `pnpm install`, `pnpm storybook` и `pnpm run web:smoke`;
+- `apps/field` и полноценный web runtime по-прежнему относятся к следующим этапам roadmap.
 
 ## Onboarding / Local Setup
 
@@ -35,7 +35,7 @@ VRK Platform - это единая цифровая платформа для у
 - [`docs/onboarding.md`](docs/onboarding.md)
 - [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
-Он описывает только то, что реально можно поднять сейчас: `apps/backend` на Go + PostgreSQL + migrations + Swagger, без full-stack допущений про будущие `apps/web` и `apps/field`.
+Он описывает текущий runnable baseline: `apps/backend` на Go + PostgreSQL + migrations + Swagger и Stage 01 Storybook harness в `apps/web`.
 
 ## Для кого создается продукт
 

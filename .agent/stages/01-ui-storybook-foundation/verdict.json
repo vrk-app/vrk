@@ -1,7 +1,7 @@
 {
-  "status": "PENDING",
-  "summary": "",
+  "status": "PASS",
+  "summary": "Stage `01-ui-storybook-foundation` is proven on the current `apps/web` tree. Fresh verifier checks confirm that `.agent/stages/01-ui-storybook-foundation/raw/post-findings-harness-check.txt` still passes, no files under `apps/web` are newer than `.agent/stages/01-ui-storybook-foundation/raw/post-findings-web-smoke.txt`, every story ID listed in `.agent/stages/01-ui-storybook-foundation/raw/post-findings-story-refs.txt` still resolves in `apps/web/storybook-static/index.json`, and `.agent/stages/01-ui-storybook-foundation/raw/post-findings-web-design-guidelines.txt` continues to pass the mandatory UI review gate. The prior blocker is now closed: `docs/design/storybook-component-backlog.md` matches the current `AppShell`, `SidebarNav`, `TopBar`, and `RequestListItem` contracts, and `.agent/stages/01-ui-storybook-foundation/evidence.md` plus `evidence.json` record that canonical doc-sync. Stage 01 therefore satisfies the sprint contract and the stage acceptance criteria on the current tree.",
   "failed_criteria": [],
   "proof_gaps": [],
-  "last_verified_at": null
+  "last_verified_at": "2026-04-13T10:36:39Z"
 }

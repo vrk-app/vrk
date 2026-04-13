@@ -1,0 +1,106 @@
+# Post-findings UI Review
+
+- Checked at: `2026-04-13T10:30:06Z`
+- Guideline source: `.agent/stages/01-ui-storybook-foundation/raw/post-findings-web-interface-guidelines-source.md`
+- Result: `PASS`
+
+## Scope
+
+- `apps/web/app/globals.css`
+- `apps/web/entities/Request/ui/RequestList.tsx`
+- `apps/web/entities/Request/ui/RequestListItem.tsx`
+- `apps/web/shared/config/design-tokens.ts`
+- `apps/web/shared/storybook/fixtures.tsx`
+- `apps/web/shared/ui/Badge.tsx`
+- `apps/web/shared/ui/Card.tsx`
+- `apps/web/stories/foundations/TokenDocs.stories.tsx`
+- `apps/web/stories/layout/AppShell.stories.tsx`
+- `apps/web/stories/layout/SidebarNav.stories.tsx`
+- `apps/web/stories/layout/TopBar.stories.tsx`
+- `apps/web/stories/primitives/Card.stories.tsx`
+- `apps/web/stories/requests/RequestList.stories.tsx`
+- `apps/web/stories/requests/RequestListItem.stories.tsx`
+- `apps/web/widgets/Auth/ui/ConsentRow.tsx`
+- `apps/web/widgets/OperatorShell/ui/AppShell.tsx`
+- `apps/web/widgets/OperatorShell/ui/SidebarNav.tsx`
+- `apps/web/widgets/OperatorShell/ui/TopBar.tsx`
+
+## Findings
+
+## apps/web/app/globals.css
+
+✓ pass
+
+## apps/web/entities/Request/ui/RequestList.tsx
+
+✓ pass
+
+## apps/web/entities/Request/ui/RequestListItem.tsx
+
+✓ pass
+
+## apps/web/shared/config/design-tokens.ts
+
+✓ pass
+
+## apps/web/shared/storybook/fixtures.tsx
+
+✓ pass
+
+## apps/web/shared/ui/Badge.tsx
+
+✓ pass
+
+## apps/web/shared/ui/Card.tsx
+
+✓ pass
+
+## apps/web/stories/foundations/TokenDocs.stories.tsx
+
+✓ pass
+
+## apps/web/stories/layout/AppShell.stories.tsx
+
+✓ pass
+
+## apps/web/stories/layout/SidebarNav.stories.tsx
+
+✓ pass
+
+## apps/web/stories/layout/TopBar.stories.tsx
+
+✓ pass
+
+## apps/web/stories/primitives/Card.stories.tsx
+
+✓ pass
+
+## apps/web/stories/requests/RequestList.stories.tsx
+
+✓ pass
+
+## apps/web/stories/requests/RequestListItem.stories.tsx
+
+✓ pass
+
+## apps/web/widgets/Auth/ui/ConsentRow.tsx
+
+✓ pass
+
+## apps/web/widgets/OperatorShell/ui/AppShell.tsx
+
+✓ pass
+
+## apps/web/widgets/OperatorShell/ui/SidebarNav.tsx
+
+✓ pass
+
+## apps/web/widgets/OperatorShell/ui/TopBar.tsx
+
+✓ pass
+
+## Notes
+
+- Independent review found no unresolved Web Interface Guidelines violations in the changed UI slice on the current tree.
+- Verified semantic badge contrast from current tokens: `success 4.86:1`, `warning 4.86:1`, `danger 5.84:1`, `info 5.56:1`, `interactive 6.10:1`.
+- Any remaining Stage 01 blocker is tracked in `problems.md` as canonical doc/source-backlog drift rather than a UI-guidelines failure.

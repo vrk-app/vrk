@@ -1,10 +1,14 @@
-# Onboarding: от clone до PR (backend-only)
+# Onboarding: от clone до PR (backend + Storybook foundation)
 
 Это пошаговое руководство для нового разработчика.
 Цель: пройти полный цикл работы с текущим runnable baseline репозитория от `git clone` до создания Pull Request.
 
-Важно: на текущем этапе локально поднимается только `apps/backend`.
-`apps/web` и `apps/field` еще не входят в runnable baseline, поэтому onboarding ниже описывает только backend-контур.
+Важно: на текущем этапе локально поднимаются два baseline-контура:
+
+- `apps/backend` для API, миграций и Swagger;
+- `apps/web` как Storybook-first UI harness с foundations, Wave 1 shell/auth/request-list stories и showcase-композициями, но без business/runtime integration.
+
+`apps/field` по-прежнему не входит в runnable baseline.
 
 ## Что вы получите после прохождения
 
@@ -12,6 +16,7 @@
 
 - клонировать репозиторий;
 - поднять локальный `apps/backend`;
+- поднять локальный Storybook из `apps/web`;
 - запустить PostgreSQL через Docker или подключить локальную БД;
 - применить миграции и проверить API;
 - создать рабочую ветку по правилам проекта;
@@ -24,6 +29,8 @@
 
 - `git`;
 - `Go 1.26.1` или совместимый `1.26.x` toolchain, ориентируясь на `apps/backend/go.mod`;
+- `Node.js 20.10.x`, ориентируясь на repo-root `.nvmrc`, если вы работаете с `apps/web`;
+- `pnpm 10.x`, ориентируясь на repo-root `packageManager`;
 - `make`;
 - `Docker`, если хочешь поднять PostgreSQL одной командой;
 - или локальный `PostgreSQL 17`, если Docker не используешь;
@@ -34,6 +41,8 @@
 ```bash
 git --version
 go version
+node --version
+pnpm --version
 make --version
 docker --version
 gh --version
@@ -63,15 +72,38 @@ cd vrk
 Сейчас в репозитории реально можно локально поднять:
 
 - `apps/backend` на Go;
+- Storybook harness из `apps/web`;
 - PostgreSQL;
 - миграции;
 - Swagger UI для API.
 
 Это означает:
 
-- не нужно ставить `node`, `npm`, `pnpm` или `yarn` ради текущего baseline;
-- не нужно искать `apps/web` и `apps/field` в onboarding-flow;
-- repo-level policy по Node.js пока не зафиксирована, потому что JS/TS workspaces еще не добавлены.
+- для backend-only задач достаточно Go toolchain и PostgreSQL;
+- для UI/story задач дополнительно нужны `Node.js` и `pnpm`;
+- `apps/web` уже входит в baseline как Storybook-first foundation с layout/auth/request-list/showcase stories, а `apps/field` пока нет;
+- repo-level policy по Node.js теперь зафиксирована через `.nvmrc`, `package.json`, `pnpm-workspace.yaml` и `pnpm-lock.yaml`.
+
+## 3.1. Быстрый старт для UI harness
+
+Если задача относится к Storybook/UI foundation:
+
+```bash
+pnpm install
+pnpm storybook
+```
+
+Storybook должен подняться на:
+
+```text
+http://localhost:6006
+```
+
+Для воспроизводимого smoke check из корня репозитория:
+
+```bash
+pnpm run web:smoke
+```
 
 ## 4. Настройка локального `.env`
 

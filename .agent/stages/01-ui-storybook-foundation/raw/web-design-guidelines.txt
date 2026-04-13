@@ -1,0 +1,50 @@
+Source: https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md
+Source artifact:
+- .agent/stages/01-ui-storybook-foundation/raw/web-interface-guidelines-source.md
+
+Reviewed files:
+- apps/web/app/page.tsx
+- apps/web/shared/storybook/fixtures.tsx
+- apps/web/shared/ui/InputField.tsx
+- apps/web/widgets/Auth/index.ts
+- apps/web/widgets/Auth/ui/AuthSplitLayout.tsx
+- apps/web/widgets/Auth/ui/ConsentRow.tsx
+- apps/web/widgets/Auth/ui/LoginForm.tsx
+- apps/web/widgets/OperatorShell/index.ts
+- apps/web/widgets/OperatorShell/ui/AppShell.tsx
+- apps/web/widgets/OperatorShell/ui/Breadcrumbs.tsx
+- apps/web/widgets/OperatorShell/ui/PageHeader.tsx
+- apps/web/widgets/OperatorShell/ui/SidebarNav.tsx
+- apps/web/widgets/OperatorShell/ui/TopBar.tsx
+- apps/web/entities/Request/index.ts
+- apps/web/entities/Request/ui/RequestList.tsx
+- apps/web/entities/Request/ui/RequestListItem.tsx
+- apps/web/entities/Request/ui/RequestStatusBadge.tsx
+- apps/web/stories/layout/AppShell.stories.tsx
+- apps/web/stories/layout/Breadcrumbs.stories.tsx
+- apps/web/stories/layout/PageHeader.stories.tsx
+- apps/web/stories/layout/SidebarNav.stories.tsx
+- apps/web/stories/layout/TopBar.stories.tsx
+- apps/web/stories/auth/AuthSplitLayout.stories.tsx
+- apps/web/stories/auth/ConsentRow.stories.tsx
+- apps/web/stories/auth/LoginForm.stories.tsx
+- apps/web/stories/requests/RequestStatusBadge.stories.tsx
+- apps/web/stories/requests/RequestListItem.stories.tsx
+- apps/web/stories/requests/RequestList.stories.tsx
+- apps/web/stories/showcases/AuthPage.stories.tsx
+- apps/web/stories/showcases/RequestsPage.stories.tsx
+
+Result: PASS
+
+Closed during review:
+- Added a skip link and stable `main` target in `AppShell` to satisfy the page-level keyboard navigation rule.
+- Added `aria-label`, `name`, `autocomplete="off"`, `spellCheck={false}` and visible `focus-within` treatment to the topbar search field.
+- Converted consent and "remember me" affordances from decorative boxes into semantic checkbox controls with shared hit targets.
+- Added `aria-live="polite"` to inline validation/error surfaces in `InputField` and `ConsentRow`.
+- Normalized Storybook search-field states to `autoComplete="off"` so the stored review artifact matches the current tree.
+- Kept decorative icons `aria-hidden` and left icon-only controls with explicit `aria-label`.
+- Kept visible copy on the reviewed Storybook surfaces in Russian while preserving English component/API names as implementation labels only.
+- Added overflow-safe wrapping on request list text to cover long enterprise/title states from the source backlog.
+
+Conscious exception:
+- Sentence case in visible Russian UI copy follows `docs/design/serviceops-design-system.md` and is treated as a project-level design-system rule even though the upstream guideline set prefers Title Case.

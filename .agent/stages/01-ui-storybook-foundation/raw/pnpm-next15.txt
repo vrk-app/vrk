@@ -1,0 +1,16 @@
+Progress: resolved 0, reused 1, downloaded 0, added 0
+Progress: resolved 802, reused 705, downloaded 3, added 0
+Progress: resolved 853, reused 756, downloaded 3, added 0
+Progress: resolved 936, reused 821, downloaded 3, added 0
+Progress: resolved 944, reused 829, downloaded 4, added 0
+ WARN  3 deprecated subdependencies found: glob@7.2.3, inflight@1.0.6, rimraf@3.0.2
+.                                        |   +8  -13 +-
+Progress: resolved 947, reused 832, downloaded 5, added 8, done
+╭ Warning ─────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│   Ignored build scripts: core-js-pure@3.49.0.                                │
+│   Run "pnpm approve-builds" to pick which dependencies should be allowed     │
+│   to run scripts.                                                            │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Done in 5.4s using pnpm v10.27.0
