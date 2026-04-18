@@ -3,7 +3,7 @@
 Статус: accepted  
 Дата: 2026-04-11
 
-## Контекст
+## Цель
 
 `docs/PRD-MVP.md` фиксирует целевую стартовую модель статусов заявки, а текущий backend seed в `apps/backend/migrations/000004_temp_data_for_tests.up.sql` использует более узкий технический набор.
 
