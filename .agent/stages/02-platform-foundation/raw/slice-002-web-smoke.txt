@@ -1,6 +1,6 @@
 
 > vrk-platform@ web:smoke /Users/yura-posledov/cursor/vrk
-> pnpm run web:lint && pnpm run web:typecheck && pnpm run web:build && pnpm run storybook:build
+> pnpm run web:lint && pnpm run web:typecheck && pnpm run web:build && pnpm run storybook:build && pnpm run web:browser-smoke
 
 
 > vrk-platform@ web:lint /Users/yura-posledov/cursor/vrk
@@ -29,7 +29,7 @@
    ▲ Next.js 15.5.15
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 955ms
+ ✓ Compiled successfully in 1078ms
    Linting and checking validity of types ...
    Collecting page data ...
    Generating static pages (0/10) ...
@@ -41,18 +41,18 @@
    Collecting build traces ...
 
 Route (app)                                 Size  First Load JS
-┌ ○ /                                      134 B         102 kB
-├ ○ /_not-found                            996 B         103 kB
-├ ƒ /company                               134 B         102 kB
-├ ○ /contracts                             134 B         102 kB
-├ ○ /equipment                             134 B         102 kB
+┌ ○ /                                      135 B         102 kB
+├ ○ /_not-found                            991 B         103 kB
+├ ƒ /company                               135 B         102 kB
+├ ○ /contracts                             135 B         102 kB
+├ ○ /equipment                             135 B         102 kB
 ├ ○ /login                               1.05 kB         118 kB
 ├ ○ /register                            2.22 kB         119 kB
-└ ○ /requests                              134 B         102 kB
+└ ○ /requests                              135 B         102 kB
 + First Load JS shared by all             102 kB
-  ├ chunks/155-76b6758d4d8b5d3a.js       45.6 kB
-  ├ chunks/b58405f4-f4dd9784c134e5cb.js  54.2 kB
-  └ other shared chunks (total)          1.87 kB
+  ├ chunks/554-47be74451b2d875f.js       45.5 kB
+  ├ chunks/a97b86c7-9ac234f379ec86d3.js  54.2 kB
+  └ other shared chunks (total)          1.86 kB
 
 
 ○  (Static)   prerendered as static content
@@ -71,7 +71,7 @@ Route (app)                                 Size  First Load JS
 info => Cleaning outputDir: storybook-static
 info => Loading presets
 info => Building manager..
-info => Manager built ([38;2;181;126;229m66 ms[39m)
+info => Manager built ([38;2;181;126;229m61 ms[39m)
 info => Building preview..
 info Using tsconfig paths for react-docgen
 vite v6.4.2 building for production...
@@ -151,6 +151,33 @@ storybook-static/assets/DocsRenderer-CFRXHY34-BrMa4_hr.js       875.13 kB │ gz
 - Using dynamic import() to code-split the application
 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
-✓ built in 3.45s
-info => Preview built ([38;2;181;126;229m3.81 s[39m)
+✓ built in 3.40s
+info => Preview built ([38;2;181;126;229m3.59 s[39m)
 info => Output directory: /Users/yura-posledov/cursor/vrk/apps/web/storybook-static
+
+> vrk-platform@ web:browser-smoke /Users/yura-posledov/cursor/vrk
+> pnpm --filter @vrk/web browser-smoke
+
+
+> @vrk/web@0.1.0 browser-smoke /Users/yura-posledov/cursor/vrk/apps/web
+> playwright test --config playwright.config.ts
+
+[2m[WebServer] [22m(node:61393) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m(node:61413) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 2 workers
+
+(node:61419) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61419) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:61420) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/auth-flow.smoke.spec.ts:4:7 › auth browser smoke › login submit routes to company shell (369ms)
+  ✓  2 tests/auth-flow.smoke.spec.ts:17:7 › auth browser smoke › register submit routes to company shell (371ms)
+
+  2 passed (1.3s)

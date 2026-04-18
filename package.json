@@ -11,13 +11,15 @@
     "field:typecheck": "pnpm --filter @vrk/field typecheck",
     "field:build": "pnpm --filter @vrk/field build",
     "field:smoke": "pnpm run field:lint && pnpm run field:typecheck && pnpm run field:build",
+    "web:browser-install": "pnpm --filter @vrk/web browser:install",
+    "web:browser-smoke": "pnpm --filter @vrk/web browser-smoke",
     "web:dev": "pnpm --filter @vrk/web dev",
     "web:lint": "pnpm --filter @vrk/web lint",
     "web:typecheck": "pnpm --filter @vrk/web typecheck",
     "web:build": "pnpm --filter @vrk/web build",
     "storybook": "pnpm --filter @vrk/web storybook",
     "storybook:build": "pnpm --filter @vrk/web build-storybook",
-    "web:smoke": "pnpm run web:lint && pnpm run web:typecheck && pnpm run web:build && pnpm run storybook:build",
+    "web:smoke": "pnpm run web:lint && pnpm run web:typecheck && pnpm run web:build && pnpm run storybook:build && pnpm run web:browser-smoke",
     "platform:smoke": "./scripts/platform_smoke.sh"
   }
 }
