@@ -23,6 +23,8 @@ type readinessResponse struct {
 }
 
 func (a *App) handleHealth(w http.ResponseWriter, _ *http.Request) {
+	// healthz отвечает только за liveness HTTP-процесса: endpoint должен
+	// оставаться зеленым даже в момент, когда readyz еще ждет БД.
 	writeJSON(w, http.StatusOK, healthResponse{
 		CheckedAt:   time.Now().UTC().Format(time.RFC3339),
 		Environment: a.cfg.Server.Environment,
@@ -32,6 +34,8 @@ func (a *App) handleHealth(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (a *App) handleReady(w http.ResponseWriter, r *http.Request) {
+	// readyz делает короткий ping в БД, чтобы compose/CI различали "процесс
+	// backend поднялся" и "runtime реально готов обслуживать seeded requests".
 	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
 	defer cancel()
 
@@ -54,6 +58,8 @@ func (a *App) handleReady(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeJSON(w http.ResponseWriter, status int, payload any) {
+	// Health/readiness намеренно остаются маленькими и независимыми от domain
+	// handlers, поэтому для них достаточно локального best-effort JSON writer.
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(payload)

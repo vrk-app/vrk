@@ -15,6 +15,8 @@ import (
 // @title VRK API
 // @BasePath /api/v1
 func main() {
+	// Stage 02 smoke, compose и CI читают backend-логи из stdout, поэтому
+	// держим один process-wide structured logger от старта до остановки.
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{}))
 	slog.SetDefault(logger)
 
@@ -31,6 +33,8 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// Run блокирует поток на ListenAndServe, поэтому сервер живет в отдельной
+	// goroutine, а main выбирает между OS signal и неожиданным падением сервера.
 	serverErrCh := make(chan error, 1)
 	go func() {
 		serverErrCh <- application.Run(ctx)
@@ -48,6 +52,8 @@ func main() {
 		}
 	}
 
+	// Shutdown вызывается только отсюда. App.Run по ctx.Done() просто выходит,
+	// чтобы не запускать два параллельных graceful shutdown path.
 	cancel()
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
