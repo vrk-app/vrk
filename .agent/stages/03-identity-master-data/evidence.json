@@ -1,8 +1,26 @@
 {
   "stage_id": "03-identity-master-data",
-  "sprint_contract_id": "slice-001",
-  "commands": [],
-  "tests": [],
-  "artifacts": [],
-  "updated_at": null
+  "sprint_contract_id": "slice-001-first-admin-activation-and-org-graph",
+  "commands": [
+    "rg -n \"Stage 02|Stage 03|identity|master data|equipment|contracts|invitation|onboarding|organization|branch|unit|measuring|standard|эталон|СИ|подраздел\" docs apps .agent/stages/02-platform-foundation .agent/stages/03-identity-master-data",
+    "sed -n on roadmap, PRD, frontend architecture, customer-admin flow, and Stage 03 artifacts for scope re-sync",
+    "sed -n on AGENTS, documentation workflow, Stage 02 progress/feature list, and Stage 03 artifacts for harness-plan re-sync",
+    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data"
+  ],
+  "tests": [
+    "verify_harness: PASS"
+  ],
+  "artifacts": [
+    "docs/roadmap.md",
+    "docs/PRD-MVP.md",
+    "docs/design/customer-admin-bootstrap-flow.md",
+    "docs/architecture/frontend-architecture.md",
+    "docs/architecture/identity-master-data.md",
+    ".agent/stages/03-identity-master-data/stage_spec.md",
+    ".agent/stages/03-identity-master-data/feature_list.json",
+    ".agent/stages/03-identity-master-data/sprint_contract.md",
+    ".agent/stages/03-identity-master-data/progress.md",
+    ".agent/stages/03-identity-master-data/raw/harness-check-2026-04-18.txt"
+  ],
+  "updated_at": "2026-04-18T06:04:47Z"
 }

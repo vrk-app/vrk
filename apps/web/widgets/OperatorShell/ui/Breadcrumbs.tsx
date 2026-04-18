@@ -9,7 +9,7 @@ export type BreadcrumbItem = {
 
 export interface BreadcrumbsProps
   extends Omit<HTMLAttributes<HTMLElement>, "children"> {
-  items: BreadcrumbItem[];
+  items: readonly BreadcrumbItem[];
   separator?: ReactNode;
 }
 

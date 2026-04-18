@@ -1,0 +1,52 @@
+Storybook registry entries: 19
+Query: "field engineer offline shell status cards sync queue scaffold mobile contour"
+
+1. Layout/SidebarNav [SidebarNav]
+   story: apps/web/stories/layout/SidebarNav.stories.tsx
+   source: apps/web/widgets/OperatorShell/ui/SidebarNav.tsx
+   stories: Default, ActiveRequests, Collapsed, LongLabels, MobileDrawer, CollapsedMobileDrawer
+   tags: autodocs
+2. Список заявок [AppShell]
+   story: apps/web/stories/layout/AppShell.stories.tsx
+   source: apps/web/widgets/OperatorShell/ui/AppShell.tsx
+   stories: DesktopShell, MobileShell
+   tags: autodocs
+3. Requests/RequestStatusBadge [RequestStatusBadge]
+   story: apps/web/stories/requests/RequestStatusBadge.stories.tsx
+   source: apps/web/entities/Request/ui/RequestStatusBadge.tsx
+   stories: Draft, OnApproval, Approved, InWork, OnSigning, AwaitingPayment, Completed, Reclamation
+   tags: autodocs
+4. Foundations/IconGallery [IconGalleryShowcase]
+   story: apps/web/stories/foundations/IconGallery.stories.tsx
+   stories: NavigationIcons, ActionIcons, FileTypeIcons, StatusIcons
+   tags: autodocs
+5. Auth/AuthSplitLayout [AuthSplitLayout]
+   story: apps/web/stories/auth/AuthSplitLayout.stories.tsx
+   source: apps/web/widgets/Auth/ui/AuthSplitLayout.tsx
+   stories: Default, WithoutIllustration, Mobile
+   tags: autodocs
+6. Layout/TopBar [TopBar]
+   story: apps/web/stories/layout/TopBar.stories.tsx
+   source: apps/web/widgets/OperatorShell/ui/TopBar.tsx
+   stories: Default, WithUnreadCount, WithoutNotifications, SearchUnavailable, LongUserName
+   tags: autodocs
+7. Layout/Breadcrumbs [Breadcrumbs]
+   story: apps/web/stories/layout/Breadcrumbs.stories.tsx
+   source: apps/web/widgets/OperatorShell/ui/Breadcrumbs.tsx
+   stories: TwoLevels, ThreeLevels
+   tags: autodocs
+8. Primitives/InputField [InputField]
+   story: apps/web/stories/primitives/InputField.stories.tsx
+   source: apps/web/shared/ui/InputField.tsx
+   stories: Default, Hover, Focus, Text, Email, Password, SearchField, WithHint, WithError, Disabled
+   tags: autodocs
+9. Layout/PageHeader [PageHeader]
+   story: apps/web/stories/layout/PageHeader.stories.tsx
+   source: apps/web/widgets/OperatorShell/ui/PageHeader.tsx
+   stories: Simple, WithPrimaryAction, WithSubtitle
+   tags: autodocs
+10. Primitives/Badge [Badge]
+   story: apps/web/stories/primitives/Badge.stories.tsx
+   source: apps/web/shared/ui/Badge.tsx
+   stories: Neutral, Success, Warning, Danger, WithIcon, Small, TrendUp, TrendDown, StatusMatrix
+   tags: autodocs

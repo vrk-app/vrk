@@ -1,10 +1,114 @@
 [
   {
-    "id": "seed-me",
+    "id": "stage03-first-admin-activation",
     "category": "functional",
-    "description": "Replace this placeholder with a real, testable stage feature.",
-    "steps": [],
+    "description": "A platform admin can bootstrap an organization by sending a first-admin invite, and the invited admin activates via a one-time link instead of receiving a pre-created password.",
+    "steps": [
+      "Create an organization shell and send a first-admin invite by email",
+      "Accept the invite via one-time link and set a password",
+      "Land the invited admin in the launch wizard instead of an empty dashboard"
+    ],
     "passes": false,
-    "evidence_refs": []
+    "evidence_refs": [
+      "docs/roadmap.md",
+      "docs/PRD-MVP.md",
+      "docs/architecture/identity-master-data.md"
+    ]
+  },
+  {
+    "id": "stage03-org-hierarchy-and-launch-wizard",
+    "category": "functional",
+    "description": "The launch wizard and master data model support organization, subdivision, and unit setup, with unit remaining the primary operational scope and subdivision staying optional.",
+    "steps": [
+      "Persist organization core fields separately from optional requisites and documents",
+      "Create subdivisions with a typed subdivision model",
+      "Create units both under a subdivision and directly under an organization"
+    ],
+    "passes": false,
+    "evidence_refs": [
+      "docs/roadmap.md",
+      "docs/PRD-MVP.md",
+      "docs/architecture/identity-master-data.md"
+    ]
+  },
+  {
+    "id": "stage03-memberships-invites-scoped-access",
+    "category": "functional",
+    "description": "Users, memberships, invites, and scoped grants are separate concepts, and access inherits downward from organization to subdivision to unit without a deny layer.",
+    "steps": [
+      "Model user account, organization membership, and scoped grant separately",
+      "Support role templates and scopes for organization, subdivision, and unit",
+      "Track invite statuses draft, sent, opened, accepted, expired, and revoked"
+    ],
+    "passes": false,
+    "evidence_refs": [
+      "docs/architecture/identity-master-data.md",
+      "docs/design/customer-admin-bootstrap-flow.md",
+      ".agent/stages/03-identity-master-data/stage_spec.md"
+    ]
+  },
+  {
+    "id": "stage03-contracts-and-routing-master-data",
+    "category": "functional",
+    "description": "Contracts remain a Stage 03 routing prerequisite and constrain the contractor available to Stage 04 request flows.",
+    "steps": [
+      "Implement contracts registry and contract status baseline",
+      "Keep contractor selection constrained by contract context",
+      "Expose the resulting routing master data to later request creation"
+    ],
+    "passes": false,
+    "evidence_refs": [
+      "docs/roadmap.md",
+      "docs/PRD-MVP.md",
+      ".agent/stages/03-identity-master-data/stage_spec.md"
+    ]
+  },
+  {
+    "id": "stage03-equipment-mi-standard-registries",
+    "category": "functional",
+    "description": "Equipment, measuring instruments, and standards exist as separate registries instead of a single mega-form.",
+    "steps": [
+      "Create equipment cards independently of metrology",
+      "Create measuring instrument cards as their own entity",
+      "Create standards as a standalone registry with reusable references"
+    ],
+    "passes": false,
+    "evidence_refs": [
+      "docs/PRD-MVP.md",
+      "docs/architecture/identity-master-data.md",
+      ".agent/stages/03-identity-master-data/stage_spec.md"
+    ]
+  },
+  {
+    "id": "stage03-metrology-journals-and-status-derivation",
+    "category": "functional",
+    "description": "Metrology operations are journal-driven, and current status derives from the latest valid record instead of only denormalized dates.",
+    "steps": [
+      "Store journals for measuring instruments and standards",
+      "Support many-to-many or reusable links between measuring instruments and standards",
+      "Derive operational status and next due date from journal history"
+    ],
+    "passes": false,
+    "evidence_refs": [
+      "docs/PRD-MVP.md",
+      "docs/architecture/identity-master-data.md",
+      ".agent/stages/03-identity-master-data/stage_spec.md"
+    ]
+  },
+  {
+    "id": "stage03-archiving-dictionaries-and-proof",
+    "category": "documentation",
+    "description": "Stage 03 keeps archive-only lifecycle rules, organization-scoped dictionaries, and canonical documentation synchronized with the implementation and proof bundle.",
+    "steps": [
+      "Use archive instead of hard delete for core master-data entities",
+      "Support local draft dictionary entries inside an organization",
+      "Sync roadmap, PRD, architecture docs, and stage artifacts as decisions are implemented"
+    ],
+    "passes": false,
+    "evidence_refs": [
+      "docs/roadmap.md",
+      "docs/architecture/documentation-workflow.md",
+      ".agent/stages/03-identity-master-data/progress.md"
+    ]
   }
 ]

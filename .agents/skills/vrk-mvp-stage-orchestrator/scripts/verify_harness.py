@@ -31,6 +31,13 @@ REQUIRED_AGENT_FILES = (
     "vrk_stage_verifier.toml",
 )
 
+REQUIRED_UI_LOOKUP_FILES = (
+    "docs/design/ui-workflow.md",
+    "docs/design/storybook-component-backlog.md",
+    ".agents/skills/vrk-web-ui-workflow/SKILL.md",
+    ".agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py",
+)
+
 
 @dataclass
 class CheckResult:
@@ -163,6 +170,17 @@ def main() -> None:
             detail=".codex/config.toml is present."
             if config_exists
             else ".codex/config.toml is missing.",
+        )
+    )
+
+    ui_lookup_missing = missing_paths(repo_root, REQUIRED_UI_LOOKUP_FILES)
+    checks.append(
+        CheckResult(
+            id="ui-component-lookup",
+            status="PASS" if not ui_lookup_missing else "FAIL",
+            detail="Storybook component lookup workflow files are present."
+            if not ui_lookup_missing
+            else f"Missing UI lookup files: {', '.join(ui_lookup_missing)}",
         )
     )
 

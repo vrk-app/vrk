@@ -75,6 +75,8 @@ If the slice touches `apps/web` or frontend/UI paths:
 - the builder must use `$vrk-web-ui-workflow`
 - `.impeccable.md` is the shared design context source
 - `$web-design-guidelines` is a required acceptance gate before the slice can be proven
+- before adding or replacing reusable/domain UI, the builder must run the repo-local Storybook lookup helper and follow the decision order `reuse` -> `extend` -> `create`
+- the lookup query, matched story refs, and final reuse decision must be captured in evidence
 
 ### Verification
 
@@ -93,6 +95,8 @@ Material documentation drift on the changed slice is a proof gap.
 ### Proof probes
 
 If needed, use up to 3 read-only explorers for disjoint proof gaps, but the verifier remains the sole verdict owner.
+
+For web UI slices, skipped lookup evidence, unjustified duplicate reusable components, net-new reusable UI without stories, or missing backlog updates for new reusable families are proof gaps.
 
 ## Stage completion policy
 
@@ -115,6 +119,7 @@ Before ending a session:
 - no stale `progress.md`
 - no feature marked done without proof
 - no unresolved web-design-guidelines findings for proven frontend slices
+- no unjustified parallel reusable component families or missing Storybook lookup evidence for proven frontend slices
 
 ## Scope guardrails
 

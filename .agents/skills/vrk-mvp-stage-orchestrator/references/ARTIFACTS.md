@@ -90,6 +90,9 @@ Must include:
 If this is a web UI slice, also include:
 
 - prompt or brief source
+- component lookup query or short problem statement
+- expected reuse strategy (`reuse` / `extend` / `create`) or explicit uncertainty to resolve
+- candidate story refs if they are already known at spec-freeze time
 - changed UI paths in scope
 - the required UI review gate (`$web-design-guidelines`)
 
@@ -112,6 +115,11 @@ Include:
 If this is a web UI slice, also include:
 
 - prompt or brief source
+- component lookup query
+- matched story refs or explicit no-match result
+- reuse decision (`reuse` / `extend` / `create`)
+- rationale when `create` was necessary
+- backlog update note when a new reusable family or missing backlog slice was introduced
 - changed UI files
 - UI review result
 - note on how findings were resolved
@@ -131,8 +139,12 @@ Suggested keys:
 - documentation_updates
 - diagram_refs
 - design_brief_source
+- component_lookup
+- component_reuse_decision
 - changed_ui_files
 - ui_review
+- storybook_updates
+- backlog_updates
 - updated_at
 
 ### `verdict.json`
@@ -183,6 +195,7 @@ Examples:
 - `playwright.txt`
 - `curl-create-request.txt`
 - `ui-request-detail.png`
+- `storybook-component-lookup.json`
 - `web-design-guidelines.txt`
 
 ## Ownership rules

@@ -1,0 +1,19 @@
+Guidelines source: https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md
+Reviewed files:
+- apps/web/app/_components/AuthAside.tsx
+- apps/web/app/(runtime)/_components/RuntimeShell.tsx
+- apps/web/app/login/page.tsx
+- apps/web/app/register/page.tsx
+- apps/web/app/(runtime)/company/page.tsx
+- apps/web/app/(runtime)/equipment/page.tsx
+- apps/web/app/(runtime)/contracts/page.tsx
+- apps/web/app/(runtime)/requests/page.tsx
+- apps/web/features/AuthRegister/ui/RegisterForm.tsx
+- apps/web/widgets/Auth/ui/ConsentRow.tsx
+- apps/web/widgets/OperatorShell/ui/SidebarNav.tsx
+- apps/web/widgets/OperatorShell/ui/TopBar.tsx
+Result: no findings.
+Notes:
+- Fixed focus-visible states for plain buttons/links before final review.
+- Fixed autocomplete/spellcheck/placeholder details in RegisterForm before final review.
+- Storybook build emits a non-failing bundler note that the module-level "use client" directive in widgets/Auth/ui/ConsentRow.tsx is ignored during Storybook bundling; Next runtime and Storybook build still pass.

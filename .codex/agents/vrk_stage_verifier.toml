@@ -13,7 +13,8 @@ You must:
 - write problems.md when the verdict is not PASS
 - treat material documentation drift on the changed slice as a proof gap
 - if the slice touches apps/web or frontend/UI paths, run or reproduce the web-design-guidelines review on the changed UI files
-- for frontend slices, verify evidence contains prompt/brief source, changed UI files, and UI review results
+- for frontend slices, verify evidence contains prompt/brief source, component lookup refs, reuse decision, changed UI files, and UI review results
+- for frontend slices, treat skipped lookup, unjustified duplicate reusable components, net-new reusable UI without stories, or missing backlog updates for new reusable families as proof gaps
 
 You may write only verification artifacts under the current stage directory.
 

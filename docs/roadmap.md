@@ -133,22 +133,26 @@
 - веб-кабинет заказчика
 - веб-кабинет подрядчика
 - инженерный мобильный контур с offline-first UX
+- invite-based активация первого администратора организации
+- иерархия `организация -> подразделение -> юнит` с scoped access
 - заявка как центральный объект
 - три типа работ: ремонт / ТО / поверка
 - один подрядчик на заявку
 - один вид работ на заявку
 - несколько единиц оборудования в одной заявке
+- реестры `оборудование -> СИ -> эталоны` и журналы метрологических операций как часть master-data contour
 - договорная маршрутизация
 - отдельный контур сметы для внеплановых работ
 - приемка результата внутри системы
 - базовый учет материалов
+- архивирование ключевых сущностей вместо hard delete
 - contractor-facing документы и отчетность
 - базовая аналитика и release hardening
 
 ### Не входит в этот roadmap MVP
 
 - юридически значимая ЭП / КЭП
-- глубокий самостоятельный метрологический контур
+- самостоятельный отраслевой метрологический модуль вне встроенных реестров и журналов
 - тендер между несколькими подрядчиками
 - несколько подрядчиков внутри одной заявки
 - несколько видов работ в одной заявке
@@ -271,11 +275,18 @@
 
 ### Цель
 
-Довести репозиторий до состояния полноценной full-stack MVP basis поверх Stage 01 UI foundation: backend, web runtime, engineer client contour, dev stack, CI hooks, seeds и smoke tests.
+Довести репозиторий до состояния полноценной full-stack MVP basis поверх Stage 01 UI foundation и поднять `apps/web` от Storybook-only baseline к **product-shaped runtime shell**: backend, web runtime, engineer client contour, dev stack, CI hooks, seeds и smoke tests без преждевременного смешивания Stage 03 domain-логики в Stage 02.
 
 ### Основные результаты
 
 - `apps/web` runtime bootstrapped поверх Stage 01 component foundation
+- в runtime зафиксирован и собран route-level shell для customer-admin bootstrap flow:
+  - login
+  - registration
+  - company onboarding / profile
+  - equipment contour с empty/add/import shells
+  - contracts contour с create / contractor-invite shells
+  - truthful gated placeholder для request contour до Stage 04
 - `apps/field` или PWA-first mobile contour scaffolded
 - единый env contract
 - docker/dev startup scripts
@@ -291,8 +302,12 @@
 ### Что должно появиться в коде
 
 - repo conventions для frontend и field contour
+- route groups/pages для auth, company onboarding, equipment и contracts contour
 - shared API client layer
+- route-level form schemas, adapters и view-model boundaries для runtime shell
+- mock / seed / stub data boundaries там, где Stage 03 контракты еще не активированы
 - web runtime, собранный на Stage 01 shell/components
+- truthful gating/placeholder states для еще не включенного request contour
 - auth/session bootstrap
 - app boot scripts, которые агент может reliably запускать в каждой новой сессии
 
@@ -316,7 +331,9 @@
 - backend, web runtime и field contour поднимаются локально
 - есть smoke path:
   - open app
-  - login screen visible
+  - login/register screen visible
+  - company onboarding / equipment / contracts shells navigable
+  - request contour shown truthfully as gated or placeholder until Stage 04
   - health endpoint ok
 - Storybook и app runtime используют одну и ту же UI foundation
 - CI воспроизводимо гоняет lint/test/build/smoke
@@ -327,53 +344,84 @@
 
 ### Цель
 
-Реализовать идентификацию, RBAC и базовый контур master data, на котором стоит весь MVP: организации, роли, договоры, оборудование.
+Реализовать invite-based identity, scoped access и базовый контур master data, на котором стоит весь MVP: активация первого администратора, организация/подразделение/юнит, сотрудники и приглашения, договоры, оборудование, СИ и эталоны.
 
 ### Основные результаты
 
+- activation flow:
+  - платформенный админ создает заготовку организации и отправляет first-admin invite по email
+  - первый администратор принимает одноразовое приглашение, задает пароль и проходит launch wizard
+  - ручная раздача паролей не используется как основной сценарий
 - auth flow:
   - login
   - logout
   - refresh/session restore
   - role-aware access
 - org model:
-  - customer / contractor / branches
-  - users / roles
+  - customer / contractor organizations
+  - organization profile с разделением на launch-critical и optional requisites
+  - subdivisions c типом подразделения
+  - units как primary operational scope для оборудования
+- people and access model:
+  - user account, organization membership и scoped grants разделены
+  - grant scope: organization / subdivision / unit
+  - role templates и additive inheritance без deny-layer в MVP
+  - employee invitation statuses: draft / sent / opened / accepted / expired / revoked
 - contractor/customer relation layer
 - contracts registry
+- contract status baseline для customer-admin contour
 - equipment registry
-- equipment history baseline
+- measuring instruments registry
+- standards registry
+- metrology operation journals и attachment baseline
+- org-scoped dictionaries с local draft entries
+- archive baseline для организаций, подразделений, юнитов, пользователей, договоров, оборудования, СИ и эталонов
 - audit baseline для auth + CRUD changes
 - web UI:
-  - user/admin lists and cards
-  - contracts lists and cards
-  - equipment lists and cards
+  - launch wizard и company profile screens
+  - subdivision / unit selectors и scoped workspace switching
+  - people, memberships, invites и access grant screens
+  - contracts lists, cards and routing surfaces
+  - equipment / measuring instrument / standard lists and cards
 
 ### Что обязательно доказать
 
+- company onboarding shell из Stage 02 backed реальной org/subdivision/unit моделью
+- first-admin activation начинается по invite link, а не с заранее выданного логина/пароля
+- launch wizard проводит администратора через организацию, первое подразделение, первый юнит, приглашения и первое оборудование
+- юнит может существовать напрямую под организацией без обязательного промежуточного подразделения
+- user account, membership и scoped grants существуют как отдельные сущности
+- права уровня organization наследуются вниз на subdivision и unit; права subdivision наследуются на дочерние unit; deny-layer в MVP отсутствует
+- пользователь после принятия приглашения видит только свой контур доступа
+- invitation lifecycle и статусы видны администратору и доказаны end-to-end
 - нельзя создать рабочий request flow без зарегистрированного оборудования
+- оборудование, СИ и эталоны существуют как отдельные сущности, а не как одна mega-form
+- текущий метрологический статус рассчитывается из последней действующей записи журнала, а не только из denormalized полей последней/следующей даты
+- эталон остается самостоятельным реестром и может использоваться повторно, без жесткой связи `1:1` с одним СИ
 - договор ограничивает допустимого подрядчика
-- пользователь видит только свой контур доступа
+- archive применяется вместо physical delete для ключевых master-data сущностей
 - база ролей и организаций масштабируется под multi-org model
 
 ### Предпочтительный subagent plan
 
 - explorers:
-  - auth/rbac explorer
-  - contracts/equipment explorer
+  - auth/access explorer
+  - org-hierarchy explorer
+  - contracts/assets explorer
 - spec-freezer: 1
 - builder: 1
 - workers (optional):
-  - auth worker
-  - contracts worker
-  - equipment worker
+  - auth/invite worker
+  - access-control worker
+  - master-data worker
 - verifier: 1 fresh
 
 ### Exit gate
 
-- customer admin может войти и управлять справочниками
-- contractor user видит свой релевантный контур
-- contracts + equipment CRUD работают end-to-end
+- customer admin активируется по invite, завершает launch wizard и управляет организацией, подразделениями и юнитами
+- сотрудники приглашаются по email и получают только scoped access своего уровня
+- contracts + equipment + measuring instruments + standards CRUD/archiving flows работают end-to-end
+- contractor user видит только свой релевантный контур в рамках договоров и выданных грантов
 - audit trail фиксирует критичные действия
 - seeded demo data пригодны для Stage 04
 
@@ -392,6 +440,7 @@
   - one work type
   - one contractor
   - one-or-more equipment items
+  - selected unit scope from Stage 03 master data
   - statuses baseline
 - contract-based routing
 - comments / discussion thread
@@ -409,6 +458,7 @@
 ### Обязательные бизнес-правила
 
 - заявка не существует без оборудования
+- заявка создается в контексте выбранного юнита и использует master data из Stage 03
 - один вид работ на одну заявку
 - один подрядчик на одну заявку
 - статусная модель не смешивает customer и contractor responsibilities
@@ -624,7 +674,7 @@ Roadmap считается выполненным только если собл
 ## Что сознательно откладываем после MVP
 
 - юридически значимая подпись
-- самостоятельный глубокий метрологический модуль
+- самостоятельный отраслевой метрологический модуль сверх встроенных реестров и журналов
 - несколько подрядчиков/несколько work types per request
 - Bitrix24 production integration
 - биллинг, trial/paywall, corporate site

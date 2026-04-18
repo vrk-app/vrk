@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,38 +15,50 @@ import (
 // @title VRK API
 // @BasePath /api/v1
 func main() {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{}))
+	slog.SetDefault(logger)
+
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
+		fail("failed to load config", err)
 	}
 
 	application, err := app.New(cfg)
 	if err != nil {
-		log.Fatalf("Failed to create app: %v", err)
+		fail("failed to create app", err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	serverErrCh := make(chan error, 1)
 	go func() {
-		if err := application.Run(ctx); err != nil {
-			log.Printf("Server error: %v", err)
-			cancel()
-		}
+		serverErrCh <- application.Run(ctx)
 	}()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
 
-	log.Println("Shutting down...")
+	select {
+	case sig := <-quit:
+		slog.Info("shutdown_signal_received", "signal", sig.String())
+	case err := <-serverErrCh:
+		if err != nil {
+			fail("server stopped unexpectedly", err)
+		}
+	}
+
+	cancel()
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer shutdownCancel()
 
 	if err := application.Shutdown(shutdownCtx); err != nil {
-		log.Fatalf("Shutdown error: %v", err)
+		fail("shutdown error", err)
 	}
+}
 
-	log.Println("Server stopped")
+func fail(message string, err error) {
+	slog.Error(message, "error", err)
+	os.Exit(1)
 }

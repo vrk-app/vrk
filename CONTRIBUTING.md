@@ -4,10 +4,10 @@
 
 Документ опирается на текущее состояние репозитория:
 
-- текущий runnable baseline находится в `apps/backend`;
+- текущий runnable baseline включает `apps/backend` и Storybook-first UI foundation в `apps/web`;
 - `docs/roadmap.md` и `.agent/stages/<stage-id>/` задают stage-based workflow для roadmap execution;
 - `docs/architecture/source-of-truth.md` фиксирует порядок source of truth;
-- `apps/web` и `apps/field` еще не являются частью текущего baseline, но правила для их появления уже нужно учитывать.
+- `apps/web` уже входит в текущий baseline как Storybook-first UI foundation, а `apps/field` все еще остается будущим этапом.
 
 ## 1. Базовые принципы
 
@@ -116,7 +116,7 @@ docs/contributing-guide
 - `config` - env/config/runtime settings
 - `deps` - dependency updates
 - `ci` - CI workflows
-- `ui`, `components`, `pages`, `routes` - когда в репозитории появится web/field UI
+- `ui`, `components`, `pages`, `routes` - для `apps/web` и будущих web/field UI slices
 
 Для текущего backend baseline:
 
@@ -158,11 +158,13 @@ BREAKING CHANGE: request status response now returns enum code and label
 - изменения API contract или Swagger annotations должны сопровождаться обновлением `apps/backend/docs/swagger/*`;
 - нельзя вручную править generated-файлы без изменения их source.
 
-### 6.2. Future Web / Field Workspaces
+### 6.2. JS/TS Workspaces (`apps/web` и будущие `apps/field`)
 
-Когда в репозитории появятся `apps/web`, `apps/field` или другой JS/TS workspace:
+Для `apps/web`, будущего `apps/field` и любого другого JS/TS workspace:
 
-- первый PR с таким workspace должен добавить repo-level pin версии Node через `.nvmrc` или `.node-version`;
+- repo-level версия Node должна оставаться зафиксированной на `v24.14.1` через `.nvmrc`, root `package.json` и root `.npmrc`;
+- repo-level версия `pnpm` должна оставаться зафиксированной на `10.33.0` через root `packageManager`; локальная среда должна синхронизироваться через `corepack use pnpm@10.33.0`;
+- workspace-level `package.json` не должен расходиться с repo-level Node pin;
 - package manager должен быть зафиксирован явно;
 - lockfile коммитится вместе с workspace;
 - нельзя опираться на глобальный `nvm default` или иной пользовательский shell setup как на policy репозитория.

@@ -1,7 +1,7 @@
 # Test Strategy
 
 Статус: draft baseline  
-Обновлено: 2026-04-12
+Обновлено: 2026-04-18
 
 ## Назначение
 
@@ -9,12 +9,13 @@
 
 ## Текущее исходное состояние
 
-- в репозитории существует только backend-контур в `apps/backend`;
-- `apps/web` и `apps/field` еще не созданы;
-- в репозитории нет `package.json`, lockfile и repo-level pin версии Node.js;
-- roadmap резервирует `Stage 01` под Storybook/UI foundation до full-stack platform stage;
+- в репозитории существует backend-контур в `apps/backend`;
+- `apps/web` уже сочетает Storybook-first UI foundation и runnable Stage 02 runtime shell, а `apps/field` существует как PWA-first scaffold;
+- в репозитории уже есть `package.json`, `pnpm-lock.yaml` и repo-level pin Node.js `v24.14.1` через `.nvmrc`, root `package.json` и root `.npmrc`;
+- repo-level `pnpm` зафиксирован на `10.33.0` через root `packageManager`;
+- roadmap уже использовал `Stage 01` для Storybook/UI foundation до full-stack platform stage;
 - stage harness установлен и использует `.agent/stages/<stage-id>/` как durable memory;
-- в текущей среде выполнения отсутствует `go`, поэтому compile/smoke backend прямо сейчас не выполняются.
+- в текущей среде выполнения локальный `go` может отсутствовать, поэтому backend build/test path должен оставаться доступным через контейнерные scripts.
 
 ## Общие правила проверки
 
@@ -44,8 +45,8 @@
 
 Начиная со Stage 02 обязательны:
 
-- `go test ./...`
-- `go build ./...`
+- `go test ./...` локально или через container-backed path
+- `go build ./...` локально или через container-backed path
 - миграции up/down на локальной PostgreSQL
 - API smoke на поднятом backend
 - проверка актуальности Swagger/OpenAPI после изменения API
@@ -54,14 +55,14 @@
 
 ### 3. Web and field checks
 
-После появления `apps/web` и `apps/field` обязательны:
+Для `apps/web` и после появления `apps/field` обязательны:
 
-- repo-level pin Node.js через `.nvmrc` или `.node-version` до первого install/build;
+- repo-level pin Node.js `v24.14.1` должен оставаться синхронизированным между `.nvmrc`, root `package.json`, root `.npmrc` и JS/TS workspace `package.json` до первого install/build;
 - явная фиксация package manager в `package.json` и коммит lockfile;
 - install + build checks;
 - lint/typecheck;
-- browser smoke для ключевых ролей;
-- offline-to-online scenario для field-клиента;
+- browser/runtime smoke для ключевых ролей;
+- для Stage 02 field contour допускается scaffold-proof без реального offline-to-online scenario, если evidence явно фиксирует, что Stage 06 offline engine еще не live;
 - screenshot evidence для user-facing flows.
 - обязательный `$web-design-guidelines` pass для changed UI files;
 - evidence с prompt/brief source и подтверждением закрытия UI findings.
@@ -98,9 +99,10 @@
 ### Stage 02
 
 - backend собирается и стартует;
-- dev stack воспроизводим;
+- dev stack воспроизводим через root startup contract;
 - появляются baseline smoke scripts и CI hooks;
-- web/field scaffolds проходят build smoke.
+- web/field scaffolds проходят build smoke;
+- backend health/readiness и seeded API smoke проходят через тот же root stack.
 
 ### Stage 03-07
 
@@ -118,11 +120,10 @@
 - Go toolchain совместимой версии;
 - PostgreSQL 17 или совместимый локальный runtime;
 - `migrate`, `sqlc`, `swag` для backend lifecycle;
-- Node.js toolchain не требуется для текущего baseline, но обязателен после появления web/field-контуров вместе с repo-level pin версии и lockfile;
+- Node.js `v24.14.1` обязателен для текущего Storybook/web baseline и всех install/build/lint/typecheck smoke checks в JS/TS workspaces;
 - browser automation tooling после появления UI.
 
 ## Текущие открытые gaps
 
-- `go` отсутствует в текущей среде, поэтому backend build/test smoke не доказан.
-- В репозитории пока нет health endpoint или smoke entrypoint верхнего уровня.
-- Нет CI, который бы автоматически проверял roadmap gates.
+- при запуске compose stack нужно учитывать host port overrides, если локальная машина уже использует стандартные web/backend порты;
+- screenshot evidence для field runtime и более глубокие offline scenarios остаются полезным follow-up, даже если Stage 02 закрывается на scaffold proof.

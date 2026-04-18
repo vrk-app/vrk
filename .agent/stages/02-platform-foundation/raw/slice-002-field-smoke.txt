@@ -1,0 +1,55 @@
+
+> vrk-platform@ field:smoke /Users/yura-posledov/cursor/vrk
+> pnpm run field:lint && pnpm run field:typecheck && pnpm run field:build
+
+
+> vrk-platform@ field:lint /Users/yura-posledov/cursor/vrk
+> pnpm --filter @vrk/field lint
+
+
+> @vrk/field@0.1.0 lint /Users/yura-posledov/cursor/vrk/apps/field
+> eslint .
+
+
+> vrk-platform@ field:typecheck /Users/yura-posledov/cursor/vrk
+> pnpm --filter @vrk/field typecheck
+
+
+> @vrk/field@0.1.0 typecheck /Users/yura-posledov/cursor/vrk/apps/field
+> tsc --noEmit
+
+
+> vrk-platform@ field:build /Users/yura-posledov/cursor/vrk
+> pnpm --filter @vrk/field build
+
+
+> @vrk/field@0.1.0 build /Users/yura-posledov/cursor/vrk/apps/field
+> next build
+
+   ▲ Next.js 15.5.15
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 711ms
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/4) ...
+   Generating static pages (1/4) 
+   Generating static pages (2/4) 
+   Generating static pages (3/4) 
+ ✓ Generating static pages (4/4)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ƒ /                                      125 B         102 kB
+├ ○ /_not-found                            996 B         103 kB
+└ ○ /manifest.webmanifest                  125 B         102 kB
++ First Load JS shared by all             102 kB
+  ├ chunks/155-76b6758d4d8b5d3a.js       45.6 kB
+  ├ chunks/b58405f4-f4dd9784c134e5cb.js  54.2 kB
+  └ other shared chunks (total)          1.84 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

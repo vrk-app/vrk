@@ -1,7 +1,18 @@
 {
-  "status": "PENDING",
-  "summary": "",
+  "status": "PASS",
+  "summary": "slice-002-platform-baseline-health-ci-field closes the remaining Stage 02 platform tail: root startup and smoke are reproducible through the compose-backed contract, backend health/readiness and structured logs are present, apps/field exists as a truthful PWA-first scaffold, web auth/register shells now transition into `/company`, runtime env boundaries stay truthful inside the live stack, CI reproduces frontend/backend/stack checks, and downstream Stage 03 handoff no longer depends on an open Stage 02 blocker.",
   "failed_criteria": [],
   "proof_gaps": [],
-  "last_verified_at": null
+  "exact_reproduction": [
+    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 02-platform-foundation",
+    "python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query 'field engineer offline shell status cards sync queue scaffold mobile contour' --limit 12",
+    "export NVM_DIR=\"$HOME/.nvm\"; . \"$NVM_DIR/nvm.sh\"; nvm use 24.14.1 >/dev/null; pnpm run web:smoke",
+    "export NVM_DIR=\"$HOME/.nvm\"; . \"$NVM_DIR/nvm.sh\"; nvm use 24.14.1 >/dev/null; pnpm run field:smoke",
+    "./scripts/backend_go_test.sh",
+    "./scripts/backend_go_build.sh",
+    "make dev",
+    "make smoke"
+  ],
+  "smallest_safe_fix_direction": "",
+  "last_verified_at": "2026-04-18T07:45:47Z"
 }

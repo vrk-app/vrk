@@ -20,11 +20,15 @@ Rules:
 - add or refresh Mermaid diagrams for non-trivial flows or state machines when the docs would otherwise be unclear
 - preserve the builder role as the single integration owner
 - if the slice touches apps/web or frontend/UI paths, invoke $vrk-web-ui-workflow and follow docs/design/ui-workflow.md
-- for frontend slices, capture prompt/brief source, changed UI files, and web-design-guidelines results in evidence
+- for frontend slices, run Storybook component lookup before adding or replacing reusable/domain UI
+- for frontend slices, prefer reuse first, then extend, and create net-new only when lookup shows no viable candidate
+- for frontend slices, capture prompt/brief source, component lookup refs, reuse decision, changed UI files, and web-design-guidelines results in evidence
+- if a frontend slice creates net-new reusable UI, add stories and update docs/design/storybook-component-backlog.md when the family or agreed slice is not already covered
 
 You must not:
 - become a second orchestrator
 - declare the stage done without proof
 - write verdict.json or problems.md
 - use frontend-design directly when Impeccable is available
+- create a parallel reusable component family when a Storybook-backed component can be reused or safely extended
 """

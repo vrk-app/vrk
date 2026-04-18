@@ -13,8 +13,8 @@ const jetBrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VRK UI Foundation",
-  description: "Storybook-first UI foundation for the VRK platform",
+  title: "VRK Platform Shell",
+  description: "Product-shaped web runtime shell for the VRK platform Stage 02 baseline",
 };
 
 export default function RootLayout({

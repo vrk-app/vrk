@@ -1,6 +1,6 @@
 {
   "status": "PENDING",
-  "summary": "",
+  "summary": "Stage 03 scope and canonical docs were frozen, but no implementation slice has been built or verified yet.",
   "failed_criteria": [],
   "proof_gaps": [],
   "last_verified_at": null

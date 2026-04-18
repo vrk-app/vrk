@@ -48,6 +48,7 @@ Before generating or refactoring UI, Storybook stories, layout, forms, tables, c
 - `docs/design/ui-workflow.md`
 - `docs/architecture/frontend-architecture.md`
 - `docs/design/storybook-component-backlog.md` for Storybook/component-library tasks
+- `.agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py` for reusable/domain component lookup
 
 Use the design-system doc as the canonical source for:
 
@@ -58,6 +59,9 @@ Use the design-system doc as the canonical source for:
 
 ## UI Implementation Rules
 
+- Before creating or replacing reusable/domain UI, inspect the Storybook-backed component inventory first.
+- Decision order is strict: reuse the existing component if it fits, extend the existing component if the gap is small, create net-new only when lookup shows no viable candidate.
+- Net-new reusable UI must land together with stories and an update to `docs/design/storybook-component-backlog.md` when a new family or missing backlog slice is introduced.
 - Reuse existing UI primitives first; do not invent parallel component families without need.
 - Use semantic tokens from `docs/design/serviceops-design-system.md`; do not hardcode raw hex values in JSX/TSX when a semantic token exists.
 - Preferred stack for new UI: Tailwind CSS, Radix UI primitives, shadcn/ui-style open code, `class-variance-authority`, and shared `cn()` helpers.

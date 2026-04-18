@@ -31,7 +31,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
 # ============================================
 FROM alpine:3.19
 
-RUN apk add --no-cache ca-certificates tzdata
+RUN apk add --no-cache ca-certificates tzdata wget
 
 RUN addgroup -g 1001 -S appgroup && \
     adduser -u 1001 -S appuser -G appgroup

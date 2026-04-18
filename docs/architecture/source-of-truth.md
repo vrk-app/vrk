@@ -1,7 +1,7 @@
 # Source Of Truth
 
 Статус: accepted  
-Обновлено: 2026-04-12
+Обновлено: 2026-04-18
 
 ## Назначение
 
@@ -57,9 +57,12 @@
 - Реальный backend уже существует в `apps/backend/` и реализуется на Go.
 - API собирается как REST-сервис на `chi`; OpenAPI/Swagger уже генерируется в `apps/backend/docs/swagger/`.
 - Данные хранятся в PostgreSQL; миграции лежат в `apps/backend/migrations/`.
-- Stage 01 уже добавил `apps/web` как Storybook-first UI foundation с foundations, Wave 1 shell/auth/request-list slices и showcase stories; `apps/field` по-прежнему отсутствует и остается следующим этапом roadmap.
-- Repo-level Node/pnpm policy теперь зафиксирована через `.nvmrc`, `package.json`, `pnpm-workspace.yaml` и `pnpm-lock.yaml`.
+- Stage 01 добавил `apps/web` как Storybook-first UI foundation, а Stage 02 поверх нее уже зафиксировал runnable web runtime shell для `/login`, `/register`, `/company`, `/equipment`, `/contracts`, `/requests`.
+- `apps/field` теперь существует как PWA-first scaffold с manifest и truthful offline/manual-sync boundaries; полноценный offline engine остается позднее.
+- Repo-level Node.js policy зафиксирована на `v24.14.1` через `.nvmrc`, root `package.json`, root `.npmrc`, `apps/web/package.json` и `apps/field/package.json`.
+- Repo-level `pnpm` policy зафиксирована на `10.33.0` через root `packageManager`; локальная среда должна синхронизироваться через `corepack use pnpm@10.33.0`, а workspace policy по-прежнему задается через `pnpm-workspace.yaml` и `pnpm-lock.yaml`.
 - Конфигурация backend строится через `.env` и `apps/backend/.env.example`.
+- Root runtime baseline теперь задается через `Makefile`, `compose.platform.yml`, `scripts/platform_smoke.sh` и `docs/architecture/platform-runtime-baseline.md`.
 
 ## Разрешение текущих неоднозначностей
 

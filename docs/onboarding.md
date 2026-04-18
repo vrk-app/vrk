@@ -1,21 +1,19 @@
-# Onboarding: от clone до PR (backend + Storybook foundation)
+# Onboarding: от clone до PR (platform baseline + Storybook)
 
 Это пошаговое руководство для нового разработчика.
 Цель: пройти полный цикл работы с текущим runnable baseline репозитория от `git clone` до создания Pull Request.
 
-Важно: на текущем этапе локально поднимаются два baseline-контура:
+Важно: на текущем этапе локально поднимаются два связанных baseline-контура:
 
-- `apps/backend` для API, миграций и Swagger;
-- `apps/web` как Storybook-first UI harness с foundations, Wave 1 shell/auth/request-list stories и showcase-композициями, но без business/runtime integration.
-
-`apps/field` по-прежнему не входит в runnable baseline.
+- compose-driven platform stack: `apps/backend` + `apps/web` runtime + `apps/field` scaffold;
+- отдельный Storybook harness в `apps/web` для reusable UI foundation.
 
 ## Что вы получите после прохождения
 
 После этого гайда вы сможете:
 
 - клонировать репозиторий;
-- поднять локальный `apps/backend`;
+- поднять локальный platform stack;
 - поднять локальный Storybook из `apps/web`;
 - запустить PostgreSQL через Docker или подключить локальную БД;
 - применить миграции и проверить API;
@@ -28,9 +26,9 @@
 Нужно заранее иметь:
 
 - `git`;
-- `Go 1.26.1` или совместимый `1.26.x` toolchain, ориентируясь на `apps/backend/go.mod`;
-- `Node.js 20.10.x`, ориентируясь на repo-root `.nvmrc`, если вы работаете с `apps/web`;
-- `pnpm 10.x`, ориентируясь на repo-root `packageManager`;
+- `Go 1.26.1` или совместимый `1.26.x` toolchain, если вы хотите запускать backend вне контейнерного baseline;
+- `Node.js v24.14.1`, ориентируясь на repo-root `.nvmrc` и `package.json`, если вы работаете с JS/TS workspace вне контейнеров;
+- `pnpm 10.33.0`, ориентируясь на repo-root `packageManager`;
 - `make`;
 - `Docker`, если хочешь поднять PostgreSQL одной командой;
 - или локальный `PostgreSQL 17`, если Docker не используешь;
@@ -50,6 +48,7 @@ gh --version
 
 Если используешь локальный PostgreSQL вместо Docker, `docker --version` не нужен.
 Если создаешь PR через браузер, `gh --version` тоже не обязателен.
+Для UI-задач `node --version` должен вернуть именно `v24.14.1`, а локальный `pnpm` должен быть синхронизирован через `corepack use pnpm@10.33.0`, иначе `pnpm install` может расходиться с repo policy.
 
 ## 2. Клонирование репозитория
 
@@ -67,28 +66,58 @@ git clone git@github.com:vrk-app/vrk.git
 cd vrk
 ```
 
-## 3. Что важно знать про текущий baseline
+## 3. Быстрый старт текущего platform baseline
+
+Если нужен воспроизводимый Stage 02 runtime stack без локального `go`:
+
+```bash
+nvm use
+corepack use pnpm@10.33.0
+pnpm install
+make dev
+make smoke
+```
+
+По умолчанию поднимутся:
+
+- backend: `http://localhost:18080`
+- web runtime: `http://localhost:3100`
+- field scaffold: `http://localhost:3102`
+
+Если порты заняты, их можно переопределить через `BACKEND_HOST_PORT`, `WEB_HOST_PORT`, `FIELD_HOST_PORT`.
+
+Storybook по-прежнему запускается отдельно:
+
+```bash
+pnpm storybook
+```
+
+## 4. Что важно знать про текущий baseline
 
 Сейчас в репозитории реально можно локально поднять:
 
-- `apps/backend` на Go;
+- compose-driven `apps/backend` runtime на Go;
+- web runtime shell из `apps/web`;
+- field scaffold из `apps/field`;
 - Storybook harness из `apps/web`;
-- PostgreSQL;
-- миграции;
+- PostgreSQL и миграции;
 - Swagger UI для API.
 
 Это означает:
 
-- для backend-only задач достаточно Go toolchain и PostgreSQL;
-- для UI/story задач дополнительно нужны `Node.js` и `pnpm`;
-- `apps/web` уже входит в baseline как Storybook-first foundation с layout/auth/request-list/showcase stories, а `apps/field` пока нет;
-- repo-level policy по Node.js теперь зафиксирована через `.nvmrc`, `package.json`, `pnpm-workspace.yaml` и `pnpm-lock.yaml`.
+- для compose baseline достаточно `Docker`, `make`, `Node.js` и `pnpm`;
+- для backend-only задач вне compose по-прежнему нужен Go toolchain и PostgreSQL;
+- `apps/web` уже входит и как Storybook-first foundation, и как runnable runtime shell;
+- `apps/field` входит в baseline как PWA-first scaffold;
+- repo-level policy по Node.js теперь зафиксирована на `v24.14.1` через `.nvmrc`, root `package.json`, root `.npmrc`, `apps/web/package.json` и `apps/field/package.json`.
 
-## 3.1. Быстрый старт для UI harness
+## 4.1. Быстрый старт для UI harness
 
 Если задача относится к Storybook/UI foundation:
 
 ```bash
+nvm use
+corepack use pnpm@10.33.0
 pnpm install
 pnpm storybook
 ```
@@ -105,7 +134,7 @@ http://localhost:6006
 pnpm run web:smoke
 ```
 
-## 4. Настройка локального `.env`
+## 5. Настройка локального `.env`
 
 Из корня репозитория:
 
@@ -128,7 +157,7 @@ DB_NAME=db
 DB_SSL_MODE=disable
 ```
 
-## 5. Установка backend tools
+## 6. Установка backend tools
 
 Перейди в backend и установи инструменты:
 
@@ -149,7 +178,7 @@ make install-tools
 export PATH="$(go env GOPATH)/bin:$PATH"
 ```
 
-## 6. Подъем базы данных
+## 7. Подъем базы данных
 
 ### Вариант A. PostgreSQL через Docker
 
@@ -173,7 +202,7 @@ make create-db
 
 Если параметры другие, обнови `apps/backend/.env` до запуска миграций и сервера.
 
-## 7. Применение миграций
+## 8. Применение миграций
 
 Из `apps/backend`:
 
@@ -183,7 +212,7 @@ make migrate-up
 
 Это создаст схему и применит seed-данные из миграций.
 
-## 8. Запуск backend
+## 9. Запуск backend
 
 Из `apps/backend`:
 
@@ -197,7 +226,7 @@ make run
 http://localhost:8080
 ```
 
-## 9. Проверка, что baseline работает
+## 10. Проверка, что baseline работает
 
 ### 9.1 Swagger UI
 
@@ -225,7 +254,7 @@ curl http://localhost:8080/api/v1/agreements/
 - JSON-ответ без `5xx`;
 - как минимум для `organizations` и `equipment` должен вернуться непустой список или объект с данными, потому что в репозитории есть seed-миграция `apps/backend/migrations/000004_temp_data_for_tests.up.sql`.
 
-## 10. Создание рабочей ветки
+## 11. Создание рабочей ветки
 
 Перед началом изменений синхронизируй `main`:
 
@@ -254,7 +283,7 @@ git pull --ff-only origin main
 
 Допустимые `type`: `feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `style`, `build`, `ci`, `chore`.
 
-## 11. Внесение изменений и локальная проверка
+## 12. Внесение изменений и локальная проверка
 
 Сделай изменения в своей ветке, затем перед PR выполни минимум из `apps/backend`:
 
@@ -277,7 +306,7 @@ make swagger
 
 Если изменения затронули миграции, локально проверь, что они реально применяются к базе и не ломают baseline.
 
-## 12. Commit
+## 13. Commit
 
 Добавь изменения:
 
@@ -310,7 +339,7 @@ git commit -m "fix(api): validate agreement update payload"
 
 Summary в commit message должен быть на английском и в повелительном наклонении: `add`, `fix`, `update`, `remove`, `rewrite`.
 
-## 13. Push и Pull Request
+## 14. Push и Pull Request
 
 Отправь ветку:
 
@@ -333,7 +362,7 @@ gh pr create --base main
 - так как используется `Squash & merge`, заголовок PR станет финальным commit message в `main`;
 - в описании PR нужно явно указать контекст, что изменено, как проверить и какие есть риски или ограничения.
 
-## 14. Troubleshooting
+## 15. Troubleshooting
 
 ### `Makefile: .env: No such file or directory`
 
@@ -391,7 +420,7 @@ make rm-db
 
 Проверь, что `make run` все еще работает в отдельном терминале и сервер не завершился из-за ошибки подключения к БД или конфигурации.
 
-## 15. Финальный чеклист перед PR
+## 16. Финальный чеклист перед PR
 
 - [ ] Репозиторий клонирован и рабочая ветка создана по формату `<type>/<short-kebab-case>`.
 - [ ] Создан `apps/backend/.env`.

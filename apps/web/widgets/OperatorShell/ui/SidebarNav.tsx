@@ -12,11 +12,14 @@ export type SidebarNavItem = {
 };
 
 export interface SidebarNavProps extends HTMLAttributes<HTMLElement> {
-  items: SidebarNavItem[];
+  items: readonly SidebarNavItem[];
   activeKey: string;
-  footerItems?: SidebarNavItem[];
+  footerItems?: readonly SidebarNavItem[];
   collapsed?: boolean;
   mobileOpen?: boolean;
+  brandMark?: string;
+  metaLabel?: string;
+  metaTitle?: string;
   onCollapsedChange?: (collapsed: boolean) => void;
   onMobileOpenChange?: (mobileOpen: boolean) => void;
 }
@@ -59,11 +62,14 @@ function SidebarLink({
 
 export function SidebarNav({
   activeKey,
+  brandMark = "VRK",
   className,
   collapsed = false,
   footerItems = [],
   id,
   items,
+  metaLabel = "Stage 01",
+  metaTitle = "Сервисный контур",
   mobileOpen = false,
   onCollapsedChange,
   onMobileOpenChange,
@@ -87,7 +93,7 @@ export function SidebarNav({
           <button
             aria-controls={navigationId}
             aria-label="Закрыть меню"
-            className="fixed inset-0 z-30 bg-foreground/20 backdrop-blur-[1px] touch-manipulation lg:hidden"
+            className="fixed inset-0 z-30 bg-foreground/20 backdrop-blur-[1px] touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:hidden"
             onClick={handleMobileClose}
             tabIndex={-1}
             type="button"
@@ -111,13 +117,13 @@ export function SidebarNav({
         <div className="flex items-center justify-between gap-3">
           <div className={cn("flex items-center gap-3", collapsed && "lg:justify-center")}>
             <div className="flex size-11 items-center justify-center rounded-[var(--radius-lg)] bg-primary text-primary-foreground shadow-xs">
-              <span className="text-sm font-semibold tracking-[0.14em]">VRK</span>
+              <span className="text-sm font-semibold tracking-[0.14em]">{brandMark}</span>
             </div>
             <div className={cn("space-y-1", collapsed && "lg:hidden")}>
               <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                Stage 01
+                {metaLabel}
               </p>
-              <p className="text-sm font-semibold text-foreground">Сервисный контур</p>
+              <p className="text-sm font-semibold text-foreground">{metaTitle}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">

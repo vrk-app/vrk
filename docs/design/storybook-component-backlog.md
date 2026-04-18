@@ -1,7 +1,7 @@
 # VRK Storybook Component Backlog
 
 Статус: proposed source backlog  
-Обновлено: 2026-04-13
+Обновлено: 2026-04-17
 
 ## Назначение
 
@@ -18,6 +18,8 @@
 - `Stage 01` обязан закрыть Storybook infrastructure, foundations и Wave 1.
 - Остальные P0/P1/P2 пункты из этого документа остаются source backlog для следующих sprint contracts и следующих stages.
 - Для каждого UI/story slice агент обязан использовать repo-local workflow: `docs/design/ui-workflow.md`, `.impeccable.md`, `$vrk-web-ui-workflow`, `$impeccable craft`, `$polish`, `$web-design-guidelines`.
+- Перед созданием или заменой reusable/domain UI агент обязан прогнать repo-local lookup helper по текущему Storybook inventory и зафиксировать решение `reuse` / `extend` / `create`.
+- Этот backlog отвечает за planned component scope, но не заменяет lookup по уже существующим story-backed компонентам.
 - Нельзя отмечать компонент завершенным без stories, evidence и verifier-pass на соответствующем stage slice.
 
 ## Stage 01 Scope Boundary
@@ -48,6 +50,7 @@
 - Интерфейс в Storybook должен быть на русском языке.
 - Визуально нужно держаться спокойной CRM-стилистики, близкой к Material/Ant.
 - Не плодить дубликаты: `SearchInput` и `PasswordInput` являются вариантами `InputField`; статусные плашки являются обертками над `Badge`; круг процентов является оберткой над `CircularProgress`; доменные таблицы строятся на базе одного `DataTable`.
+- Если lookup заканчивается решением `create`, новый reusable component должен появиться вместе со stories, а backlog нужно обновить, когда в нем еще нет соответствующей component family или agreed slice.
 
 ## 1. Foundations
 

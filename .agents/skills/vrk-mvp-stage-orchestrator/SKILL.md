@@ -150,6 +150,9 @@ If the sprint contract touches `apps/web` or any frontend/UI path:
 - the builder must invoke `$vrk-web-ui-workflow`
 - shared design context must come from `.impeccable.md`
 - the builder must use `$impeccable craft` and `$polish` as the primary UI workflow
+- before adding or replacing reusable/domain UI, the builder must run `python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query "<slice need>"`
+- the builder must follow the strict decision order `reuse` -> `extend` -> `create`
+- if the builder creates a net-new reusable component, it must add stories and update `docs/design/storybook-component-backlog.md` when the family or agreed slice was not already covered
 - `frontend-design` may be used only as an explicit fallback if Impeccable is unavailable or broken
 
 ### 4. Evidence is mandatory
@@ -167,6 +170,11 @@ After implementation for the current sprint contract:
 For web UI slices also record:
 
 - prompt or brief source
+- component lookup query or short need summary
+- matched story refs or explicit no-match result
+- reuse decision (`reuse` / `extend` / `create`)
+- rationale when `create` was chosen
+- backlog update note when a new reusable family or missing backlog slice was introduced
 - changed UI files
 - result of `$web-design-guidelines`
 - brief note on how findings were closed if any were reported
@@ -195,6 +203,7 @@ For each verification pass:
 - the verifier must treat material documentation drift on the changed slice as a proof gap
 
 For web UI slices the verifier must also rerun or reproduce the `$web-design-guidelines` gate and treat unresolved findings as proof gaps.
+The verifier must also treat skipped component lookup, unjustified duplicate reusable components, net-new reusable UI without stories, or missing backlog updates for new reusable families as proof gaps.
 
 Fresh means a new verifier session, not a resumed verifier.
 
@@ -235,6 +244,7 @@ At the end of each session:
 - Do not expand scope beyond roadmap MVP guardrails.
 - Do not skip smoke tests on resumed sessions when app startup is available.
 - Do not use `$frontend-design` directly when Impeccable is available for the same UI task.
+- Do not create parallel reusable component families when a Storybook-backed component can be reused or extended.
 
 ## Subagent roster
 

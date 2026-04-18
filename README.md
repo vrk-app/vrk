@@ -22,11 +22,17 @@ VRK Platform - это единая цифровая платформа для у
 
 ## Текущее состояние runtime
 
-- текущий baseline репозитория состоит из backend-контура в `apps/backend` и Storybook-first UI foundation в `apps/web`;
-- web-контур Stage 01 уже включает reusable UI, semantic tokens, shared story helpers, Wave 1 shell/auth/request-list slices и showcase stories, но всё ещё без runtime/business integration;
-- в репозитории зафиксированы `.nvmrc`, `package.json`, `pnpm-workspace.yaml` и `pnpm-lock.yaml`, поэтому Node/pnpm policy теперь задается на уровне репозитория;
-- для UI baseline используются команды `pnpm install`, `pnpm storybook` и `pnpm run web:smoke`;
-- `apps/field` и полноценный web runtime по-прежнему относятся к следующим этапам roadmap.
+- текущий baseline репозитория состоит из backend-контура в `apps/backend`, product-shaped web runtime shell в `apps/web` и PWA-first scaffold в `apps/field`;
+- root runtime contract теперь поднимается через `make dev`, а proof-floor проверяется через `make smoke`;
+- Stage 01 Storybook foundation остаётся source of truth для reusable UI и по-прежнему собирается через `pnpm storybook` и `pnpm run web:smoke`;
+- Node.js в репозитории зафиксирован на `v24.14.1` через `.nvmrc`, root `package.json`, root `.npmrc`, `apps/web/package.json` и `apps/field/package.json`;
+- `pnpm` в репозитории зафиксирован на `10.33.0` через `packageManager`; локальная установка должна синхронизироваться командой `corepack use pnpm@10.33.0`, а workspace policy по-прежнему задается через `pnpm-workspace.yaml` и `pnpm-lock.yaml`;
+- host ports по умолчанию:
+  - backend: `http://localhost:18080`
+  - web runtime: `http://localhost:3100`
+  - field scaffold: `http://localhost:3102`
+  - Storybook: `http://localhost:6006`
+- подробный runtime/platform contract описан в `docs/architecture/platform-runtime-baseline.md`.
 
 ## Onboarding / Local Setup
 
@@ -35,7 +41,7 @@ VRK Platform - это единая цифровая платформа для у
 - [`docs/onboarding.md`](docs/onboarding.md)
 - [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
-Он описывает текущий runnable baseline: `apps/backend` на Go + PostgreSQL + migrations + Swagger и Stage 01 Storybook harness в `apps/web`.
+Он описывает текущий runnable baseline: compose-driven platform stack (`backend` + `web` + `field`) и отдельный Storybook harness для Stage 01 reusable UI.
 
 ## Для кого создается продукт
 

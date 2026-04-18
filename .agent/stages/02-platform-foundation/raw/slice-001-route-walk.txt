@@ -1,0 +1,7 @@
+/ -> status=307 final=http://localhost:3001/login
+/login -> status=200 final=http://localhost:3001/login
+/register -> status=200 final=http://localhost:3001/register
+/company -> status=200 final=http://localhost:3001/company
+/equipment -> status=200 final=http://localhost:3001/equipment
+/contracts -> status=200 final=http://localhost:3001/contracts
+/requests -> status=200 final=http://localhost:3001/requests
