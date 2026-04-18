@@ -16,18 +16,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+          run_install: false
+
       - uses: actions/setup-node@v4
         with:
           node-version: 24.14.1
           cache: pnpm
 
-      - name: Enable pnpm
-        run: |
-          corepack enable
-          corepack prepare pnpm@10.33.0 --activate
-
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm --filter @vrk/web exec playwright install --with-deps chromium
 
       - name: Run web smoke
         run: pnpm run web:smoke

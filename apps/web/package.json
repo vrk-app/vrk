@@ -9,8 +9,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "smoke:serve": "next start --hostname 127.0.0.1 --port 3001",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "browser:install": "playwright install chromium",
+    "browser-smoke": "playwright test --config playwright.config.ts",
     "storybook": "storybook dev -p 6006 --ci",
     "build-storybook": "storybook build --quiet"
   },
@@ -25,6 +28,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
+    "@playwright/test": "^1.55.0",
     "@storybook/addon-a11y": "8.5.8",
     "@storybook/addon-essentials": "8.5.8",
     "@storybook/addon-interactions": "8.5.8",

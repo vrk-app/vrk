@@ -1,0 +1,27 @@
+
+> vrk-platform@ web:browser-smoke /Users/yura-posledov/cursor/vrk
+> pnpm --filter @vrk/web browser-smoke
+
+
+> @vrk/web@0.1.0 browser-smoke /Users/yura-posledov/cursor/vrk/apps/web
+> playwright test --config playwright.config.ts
+
+[2m[WebServer] [22m(node:62035) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m(node:62052) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 2 workers
+
+(node:62122) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62123) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62123) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:62122) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/auth-flow.smoke.spec.ts:17:7 › auth browser smoke › register submit routes to company shell (262ms)
+  ✓  2 tests/auth-flow.smoke.spec.ts:4:7 › auth browser smoke › login submit routes to company shell (330ms)
+
+  2 passed (1.3s)

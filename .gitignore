@@ -9,4 +9,6 @@ node_modules/
 storybook-static/
 dist/
 coverage/
+playwright-report/
+test-results/
 *.tsbuildinfo

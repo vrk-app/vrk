@@ -57,12 +57,14 @@ flowchart LR
 ## CI baseline
 
 - `frontend-workspaces` job гоняет `pnpm run web:smoke` и `pnpm run field:smoke`;
+- `pnpm run web:smoke` теперь покрывает не только lint/typecheck/build/storybook, но и headless browser-smoke для client-side submit path `/login` и `/register` -> `/company`;
 - `backend-container-checks` job гоняет container-backed `go test ./...` и `go build ./...`;
 - `platform-stack-smoke` job поднимает тот же compose stack и запускает `make smoke`.
 
 ## Операционные заметки
 
 - Если локально уже заняты стандартные frontend ports, compose не должен ломаться: используются отдельные host defaults `3100` и `3102`.
+- Для локального `pnpm run web:smoke` нужен установленный Playwright Chromium; первый прогон на новой машине делайте через `pnpm run web:browser-install`.
 - `make down` подходит для обычной остановки stack; если нужно заново доказать исходный seeded floor без влияния предыдущих записей, сначала запускайте `make clean`.
 - Внешний порт PostgreSQL не пробрасывается, потому что Stage 02 smoke не требует прямого host-доступа к контейнерной БД.
 - `docker compose up --wait` фиксирует container health, но Stage 02 proof опирается на host-facing contract; поэтому `make smoke` сам коротко дожидается доступности `localhost:18080`, `localhost:3100` и `localhost:3102`, а затем выполняет обычные строгие assertions.

@@ -144,8 +144,11 @@ http://localhost:6006
 Для воспроизводимого smoke check из корня репозитория:
 
 ```bash
+pnpm run web:browser-install
 pnpm run web:smoke
 ```
+
+`pnpm run web:browser-install` нужен один раз на новую машину, чтобы локально поставить Chromium для Playwright browser-smoke, который проверяет submit flow `/login` и `/register` -> `/company`.
 
 ## 5. Настройка локального `.env`
 
