@@ -118,6 +118,19 @@
   - `make smoke > raw/slice-002-platform-smoke.txt`
   - `docker compose -f compose.platform.yml ps > raw/slice-002-compose-ps.txt`
 
+### 2026-04-18T09:33:06Z
+
+- Re-opened Stage 02 proof after external review flagged one remaining gap: no automated browser smoke proved the client-side submit path from `/login` and `/register` into `/company`.
+- Added Playwright-based browser smoke to `apps/web` and moved it into the authoritative root `pnpm run web:smoke` path instead of leaving the flow implied by static route HTML.
+- Wired `frontend-workspaces` CI to install Playwright Chromium before running `pnpm run web:smoke`, so the browser proof is reproduced in GitHub Actions on the same branch.
+- Synced canonical runtime docs for the changed verification contract:
+  - `README.md`
+  - `docs/onboarding.md`
+  - `docs/architecture/platform-runtime-baseline.md`
+- Refreshed Stage 02 raw proof for both the aggregate frontend smoke bundle and the dedicated auth browser flow:
+  - `raw/slice-002-web-smoke.txt`
+  - `raw/slice-002-web-browser-smoke.txt`
+
 ### Remaining
 
 - No open proof gaps remain inside Stage 02.

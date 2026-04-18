@@ -8,7 +8,9 @@
 - `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 02-platform-foundation`
 - `python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query "field engineer offline shell status cards sync queue scaffold mobile contour" --limit 12`
 - `curl -fsSL https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md`
+- `export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.14.1 >/dev/null; pnpm run web:browser-install`
 - `export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.14.1 >/dev/null; pnpm run web:smoke`
+- `export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.14.1 >/dev/null; pnpm run web:browser-smoke`
 - `export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.14.1 >/dev/null; pnpm run field:smoke`
 - `./scripts/backend_go_test.sh`
 - `./scripts/backend_go_build.sh`
@@ -21,10 +23,13 @@
 - `docker compose -f compose.platform.yml ps`
 - `docker compose -f compose.platform.yml logs --tail=200 backend web field`
 - `curl` for `healthz`, `readyz`, seeded organizations/equipment reads, web route walk, and field manifest
+- `pnpm run web:smoke > .agent/stages/02-platform-foundation/raw/slice-002-web-smoke.txt 2>&1`
+- `pnpm run web:browser-smoke > .agent/stages/02-platform-foundation/raw/slice-002-web-browser-smoke.txt 2>&1`
 
 ## Tests run
 
 - `pnpm run web:smoke`: PASS
+- `pnpm run web:browser-smoke`: PASS
 - `pnpm run field:smoke`: PASS
 - `./scripts/backend_go_test.sh`: PASS
 - `./scripts/backend_go_build.sh`: PASS
@@ -38,6 +43,7 @@
 - backend `healthz` and `readyz`
 - seeded `organizations` and `equipment` API reads through the compose-backed stack
 - web runtime route walk for `/login`, `/register`, `/company`, `/equipment`, `/contracts`, `/requests`
+- client-side submit flow `/login` -> `/company` and `/register` -> `/company` via headless browser smoke against the built Next runtime
 - field runtime root page and `/manifest.webmanifest`
 - structured backend request/runtime logging through the compose stack
 
@@ -48,6 +54,7 @@
 - `raw/slice-002-web-interface-guidelines-source.md`
 - `raw/slice-002-ui-review.txt`
 - `raw/slice-002-web-smoke.txt`
+- `raw/slice-002-web-browser-smoke.txt`
 - `raw/slice-002-field-smoke.txt`
 - `raw/slice-002-backend-go-test.txt`
 - `raw/slice-002-backend-go-build.txt`
@@ -122,6 +129,9 @@
   - `make down` is not a clean-room reset; that role now belongs explicitly to `make clean`;
   - field proof is a manifest-backed shell, not full browser-installability proof;
   - roadmap/runtime docs now describe truthful auth/session boundaries rather than live bootstrap.
+- Browser proof is now explicit rather than inferred from route HTML:
+  - `apps/web` carries Playwright browser smoke for `/login` and `/register` submit flows into `/company`;
+  - root `pnpm run web:smoke` and the `frontend-workspaces` CI job both execute that flow.
 - Final routing ownership stays in `apps/web/app/login/page.tsx` and `apps/web/app/register/page.tsx`, so Storybook-backed auth form primitives remain reusable and do not need route-specific client logic.
 - `apps/web` auth/session remains shell-only until Stage 03.
 - `apps/field` remains a truthful PWA-first scaffold; offline draft storage, retry queue state, and conflict handling stay out of Stage 02.
