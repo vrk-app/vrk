@@ -86,7 +86,7 @@ export function RegisterForm({
             Создать shell-профиль
           </Button>
           <p className="text-center text-sm text-muted-foreground">
-            После регистрации пользователь переходит в контур компании, где реквизиты и филиал все еще остаются non-persisted shell surface.
+            После регистрации пользователь переходит в контур компании, где реквизиты и подразделение все еще остаются non-persisted shell surface.
           </p>
         </div>
       </form>

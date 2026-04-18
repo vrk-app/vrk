@@ -23,7 +23,9 @@ VRK Platform - это единая цифровая платформа для у
 ## Текущее состояние runtime
 
 - текущий baseline репозитория состоит из backend-контура в `apps/backend`, product-shaped web runtime shell в `apps/web` и PWA-first scaffold в `apps/field`;
-- root runtime contract теперь поднимается через `make dev`, а proof-floor проверяется через `make smoke`;
+- root runtime contract теперь поднимается через `make dev` c compose `--wait`, а proof-floor проверяется через `make smoke`, который выдерживает короткое host-port stabilization window сразу после свежего compose startup;
+- `make smoke` использует `python3`, поэтому этот runtime contract не сводится только к `Docker` и `make`;
+- `make down` останавливает stack, но сохраняет volume базы; для clean-room seeded baseline используйте `make clean` перед новым `make dev`;
 - Stage 01 Storybook foundation остаётся source of truth для reusable UI и по-прежнему собирается через `pnpm storybook` и `pnpm run web:smoke`;
 - Node.js в репозитории зафиксирован на `v24.14.1` через `.nvmrc`, root `package.json`, root `.npmrc`, `apps/web/package.json` и `apps/field/package.json`;
 - `pnpm` в репозитории зафиксирован на `10.33.0` через `packageManager`; локальная установка должна синхронизироваться командой `corepack use pnpm@10.33.0`, а workspace policy по-прежнему задается через `pnpm-workspace.yaml` и `pnpm-lock.yaml`;

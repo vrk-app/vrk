@@ -88,7 +88,7 @@ flowchart LR
 
 `apps/field` в Stage 02 существует только как PWA-first scaffold:
 
-- есть installable manifest и mobile-first shell;
+- есть manifest-backed shell и mobile-first layout;
 - есть явные API/sync boundaries;
 - нет live offline engine, draft storage и conflict resolution.
 

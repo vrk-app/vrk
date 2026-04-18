@@ -8,7 +8,7 @@ export default function EquipmentPage() {
     <>
       <PageHeader
         actions={<Badge tone="interactive">Public route: /equipment</Badge>}
-        subtitle="Оборудование уже оформлено как registry shell с точками входа, но без live CRUD, import pipeline и branch persistence."
+        subtitle="Оборудование уже оформлено как registry shell с точками входа, но без live CRUD, import pipeline и subdivision/unit persistence."
         title="Оборудование и точки входа"
       />
 

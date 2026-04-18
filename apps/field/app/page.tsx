@@ -23,7 +23,7 @@ const statusCards = [
 ] as const;
 
 const checklist = [
-  "PWA manifest уже отдается и фиксирует installable contour.",
+  "PWA manifest уже отдается и фиксирует manifest-backed contour.",
   "API boundary видна через общий platform backend без live auth/session.",
   "Полевой контур пока показывает только scaffold, а не рабочий request lifecycle.",
 ] as const;
@@ -67,7 +67,7 @@ export default function FieldHomePage() {
                   PWA-first scaffold для полевого режима без ранней имитации Stage 06
                 </h1>
                 <p className="max-w-2xl text-base leading-7 text-foreground/70">
-                  Этот contour доказывает только platform floor: installable shell, понятные offline/sync boundaries
+                  Этот contour доказывает только platform floor: manifest-backed shell, понятные offline/sync boundaries
                   и подключение к общему backend baseline. Реальные draft-storage и conflict flows остаются следующими
                   slices.
                 </p>

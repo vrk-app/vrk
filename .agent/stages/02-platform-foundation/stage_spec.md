@@ -25,8 +25,8 @@
 
 ## Out of scope
 
-- real auth / logout / refresh / role-aware access beyond baseline bootstrap;
-- persisted org / branch / equipment / contract CRUD;
+- real auth / logout / refresh / role-aware access beyond baseline shell boundaries;
+- persisted org / subdivision / unit / equipment / contract CRUD;
 - contractor invitation state machine с реальными статусами;
 - request create flow и request detail contour;
 - contractor execution, materials, TO/MO schedule approval loops;

@@ -9,17 +9,20 @@
 
 ## Что входит в baseline
 
-- root `make dev` поднимает `db`, `migrate`, backend, `apps/web`, `apps/field`;
+- root `make dev` поднимает `db`, `migrate`, backend, `apps/web`, `apps/field` и дожидается container health через compose `--wait`;
 - root `make smoke` проверяет:
   - backend `healthz` и `readyz`;
   - seeded API read smoke;
   - `apps/web` runtime routes `/login`, `/register`, `/company`, `/equipment`, `/contracts`, `/requests`;
   - `apps/field` root page и `/manifest.webmanifest`;
+  - допускает короткое bounded ожидание host-портов сразу после свежего `make dev`, чтобы не падать на transient `Connection refused`, пока published ports догоняют container health;
 - host ports по умолчанию:
   - backend: `18080`
   - web: `3100`
   - field: `3102`
 - host ports можно переопределить через `BACKEND_HOST_PORT`, `WEB_HOST_PORT`, `FIELD_HOST_PORT`;
+- `make smoke` требует доступный `python3` в локальном shell;
+- `make down` сохраняет named Postgres volume, а `make clean` пересоздает clean-room baseline для повторного seeded proof;
 - backend build/test path доступен через контейнерные scripts и не требует локального `go`.
 
 ## Чего baseline не обещает
@@ -60,5 +63,7 @@ flowchart LR
 ## Операционные заметки
 
 - Если локально уже заняты стандартные frontend ports, compose не должен ломаться: используются отдельные host defaults `3100` и `3102`.
+- `make down` подходит для обычной остановки stack; если нужно заново доказать исходный seeded floor без влияния предыдущих записей, сначала запускайте `make clean`.
 - Внешний порт PostgreSQL не пробрасывается, потому что Stage 02 smoke не требует прямого host-доступа к контейнерной БД.
-- `apps/field` пока intentionally narrow: installable shell + sync boundaries. Offline storage, retry queue state machine и conflict flows остаются позднее.
+- `docker compose up --wait` фиксирует container health, но Stage 02 proof опирается на host-facing contract; поэтому `make smoke` сам коротко дожидается доступности `localhost:18080`, `localhost:3100` и `localhost:3102`, а затем выполняет обычные строгие assertions.
+- `apps/field` пока intentionally narrow: manifest-backed shell + sync boundaries. Offline storage, retry queue state machine и conflict flows остаются позднее.

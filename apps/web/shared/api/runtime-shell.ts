@@ -36,7 +36,7 @@ export function getRuntimeBootstrap() {
 export const companyShell = {
   stageLabel: "Company onboarding / profile",
   summary:
-    "Контур собирает базовые реквизиты компании и филиала, но еще не создает persisted org/branch model.",
+    "Контур собирает базовые реквизиты компании и подразделения, но еще не создает persisted org/subdivision/unit model.",
   steps: [
     {
       title: "Профиль компании",
@@ -44,7 +44,7 @@ export const companyShell = {
       status: "Shell-only",
     },
     {
-      title: "Филиал и площадка",
+      title: "Подразделение и площадка",
       detail: "Рабочая площадка уже видна в UX как обязательный следующий шаг, но storage еще не активирован.",
       status: "Stub boundary",
     },
@@ -70,7 +70,7 @@ export const companyShell = {
 
 export const equipmentShell = {
   summary:
-    "Экран показывает пустой registry contour с точками входа для ручного добавления и импорта, но без live CRUD и без реального branch binding.",
+    "Экран показывает пустой registry contour с точками входа для ручного добавления и импорта, но без live CRUD и без реальной привязки к subdivision/unit.",
   steps: [
     {
       title: "Добавить вручную",
@@ -83,8 +83,8 @@ export const equipmentShell = {
       status: "Placeholder",
     },
     {
-      title: "Привязка к филиалу",
-      detail: "Пользователь уже видит, что оборудование живет внутри company contour, но без persisted branch model.",
+      title: "Привязка к подразделению",
+      detail: "Пользователь уже видит, что оборудование живет внутри company contour, но без persisted subdivision/unit model.",
       status: "Truthful dependency",
     },
   ] satisfies ShellStep[],

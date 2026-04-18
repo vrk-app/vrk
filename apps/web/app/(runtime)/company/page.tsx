@@ -12,7 +12,7 @@ export default function CompanyPage() {
     <>
       <PageHeader
         actions={<Badge tone="interactive">Public route: /company</Badge>}
-        subtitle="Онбординг и профиль компании уже собраны в product-shaped shell, но пока не записывают org/branch model в persisted storage."
+        subtitle="Онбординг и профиль компании уже собраны в product-shaped shell, но пока не записывают org/subdivision/unit model в persisted storage."
         title="Компания и профиль площадки"
       />
 
@@ -58,7 +58,7 @@ export default function CompanyPage() {
           <div className="flex flex-wrap gap-3">
             <Button disabled>Завершить онбординг</Button>
             <Button disabled variant="secondary">
-              Создать филиал
+              Создать подразделение
             </Button>
           </div>
         </Card>

@@ -296,8 +296,7 @@
 - наблюдаемость baseline:
   - structured logs
   - health endpoints
-  - error reporting hooks
-- baseline auth/session bootstrap для web + field clients
+- truthful auth/session boundaries для web + field clients
 
 ### Что должно появиться в коде
 
@@ -308,7 +307,7 @@
 - mock / seed / stub data boundaries там, где Stage 03 контракты еще не активированы
 - web runtime, собранный на Stage 01 shell/components
 - truthful gating/placeholder states для еще не включенного request contour
-- auth/session bootstrap
+- auth/session boundary surfaces
 - app boot scripts, которые агент может reliably запускать в каждой новой сессии
 
 ### Предпочтительный subagent plan

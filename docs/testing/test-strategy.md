@@ -63,7 +63,7 @@
 - lint/typecheck;
 - browser/runtime smoke для ключевых ролей;
 - для Stage 02 field contour допускается scaffold-proof без реального offline-to-online scenario, если evidence явно фиксирует, что Stage 06 offline engine еще не live;
-- screenshot evidence для user-facing flows.
+- screenshot evidence или эквивалентные UI captures/route snapshots для user-facing flows, когда visual behavior matters;
 - обязательный `$web-design-guidelines` pass для changed UI files;
 - evidence с prompt/brief source и подтверждением закрытия UI findings.
 

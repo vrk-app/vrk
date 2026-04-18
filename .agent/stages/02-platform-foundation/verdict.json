@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "summary": "slice-002-platform-baseline-health-ci-field closes the remaining Stage 02 platform tail: root startup and smoke are reproducible through the compose-backed contract, backend health/readiness and structured logs are present, apps/field exists as a truthful PWA-first scaffold, web auth/register shells now transition into `/company`, runtime env boundaries stay truthful inside the live stack, CI reproduces frontend/backend/stack checks, and downstream Stage 03 handoff no longer depends on an open Stage 02 blocker.",
+  "summary": "slice-002-platform-baseline-health-ci-field closes the remaining Stage 02 platform tail: root startup and smoke are reproducible through the compose-backed contract, backend health/readiness and structured logs are present, apps/field exists as a truthful manifest-backed scaffold, web auth/register shells now transition into `/company`, runtime env boundaries stay truthful inside the live stack, CI reproduces frontend/backend/stack checks, and downstream Stage 03 handoff no longer depends on an open Stage 02 blocker.",
   "failed_criteria": [],
   "proof_gaps": [],
   "exact_reproduction": [
@@ -14,5 +14,5 @@
     "make smoke"
   ],
   "smallest_safe_fix_direction": "",
-  "last_verified_at": "2026-04-18T07:45:47Z"
+  "last_verified_at": "2026-04-18T08:14:35Z"
 }

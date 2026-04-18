@@ -14,7 +14,7 @@
 - Created `docs/design/customer-admin-bootstrap-flow.md` as the canonical interpretation of the broad flow for the current MVP roadmap.
 - Clarified the stage boundary implied by the diagram:
   - `Stage 02` owns platform foundation plus product-shaped runtime shells;
-  - `Stage 03` owns real auth / RBAC / org-branch / contracts / equipment / contractor invite activation;
+  - `Stage 03` owns real auth / RBAC / org hierarchy / contracts / equipment / contractor invite activation;
   - `Stage 04` still owns live request flow activation;
   - later TO/MO schedule coordination and materials remain later operational work, nearest current home `Stage 05`;
   - modernization and supply branches from the imported diagram stay outside the current MVP scope unless the roadmap changes.
@@ -95,6 +95,28 @@
   - `http://backend:8080` and `seed-read` on `/company`;
   - `http://backend:8080` and `queue-preview` on `apps/field`.
 - Refreshed raw proof outputs for web smoke, field smoke, backend container test/build, compose status/logs, API reads, route walk, field manifest, and stack smoke.
+
+### 2026-04-18T08:06:58Z
+
+- Closed the remaining Stage 02 startup/smoke reliability gap on the current branch.
+- Found branch-local drift in the owned root contract:
+  - `Makefile` had dropped compose `--wait` from `make dev`, which let the stack report success before the Stage 02 health gate was reached.
+- Restored the intended root startup contract by putting compose `--wait` back on `make dev`.
+- Hardened `scripts/platform_smoke.sh` with a bounded readiness loop against host-facing backend/web/field routes so immediate `make smoke` no longer fails on transient `Connection refused` while published ports catch up to container health.
+- Re-synced the canonical runtime docs:
+  - `README.md`
+  - `docs/onboarding.md`
+  - `docs/architecture/platform-runtime-baseline.md`
+- Narrowed the surrounding Stage 02 contract/docs so they match the implemented proof:
+  - `docs/roadmap.md` now stops short of claiming Stage 02 error-reporting hooks or live auth/session bootstrap for web/field;
+  - `README.md`, `docs/onboarding.md`, and `docs/architecture/platform-runtime-baseline.md` now explain that `make down` preserves the named Postgres volume, `make clean` is the clean-room reset path, and `make smoke` requires `python3`;
+  - `apps/field` and architecture docs now describe the field contour as a manifest-backed shell instead of implying browser-installability without PWA icons;
+  - `CONTRIBUTING.md` and `docs/testing/test-strategy.md` were aligned with the current repo-level CI/runtime baseline and accepted UI-proof shape.
+- Refreshed Stage 02 proof with a clean startup cycle:
+  - `make down > raw/slice-002-startup-reset.txt`
+  - `make dev > raw/slice-002-startup-make-dev.txt`
+  - `make smoke > raw/slice-002-platform-smoke.txt`
+  - `docker compose -f compose.platform.yml ps > raw/slice-002-compose-ps.txt`
 
 ### Remaining
 

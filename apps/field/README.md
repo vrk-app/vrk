@@ -13,4 +13,4 @@ pnpm run field:build
 pnpm run field:smoke
 ```
 
-The current scope is intentionally narrow: installable shell, manifest, platform baseline visibility, and truthful offline/manual-sync boundaries without the Stage 06 offline engine.
+The current scope is intentionally narrow: manifest-backed shell, platform baseline visibility, and truthful offline/manual-sync boundaries without the Stage 06 offline engine.

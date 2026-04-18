@@ -36,7 +36,7 @@
     "category": "functional",
     "description": "Equipment and contracts contours exist as runtime shells, including truthful empty/gated states and contractor-invite scaffolding, while live CRUD remains Stage 03 work.",
     "steps": [
-      "Implement equipment empty/add/import shells and branch selection shell",
+      "Implement equipment empty/add/import shells and subdivision selection shell",
       "Implement contracts create flow shell and contractor lookup/invite shell",
       "Represent request contour as a truthful gated placeholder until Stage 04"
     ],

@@ -29,6 +29,7 @@
 - `Go 1.26.1` или совместимый `1.26.x` toolchain, если вы хотите запускать backend вне контейнерного baseline;
 - `Node.js v24.14.1`, ориентируясь на repo-root `.nvmrc` и `package.json`, если вы работаете с JS/TS workspace вне контейнеров;
 - `pnpm 10.33.0`, ориентируясь на repo-root `packageManager`;
+- `python3` для `make smoke` и других repo-local verification scripts;
 - `make`;
 - `Docker`, если хочешь поднять PostgreSQL одной командой;
 - или локальный `PostgreSQL 17`, если Docker не используешь;
@@ -84,7 +85,19 @@ make smoke
 - web runtime: `http://localhost:3100`
 - field scaffold: `http://localhost:3102`
 
+`make dev` возвращается после compose `--wait`, когда container health уже достигнут. `make smoke` можно запускать сразу после него: smoke сам подождет короткое bounded окно, пока host-порты backend/web/field начнут принимать подключения, и только потом перейдет к строгим runtime assertions.
+
 Если порты заняты, их можно переопределить через `BACKEND_HOST_PORT`, `WEB_HOST_PORT`, `FIELD_HOST_PORT`.
+
+Если нужен clean-room прогон с повторным применением миграций и исходным seeded baseline, используйте:
+
+```bash
+make clean
+make dev
+make smoke
+```
+
+`make down` останавливает stack, но сохраняет named Postgres volume.
 
 Storybook по-прежнему запускается отдельно:
 
@@ -105,7 +118,7 @@ pnpm storybook
 
 Это означает:
 
-- для compose baseline достаточно `Docker`, `make`, `Node.js` и `pnpm`;
+- для compose baseline достаточно `Docker`, `make`, `python3`, `Node.js` и `pnpm`;
 - для backend-only задач вне compose по-прежнему нужен Go toolchain и PostgreSQL;
 - `apps/web` уже входит и как Storybook-first foundation, и как runnable runtime shell;
 - `apps/field` входит в baseline как PWA-first scaffold;

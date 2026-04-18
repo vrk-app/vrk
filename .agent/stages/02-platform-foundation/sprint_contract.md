@@ -64,7 +64,7 @@
 ## Non-goals
 
 - real auth / refresh / RBAC;
-- persisted org / branch / equipment / contract CRUD;
+- persisted org / subdivision / unit / equipment / contract CRUD;
 - contractor invitation state machine с реальными статусами;
 - live request creation / request detail contour;
 - Stage 06 offline draft storage, conflict resolution и background sync engine;

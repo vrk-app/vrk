@@ -4,10 +4,10 @@
 
 Документ опирается на текущее состояние репозитория:
 
-- текущий runnable baseline включает `apps/backend` и Storybook-first UI foundation в `apps/web`;
+- текущий runnable baseline включает `apps/backend`, product-shaped runtime shell в `apps/web`, Storybook-first UI foundation в `apps/web` и Stage 02 scaffold в `apps/field`;
 - `docs/roadmap.md` и `.agent/stages/<stage-id>/` задают stage-based workflow для roadmap execution;
 - `docs/architecture/source-of-truth.md` фиксирует порядок source of truth;
-- `apps/web` уже входит в текущий baseline как Storybook-first UI foundation, а `apps/field` все еще остается будущим этапом.
+- `apps/field` уже входит в текущий baseline как отдельный Stage 02 scaffold и больше не считается будущим workspace-only планом.
 
 ## 1. Базовые принципы
 
@@ -255,7 +255,7 @@ PR должен быть reviewer-friendly и содержать:
 
 Если часть проверок не запустилась из-за ограничений среды, это нужно явно написать в PR.
 
-Пока в репозитории нет полноценного repo-level CI baseline, поэтому локально воспроизводимые команды и точное описание проверки в PR особенно важны.
+В репозитории уже есть repo-level CI baseline для frontend smoke, backend container checks и compose-backed platform smoke, но локально воспроизводимые команды и точное описание проверки в PR все равно обязательны.
 
 ### 8.2. Для docs-only изменений
 
@@ -263,9 +263,9 @@ PR должен быть reviewer-friendly и содержать:
 - для workflow/architecture docs также проверь согласованность с `docs/architecture/documentation-workflow.md` и `AGENTS.md`;
 - не смешивай docs cleanup с кодовыми изменениями, если это разные задачи.
 
-### 8.3. Для будущих UI изменений
+### 8.3. Для UI изменений
 
-После появления UI workspace обязательны:
+Для текущих `apps/web` и `apps/field` обязательны:
 
 - install/build checks;
 - lint/typecheck;

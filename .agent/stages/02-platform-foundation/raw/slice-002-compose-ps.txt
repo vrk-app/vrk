@@ -1,5 +1,5 @@
 NAME            IMAGE                COMMAND                  SERVICE   CREATED          STATUS                    PORTS
-vrk-backend-1   vrk-backend          "/app/api"               backend   29 seconds ago   Up 22 seconds (healthy)   0.0.0.0:18080->8080/tcp, [::]:18080->8080/tcp
-vrk-db-1        postgres:17-alpine   "docker-entrypoint.s…"   db        29 seconds ago   Up 28 seconds (healthy)   5432/tcp
-vrk-field-1     vrk-field            "docker-entrypoint.s…"   field     29 seconds ago   Up 16 seconds (healthy)   0.0.0.0:3102->3002/tcp, [::]:3102->3002/tcp
-vrk-web-1       vrk-web              "docker-entrypoint.s…"   web       29 seconds ago   Up 16 seconds (healthy)   0.0.0.0:3100->3000/tcp, [::]:3100->3000/tcp
+vrk-backend-1   vrk-backend          "/app/api"               backend   36 seconds ago   Up 29 seconds (healthy)   0.0.0.0:18080->8080/tcp, [::]:18080->8080/tcp
+vrk-db-1        postgres:17-alpine   "docker-entrypoint.s…"   db        36 seconds ago   Up 36 seconds (healthy)   5432/tcp
+vrk-field-1     vrk-field            "docker-entrypoint.s…"   field     36 seconds ago   Up 24 seconds (healthy)   0.0.0.0:3102->3002/tcp, [::]:3102->3002/tcp
+vrk-web-1       vrk-web              "docker-entrypoint.s…"   web       36 seconds ago   Up 24 seconds (healthy)   0.0.0.0:3100->3000/tcp, [::]:3100->3000/tcp

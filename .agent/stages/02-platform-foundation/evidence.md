@@ -14,6 +14,10 @@
 - `./scripts/backend_go_build.sh`
 - `make dev`
 - `make smoke`
+- `make down > .agent/stages/02-platform-foundation/raw/slice-002-startup-reset.txt 2>&1`
+- `make dev > .agent/stages/02-platform-foundation/raw/slice-002-startup-make-dev.txt 2>&1`
+- `make smoke > .agent/stages/02-platform-foundation/raw/slice-002-platform-smoke.txt 2>&1`
+- `docker compose -f compose.platform.yml ps > .agent/stages/02-platform-foundation/raw/slice-002-compose-ps.txt`
 - `docker compose -f compose.platform.yml ps`
 - `docker compose -f compose.platform.yml logs --tail=200 backend web field`
 - `curl` for `healthz`, `readyz`, seeded organizations/equipment reads, web route walk, and field manifest
@@ -26,6 +30,8 @@
 - `./scripts/backend_go_build.sh`: PASS
 - `make dev`: PASS
 - `make smoke`: PASS
+- `make dev` from a fresh `make down`, with compose `--wait`: PASS
+- immediate `make smoke` from that fresh startup: PASS
 
 ## Platform/runtime flows exercised
 
@@ -45,6 +51,8 @@
 - `raw/slice-002-field-smoke.txt`
 - `raw/slice-002-backend-go-test.txt`
 - `raw/slice-002-backend-go-build.txt`
+- `raw/slice-002-startup-reset.txt`
+- `raw/slice-002-startup-make-dev.txt`
 - `raw/slice-002-compose-ps.txt`
 - `raw/slice-002-platform-logs.txt`
 - `raw/slice-002-platform-smoke.txt`
@@ -86,12 +94,15 @@
 
 ## Canonical docs synced
 
+- `docs/roadmap.md`
+- `CONTRIBUTING.md`
 - `README.md`
 - `docs/onboarding.md`
 - `docs/testing/test-strategy.md`
 - `docs/architecture/source-of-truth.md`
 - `docs/architecture/frontend-architecture.md`
 - `docs/architecture/platform-runtime-baseline.md`
+- `apps/field/README.md`
 
 ## Downstream handoff synced
 
@@ -104,6 +115,13 @@
 - Post-review fix cycle refreshed proof after closing two gaps:
   - login/register submit now continues into `/company` instead of reloading the same shell page;
   - `/company` and `apps/field` now render runtime env boundaries from the live container process, and `scripts/platform_smoke.sh` asserts those values.
+- Startup/smoke reliability fix refreshed proof after closing the root path gap:
+  - restored compose `--wait` in root `make dev`;
+  - added a bounded host-port readiness wait in `scripts/platform_smoke.sh` so immediate post-start smoke does not fail on transient `Connection refused` while published ports catch up to container health.
+- Stage 02 docs were narrowed where the earlier wording overstated the proven slice:
+  - `make down` is not a clean-room reset; that role now belongs explicitly to `make clean`;
+  - field proof is a manifest-backed shell, not full browser-installability proof;
+  - roadmap/runtime docs now describe truthful auth/session boundaries rather than live bootstrap.
 - Final routing ownership stays in `apps/web/app/login/page.tsx` and `apps/web/app/register/page.tsx`, so Storybook-backed auth form primitives remain reusable and do not need route-specific client logic.
 - `apps/web` auth/session remains shell-only until Stage 03.
 - `apps/field` remains a truthful PWA-first scaffold; offline draft storage, retry queue state, and conflict handling stay out of Stage 02.
