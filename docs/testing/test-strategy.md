@@ -34,6 +34,7 @@
 Для Stage 00 обязательны:
 
 - runtime self-check через `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 00-harness-and-source-of-truth`;
+- runtime self-check должен подтверждать не только layout harness, но и semantic readiness stage bundle: без template placeholders в `stage_spec.md` / `sprint_contract.md`, с actionable `feature_list.json` и консистентными `evidence.json` / `verdict.json`;
 - проверка наличия `AGENTS.md`, `.agents/skills`, `.codex/agents`, `.codex/config.toml`;
 - проверка существования `.agent/stages/00..07`;
 - проверка, что source-of-truth, ADR и stage artifacts реально созданы.

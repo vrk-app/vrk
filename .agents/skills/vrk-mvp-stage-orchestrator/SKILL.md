@@ -41,6 +41,8 @@ Runtime self-check for the active harness is available via:
 python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id <stage-id>
 ```
 
+The self-check is semantic, not just structural: it validates placeholder-free stage freeze docs, actionable `feature_list.json`, and internal consistency of `evidence.json` / `verdict.json` for the requested stage.
+
 ## Commands supported by this skill
 
 Treat the following phrases as commands when the user invokes this skill:
