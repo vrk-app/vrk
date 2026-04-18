@@ -9,6 +9,8 @@ import (
 )
 
 func requestLoggingMiddleware(logger *slog.Logger) func(http.Handler) http.Handler {
+	// Вместо chi.Logger используем свой middleware: runtime baseline, compose и
+	// CI должны видеть один и тот же structured JSON event shape в stdout.
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			startedAt := time.Now()
@@ -16,6 +18,8 @@ func requestLoggingMiddleware(logger *slog.Logger) func(http.Handler) http.Handl
 
 			next.ServeHTTP(writer, r)
 
+			// 4xx оставляем на info: для CRUD-эндпоинтов и smoke probe это часто
+			// штатные ответы. До error повышаем только реальные 5xx.
 			level := slog.LevelInfo
 			if writer.Status() >= http.StatusInternalServerError {
 				level = slog.LevelError
