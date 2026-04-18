@@ -1,22 +1,27 @@
 # Архитектура фронтенда и практики разработки
 
 Статус: accepted baseline  
-Обновлено: 2026-04-12
+Обновлено: 2026-04-18
 
 ## Назначение
 
 Этот документ фиксирует архитектуру и инженерные практики для `apps/web` в VRK.
 
-Важно: после Stage 01 в репозитории уже существует `apps/web`, но его текущий runnable baseline ограничен Storybook-first UI foundation: shared primitives, Wave 1 shell/auth/request-list slices и showcase stories без реального business/runtime wiring. Полноценный business/runtime контур `apps/web` остается задачей Stage 02.
+Важно: после Stage 02 `apps/web` уже сочетает два слоя proof:
+
+- Storybook-first UI foundation из Stage 01;
+- product-shaped runtime shell из Stage 02 для `/login`, `/register`, `/company`, `/equipment`, `/contracts`, `/requests`.
 
 ## Смежные документы
 
 - repo-wide source of truth: `docs/architecture/source-of-truth.md`
 - doc-sync policy: `docs/architecture/documentation-workflow.md`
 - roadmap stages for web contour: `docs/roadmap.md`
+- identity/master-data model: `docs/architecture/identity-master-data.md`
 - UI workflow: `docs/design/ui-workflow.md`
 - design system and tokens: `docs/design/serviceops-design-system.md`
 - Storybook source backlog: `docs/design/storybook-component-backlog.md`
+- customer-admin flow mapping: `docs/design/customer-admin-bootstrap-flow.md`
 - Git / PR / commit rules: `CONTRIBUTING.md`
 
 ## 0. Общие принципы
@@ -41,7 +46,7 @@
 - backend integration — `apps/backend` через REST + OpenAPI contract
 
 Этот документ описывает прежде всего `apps/web`.
-`apps/field` будет отдельным контуром, но базовые правила по типизации, data layer, naming и doc-sync должны по возможности оставаться согласованными.
+`apps/field` уже существует как отдельный PWA-first scaffold, но базовые правила по типизации, data layer, naming и doc-sync должны оставаться согласованными между контурами.
 
 ### 1.1. Текущий Stage 01 baseline
 
@@ -66,7 +71,28 @@ flowchart LR
     C --> J["apps/web/app minimal Next.js shell"]
 ```
 
-Диаграмма фиксирует Stage 01 contract: design tokens и story helpers питают shared primitives, поверх которых уже собраны Wave 1 `widgets` и `entities`, а runtime shell остается минимальным и не тянет business integration раньше Stage 02.
+Диаграмма фиксирует Stage 01 contract: design tokens и story helpers питают shared primitives, поверх которых уже собраны Wave 1 `widgets` и `entities`. Этот слой не исчезает после Stage 02, а продолжает быть reusable foundation для runtime shell.
+
+### 1.2. Замороженный growth path для Stage 02
+
+Граница следующего роста `apps/web` теперь дополнительно заморожена в `docs/design/customer-admin-bootstrap-flow.md`.
+
+Это означает:
+
+- `Stage 02` поднял **product-shaped runtime shell** для `/login`, `/register`, `/company`, `/equipment`, `/contracts` и gated `/requests`;
+- эти surfaces могут жить на mock / seed / stub data, если Stage 03 доменная модель еще не активирована;
+- real auth/session/RBAC, invite-based activation, persisted `organization -> subdivision -> unit` state, scoped access grants, contracts/equipment/MI/standards CRUD и invitation workflows остаются ответственностью `Stage 03`;
+- requests contour не должен ложно “оживать” в `Stage 02`: допустим только truthful gated placeholder до Stage 04.
+
+### 1.3. Field scaffold boundary
+
+`apps/field` в Stage 02 существует только как PWA-first scaffold:
+
+- есть manifest-backed shell и mobile-first layout;
+- есть явные API/sync boundaries;
+- нет live offline engine, draft storage и conflict resolution.
+
+Для platform/runtime orchestration см. `docs/architecture/platform-runtime-baseline.md`.
 
 ## 2. Архитектурный каркас: Adapted FSD для `apps/web`
 
@@ -192,10 +218,9 @@ apps/web/entities/Request/
 ```text
 apps/web/shared/api/
   client/        # base HTTP client, auth/session wiring, common errors
-  contracts/     # OpenAPI-generated or hand-maintained contract types
+  contracts/     # public web boundary; during Stage 02 may adapt backend agreements resource
   requests/      # domain-specific queries/mutations
   equipment/
-  agreements/
 ```
 
 Правила:
@@ -226,12 +251,31 @@ apps/web/shared/api/
 
 - `docs/design/storybook-component-backlog.md` является source backlog для shared/component work
 - новые reusable primitives и domain UI-срезы поставляются вместе со stories
+- перед созданием или заменой shared/domain UI нужно прогнать repo-local lookup helper `python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query "<need>"`
+- порядок решений фиксирован: `reuse` существующий компонент -> `extend` существующий компонент -> `create` новый компонент только при отсутствии жизнеспособного кандидата
+- если создается net-new reusable component, вместе с ним обновляются stories и backlog, когда появился новый reusable family или missing backlog slice
 - обязательные states:
   - interactive components: `Default`, `Hover`, `Focus`, `Disabled`
   - data components: `Loading`, `Empty`, `Error`
   - responsive components: `Desktop`, `Mobile`
 - Storybook подтверждает composability и visual states, но не заменяет route integration и business smoke
 - если UI-срез меняет component API, tokens или state behavior, обновляем stories и канонические docs вместе
+- дублирующий reusable component с пересекающейся ответственностью считается architecture drift и verifier proof gap
+
+```mermaid
+flowchart TD
+    A["Нужен reusable или domain UI component"] --> B["Прогнать Storybook component lookup"]
+    B --> C{"Есть жизнеспособный story-backed кандидат?"}
+    C -->|Да, полностью подходит| D["Reuse existing component"]
+    C -->|Да, но нужен малый gap fix| E["Extend existing component API/variants/states"]
+    C -->|Нет| F["Create new component and stories"]
+    E --> G["Обновить stories и evidence"]
+    D --> G
+    F --> H["Обновить backlog, если это новый family или missing slice"]
+    H --> G
+```
+
+Диаграмма фиксирует обязательный decision path для reusable UI: сначала поиск по текущему Storybook inventory, затем строгое решение reuse/extend/create без параллельных компонентных семейств.
 
 ## 6. Константы, конфиг и окружение
 

@@ -1,0 +1,3 @@
+Review target: apps/field/app/layout.tsx, apps/field/app/page.tsx, apps/field/app/globals.css, apps/field/app/manifest.ts, apps/field/shared/config/env.ts
+Guideline source: raw/slice-002-web-interface-guidelines-source.md
+Result: no findings after adding skip link, safe-area padding, aria-hidden on decorative icons, translate=no for code-like tokens, and touch-action/tap-highlight baseline.

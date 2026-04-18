@@ -1,14 +1,23 @@
 {
   "name": "vrk-platform",
   "private": true,
-  "packageManager": "pnpm@10.27.0",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": "24.14.1"
+  },
   "scripts": {
+    "field:dev": "pnpm --filter @vrk/field dev",
+    "field:lint": "pnpm --filter @vrk/field lint",
+    "field:typecheck": "pnpm --filter @vrk/field typecheck",
+    "field:build": "pnpm --filter @vrk/field build",
+    "field:smoke": "pnpm run field:lint && pnpm run field:typecheck && pnpm run field:build",
     "web:dev": "pnpm --filter @vrk/web dev",
     "web:lint": "pnpm --filter @vrk/web lint",
     "web:typecheck": "pnpm --filter @vrk/web typecheck",
     "web:build": "pnpm --filter @vrk/web build",
     "storybook": "pnpm --filter @vrk/web storybook",
     "storybook:build": "pnpm --filter @vrk/web build-storybook",
-    "web:smoke": "pnpm run web:lint && pnpm run web:typecheck && pnpm run web:build && pnpm run storybook:build"
+    "web:smoke": "pnpm run web:lint && pnpm run web:typecheck && pnpm run web:build && pnpm run storybook:build",
+    "platform:smoke": "./scripts/platform_smoke.sh"
   }
 }

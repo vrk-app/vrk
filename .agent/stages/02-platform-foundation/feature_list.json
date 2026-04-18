@@ -1,10 +1,83 @@
 [
   {
-    "id": "seed-me",
+    "id": "stage02-web-runtime-shell",
     "category": "functional",
-    "description": "Replace this placeholder with a real, testable stage feature.",
-    "steps": [],
-    "passes": false,
-    "evidence_refs": []
+    "description": "apps/web runtime grows from a landing page into a product-shaped route shell built on top of the proven Stage 01 foundation.",
+    "steps": [
+      "Bootstrap the real runtime shell on top of Stage 01 shared primitives and widgets",
+      "Expose navigable runtime routes instead of a single informational landing page",
+      "Keep Storybook and runtime aligned on the same UI foundation"
+    ],
+    "passes": true,
+    "evidence_refs": [
+      "docs/roadmap.md",
+      "docs/architecture/frontend-architecture.md",
+      ".agent/stages/02-platform-foundation/sprint_contract.md"
+    ]
+  },
+  {
+    "id": "stage02-auth-onboarding-shell",
+    "category": "functional",
+    "description": "Stage 02 provides truthful route shells for login, registration, and company onboarding without pretending that Stage 03 auth and master data are already live.",
+    "steps": [
+      "Implement login and registration runtime shells",
+      "Implement company onboarding/profile shell mapped to the canonical flow doc",
+      "Make mock, seed, or stub boundaries explicit where domain persistence is not live yet"
+    ],
+    "passes": true,
+    "evidence_refs": [
+      "docs/design/customer-admin-bootstrap-flow.md",
+      "docs/design/diagrams/customer-admin-bootstrap-flow.drawio",
+      ".agent/stages/02-platform-foundation/stage_spec.md"
+    ]
+  },
+  {
+    "id": "stage02-equipment-contract-shells",
+    "category": "functional",
+    "description": "Equipment and contracts contours exist as runtime shells, including truthful empty/gated states and contractor-invite scaffolding, while live CRUD remains Stage 03 work.",
+    "steps": [
+      "Implement equipment empty/add/import shells and subdivision selection shell",
+      "Implement contracts create flow shell and contractor lookup/invite shell",
+      "Represent request contour as a truthful gated placeholder until Stage 04"
+    ],
+    "passes": true,
+    "evidence_refs": [
+      "docs/design/customer-admin-bootstrap-flow.md",
+      "docs/roadmap.md",
+      ".agent/stages/02-platform-foundation/sprint_contract.md"
+    ]
+  },
+  {
+    "id": "stage02-platform-baseline",
+    "category": "platform",
+    "description": "The repository converges toward a reproducible runtime/dev baseline for backend, web, and field contours together with health, env, CI, and smoke expectations; slice-001 advances only the web bootstrap part and must not claim the rest prematurely.",
+    "steps": [
+      "Stabilize env contract and startup scripts",
+      "Land the shared web API/bootstrap layer and keep backend bootstrap assumptions explicit",
+      "Add backend health hooks, root startup contract, and apps/field baseline in later Stage 02 slices",
+      "Keep CI capable of lint/test/build/smoke for the new runtime baseline without claiming it done before proof"
+    ],
+    "passes": true,
+    "evidence_refs": [
+      "docs/architecture/platform-runtime-baseline.md",
+      "Makefile",
+      ".github/workflows/platform-baseline.yml"
+    ]
+  },
+  {
+    "id": "stage02-doc-sync-and-proof",
+    "category": "documentation",
+    "description": "The imported Draw.io flow, the roadmap, and Stage 02 artifacts stay synchronized so later agents know exactly what moved into Stage 02 and what remains later.",
+    "steps": [
+      "Import the Draw.io file into docs and create a canonical interpretation doc",
+      "Sync roadmap and frontend architecture with the revised Stage 02 boundary",
+      "Track the current slice through progress, evidence, and verifier artifacts"
+    ],
+    "passes": true,
+    "evidence_refs": [
+      "docs/design/customer-admin-bootstrap-flow.md",
+      "docs/design/diagrams/customer-admin-bootstrap-flow.drawio",
+      ".agent/stages/02-platform-foundation/progress.md"
+    ]
   }
 ]

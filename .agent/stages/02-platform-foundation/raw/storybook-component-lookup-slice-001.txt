@@ -1,0 +1,26 @@
+Storybook registry entries: 19
+Query: "runtime auth onboarding shell login register company equipment contracts requests placeholder reuse candidates"
+
+1. Auth/LoginForm [LoginForm]
+   story: apps/web/stories/auth/LoginForm.stories.tsx
+   source: apps/web/widgets/Auth/ui/LoginForm.tsx
+   stories: Default, ValidationError, ServerError, Loading
+   tags: autodocs
+2. Layout/SidebarNav [SidebarNav]
+   story: apps/web/stories/layout/SidebarNav.stories.tsx
+   source: apps/web/widgets/OperatorShell/ui/SidebarNav.tsx
+   stories: Default, ActiveRequests, Collapsed, LongLabels, MobileDrawer, CollapsedMobileDrawer
+   tags: autodocs
+3. Showcases/RequestsPage [RequestsPageShowcase]
+   story: apps/web/stories/showcases/RequestsPage.stories.tsx
+   stories: Showcase
+   tags: autodocs
+4. Requests/RequestListItem [RequestListItem]
+   story: apps/web/stories/requests/RequestListItem.stories.tsx
+   source: apps/web/entities/Request/ui/RequestListItem.tsx
+   stories: Base, Selected, LongEnterpriseName, WithoutNote, Completed, ZeroProgress, OverflowInput
+   tags: autodocs
+5. Showcases/AuthPage [AuthPageShowcase]
+   story: apps/web/stories/showcases/AuthPage.stories.tsx
+   stories: Showcase
+   tags: autodocs

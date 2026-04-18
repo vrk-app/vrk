@@ -57,6 +57,7 @@ Must do:
 - keep one slice small enough for one builder cycle
 - preserve required scope without inventing post-MVP scope
 - identify which canonical docs and diagrams must be updated if the slice lands
+- for frontend/UI slices, include the component lookup target and expected reuse strategy in `sprint_contract.md`
 
 Must not:
 
@@ -87,7 +88,7 @@ Must do:
 - sync canonical docs when the slice changes or clarifies documented decisions
 - add or refresh Mermaid diagrams for non-trivial flows/states when docs would otherwise be hard to follow
 - if the slice touches apps/web or frontend/UI paths, invoke `$vrk-web-ui-workflow`
-- for frontend slices, include prompt/brief source, changed UI files, and UI review output in evidence
+- for frontend slices, run Storybook component lookup before reusable/domain UI changes and include prompt/brief source, lookup refs, reuse decision, changed UI files, and UI review output in evidence
 
 Must not:
 
@@ -116,7 +117,8 @@ Must do:
 - write precise failure diagnostics if not pass
 - treat material documentation drift on the changed slice as a proof gap
 - if the slice touches apps/web or frontend/UI paths, rerun or reproduce the `$web-design-guidelines` gate
-- verify frontend evidence includes prompt/brief source, changed UI files, and UI review output
+- verify frontend evidence includes prompt/brief source, lookup refs, reuse decision, changed UI files, and UI review output
+- treat skipped lookup, unjustified duplicate reusable components, net-new reusable UI without stories, or missing backlog updates for new reusable families as proof gaps
 
 Must not:
 

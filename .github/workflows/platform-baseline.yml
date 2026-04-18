@@ -1,0 +1,84 @@
+name: platform-baseline
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  frontend-workspaces:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.14.1
+          cache: pnpm
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.33.0 --activate
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run web smoke
+        run: pnpm run web:smoke
+
+      - name: Run field smoke
+        run: pnpm run field:smoke
+
+  backend-container-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare backend scripts
+        run: chmod +x scripts/backend_go_test.sh scripts/backend_go_build.sh
+
+      - name: Run backend tests in container
+        run: ./scripts/backend_go_test.sh
+
+      - name: Run backend build in container
+        run: ./scripts/backend_go_build.sh
+
+  platform-stack-smoke:
+    runs-on: ubuntu-latest
+    needs:
+      - frontend-workspaces
+      - backend-container-checks
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare platform scripts
+        run: chmod +x scripts/platform_smoke.sh
+
+      - name: Build and start platform stack
+        run: make dev
+
+      - name: Run platform smoke
+        run: make smoke
+
+      - name: Capture platform logs
+        if: always()
+        run: docker compose -f compose.platform.yml logs --tail=200 > platform-stack-logs.txt
+
+      - name: Upload platform logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: platform-stack-logs
+          path: platform-stack-logs.txt
+
+      - name: Stop platform stack
+        if: always()
+        run: make down

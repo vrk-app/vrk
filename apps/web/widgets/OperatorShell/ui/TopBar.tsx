@@ -13,9 +13,11 @@ export interface TopBarProps extends HTMLAttributes<HTMLDivElement> {
   searchValue: string;
   notificationsCount: number;
   user: TopBarUser;
-  breadcrumbs: BreadcrumbItem[];
+  breadcrumbs: readonly BreadcrumbItem[];
+  eyebrow?: string;
   mobileMenuOpen?: boolean;
   mobileMenuId?: string;
+  searchPlaceholder?: string;
   onSearch?: (value: string) => void;
   onMobileMenuOpenChange?: (mobileMenuOpen: boolean) => void;
   onNotificationsClick?: () => void;
@@ -25,6 +27,7 @@ export interface TopBarProps extends HTMLAttributes<HTMLDivElement> {
 export function TopBar({
   breadcrumbs,
   className,
+  eyebrow = "Оперативная работа",
   mobileMenuId,
   mobileMenuOpen = false,
   notificationsCount,
@@ -32,6 +35,7 @@ export function TopBar({
   onNotificationsClick,
   onSearch,
   onUserMenu,
+  searchPlaceholder = "Поиск по номеру, подрядчику или оборудованию…",
   searchValue,
   user,
   ...props
@@ -57,7 +61,7 @@ export function TopBar({
               aria-controls={mobileMenuId}
               aria-expanded={mobileMenuOpen}
               aria-label={mobileMenuOpen ? "Закрыть навигацию" : "Открыть навигацию"}
-              className="inline-flex size-11 items-center justify-center rounded-[var(--radius-lg)] border border-border bg-card text-foreground shadow-xs transition-colors hover:bg-muted lg:hidden"
+              className="inline-flex size-11 items-center justify-center rounded-[var(--radius-lg)] border border-border bg-card text-foreground shadow-xs transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:hidden"
               onClick={handleMobileMenuToggle}
               type="button"
             >
@@ -72,7 +76,7 @@ export function TopBar({
             <Breadcrumbs items={breadcrumbs} />
             <div>
               <p className="text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                Оперативная работа
+                {eyebrow}
               </p>
             </div>
           </div>
@@ -95,7 +99,7 @@ export function TopBar({
               disabled={!isSearchInteractive}
               name="global-search"
               onChange={isSearchInteractive ? (event) => onSearch(event.target.value) : undefined}
-              placeholder="Поиск по номеру, подрядчику или оборудованию…"
+              placeholder={searchPlaceholder}
               spellCheck={false}
               type="search"
               value={searchValue}
@@ -105,7 +109,7 @@ export function TopBar({
           <div className="flex items-center gap-3">
             <button
               aria-label="Уведомления"
-              className="relative inline-flex size-11 items-center justify-center rounded-[var(--radius-lg)] border border-border bg-card text-foreground shadow-xs transition-colors hover:bg-muted"
+              className="relative inline-flex size-11 items-center justify-center rounded-[var(--radius-lg)] border border-border bg-card text-foreground shadow-xs transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               onClick={onNotificationsClick}
               type="button"
             >
@@ -118,7 +122,7 @@ export function TopBar({
             </button>
 
             <button
-              className="inline-flex min-h-11 items-center gap-3 rounded-[var(--radius-lg)] border border-border bg-card px-3 py-2 text-left shadow-xs transition-colors hover:bg-muted"
+              className="inline-flex min-h-11 items-center gap-3 rounded-[var(--radius-lg)] border border-border bg-card px-3 py-2 text-left shadow-xs transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               onClick={onUserMenu}
               type="button"
             >

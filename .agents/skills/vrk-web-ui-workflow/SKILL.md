@@ -21,7 +21,18 @@ Before any design work:
 
 If `.impeccable.md` does not contain enough context, run `$impeccable teach` and update the file before designing anything else.
 
-### 2. Use the canonical VRK design tone
+### 2. Run Storybook component lookup before reusable UI work
+
+Before adding, replacing, or heavily refactoring reusable/domain UI:
+
+- run `python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query "<need>"`
+- inspect the current story-backed candidates first
+- decide explicitly between `reuse`, `extend`, and `create`
+- choose `create` only when the lookup output does not show a viable candidate for safe reuse or extension
+
+If the task is part of a stage run, store the lookup output in the current stage `raw/` directory and reference it from evidence.
+
+### 3. Use the canonical VRK design tone
 
 The default VRK tone is fixed:
 
@@ -39,7 +50,7 @@ Do not drift into:
 - decorative gradients and glows
 - playful or whimsical visual language
 
-### 3. Generate the UI through Impeccable
+### 4. Generate the UI through Impeccable
 
 Choose the lightest path that matches the task:
 
@@ -54,7 +65,7 @@ Pass task-specific context in the prompt:
 - what operational job they need to complete
 - any stage acceptance criteria that must be visible in the UI
 
-### 4. Run the mandatory review gate
+### 5. Run the mandatory review gate
 
 After implementation or refinement:
 
@@ -64,11 +75,15 @@ After implementation or refinement:
 
 Do not mark the UI slice complete before this gate is closed.
 
-### 5. Record proof for stage-driven work
+### 6. Record proof for stage-driven work
 
 If the task is part of a roadmap stage, make sure evidence includes:
 
 - prompt or brief source
+- component lookup query
+- matched story refs or explicit no-match result
+- reuse decision (`reuse` / `extend` / `create`)
+- rationale when `create` was necessary
 - changed UI files
 - screenshots if they matter
 - `$web-design-guidelines` result
@@ -79,12 +94,15 @@ If the task is part of a roadmap stage, make sure evidence includes:
 - Do not use `frontend-design` directly when `Impeccable` is available.
 - Use `frontend-design` only as a fallback if `Impeccable` is unavailable or broken.
 - Do not skip `.impeccable.md`.
+- Do not skip Storybook component lookup for reusable/domain UI.
+- Do not create a parallel reusable component family when a story-backed component can be reused or safely extended.
 - Do not skip `$web-design-guidelines`.
 - Do not declare UI work done based only on taste or code inspection.
 
 ## References
 
 - `references/upstream.md`
+- `.agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py`
 - `.agents/skills/vendor/impeccable/SKILL.md`
 - `.agents/skills/vendor/polish/SKILL.md`
 - `docs/design/ui-workflow.md`

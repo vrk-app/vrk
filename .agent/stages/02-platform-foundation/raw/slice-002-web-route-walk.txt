@@ -1,0 +1,6 @@
+/login 200
+/register 200
+/company 200
+/equipment 200
+/contracts 200
+/requests 200

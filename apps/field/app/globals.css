@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+:root {
+  --background: 220 23% 97%;
+  --foreground: 222 47% 11%;
+  --surface: 0 0% 100%;
+  --surface-muted: 220 20% 96%;
+  --border: 220 16% 90%;
+  --border-strong: 216 12% 82%;
+  --primary: 222 31% 14%;
+  --primary-foreground: 0 0% 100%;
+  --interactive: 221 91% 58%;
+  --interactive-soft: 217 100% 97%;
+  --success-soft: 138 76% 97%;
+  --success-strong: 142 72% 29%;
+  --warning-soft: 48 100% 96%;
+  --warning-strong: 26 90% 37%;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
+  --shadow-sm: 0 8px 24px rgba(16, 24, 40, 0.08);
+}
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-surface: hsl(var(--surface));
+  --color-surface-muted: hsl(var(--surface-muted));
+  --color-border: hsl(var(--border));
+  --color-border-strong: hsl(var(--border-strong));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-interactive: hsl(var(--interactive));
+  --color-interactive-soft: hsl(var(--interactive-soft));
+  --color-success-soft: hsl(var(--success-soft));
+  --color-success-strong: hsl(var(--success-strong));
+  --color-warning-soft: hsl(var(--warning-soft));
+  --color-warning-strong: hsl(var(--warning-strong));
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: hsl(var(--background));
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top right, rgba(47, 107, 255, 0.08), transparent 32%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(245, 247, 251, 0.98));
+  color: hsl(var(--foreground));
+  font-family: var(--font-inter), sans-serif;
+  -webkit-tap-highlight-color: rgba(47, 107, 255, 0.12);
+  touch-action: manipulation;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: hsl(var(--interactive-soft));
+  color: hsl(var(--foreground));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,8 +1,101 @@
 {
   "stage_id": "02-platform-foundation",
-  "sprint_contract_id": "slice-001",
-  "commands": [],
-  "tests": [],
-  "artifacts": [],
-  "updated_at": null
+  "sprint_contract_id": "slice-002-platform-baseline-health-ci-field",
+  "commands": [
+    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 02-platform-foundation",
+    "python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query \"field engineer offline shell status cards sync queue scaffold mobile contour\" --limit 12",
+    "curl -fsSL https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md",
+    "pnpm run web:smoke",
+    "pnpm run field:smoke",
+    "./scripts/backend_go_test.sh",
+    "./scripts/backend_go_build.sh",
+    "make dev",
+    "make smoke",
+    "make down > .agent/stages/02-platform-foundation/raw/slice-002-startup-reset.txt 2>&1",
+    "make dev > .agent/stages/02-platform-foundation/raw/slice-002-startup-make-dev.txt 2>&1",
+    "make smoke > .agent/stages/02-platform-foundation/raw/slice-002-platform-smoke.txt 2>&1",
+    "docker compose -f compose.platform.yml ps > .agent/stages/02-platform-foundation/raw/slice-002-compose-ps.txt",
+    "docker compose -f compose.platform.yml ps",
+    "docker compose -f compose.platform.yml logs --tail=200 backend web field"
+  ],
+  "tests": [
+    {
+      "name": "web-smoke",
+      "status": "pass",
+      "artifact": ".agent/stages/02-platform-foundation/raw/slice-002-web-smoke.txt"
+    },
+    {
+      "name": "field-smoke",
+      "status": "pass",
+      "artifact": ".agent/stages/02-platform-foundation/raw/slice-002-field-smoke.txt"
+    },
+    {
+      "name": "backend-go-test",
+      "status": "pass",
+      "artifact": ".agent/stages/02-platform-foundation/raw/slice-002-backend-go-test.txt"
+    },
+    {
+      "name": "backend-go-build",
+      "status": "pass",
+      "artifact": ".agent/stages/02-platform-foundation/raw/slice-002-backend-go-build.txt"
+    },
+    {
+      "name": "platform-smoke",
+      "status": "pass",
+      "artifact": ".agent/stages/02-platform-foundation/raw/slice-002-platform-smoke.txt"
+    },
+    {
+      "name": "root-startup-make-dev",
+      "status": "pass",
+      "artifact": ".agent/stages/02-platform-foundation/raw/slice-002-startup-make-dev.txt"
+    },
+    {
+      "name": "ui-review",
+      "status": "pass",
+      "artifact": ".agent/stages/02-platform-foundation/raw/slice-002-ui-review.txt"
+    }
+  ],
+  "artifacts": [
+    ".agent/stages/02-platform-foundation/raw/slice-002-harness-check.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-storybook-lookup.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-web-interface-guidelines-source.md",
+    ".agent/stages/02-platform-foundation/raw/slice-002-ui-review.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-web-smoke.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-field-smoke.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-backend-go-test.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-backend-go-build.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-startup-reset.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-startup-make-dev.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-compose-ps.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-platform-logs.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-platform-smoke.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-healthz.json",
+    ".agent/stages/02-platform-foundation/raw/slice-002-readyz.json",
+    ".agent/stages/02-platform-foundation/raw/slice-002-organizations.json",
+    ".agent/stages/02-platform-foundation/raw/slice-002-equipment.json",
+    ".agent/stages/02-platform-foundation/raw/slice-002-web-route-walk.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-login-h1.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-register-h1.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-company-h1.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-equipment-h1.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-contracts-h1.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-requests-h1.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-field-h1.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-field-manifest.json"
+  ],
+  "docs_updated": [
+    "docs/roadmap.md",
+    "CONTRIBUTING.md",
+    "README.md",
+    "docs/onboarding.md",
+    "docs/testing/test-strategy.md",
+    "docs/architecture/source-of-truth.md",
+    "docs/architecture/frontend-architecture.md",
+    "docs/architecture/platform-runtime-baseline.md",
+    "apps/field/README.md",
+    ".agent/stages/03-identity-master-data/stage_spec.md",
+    ".agent/stages/03-identity-master-data/sprint_contract.md",
+    ".agent/stages/03-identity-master-data/progress.md"
+  ],
+  "updated_at": "2026-04-18T08:14:35Z"
 }

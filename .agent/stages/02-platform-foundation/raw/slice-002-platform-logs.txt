@@ -1,0 +1,31 @@
+web-1  | 
+web-1  | > @vrk/web@0.1.0 start /workspace/apps/web
+web-1  | > next start --hostname 0.0.0.0 --port 3000
+web-1  | 
+web-1  |    ▲ Next.js 15.5.15
+web-1  |    - Local:        http://localhost:3000
+web-1  |    - Network:      http://0.0.0.0:3000
+web-1  | 
+web-1  |  ✓ Starting...
+web-1  |  ✓ Ready in 333ms
+backend-1  | {"time":"2026-04-18T07:46:33.262180346Z","level":"INFO","msg":"No .env file found"}
+backend-1  | {"time":"2026-04-18T07:46:33.37923743Z","level":"INFO","msg":"database_ready","service":"backend","database":"db","host":"db","port":5432}
+backend-1  | {"time":"2026-04-18T07:46:33.381249346Z","level":"INFO","msg":"server_starting","service":"backend","address":":8080","environment":"development"}
+backend-1  | {"time":"2026-04-18T07:46:38.247613418Z","level":"INFO","msg":"http_request","service":"backend","request_id":"a4ff74719d4a/FqeCM37aBn-000001","method":"GET","path":"/healthz","status":200,"bytes":99,"duration_ms":2,"remote_addr":"[::1]:57714"}
+backend-1  | {"time":"2026-04-18T07:46:43.301799878Z","level":"INFO","msg":"http_request","service":"backend","request_id":"a4ff74719d4a/FqeCM37aBn-000002","method":"GET","path":"/healthz","status":200,"bytes":99,"duration_ms":0,"remote_addr":"[::1]:57720"}
+backend-1  | {"time":"2026-04-18T07:46:48.349252423Z","level":"INFO","msg":"http_request","service":"backend","request_id":"a4ff74719d4a/FqeCM37aBn-000003","method":"GET","path":"/healthz","status":200,"bytes":99,"duration_ms":0,"remote_addr":"[::1]:51948"}
+backend-1  | {"time":"2026-04-18T07:46:53.391217842Z","level":"INFO","msg":"http_request","service":"backend","request_id":"a4ff74719d4a/FqeCM37aBn-000004","method":"GET","path":"/healthz","status":200,"bytes":99,"duration_ms":0,"remote_addr":"[::1]:51954"}
+backend-1  | {"time":"2026-04-18T07:46:55.700558718Z","level":"INFO","msg":"http_request","service":"backend","request_id":"a4ff74719d4a/FqeCM37aBn-000005","method":"GET","path":"/healthz","status":200,"bytes":99,"duration_ms":0,"remote_addr":"192.168.65.1:22815"}
+backend-1  | {"time":"2026-04-18T07:46:55.702310426Z","level":"INFO","msg":"http_request","service":"backend","request_id":"a4ff74719d4a/FqeCM37aBn-000006","method":"GET","path":"/readyz","status":200,"bytes":102,"duration_ms":0,"remote_addr":"192.168.65.1:53640"}
+backend-1  | {"time":"2026-04-18T07:46:55.718137384Z","level":"INFO","msg":"http_request","service":"backend","request_id":"a4ff74719d4a/FqeCM37aBn-000007","method":"GET","path":"/api/v1/organizations","status":200,"bytes":373,"duration_ms":13,"remote_addr":"192.168.65.1:38245"}
+backend-1  | {"time":"2026-04-18T07:46:55.723630384Z","level":"INFO","msg":"http_request","service":"backend","request_id":"a4ff74719d4a/FqeCM37aBn-000008","method":"GET","path":"/api/v1/equipment","status":200,"bytes":463,"duration_ms":4,"remote_addr":"192.168.65.1:61022"}
+field-1    | 
+field-1    | > @vrk/field@0.1.0 start /workspace/apps/field
+field-1    | > next start --hostname 0.0.0.0 --port 3002
+field-1    | 
+field-1    |    ▲ Next.js 15.5.15
+field-1    |    - Local:        http://localhost:3002
+field-1    |    - Network:      http://0.0.0.0:3002
+field-1    | 
+field-1    |  ✓ Starting...
+field-1    |  ✓ Ready in 331ms

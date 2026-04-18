@@ -1,0 +1,14 @@
+.git
+.gitignore
+.DS_Store
+.agent
+.agents
+.codex
+node_modules
+apps/*/node_modules
+apps/*/.next
+apps/*/storybook-static
+dist
+coverage
+record
+research

@@ -1,3 +1,5 @@
+"use client";
+
 import { useId } from "react";
 import type { ChangeEvent, ChangeEventHandler, InputHTMLAttributes, LabelHTMLAttributes } from "react";
 import { Check } from "lucide-react";
@@ -109,7 +111,7 @@ export function ConsentRow({
             {links.map((link, index) => (
               <span key={`${link.label}-${index}`}>
                 <a
-                  className="font-medium text-accent transition-colors hover:text-accent/80"
+                  className="font-medium text-accent transition-colors hover:text-accent/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   href={link.href}
                   onClick={(event) => event.stopPropagation()}
                 >

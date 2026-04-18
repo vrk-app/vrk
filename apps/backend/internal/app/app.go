@@ -3,7 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -12,16 +12,15 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	httpSwagger "github.com/swaggo/http-swagger"
 
+	_ "backend/docs/swagger"
+	"backend/internal/application/agreement"
+	"backend/internal/auth/organization"
 	"backend/internal/db/generated"
-    "backend/internal/auth/organization"
 	"backend/internal/equipment/equipment"
 	"backend/internal/equipment/measuringinstrument"
 	"backend/internal/equipment/standard"
-	"backend/internal/application/agreement"
 	"backend/internal/infrastructure/config"
 	"backend/internal/infrastructure/db"
-
-	_ "backend/docs/swagger"
 )
 
 type App struct {
@@ -29,57 +28,53 @@ type App struct {
 	router *chi.Mux
 	db     *pgxpool.Pool
 	cfg    *config.Config
+	logger *slog.Logger
 }
 
 func New(cfg *config.Config) (*App, error) {
-	// Подключение к БД
+	logger := slog.Default().With("service", "backend")
+
 	ctx := context.Background()
 	database, err := db.Connect(ctx, cfg.GetDSN())
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
-    // Создание sqlc queries
-    queries := generated.New(database)
+	logger.Info(
+		"database_ready",
+		"database", cfg.Database.DBName,
+		"host", cfg.Database.Host,
+		"port", cfg.Database.Port,
+	)
 
-    // Инициализация репозиториев и сервисов
-    // Organization
-    orgRepo := organization.NewRepository(queries)
-    orgService := organization.NewService(orgRepo)
-    orgHandler := organization.NewHandler(orgService)
+	queries := generated.New(database)
 
-    // Equipment
-    eqRepo := equipment.NewRepository(queries)
-    eqService := equipment.NewService(eqRepo)
-    eqHandler := equipment.NewHandler(eqService)
+	orgRepo := organization.NewRepository(queries)
+	orgService := organization.NewService(orgRepo)
+	orgHandler := organization.NewHandler(orgService)
 
-    // Standard
-    stdRepo := standard.NewRepository(queries)
-    stdService := standard.NewService(stdRepo)
-    stdHandler := standard.NewHandler(stdService)
+	eqRepo := equipment.NewRepository(queries)
+	eqService := equipment.NewService(eqRepo)
+	eqHandler := equipment.NewHandler(eqService)
 
-    // Measuring Instrument
-    miRepo := measuringinstrument.NewRepository(queries)
-    miService := measuringinstrument.NewService(miRepo)
-    miHandler := measuringinstrument.NewHandler(miService)
+	stdRepo := standard.NewRepository(queries)
+	stdService := standard.NewService(stdRepo)
+	stdHandler := standard.NewHandler(stdService)
+
+	miRepo := measuringinstrument.NewRepository(queries)
+	miService := measuringinstrument.NewService(miRepo)
+	miHandler := measuringinstrument.NewHandler(miService)
 
 	agreementRepo := agreement.NewRepository(queries)
 	agreementService := agreement.NewService(agreementRepo)
 	agreementHandler := agreement.NewHandler(agreementService)
 
-	// router
 	router := chi.NewRouter()
-
-	// Middleware
-	router.Use(middleware.Logger)
-	router.Use(middleware.Recoverer)
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
+	router.Use(middleware.Recoverer)
+	router.Use(requestLoggingMiddleware(logger))
 
-	// Routes
-	registerRoutes(router, orgHandler, eqHandler, stdHandler, miHandler, agreementHandler)
-
-	// Настройка сервера
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Server.Port),
 		Handler:      router,
@@ -88,59 +83,65 @@ func New(cfg *config.Config) (*App, error) {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	return &App{
+	app := &App{
 		server: server,
 		router: router,
 		db:     database,
 		cfg:    cfg,
-	}, nil
+		logger: logger,
+	}
+
+	app.registerRoutes(orgHandler, eqHandler, stdHandler, miHandler, agreementHandler)
+
+	return app, nil
 }
 
-func registerRoutes(r *chi.Mux,
-					organizationHandler *organization.OrganizationHandler,
-					eqHandler *equipment.EquipmentHandler,
-					stdHandler *standard.StandardHandler,
-					miHandler *measuringinstrument.MeasuringInstrumentHandler,
-					agreementHandler *agreement.AgreementHandler,
-					) {
-	// Swagger UI
-    r.Get("/swagger/*", httpSwagger.Handler(
-        httpSwagger.URL("/swagger/doc.json"),
-    ))
-    r.Route("/api/v1", func(r chi.Router) {
-		// Organizations
-        r.Route("/organizations", func(r chi.Router) {
-            r.Get("/", organizationHandler.List)
-            r.Post("/", organizationHandler.Create)
+func (a *App) registerRoutes(
+	organizationHandler *organization.OrganizationHandler,
+	eqHandler *equipment.EquipmentHandler,
+	stdHandler *standard.StandardHandler,
+	miHandler *measuringinstrument.MeasuringInstrumentHandler,
+	agreementHandler *agreement.AgreementHandler,
+) {
+	a.router.Get("/healthz", a.handleHealth)
+	a.router.Get("/readyz", a.handleReady)
+	a.router.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("/swagger/doc.json"),
+	))
+
+	a.router.Route("/api/v1", func(r chi.Router) {
+		r.Route("/organizations", func(r chi.Router) {
+			r.Get("/", organizationHandler.List)
+			r.Post("/", organizationHandler.Create)
 			r.Get("/{id}", organizationHandler.GetByID)
 			r.Patch("/{id}", organizationHandler.Update)
 			r.Delete("/{id}", organizationHandler.Delete)
-        })
-		// Equipment
-        r.Route("/equipment", func(r chi.Router) {
-            r.Get("/", eqHandler.List)
-            r.Post("/", eqHandler.Create)
-            r.Get("/{id}", eqHandler.GetByID)
-            r.Patch("/{id}", eqHandler.Update)
-            r.Delete("/{id}", eqHandler.Delete)
-        })
-		// Standards
-        r.Route("/standards", func(r chi.Router) {
-            r.Get("/", stdHandler.List)
-            r.Post("/", stdHandler.Create)
-            r.Get("/{id}", stdHandler.GetByID)
-            r.Patch("/{id}", stdHandler.Update)
-            r.Delete("/{id}", stdHandler.Delete)
-        })
-		// Measuring Instruments
-        r.Route("/measuring-instruments", func(r chi.Router) {
-            r.Get("/", miHandler.List)
-            r.Post("/", miHandler.Create)
-            r.Get("/{id}", miHandler.GetByID)
-            r.Patch("/{id}", miHandler.Update)
-            r.Delete("/{id}", miHandler.Delete)
-        })
-		// Agreements
+		})
+
+		r.Route("/equipment", func(r chi.Router) {
+			r.Get("/", eqHandler.List)
+			r.Post("/", eqHandler.Create)
+			r.Get("/{id}", eqHandler.GetByID)
+			r.Patch("/{id}", eqHandler.Update)
+			r.Delete("/{id}", eqHandler.Delete)
+		})
+
+		r.Route("/standards", func(r chi.Router) {
+			r.Get("/", stdHandler.List)
+			r.Post("/", stdHandler.Create)
+			r.Get("/{id}", stdHandler.GetByID)
+			r.Patch("/{id}", stdHandler.Update)
+			r.Delete("/{id}", stdHandler.Delete)
+		})
+
+		r.Route("/measuring-instruments", func(r chi.Router) {
+			r.Get("/", miHandler.List)
+			r.Post("/", miHandler.Create)
+			r.Get("/{id}", miHandler.GetByID)
+			r.Patch("/{id}", miHandler.Update)
+			r.Delete("/{id}", miHandler.Delete)
+		})
+
 		r.Route("/agreements", func(r chi.Router) {
 			r.Get("/", agreementHandler.List)
 			r.Post("/", agreementHandler.Create)
@@ -148,10 +149,16 @@ func registerRoutes(r *chi.Mux,
 			r.Put("/{id}", agreementHandler.Update)
 			r.Delete("/{id}", agreementHandler.Delete)
 		})
-    })
+	})
 }
 
 func (a *App) Run(ctx context.Context) error {
+	a.logger.Info(
+		"server_starting",
+		"address", a.server.Addr,
+		"environment", a.cfg.Server.Environment,
+	)
+
 	errCh := make(chan error, 1)
 	go func() {
 		if err := a.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -161,18 +168,24 @@ func (a *App) Run(ctx context.Context) error {
 
 	select {
 	case <-ctx.Done():
-		return a.Shutdown(context.Background())
+		return nil
 	case err := <-errCh:
 		return err
 	}
 }
 
 func (a *App) Shutdown(ctx context.Context) error {
-    log.Println("Stopping server...")
+	a.logger.Info("server_stopping")
 
-    if a.db != nil {
-        a.db.Close()
-    }
+	if err := a.server.Shutdown(ctx); err != nil {
+		return err
+	}
 
-    return a.server.Shutdown(ctx)
+	if a.db != nil {
+		a.db.Close()
+	}
+
+	a.logger.Info("server_stopped")
+
+	return nil
 }

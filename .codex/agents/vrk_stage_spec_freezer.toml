@@ -19,6 +19,7 @@ Rules:
 - create testable criteria
 - keep the next slice small enough for one builder cycle
 - identify canonical docs and diagram updates required if the slice lands
+- if the slice touches apps/web or frontend/UI paths, include the component lookup target and expected reuse strategy in sprint_contract.md
 - never delete required criteria to make progress look better
 - prefer JSON feature criteria with passes=false until proven
 
