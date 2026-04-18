@@ -7,4 +7,4 @@ docker run --rm \
   -v "${ROOT_DIR}:/workspace" \
   -w /workspace/apps/backend \
   golang:1.26-alpine \
-  sh -lc 'apk add --no-cache git ca-certificates >/dev/null && /usr/local/go/bin/go build ./...'
+  sh -lc 'apk add --no-cache git ca-certificates >/dev/null && /usr/local/go/bin/go build -buildvcs=false ./...'
