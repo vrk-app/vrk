@@ -1,0 +1,14 @@
+{
+  "success": true,
+  "data": {
+    "id": "1c9c9439-fd57-48fa-824d-5d93ef05a560",
+    "fullName": "Unit-Registry Employee 1776604587",
+    "email": "unit-registry-1776604587@vrk.local",
+    "roleTemplate": "unit_operator",
+    "scopeType": "unit",
+    "scopeId": "94c09426-1b9f-48b4-96b6-c6dd339df480",
+    "scopeLabel": "Customer-Equipment Юнит 01 1776604587",
+    "status": "draft",
+    "expiresAt": "2026-04-26T12:00:00Z"
+  }
+}

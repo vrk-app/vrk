@@ -1,0 +1,18 @@
+{
+  "id": "b0c7c542-afad-4cac-a6be-cec921a5c4e0",
+  "organizationId": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+  "ownershipScope": {
+    "scopeType": "unit",
+    "scopeId": "f8aa33ec-009d-4a36-89d9-a98d0692fb9d",
+    "label": "Customer-Metrology Юнит 01 1776614151"
+  },
+  "standardType": "Эталон расхода",
+  "model": "STD-U1",
+  "identifier": "STD-U1-1776614151",
+  "metrologicalCharacteristics": "1.5 л/мин, юнит 01",
+  "status": "inactive",
+  "linkedMeasuringInstruments": 0,
+  "journalCount": 0,
+  "createdAt": "2026-04-19T15:55:51Z",
+  "updatedAt": "2026-04-19T15:55:51Z"
+}

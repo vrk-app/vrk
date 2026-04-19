@@ -1,0 +1,14 @@
+{
+  "success": true,
+  "data": {
+    "id": "ac294210-2504-43e5-a68f-7a402d3aad8a",
+    "fullName": "Subdivision-Metrology Employee 1776614151",
+    "email": "subdivision-metrology-1776614151@vrk.local",
+    "roleTemplate": "subdivision_manager",
+    "scopeType": "subdivision",
+    "scopeId": "3f51076c-06cb-4261-b0f2-cfb6b47ba18b",
+    "scopeLabel": "Customer-Metrology Подразделение 1776614151",
+    "status": "draft",
+    "expiresAt": "2026-04-26T12:00:00Z"
+  }
+}

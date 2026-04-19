@@ -1,0 +1,12 @@
+94e86aa (HEAD -> codex/stage02-followup-proof, origin/codex/stage02-followup-proof) fix(ui): track Storybook public dir
+2d84002 fix(ci): unblock platform baseline checks
+ec0d615 test(app): add stage 02 browser smoke proof
+2fa3bc4 docs: rename context sections to goal
+4c1f280 docs(app): restore backend runtime comments
+4012e0f fix(app): tighten stage 02 proof contract (#6)
+403327d (main) feat(ui): complete stage 01 storybook foundation (#5)
+afd26d0 chore(config): close stage 00 harness proof (#4)
+b2aef08 chore(backend): add make all
+e75f489 chore(config): add VRK stage harness and repo guidance (#3)
+8d8572e feat(api): small fixes + agreement CRUD
+249643e feat(api): add swagger

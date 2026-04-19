@@ -1,26 +1,107 @@
 {
   "stage_id": "03-identity-master-data",
-  "sprint_contract_id": "slice-001-first-admin-activation-and-org-graph",
+  "sprint_contract_id": "slice-005-metrology-journals-archiving-and-proof",
   "commands": [
-    "rg -n \"Stage 02|Stage 03|identity|master data|equipment|contracts|invitation|onboarding|organization|branch|unit|measuring|standard|эталон|СИ|подраздел\" docs apps .agent/stages/02-platform-foundation .agent/stages/03-identity-master-data",
-    "sed -n on roadmap, PRD, frontend architecture, customer-admin flow, and Stage 03 artifacts for scope re-sync",
-    "sed -n on AGENTS, documentation workflow, Stage 02 progress/feature list, and Stage 03 artifacts for harness-plan re-sync",
-    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data"
+    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data",
+    "git log --oneline --decorate -8",
+    "make dev",
+    "docker compose -f compose.platform.yml ps",
+    "make smoke",
+    "./scripts/backend_go_test.sh",
+    "./scripts/backend_go_build.sh",
+    "docker run --rm -v /Users/yura-posledov/cursor/vrk:/workspace -w /workspace/apps/backend golang:1.26-alpine sh -lc 'apk add --no-cache git ca-certificates >/dev/null && /usr/local/go/bin/go install github.com/swaggo/swag/cmd/swag@v1.16.6 && /go/bin/swag init -g cmd/api/main.go -o docs/swagger'",
+    "python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query \"metrology journal archive archive status derivation measuring instrument journal standard journal validity due date archive registry history timeline attachments dictionary local draft archive restore\" --limit 12",
+    "env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run typecheck",
+    "env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run lint",
+    "env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run build",
+    "env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run browser-smoke",
+    "python3 .agent/stages/03-identity-master-data/proof_slice005_metrology_archive.py"
   ],
   "tests": [
-    "verify_harness: PASS"
+    "verify_harness: PASS",
+    "make dev: PASS",
+    "docker compose ps: PASS",
+    "make smoke: PASS",
+    "backend go test ./...: PASS",
+    "backend go build -buildvcs=false ./...: PASS",
+    "swagger refresh: PASS",
+    "web typecheck: PASS",
+    "web lint: PASS",
+    "web build: PASS",
+    "slice-005 direct metrology/archive proof: PASS",
+    "slice-005 web browser smoke: PASS"
   ],
   "artifacts": [
     "docs/roadmap.md",
     "docs/PRD-MVP.md",
-    "docs/design/customer-admin-bootstrap-flow.md",
-    "docs/architecture/frontend-architecture.md",
     "docs/architecture/identity-master-data.md",
+    "docs/architecture/frontend-architecture.md",
+    "docs/design/customer-admin-bootstrap-flow.md",
     ".agent/stages/03-identity-master-data/stage_spec.md",
-    ".agent/stages/03-identity-master-data/feature_list.json",
     ".agent/stages/03-identity-master-data/sprint_contract.md",
+    ".agent/stages/03-identity-master-data/evidence.md",
+    ".agent/stages/03-identity-master-data/evidence.json",
+    ".agent/stages/03-identity-master-data/verdict.json",
     ".agent/stages/03-identity-master-data/progress.md",
-    ".agent/stages/03-identity-master-data/raw/harness-check-2026-04-18.txt"
+    ".agent/stages/03-identity-master-data/feature_list.json",
+    ".agent/stages/03-identity-master-data/raw/slice-005-git-log-2026-04-19.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-005-harness-check-2026-04-19.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-005-make-dev-2026-04-19.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-005-compose-ps-2026-04-19.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-005-make-smoke-2026-04-19.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-005-backend-go-test-2026-04-19.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-005-backend-go-build-2026-04-19.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-005-swagger-refresh-2026-04-19.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-005-web-typecheck-2026-04-19.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-005-web-lint-2026-04-19.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-005-web-build-2026-04-19.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-005-web-browser-smoke-2026-04-19.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-005-direct-proof-run-2026-04-19.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-005-direct-proof-summary-2026-04-19.json",
+    ".agent/stages/03-identity-master-data/raw/slice-005-direct-proof-2026-04-19.log",
+    ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-005-2026-04-19-orchestrator.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-005-ui-review-2026-04-19.txt",
+    ".agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-19.md"
   ],
-  "updated_at": "2026-04-18T06:04:47Z"
+  "docs_synced": [
+    "docs/roadmap.md",
+    "docs/PRD-MVP.md",
+    "docs/architecture/identity-master-data.md",
+    "docs/architecture/frontend-architecture.md",
+    "docs/design/customer-admin-bootstrap-flow.md",
+    ".agent/stages/03-identity-master-data/stage_spec.md"
+  ],
+  "ui_lookup": {
+    "query": "metrology journal archive archive status derivation measuring instrument journal standard journal validity due date archive registry history timeline attachments dictionary local draft archive restore",
+    "result": "Lookup surfaced only generic badge/icon inventory, so the slice reused shared primitives and extended feature-local EquipmentRegistryWorkspace instead of creating a new reusable journal/archive family.",
+    "decision": "reuse"
+  },
+  "design_brief_source": {
+    "artifact": ".agent/stages/03-identity-master-data/sprint_contract.md",
+    "section": "Objective",
+    "summary": "Оставить `/equipment` одним canonical contour и доказать journal-driven metrology truth, archive-only lifecycle и scoped journal/archive visibility без parallel public routes."
+  },
+  "changed_ui_files": [
+    "apps/web/app/(runtime)/equipment/page.tsx",
+    "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx",
+    "apps/web/tests/equipment-registries.smoke.spec.ts"
+  ],
+  "ui_review": {
+    "gate": "$web-design-guidelines",
+    "status": "PASS",
+    "closed": true,
+    "source": ".agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-19.md",
+    "artifact": ".agent/stages/03-identity-master-data/raw/slice-005-ui-review-2026-04-19.txt",
+    "scope": [
+      "apps/web/app/(runtime)/equipment/page.tsx",
+      "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx"
+    ],
+    "notes": [
+      "Every archive action in EquipmentRegistryWorkspace now requires explicit confirmation before mutating archive state, including equipment list cards and MI/standard detail-panel actions.",
+      "Archive visibility is URL-backed through ?archived=1 so the same route state is shareable and reproducible.",
+      "Custom registry tab buttons expose visible keyboard focus rings in the final reviewed UI state.",
+      "Identifier/detail cells keep translate=\"no\" where the value is a real identifier, and no blocking Web Interface Guidelines findings remain for the reviewed /equipment scope."
+    ]
+  },
+  "updated_at": "2026-04-19T15:59:38Z"
 }

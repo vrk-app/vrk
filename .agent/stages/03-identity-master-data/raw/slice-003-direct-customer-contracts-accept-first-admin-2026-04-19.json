@@ -1,0 +1,37 @@
+{
+  "success": true,
+  "data": {
+    "sessionToken": "7ee7a633-c485-41d2-bd07-b302276510ac",
+    "requiresLaunchWizard": true,
+    "account": {
+      "id": "0e82b2c4-946e-47d1-81f1-0c1b1e3ae848",
+      "fullName": "Customer-Contracts Admin 1776595503",
+      "email": "customer-contracts-1776595503@vrk.local"
+    },
+    "membershipId": "075960a2-15d6-4a0d-a9fe-f2016886ffb1",
+    "membershipStatus": "active",
+    "organization": {
+      "id": "caa71058-2ea7-4b8d-8db4-46b503796bbb",
+      "roleTitle": "customer",
+      "name": "ВРК customer-contracts 1776595503",
+      "launchState": "shell"
+    },
+    "grant": {
+      "id": "b3bc7a87-24d5-4da4-bf73-92eca1c5282f",
+      "roleTemplate": "organization_admin",
+      "scopeType": "organization",
+      "scopeId": "caa71058-2ea7-4b8d-8db4-46b503796bbb"
+    },
+    "workspace": {
+      "scopeType": "organization",
+      "scopeId": "caa71058-2ea7-4b8d-8db4-46b503796bbb",
+      "scopeName": "ВРК customer-contracts 1776595503",
+      "landingTitle": "ВРК customer-contracts 1776595503",
+      "landingSubtitle": "Администратор организации видит полный org graph и может управлять приглашениями сотрудников.",
+      "landingPath": "/company",
+      "canManageEmployeeInvites": false
+    },
+    "subdivisions": [],
+    "units": []
+  }
+}

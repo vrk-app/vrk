@@ -26,8 +26,9 @@ export const COLOR_TOKEN_GROUPS: TokenGroup<ColorToken>[] = [
     items: [
       { name: "primary", value: "hsl(var(--primary))", usage: "Главные кнопки и сильные действия" },
       { name: "primary-hover", value: "hsl(var(--primary-hover))", usage: "Hover и pressed для primary" },
-      { name: "accent", value: "hsl(var(--accent))", usage: "Tabs, links, focus, selection" },
-      { name: "accent-soft", value: "hsl(var(--accent-soft))", usage: "Selected rows, soft chips, calm backgrounds" },
+      { name: "interactive", value: "hsl(var(--accent))", usage: "Tabs, links, focus, selection" },
+      { name: "interactive-hover", value: "hsl(var(--interactive-hover))", usage: "Hover и active-controls" },
+      { name: "interactive-soft", value: "hsl(var(--accent-soft))", usage: "Selected rows, soft chips, calm backgrounds" },
     ],
   },
   {
@@ -35,12 +36,15 @@ export const COLOR_TOKEN_GROUPS: TokenGroup<ColorToken>[] = [
     description: "Border-first surface language from the ServiceOps design system.",
     items: [
       { name: "background", value: "hsl(var(--background))", usage: "Фон приложения" },
-      { name: "card", value: "hsl(var(--card))", usage: "Карточки, панели, inputs" },
-      { name: "muted", value: "hsl(var(--muted))", usage: "Вложенные quiet-панели" },
+      { name: "surface", value: "hsl(var(--card))", usage: "Карточки, панели, inputs" },
+      { name: "surface-muted", value: "hsl(var(--muted))", usage: "Вложенные quiet-панели" },
+      { name: "surface-hover", value: "hsl(var(--surface-hover))", usage: "Hover для list/nav surfaces" },
       { name: "border", value: "hsl(var(--border))", usage: "Основные бордеры" },
       { name: "border-strong", value: "hsl(var(--border-strong))", usage: "Усиленные разделители и active рамки" },
-      { name: "foreground", value: "hsl(var(--foreground))", usage: "Основной текст" },
-      { name: "muted-foreground", value: "hsl(var(--muted-foreground))", usage: "Вторичный текст и мета" },
+      { name: "text-primary", value: "hsl(var(--foreground))", usage: "Основной текст" },
+      { name: "text-secondary", value: "hsl(var(--muted-foreground))", usage: "Вторичный текст и мета" },
+      { name: "text-tertiary", value: "hsl(var(--text-tertiary))", usage: "Placeholder и timestamps" },
+      { name: "text-disabled", value: "hsl(var(--text-disabled))", usage: "Disabled text и icons" },
     ],
   },
   {
@@ -62,6 +66,7 @@ export const COLOR_TOKEN_GROUPS: TokenGroup<ColorToken>[] = [
 ];
 
 export const TYPOGRAPHY_TOKENS: TypographyToken[] = [
+  { name: "text-xs", fontSize: 12, lineHeight: 16, fontWeight: 500, usage: "Caption, timestamps и meta" },
   { name: "text-sm", fontSize: 13, lineHeight: 18, fontWeight: 500, usage: "Лейблы, table meta, badges" },
   { name: "text-base", fontSize: 14, lineHeight: 20, fontWeight: 400, usage: "Основной UI-текст и формы" },
   { name: "text-md", fontSize: 16, lineHeight: 24, fontWeight: 400, usage: "Карточки деталей и auth-формы" },
@@ -75,6 +80,14 @@ export const TYPOGRAPHY_TOKENS: TypographyToken[] = [
     fontWeight: 700,
     letterSpacing: "-0.02em",
     usage: "Главные заголовки страниц",
+  },
+  {
+    name: "text-4xl",
+    fontSize: 36,
+    lineHeight: 42,
+    fontWeight: 700,
+    letterSpacing: "-0.02em",
+    usage: "Auth / major hero title",
   },
 ];
 
@@ -99,6 +112,7 @@ export const RADIUS_TOKENS = [
   { name: "radius-xl", value: "16px" },
   { name: "radius-2xl", value: "20px" },
   { name: "radius-3xl", value: "28px" },
+  { name: "radius-full", value: "9999px" },
 ];
 
 export const ELEVATION_TOKENS = [
@@ -106,4 +120,5 @@ export const ELEVATION_TOKENS = [
   { name: "shadow-sm", value: "0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04)" },
   { name: "shadow-md", value: "0 8px 24px rgba(16, 24, 40, 0.08)" },
   { name: "shadow-lg", value: "0 16px 40px rgba(16, 24, 40, 0.12)" },
+  { name: "shadow-xl", value: "0 24px 64px rgba(16, 24, 40, 0.16)" },
 ];

@@ -1,22 +1,32 @@
-import { BadgeCheck, FileCheck2, UserRoundPlus } from "lucide-react";
-import { contractsShell, getRuntimeBootstrap } from "@/shared/api";
-import { Badge, Button, Card } from "@/shared/ui";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { FileCheck2, Route, UserRoundPlus } from "lucide-react";
+import { ContractsRegistry } from "@/features/Stage03Contracts";
+import {
+  SESSION_COOKIE_NAME,
+  contractsShell,
+  fetchContractRegistry,
+  fetchContractorOptions,
+  getRuntimeBootstrap,
+} from "@/shared/api";
+import { fetchSessionSummary } from "@/shared/api/session-server";
+import { Badge, Card } from "@/shared/ui";
 import { PageHeader } from "@/widgets/OperatorShell";
 
-export default function ContractsPage() {
+function AnonymousContractsShell() {
   const runtimeBootstrap = getRuntimeBootstrap();
 
   return (
     <>
       <PageHeader
         actions={<Badge tone="interactive">Public route: /contracts</Badge>}
-        subtitle="Договоры и приглашение подрядчика уже присутствуют в runtime shell, но не выполняют persisted create/invite flow."
+        subtitle="Анонимный пользователь по-прежнему видит truthful shell boundary. Живой contracts registry появляется только после Stage 03 auth/session projection."
         title="Договоры и подрядчики"
       />
 
       <div className="grid gap-4 lg:grid-cols-3">
         {contractsShell.steps.map((step, index) => {
-          const icons = [FileCheck2, UserRoundPlus, BadgeCheck];
+          const icons = [FileCheck2, UserRoundPlus, Route];
           const Icon = icons[index] ?? FileCheck2;
 
           return (
@@ -38,47 +48,65 @@ export default function ContractsPage() {
         })}
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <Card className="gap-4" padding="lg">
-          <div className="space-y-2">
-            <h2 className="text-xl font-semibold text-foreground">Normalized web boundary</h2>
-            <p className="text-sm leading-6 text-muted-foreground">
-              Публичный runtime route называется contracts, а shared API boundary уже фиксирует, что backend resource пока живет под названием agreements.
-            </p>
-          </div>
-          <div className="rounded-[var(--radius-xl)] border border-border bg-muted/60 p-4 font-mono text-sm text-foreground">
-            <div>Web route: /contracts</div>
-            <div>Backend resource: {runtimeBootstrap.resources.contracts}</div>
-            <div>Mode: adapter-only, no live invite workflow</div>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Button disabled>Создать договор</Button>
-            <Button disabled variant="secondary">
-              Пригласить подрядчика
-            </Button>
-          </div>
-        </Card>
+      <Card className="mt-4 gap-4" id="boundary-notes" padding="lg">
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold text-foreground">Normalized web boundary</h2>
+          <p className="text-sm leading-6 text-muted-foreground">
+            Публичный runtime route называется contracts, а backend resource пока остается agreements внутри explicit
+            adapter boundary.
+          </p>
+        </div>
+        <div className="rounded-[var(--radius-xl)] border border-border bg-muted/60 p-4 font-mono text-sm text-foreground">
+          <div>Web route: /contracts</div>
+          <div>Backend resource: {runtimeBootstrap.resources.contracts}</div>
+          <div>Mode: anonymous shell before session</div>
+        </div>
+      </Card>
+    </>
+  );
+}
 
-        <Card className="gap-4" padding="lg">
-          <div className="space-y-2">
-            <h2 className="text-lg font-semibold text-foreground">Boundary notes</h2>
-            <p className="text-sm leading-6 text-muted-foreground">{contractsShell.summary}</p>
-          </div>
-          <div className="grid gap-3">
-            {contractsShell.boundaries.map((boundary) => (
-              <div className="rounded-[var(--radius-lg)] border border-border bg-card px-4 py-3" key={boundary.label}>
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-sm font-semibold text-foreground">{boundary.label}</p>
-                  <Badge size="sm" tone={boundary.tone}>
-                    {boundary.tone}
-                  </Badge>
-                </div>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{boundary.detail}</p>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </div>
+export default async function ContractsPage() {
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  const session = await fetchSessionSummary(sessionToken);
+  if (!session) {
+    return <AnonymousContractsShell />;
+  }
+  if (session.requiresLaunchWizard) {
+    redirect("/company/setup");
+  }
+
+  const initialContracts = await fetchContractRegistry(session.sessionToken);
+  const canManageContracts =
+    session.organization.roleTitle === "customer" &&
+    session.grant?.roleTemplate === "organization_admin" &&
+    session.workspace.scopeType === "organization";
+  const contractorOptions = canManageContracts ? await fetchContractorOptions(session.sessionToken) : [];
+  const contourLabel =
+    session.organization.roleTitle === "contractor" ? "Contractor contracts workspace" : "Customer contracts registry";
+
+  return (
+    <>
+      <PageHeader
+        actions={
+          <Badge tone={session.organization.roleTitle === "contractor" ? "warning" : "interactive"}>
+            Stage 03 • {contourLabel}
+          </Badge>
+        }
+        subtitle={
+          session.organization.roleTitle === "contractor"
+            ? "Подрядчик видит только customer contracts, привязанные к своей организации, без доступа к customer org graph."
+            : "Customer organization admin управляет contracts registry, contractor binding и routing eligibility preview внутри реального Stage 03 contour."
+        }
+        title="Договоры и маршрутизация"
+      />
+
+      <ContractsRegistry
+        contractorOptions={contractorOptions}
+        initialContracts={initialContracts}
+        session={session}
+      />
     </>
   );
 }

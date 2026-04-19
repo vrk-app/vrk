@@ -1,0 +1,64 @@
+{
+  "success": true,
+  "data": {
+    "sessionToken": "158904a7-e652-4a7c-ac98-0a79eb8cef52",
+    "requiresLaunchWizard": false,
+    "account": {
+      "id": "0c572e8d-532b-4f33-bcfe-e28490370031",
+      "fullName": "Subdivision-Metrology Employee 1776614151",
+      "email": "subdivision-metrology-1776614151@vrk.local"
+    },
+    "membershipId": "da4e09c0-a998-436d-a2d8-932c346751c4",
+    "membershipStatus": "active",
+    "organization": {
+      "id": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+      "roleTitle": "customer",
+      "name": "ВРК customer-metrology 1776614151",
+      "shortName": "CUS-1776614151",
+      "propertyType": "ООО",
+      "inn": "1776614151",
+      "kpp": "177661415",
+      "legalAddress": "г. Москва, ул. customer-metrology, д. 5",
+      "contactEmail": "customer-metrology-1776614151@vrk.local",
+      "contactPhone": "+7 (999) 123-45-67",
+      "launchState": "active"
+    },
+    "grant": {
+      "id": "e4c82bde-a1e3-4b91-88aa-ff397012c98e",
+      "roleTemplate": "subdivision_manager",
+      "scopeType": "subdivision",
+      "scopeId": "3f51076c-06cb-4261-b0f2-cfb6b47ba18b"
+    },
+    "workspace": {
+      "scopeType": "subdivision",
+      "scopeId": "3f51076c-06cb-4261-b0f2-cfb6b47ba18b",
+      "scopeName": "Customer-Metrology Подразделение 1776614151",
+      "landingTitle": "Customer-Metrology Подразделение 1776614151",
+      "landingSubtitle": "Доступ ограничен выбранным подразделением и его дочерними юнитами.",
+      "landingPath": "/company",
+      "canManageEmployeeInvites": false
+    },
+    "subdivisions": [
+      {
+        "id": "3f51076c-06cb-4261-b0f2-cfb6b47ba18b",
+        "type": "Филиал",
+        "name": "Customer-Metrology Подразделение 1776614151"
+      }
+    ],
+    "units": [
+      {
+        "id": "f8aa33ec-009d-4a36-89d9-a98d0692fb9d",
+        "type": "Юнит",
+        "name": "Customer-Metrology Юнит 01 1776614151",
+        "subdivisionId": "3f51076c-06cb-4261-b0f2-cfb6b47ba18b"
+      },
+      {
+        "id": "560a11af-2794-4722-a7dc-e46593ab2381",
+        "type": "Юнит",
+        "name": "Второй юнит 1776614151",
+        "code": "U2-1776614151",
+        "subdivisionId": "3f51076c-06cb-4261-b0f2-cfb6b47ba18b"
+      }
+    ]
+  }
+}

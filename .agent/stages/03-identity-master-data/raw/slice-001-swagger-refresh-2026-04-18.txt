@@ -1,0 +1,46 @@
+2026/04/18 20:26:23 Generate swagger docs....
+2026/04/18 20:26:23 Generate general API Info, search dir:./
+2026/04/18 20:26:23 warning: failed to get package name in dir: ./, error: execute go list command, exec: "go": executable file not found in $PATH, stdout:, stderr:
+2026/04/18 20:26:23 Generating agreement.CreateRequest
+2026/04/18 20:26:23 Generating agreement.Response
+2026/04/18 20:26:23 Generating agreement.Meta
+2026/04/18 20:26:23 Generating agreement.AgreementResponse
+2026/04/18 20:26:23 Generating agreement.UpdateRequest
+2026/04/18 20:26:23 Generating bootstrap.CreateOrganizationShellRequest
+2026/04/18 20:26:23 Generating bootstrap.Response
+2026/04/18 20:26:23 Generating bootstrap.OrganizationShellResponse
+2026/04/18 20:26:23 Generating bootstrap.InviteInspectionResponse
+2026/04/18 20:26:23 Generating bootstrap.AcceptInviteRequest
+2026/04/18 20:26:23 Generating bootstrap.SessionSummaryResponse
+2026/04/18 20:26:23 Generating bootstrap.SessionAccountResponse
+2026/04/18 20:26:23 Generating bootstrap.SessionOrganizationResponse
+2026/04/18 20:26:23 Generating bootstrap.SessionGrantResponse
+2026/04/18 20:26:23 Generating bootstrap.SubdivisionResponse
+2026/04/18 20:26:23 Generating bootstrap.UnitResponse
+2026/04/18 20:26:23 Generating bootstrap.CreateSessionRequest
+2026/04/18 20:26:23 Generating bootstrap.CompleteLaunchRequest
+2026/04/18 20:26:23 Generating bootstrap.LaunchSubdivisionInput
+2026/04/18 20:26:23 Generating bootstrap.LaunchUnitInput
+2026/04/18 20:26:23 Generating organization.CreateRequest
+2026/04/18 20:26:23 Generating organization.Response
+2026/04/18 20:26:23 Generating organization.Meta
+2026/04/18 20:26:23 Generating organization.OrganizationResponse
+2026/04/18 20:26:23 Generating organization.UpdateRequest
+2026/04/18 20:26:23 Generating equipment.CreateRequest
+2026/04/18 20:26:23 Generating equipment.Response
+2026/04/18 20:26:23 Generating equipment.Meta
+2026/04/18 20:26:23 Generating equipment.EquipmentResponse
+2026/04/18 20:26:23 Generating equipment.UpdateRequest
+2026/04/18 20:26:23 Generating measuringinstrument.CreateRequest
+2026/04/18 20:26:23 Generating measuringinstrument.Response
+2026/04/18 20:26:23 Generating measuringinstrument.Meta
+2026/04/18 20:26:23 Generating measuringinstrument.MeasuringInstrumentResponse
+2026/04/18 20:26:23 Generating measuringinstrument.UpdateRequest
+2026/04/18 20:26:23 Generating standard.CreateRequest
+2026/04/18 20:26:23 Generating standard.Response
+2026/04/18 20:26:23 Generating standard.Meta
+2026/04/18 20:26:23 Generating standard.StandardResponse
+2026/04/18 20:26:23 Generating standard.UpdateRequest
+2026/04/18 20:26:23 create docs.go at docs/swagger/docs.go
+2026/04/18 20:26:23 create swagger.json at docs/swagger/swagger.json
+2026/04/18 20:26:23 create swagger.yaml at docs/swagger/swagger.yaml

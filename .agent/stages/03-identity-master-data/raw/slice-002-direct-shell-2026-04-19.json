@@ -1,0 +1,16 @@
+{
+  "status": 201,
+  "response": {
+    "success": true,
+    "data": {
+      "organizationId": "31ba2fbd-7ef7-43d2-b79d-ec48b9322e22",
+      "organizationName": "ВРК Scope Proof 1776553455",
+      "organizationRole": "customer",
+      "inviteId": "3732df14-4d22-4121-a6dc-32de908687c9",
+      "inviteEmail": "proof-admin-1776553455@vrk.local",
+      "inviteStatus": "sent",
+      "inviteToken": "55827bcf-9dbe-4152-94d2-a76cae8f1268",
+      "inviteExpiresAt": "2026-04-25T23:04:15Z"
+    }
+  }
+}

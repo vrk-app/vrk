@@ -1,0 +1,14 @@
+
+> vrk-platform@ web:browser-smoke /Users/yura-posledov/cursor/vrk
+> pnpm --filter @vrk/web browser-smoke
+
+
+> @vrk/web@0.1.0 browser-smoke /Users/yura-posledov/cursor/vrk/apps/web
+> playwright test --config playwright.config.ts
+
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/auth-flow.smoke.spec.ts:13:7 › stage 03 first-admin bootstrap › platform admin issues invite, first admin activates, completes wizard, and login works (1.2s)
+
+  1 passed (2.2s)

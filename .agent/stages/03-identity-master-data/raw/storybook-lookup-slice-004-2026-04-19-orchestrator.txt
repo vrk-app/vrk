@@ -1,0 +1,13 @@
+Storybook registry entries: 19
+Query: "equipment registry measuring instruments registry standards registry metrology ownership scope unit subdivision organization attachments cards list detail forms"
+
+1. Requests/RequestListItem [RequestListItem]
+   story: apps/web/stories/requests/RequestListItem.stories.tsx
+   source: apps/web/entities/Request/ui/RequestListItem.tsx
+   stories: Base, Selected, LongEnterpriseName, WithoutNote, Completed, ZeroProgress, OverflowInput
+   tags: autodocs
+2. Requests/RequestList [RequestList]
+   story: apps/web/stories/requests/RequestList.stories.tsx
+   source: apps/web/entities/Request/ui/RequestList.tsx
+   stories: Default, Loading, Empty, DerivedEmptyFromTotal, ManyItems, OutOfRangePage
+   tags: autodocs

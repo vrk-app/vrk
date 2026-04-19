@@ -1,0 +1,8 @@
+
+> vrk-platform@ web:lint /Users/yura-posledov/cursor/vrk
+> pnpm --filter @vrk/web lint
+
+
+> @vrk/web@0.1.0 lint /Users/yura-posledov/cursor/vrk/apps/web
+> eslint .
+

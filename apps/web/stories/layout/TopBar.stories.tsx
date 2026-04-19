@@ -71,6 +71,7 @@ export const WithoutNotifications: Story = {
 
 export const SearchUnavailable: Story = {
   args: {
+    notificationsCount: 2,
     searchValue: "VRK-24",
   },
   render: (args) => (
@@ -78,6 +79,13 @@ export const SearchUnavailable: Story = {
       <TopBar {...args} />
     </div>
   ),
+};
+
+export const ActionsUnavailable: Story = {
+  args: {
+    notificationsCount: 4,
+    searchValue: "",
+  },
 };
 
 export const LongUserName: Story = {

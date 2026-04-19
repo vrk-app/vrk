@@ -1,7 +1,7 @@
 # Customer Admin Bootstrap Flow
 
 Статус: accepted baseline  
-Обновлено: 2026-04-18
+Обновлено: 2026-04-19
 
 ## Назначение
 
@@ -108,6 +108,123 @@ flowchart LR
 - access boundaries for customer / contractor contours.
 
 Именно здесь onboarding flow перестает быть shell и становится реальным master-data контуром.
+
+### Реализованный route contour для slice-001
+
+Первый живой контур `Stage 03` уже не абстрактный, а маршрутизируемый:
+
+- `/register` используется платформенным админом для выпуска first-admin invite;
+- `/register/[token]` используется приглашенным администратором для password setup и accept;
+- после accept пользователь попадает в `/company/setup`, а после завершения wizard — в `/company`;
+- повторный переход по использованной одноразовой ссылке показывает состояние `Одноразовая ссылка больше не активна`;
+- анонимный `/company` shell из `Stage 02` сохраняется как truthful public state до появления активной session.
+
+```mermaid
+flowchart LR
+    A["/register<br/>platform admin issues invite"] --> B["/register/[token]<br/>first admin sets password"]
+    B --> C["/company/setup<br/>launch wizard"]
+    C --> D["/company<br/>persisted org summary"]
+    B --> E["invite replay / expired link"]
+```
+
+### Реализованный route contour для slice-002
+
+Второй живой Stage 03 slice не создает новый invite route family, а расширяет тот же entry path:
+
+- organization admin завершает bootstrap и остается на `/company`, где получает people/access block для employee invite lifecycle;
+- employee invite выдается из `/company`, а одноразовая ссылка снова ведет в `/register/[token]`;
+- после employee acceptance и последующего login тот же `/company` route становится scope-aware landing:
+  - organization scope показывает полный org graph и invite management;
+  - subdivision scope показывает только свое поддерево;
+  - unit scope показывает только один юнит без расширения вверх;
+- replay, expired и revoked employee links возвращают пользователя в состояние `Одноразовая ссылка больше не активна`, а не в ложный success flow.
+
+```mermaid
+flowchart LR
+    A["/company<br/>organization admin"] --> B["Create draft"]
+    B --> C["Send employee invite"]
+    C --> D["/register/[token]<br/>employee accept"]
+    D --> E["/company<br/>scoped landing"]
+    E --> F["/login<br/>restore same contour"]
+    D --> G["inactive link state<br/>for replay / expired / revoked"]
+```
+
+### Реализованный route contour для slice-003
+
+Третий Stage 03 slice оживляет contracts contour без widening в Stage 04 request flow:
+
+- customer organization admin остается на `/company` после login, но управляет живым registry через `/contracts`;
+- `/contracts` теперь содержит create/update contract flow, contractor binding и routing preview вместо shell-only copy;
+- публичное naming `contracts` сохраняется, а backend `/agreements` остается только внутренним adapter boundary;
+- contractor organization после login и session restore попадает прямо на `/contracts`, а не в generic `/company`;
+- contractor-side `/contracts` показывает только договоры, привязанные к его contractor organization, без broader customer graph и без unrelated customer contracts.
+
+```mermaid
+flowchart LR
+    A["/login<br/>customer admin"] --> B["/company"]
+    B --> C["/contracts<br/>registry + routing preview"]
+    C --> D["bind contractor to contract context"]
+    D --> E["future request routing baseline"]
+    F["/login<br/>contractor user"] --> G["/contracts<br/>restricted contractor contour"]
+```
+
+### Реализованный route contour для slice-004
+
+Четвертый Stage 03 slice оживляет customer-side equipment/master-data contour без widening в Stage 04 request flow:
+
+- customer organization admin после login остается на `/company`, но открывает live master-data registry через публичный route `/equipment`;
+- `/equipment` остается одним public contour и не дробится на отдельные route families для СИ или эталонов;
+- отдельные registry surfaces переключаются query-backed tab state:
+  - `/equipment`
+  - `/equipment?tab=mi`
+  - `/equipment?tab=standards`
+- organization-scope `organization_admin` получает create/list surface для equipment, measuring instruments и standards;
+- subdivision-scope и unit-scope пользователи видят тот же route, но только в read-only режиме и только в рамках разрешенного subtree;
+- contractor contour по-прежнему не расширяется в `/equipment` и остается на договорном `/contracts` boundary.
+
+```mermaid
+flowchart LR
+    A["/login<br/>customer org admin"] --> B["/company"]
+    B --> C["/equipment<br/>equipment tab"]
+    C --> D["/equipment?tab=mi"]
+    D --> E["/equipment?tab=standards"]
+    C --> F["organization scope<br/>create + list"]
+    D --> F
+    E --> F
+    C --> G["subdivision / unit scope<br/>read-only filtered contour"]
+    D --> G
+    E --> G
+    H["/login<br/>contractor user"] --> I["/contracts only"]
+```
+
+### Реализованный route contour для slice-005
+
+Пятый Stage 03 slice не создает отдельный public route для journal/archive behavior, а расширяет тот же `/equipment` contour:
+
+- customer organization admin остается на `/equipment` и работает внутри того же route family;
+- tab state по-прежнему сохраняется в query:
+  - `/equipment`
+  - `/equipment?tab=mi`
+  - `/equipment?tab=standards`
+- archive visibility тоже становится query-backed и воспроизводится через `?archived=1`;
+- journal history для СИ и эталонов открывается на том же contour, без выноса в отдельный `/journals` route family;
+- archive action для equipment / MI / standards сохраняет record и убирает его из default active view, а не делает hard delete;
+- subdivision/unit users по-прежнему видят тот же route, но только в read-only scope-filtered contour, включая allowed journal/archive state;
+- contractor contour не расширяется в journal/archive master-data surface и остается на `/contracts`.
+
+```mermaid
+flowchart LR
+    A["/company"] --> B["/equipment"]
+    B --> C["/equipment?tab=mi"]
+    B --> D["/equipment?tab=standards"]
+    C --> E["same-route journal panel"]
+    D --> F["same-route journal panel"]
+    B --> G["?archived=1"]
+    C --> G
+    D --> G
+    G --> H["active + archived visibility in allowed scope"]
+    I["/login contractor"] --> J["/contracts only"]
+```
 
 Каноническая object/access chain для этого stage:
 

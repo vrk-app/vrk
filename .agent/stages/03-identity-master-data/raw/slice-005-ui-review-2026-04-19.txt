@@ -1,0 +1,30 @@
+Slice: slice-005-metrology-journals-archiving-and-proof
+Gate: $web-design-guidelines
+Source: .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-19.md
+Scope:
+- apps/web/app/(runtime)/equipment/page.tsx
+- apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+
+Context:
+- keep `/equipment` as one canonical customer-side contour;
+- add journal-driven metrology truth and archive-only lifecycle without parallel public routes;
+- keep scope-filtered read-only behavior for subdivision/unit users.
+
+Lookup:
+- query: metrology journal archive archive status derivation measuring instrument journal standard journal validity due date archive registry history timeline attachments dictionary local draft archive restore
+- decision: reuse
+- rationale: existing shared primitives plus feature-local workspace were sufficient; no new reusable family was warranted.
+
+Findings closed:
+1. Archive actions needed an explicit safety step before mutating archive state.
+   Resolution: every archive trigger in `EquipmentRegistryWorkspace` now opens a native confirmation dialog before calling the archive endpoint, including equipment list cards and MI/standard detail-panel actions.
+2. Archive visibility needed to be URL-backed for reproducible review and shareable route state.
+   Resolution: `EquipmentRegistryWorkspace` now persists archive visibility through `?archived=1`.
+3. Custom registry tab buttons needed visible keyboard focus treatment.
+   Resolution: tab buttons now expose explicit focus-ring styling in the final reviewed UI state.
+4. Identifier cells still needed to remain opt-out from auto-translation.
+   Resolution: detail cells continue to use `translate="no"` for real identifiers.
+
+Result:
+- PASS
+- no blocking Web Interface Guidelines findings remain in the reviewed slice-005 `/equipment` scope

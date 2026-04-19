@@ -24,8 +24,8 @@
 - equipment registry;
 - measuring instruments registry;
 - standards registry;
-- metrology operation journals, attachments и status derivation from latest valid record;
-- organization-scoped dictionaries с local draft entries;
+- metrology operation journals, URL/reference attachment baseline и status derivation from latest valid record;
+- bounded ownership-scope labels for standards; broader org-scoped dictionary/local-draft CRUD deferred;
 - archive baseline для ключевых master-data сущностей;
 - canonical doc sync для product, architecture и stage boundaries.
 
@@ -104,7 +104,7 @@ The diagram fixes the execution order after Stage 02 closure: Stage 03 now start
 - contracts registry ограничивает допустимого подрядчика для следующего request stage;
 - equipment, measuring instruments и standards существуют как отдельные реестры, без общей mega-form;
 - текущий метрологический статус вычисляется из последней действующей записи журнала;
-- archive используется вместо hard delete;
+- archive используется вместо hard delete, а archived rows открываются только через explicit archive visibility;
 - канонические docs и stage artifacts синхронизированы и пригодны для Stage 04 handoff.
 
 ## Technical ownership / paths

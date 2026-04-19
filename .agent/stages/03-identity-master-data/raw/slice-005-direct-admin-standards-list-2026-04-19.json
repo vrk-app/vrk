@@ -1,0 +1,101 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": "d858f441-0056-4f56-80f0-5a149fcaeb9d",
+      "organizationId": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+      "ownershipScope": {
+        "scopeType": "unit",
+        "scopeId": "560a11af-2794-4722-a7dc-e46593ab2381",
+        "label": "Второй юнит 1776614151"
+      },
+      "standardType": "Эталон расхода",
+      "model": "STD-U2",
+      "identifier": "STD-U2-1776614151",
+      "metrologicalCharacteristics": "2.0 л/мин, юнит 02",
+      "status": "active",
+      "linkedMeasuringInstruments": 1,
+      "journalCount": 1,
+      "nextDueDate": "2027-02-20",
+      "latestJournal": {
+        "id": "e86f7abb-bb9f-43cf-989f-7d74574587b4",
+        "operationType": "verification",
+        "operationDate": "2026-02-20",
+        "documentNumber": "STD-U2-ACT-1776614151",
+        "validUntil": "2027-02-20",
+        "executorOrganization": "ФБУ Ростест-Москва",
+        "comment": "Подтверждение для второго юнита",
+        "createdAt": "2026-04-19T15:55:51Z"
+      },
+      "createdAt": "2026-04-19T15:55:51Z",
+      "updatedAt": "2026-04-19T15:55:51Z"
+    },
+    {
+      "id": "b0c7c542-afad-4cac-a6be-cec921a5c4e0",
+      "organizationId": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+      "ownershipScope": {
+        "scopeType": "unit",
+        "scopeId": "f8aa33ec-009d-4a36-89d9-a98d0692fb9d",
+        "label": "Customer-Metrology Юнит 01 1776614151"
+      },
+      "standardType": "Эталон расхода",
+      "model": "STD-U1",
+      "identifier": "STD-U1-1776614151",
+      "metrologicalCharacteristics": "1.5 л/мин, юнит 01",
+      "status": "retired",
+      "linkedMeasuringInstruments": 1,
+      "journalCount": 2,
+      "latestJournal": {
+        "id": "9ef438f8-3bcc-4dcb-82de-10a3123ec00c",
+        "operationType": "decommission",
+        "operationDate": "2026-04-01",
+        "documentNumber": "STD-U1-RET-1776614151",
+        "executorOrganization": "Главный метролог",
+        "comment": "Эталон выведен из эксплуатации",
+        "createdAt": "2026-04-19T15:55:51Z"
+      },
+      "createdAt": "2026-04-19T15:55:51Z",
+      "updatedAt": "2026-04-19T15:55:51Z"
+    },
+    {
+      "id": "d6c8c1c2-a707-45f0-9eac-bf4b5066d2a2",
+      "organizationId": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+      "ownershipScope": {
+        "scopeType": "subdivision",
+        "scopeId": "3f51076c-06cb-4261-b0f2-cfb6b47ba18b",
+        "label": "Customer-Metrology Подразделение 1776614151"
+      },
+      "standardType": "Эталон температуры",
+      "model": "STD-SUB",
+      "identifier": "STD-SUB-1776614151",
+      "metrologicalCharacteristics": "0.3°C, контур подразделения",
+      "status": "inactive",
+      "linkedMeasuringInstruments": 0,
+      "journalCount": 0,
+      "createdAt": "2026-04-19T15:55:51Z",
+      "updatedAt": "2026-04-19T15:55:51Z"
+    },
+    {
+      "id": "f4061d29-aef4-40e9-9747-b9ff4b1facc0",
+      "organizationId": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+      "ownershipScope": {
+        "scopeType": "organization",
+        "label": "Организация 1776614151"
+      },
+      "standardType": "Эталон давления",
+      "model": "STD-ORG",
+      "identifier": "STD-ORG-1776614151",
+      "metrologicalCharacteristics": "0.1 кПа, общий контур организации",
+      "status": "inactive",
+      "linkedMeasuringInstruments": 2,
+      "journalCount": 0,
+      "createdAt": "2026-04-19T15:55:51Z",
+      "updatedAt": "2026-04-19T15:55:51Z"
+    }
+  ],
+  "meta": {
+    "total": 4,
+    "limit": 0,
+    "offset": 0
+  }
+}

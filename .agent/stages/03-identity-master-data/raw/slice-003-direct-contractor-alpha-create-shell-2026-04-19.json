@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "data": {
+    "organizationId": "3cb8afce-4a3d-4eeb-92ea-538976fedb51",
+    "organizationName": "ВРК contractor-alpha 1776595503",
+    "organizationRole": "contractor",
+    "inviteId": "e8b31788-9ccc-4efb-a008-42b01b6c4e82",
+    "inviteEmail": "contractor-alpha-1776595503@vrk.local",
+    "inviteStatus": "sent",
+    "inviteToken": "32583e3f-b3a7-4f4b-a135-e13773f37169",
+    "inviteExpiresAt": "2026-04-26T10:45:03Z"
+  }
+}

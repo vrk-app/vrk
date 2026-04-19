@@ -1,0 +1,7 @@
+{
+  "status": 409,
+  "response": {
+    "success": false,
+    "error": "invite revoked"
+  }
+}

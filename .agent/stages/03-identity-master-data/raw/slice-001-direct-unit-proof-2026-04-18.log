@@ -1,0 +1,7 @@
+POST /platform/organization-shells -> 201
+GET /first-admin-invites/{token} -> 200
+POST /first-admin-invites/{token}/accept -> 200
+POST /launch-wizard [unit mode] -> 200
+GET /sessions/current -> 200
+POST /sessions -> 200
+POST /first-admin-invites/{token}/accept [replay] -> 409

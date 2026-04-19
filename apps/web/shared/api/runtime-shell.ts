@@ -26,9 +26,9 @@ export function getRuntimeBootstrap() {
       contracts: "/api/v1/agreements",
     },
     notes: [
-      "Вход и регистрация пока не подключены к backend auth/session contract.",
+      "Публичный shell без сессии сохраняет Stage 02 boundaries, хотя invite/auth/session contract уже активирован для Stage 03.",
       "Публичный web contour использует contracts naming, а backend resource пока остается agreements.",
-      "Route shells могут показывать seeded или stubbed state, но не должны выдавать persisted CRUD за готовый Stage 03 behavior.",
+      "Route shells без сессии могут показывать seeded или stubbed state, но не должны выдавать scoped runtime behavior за broader organization access.",
     ],
   } as const;
 }
@@ -36,33 +36,33 @@ export function getRuntimeBootstrap() {
 export const companyShell = {
   stageLabel: "Company onboarding / profile",
   summary:
-    "Контур собирает базовые реквизиты компании и подразделения, но еще не создает persisted org/subdivision/unit model.",
+    "Анонимный contour остается truthful public shell до появления сессии; после invite acceptance runtime переключается на persisted org/subdivision/unit model и scoped workspace.",
   steps: [
     {
       title: "Профиль компании",
-      detail: "Юрлицо, ИНН и контактные данные собираются как shell-форма для будущего Stage 03 сохранения.",
-      status: "Shell-only",
+      detail: "Без активной сессии экран показывает только shell boundary и не открывает persisted organization profile.",
+      status: "Public shell",
     },
     {
       title: "Подразделение и площадка",
-      detail: "Рабочая площадка уже видна в UX как обязательный следующий шаг, но storage еще не активирован.",
-      status: "Stub boundary",
+      detail: "После login пользователь видит только разрешенный subdivision/unit subtree вместо broader organization contour.",
+      status: "Scoped runtime",
     },
     {
       title: "Доступ и согласование",
-      detail: "Следы аудита и роль доступа пока описаны как bootstrap boundary без live auth flow.",
-      status: "Stage 03 later",
+      detail: "Membership, scoped grants и employee invites уже активируют live auth flow поверх Stage 03 runtime.",
+      status: "Stage 03 live",
     },
   ] satisfies ShellStep[],
   boundaries: [
     {
-      label: "Seed-read ready",
-      detail: "Backend organizations resource можно использовать только как будущую boundary reference, не как live onboarding submit.",
+      label: "Anonymous shell",
+      detail: "Без invite/session этот экран остается публичным shell и не раскрывает закрытый org graph.",
       tone: "interactive",
     },
     {
-      label: "No persisted submit",
-      detail: "Кнопка завершения онбординга в этом slice фиксирует только следующий шаг и не выполняет сохранение.",
+      label: "Scoped landing",
+      detail: "После acceptance runtime обязан открыть только разрешенный workspace contour без расширения вверх по иерархии.",
       tone: "warning",
     },
   ] satisfies BoundaryNote[],

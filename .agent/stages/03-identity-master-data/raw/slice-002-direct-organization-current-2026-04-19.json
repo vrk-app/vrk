@@ -1,0 +1,61 @@
+{
+  "status": 200,
+  "response": {
+    "success": true,
+    "data": {
+      "sessionToken": "06b2358e-b8a9-4f29-a922-a345812d921d",
+      "requiresLaunchWizard": false,
+      "account": {
+        "id": "a5aa1dd9-b5ab-40fd-94fb-862ee96cb546",
+        "fullName": "Олег Наблюдатель 1776553455",
+        "email": "proof-org-1776553455@vrk.local"
+      },
+      "membershipId": "f40bc537-4440-4224-bad8-804c9bb84311",
+      "membershipStatus": "active",
+      "organization": {
+        "id": "31ba2fbd-7ef7-43d2-b79d-ec48b9322e22",
+        "roleTitle": "customer",
+        "name": "ВРК Scope Proof 1776553455",
+        "shortName": "ВРК Proof",
+        "propertyType": "ООО",
+        "inn": "1234567890",
+        "kpp": "123456789",
+        "legalAddress": "г. Москва, ул. Проверочная, д. 19",
+        "contactEmail": "proof-admin-1776553455@vrk.local",
+        "contactPhone": "+7 (999) 555-00-19",
+        "launchState": "active"
+      },
+      "grant": {
+        "id": "d63907f9-74c2-4fe9-ac3c-f1fd0fd4a8db",
+        "roleTemplate": "observer",
+        "scopeType": "organization",
+        "scopeId": "31ba2fbd-7ef7-43d2-b79d-ec48b9322e22"
+      },
+      "workspace": {
+        "scopeType": "organization",
+        "scopeId": "31ba2fbd-7ef7-43d2-b79d-ec48b9322e22",
+        "scopeName": "ВРК Scope Proof 1776553455",
+        "landingTitle": "ВРК Scope Proof 1776553455",
+        "landingSubtitle": "Доступ уровня organization: доступны подразделения и юниты организации.",
+        "canManageEmployeeInvites": false
+      },
+      "subdivisions": [
+        {
+          "id": "d56765e8-ccc4-47be-bd1e-57673eb2e1ad",
+          "type": "Филиал",
+          "name": "Подразделение 1776553455",
+          "code": "SUB-01"
+        }
+      ],
+      "units": [
+        {
+          "id": "246b98d8-de5f-4a30-9e67-893b597facd0",
+          "type": "Лаборатория",
+          "name": "Юнит 1776553455",
+          "code": "UNIT-01",
+          "subdivisionId": "d56765e8-ccc4-47be-bd1e-57673eb2e1ad"
+        }
+      ]
+    }
+  }
+}

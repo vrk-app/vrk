@@ -12,7 +12,12 @@ import (
 )
 
 const agreementExists = `-- name: AgreementExists :one
-SELECT EXISTS(SELECT 1 FROM agreements WHERE id = $1)
+SELECT EXISTS(
+    SELECT 1
+    FROM agreements
+    WHERE id = $1
+      AND customer_organization_id IS NOT NULL
+)
 `
 
 func (q *Queries) AgreementExists(ctx context.Context, id pgtype.UUID) (bool, error) {
@@ -22,79 +27,158 @@ func (q *Queries) AgreementExists(ctx context.Context, id pgtype.UUID) (bool, er
 	return exists, err
 }
 
-const countAgreements = `-- name: CountAgreements :one
-SELECT COUNT(*) FROM agreements
-`
-
-func (q *Queries) CountAgreements(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, countAgreements)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
 const createAgreement = `-- name: CreateAgreement :one
-INSERT INTO agreements (
-    source, factory_id, organization_id, number, start_date, end_date,
-    subject_of_agreement, schedule_id
-) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8
+WITH inserted AS (
+    INSERT INTO agreements (
+        customer_organization_id,
+        contractor_organization_id,
+        contract_number,
+        contract_status,
+        start_date,
+        end_date,
+        work_type,
+        equipment_type,
+        region,
+        subdivision_id,
+        unit_id,
+        location_scope_label,
+        source,
+        subject_of_agreement
+    ) VALUES (
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        $8,
+        $9,
+        $10,
+        $11,
+        $12,
+        $13,
+        $14
+    )
+    RETURNING id, source, factory_id, organization_id, number, start_date, end_date, subject_of_agreement, schedule_id, created_at, updated_at, customer_organization_id, contractor_organization_id, contract_number, contract_status, work_type, equipment_type, region, subdivision_id, unit_id, location_scope_label
 )
-RETURNING id, source, factory_id, organization_id, number, start_date, end_date,
-          subject_of_agreement, schedule_id
+SELECT
+    a.id,
+    a.customer_organization_id,
+    customer.shell_name AS customer_organization_name,
+    a.contractor_organization_id,
+    contractor.shell_name AS contractor_organization_name,
+    a.contract_number,
+    a.contract_status,
+    a.start_date,
+    a.end_date,
+    a.work_type,
+    a.equipment_type,
+    a.region,
+    a.subdivision_id,
+    subdivision.name AS subdivision_name,
+    a.unit_id,
+    unit.name AS unit_name,
+    a.location_scope_label,
+    a.source,
+    a.subject_of_agreement,
+    a.created_at,
+    a.updated_at
+FROM inserted a
+JOIN auth_bootstrap_organizations customer ON customer.id = a.customer_organization_id
+JOIN auth_bootstrap_organizations contractor ON contractor.id = a.contractor_organization_id
+LEFT JOIN auth_subdivisions subdivision ON subdivision.id = a.subdivision_id
+LEFT JOIN auth_units unit ON unit.id = a.unit_id
 `
 
 type CreateAgreementParams struct {
-	Source             string         `json:"source"`
-	FactoryID          pgtype.UUID    `json:"factoryId"`
-	OrganizationID     pgtype.UUID    `json:"organizationId"`
-	Number             pgtype.Numeric `json:"number"`
-	StartDate          pgtype.Date    `json:"startDate"`
-	EndDate            pgtype.Date    `json:"endDate"`
-	SubjectOfAgreement string         `json:"subjectOfAgreement"`
-	ScheduleID         pgtype.UUID    `json:"scheduleId"`
+	CustomerOrganizationID   pgtype.UUID `json:"customerOrganizationId"`
+	ContractorOrganizationID pgtype.UUID `json:"contractorOrganizationId"`
+	ContractNumber           *string     `json:"contractNumber"`
+	ContractStatus           *string     `json:"contractStatus"`
+	StartDate                pgtype.Date `json:"startDate"`
+	EndDate                  pgtype.Date `json:"endDate"`
+	WorkType                 *string     `json:"workType"`
+	EquipmentType            *string     `json:"equipmentType"`
+	Region                   *string     `json:"region"`
+	SubdivisionID            pgtype.UUID `json:"subdivisionId"`
+	UnitID                   pgtype.UUID `json:"unitId"`
+	LocationScopeLabel       *string     `json:"locationScopeLabel"`
+	Source                   *string     `json:"source"`
+	SubjectOfAgreement       *string     `json:"subjectOfAgreement"`
 }
 
 type CreateAgreementRow struct {
-	ID                 pgtype.UUID    `json:"id"`
-	Source             string         `json:"source"`
-	FactoryID          pgtype.UUID    `json:"factoryId"`
-	OrganizationID     pgtype.UUID    `json:"organizationId"`
-	Number             pgtype.Numeric `json:"number"`
-	StartDate          pgtype.Date    `json:"startDate"`
-	EndDate            pgtype.Date    `json:"endDate"`
-	SubjectOfAgreement string         `json:"subjectOfAgreement"`
-	ScheduleID         pgtype.UUID    `json:"scheduleId"`
+	ID                         pgtype.UUID        `json:"id"`
+	CustomerOrganizationID     pgtype.UUID        `json:"customerOrganizationId"`
+	CustomerOrganizationName   string             `json:"customerOrganizationName"`
+	ContractorOrganizationID   pgtype.UUID        `json:"contractorOrganizationId"`
+	ContractorOrganizationName string             `json:"contractorOrganizationName"`
+	ContractNumber             *string            `json:"contractNumber"`
+	ContractStatus             *string            `json:"contractStatus"`
+	StartDate                  pgtype.Date        `json:"startDate"`
+	EndDate                    pgtype.Date        `json:"endDate"`
+	WorkType                   *string            `json:"workType"`
+	EquipmentType              *string            `json:"equipmentType"`
+	Region                     *string            `json:"region"`
+	SubdivisionID              pgtype.UUID        `json:"subdivisionId"`
+	SubdivisionName            *string            `json:"subdivisionName"`
+	UnitID                     pgtype.UUID        `json:"unitId"`
+	UnitName                   *string            `json:"unitName"`
+	LocationScopeLabel         *string            `json:"locationScopeLabel"`
+	Source                     *string            `json:"source"`
+	SubjectOfAgreement         *string            `json:"subjectOfAgreement"`
+	CreatedAt                  pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt                  pgtype.Timestamptz `json:"updatedAt"`
 }
 
 func (q *Queries) CreateAgreement(ctx context.Context, arg CreateAgreementParams) (CreateAgreementRow, error) {
 	row := q.db.QueryRow(ctx, createAgreement,
-		arg.Source,
-		arg.FactoryID,
-		arg.OrganizationID,
-		arg.Number,
+		arg.CustomerOrganizationID,
+		arg.ContractorOrganizationID,
+		arg.ContractNumber,
+		arg.ContractStatus,
 		arg.StartDate,
 		arg.EndDate,
+		arg.WorkType,
+		arg.EquipmentType,
+		arg.Region,
+		arg.SubdivisionID,
+		arg.UnitID,
+		arg.LocationScopeLabel,
+		arg.Source,
 		arg.SubjectOfAgreement,
-		arg.ScheduleID,
 	)
 	var i CreateAgreementRow
 	err := row.Scan(
 		&i.ID,
-		&i.Source,
-		&i.FactoryID,
-		&i.OrganizationID,
-		&i.Number,
+		&i.CustomerOrganizationID,
+		&i.CustomerOrganizationName,
+		&i.ContractorOrganizationID,
+		&i.ContractorOrganizationName,
+		&i.ContractNumber,
+		&i.ContractStatus,
 		&i.StartDate,
 		&i.EndDate,
+		&i.WorkType,
+		&i.EquipmentType,
+		&i.Region,
+		&i.SubdivisionID,
+		&i.SubdivisionName,
+		&i.UnitID,
+		&i.UnitName,
+		&i.LocationScopeLabel,
+		&i.Source,
 		&i.SubjectOfAgreement,
-		&i.ScheduleID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const deleteAgreement = `-- name: DeleteAgreement :exec
-DELETE FROM agreements WHERE id = $1
+DELETE FROM agreements
+WHERE id = $1
 `
 
 func (q *Queries) DeleteAgreement(ctx context.Context, id pgtype.UUID) error {
@@ -102,22 +186,92 @@ func (q *Queries) DeleteAgreement(ctx context.Context, id pgtype.UUID) error {
 	return err
 }
 
+const getActiveContractorOrganizationByID = `-- name: GetActiveContractorOrganizationByID :one
+SELECT
+    id,
+    shell_name,
+    short_name,
+    launch_state
+FROM auth_bootstrap_organizations
+WHERE id = $1
+  AND role_title = 'contractor'
+  AND launch_state = 'active'
+LIMIT 1
+`
+
+type GetActiveContractorOrganizationByIDRow struct {
+	ID          pgtype.UUID `json:"id"`
+	ShellName   string      `json:"shellName"`
+	ShortName   *string     `json:"shortName"`
+	LaunchState string      `json:"launchState"`
+}
+
+func (q *Queries) GetActiveContractorOrganizationByID(ctx context.Context, id pgtype.UUID) (GetActiveContractorOrganizationByIDRow, error) {
+	row := q.db.QueryRow(ctx, getActiveContractorOrganizationByID, id)
+	var i GetActiveContractorOrganizationByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.ShellName,
+		&i.ShortName,
+		&i.LaunchState,
+	)
+	return i, err
+}
+
 const getAgreementByID = `-- name: GetAgreementByID :one
-SELECT id, source, factory_id, organization_id, number, start_date, end_date,
-       subject_of_agreement, schedule_id
-FROM agreements WHERE id = $1
+SELECT
+    a.id,
+    a.customer_organization_id,
+    customer.shell_name AS customer_organization_name,
+    a.contractor_organization_id,
+    contractor.shell_name AS contractor_organization_name,
+    a.contract_number,
+    a.contract_status,
+    a.start_date,
+    a.end_date,
+    a.work_type,
+    a.equipment_type,
+    a.region,
+    a.subdivision_id,
+    subdivision.name AS subdivision_name,
+    a.unit_id,
+    unit.name AS unit_name,
+    a.location_scope_label,
+    a.source,
+    a.subject_of_agreement,
+    a.created_at,
+    a.updated_at
+FROM agreements a
+JOIN auth_bootstrap_organizations customer ON customer.id = a.customer_organization_id
+JOIN auth_bootstrap_organizations contractor ON contractor.id = a.contractor_organization_id
+LEFT JOIN auth_subdivisions subdivision ON subdivision.id = a.subdivision_id
+LEFT JOIN auth_units unit ON unit.id = a.unit_id
+WHERE a.id = $1
+  AND a.customer_organization_id IS NOT NULL
 `
 
 type GetAgreementByIDRow struct {
-	ID                 pgtype.UUID    `json:"id"`
-	Source             string         `json:"source"`
-	FactoryID          pgtype.UUID    `json:"factoryId"`
-	OrganizationID     pgtype.UUID    `json:"organizationId"`
-	Number             pgtype.Numeric `json:"number"`
-	StartDate          pgtype.Date    `json:"startDate"`
-	EndDate            pgtype.Date    `json:"endDate"`
-	SubjectOfAgreement string         `json:"subjectOfAgreement"`
-	ScheduleID         pgtype.UUID    `json:"scheduleId"`
+	ID                         pgtype.UUID        `json:"id"`
+	CustomerOrganizationID     pgtype.UUID        `json:"customerOrganizationId"`
+	CustomerOrganizationName   string             `json:"customerOrganizationName"`
+	ContractorOrganizationID   pgtype.UUID        `json:"contractorOrganizationId"`
+	ContractorOrganizationName string             `json:"contractorOrganizationName"`
+	ContractNumber             *string            `json:"contractNumber"`
+	ContractStatus             *string            `json:"contractStatus"`
+	StartDate                  pgtype.Date        `json:"startDate"`
+	EndDate                    pgtype.Date        `json:"endDate"`
+	WorkType                   *string            `json:"workType"`
+	EquipmentType              *string            `json:"equipmentType"`
+	Region                     *string            `json:"region"`
+	SubdivisionID              pgtype.UUID        `json:"subdivisionId"`
+	SubdivisionName            *string            `json:"subdivisionName"`
+	UnitID                     pgtype.UUID        `json:"unitId"`
+	UnitName                   *string            `json:"unitName"`
+	LocationScopeLabel         *string            `json:"locationScopeLabel"`
+	Source                     *string            `json:"source"`
+	SubjectOfAgreement         *string            `json:"subjectOfAgreement"`
+	CreatedAt                  pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt                  pgtype.Timestamptz `json:"updatedAt"`
 }
 
 func (q *Queries) GetAgreementByID(ctx context.Context, id pgtype.UUID) (GetAgreementByIDRow, error) {
@@ -125,62 +279,259 @@ func (q *Queries) GetAgreementByID(ctx context.Context, id pgtype.UUID) (GetAgre
 	var i GetAgreementByIDRow
 	err := row.Scan(
 		&i.ID,
-		&i.Source,
-		&i.FactoryID,
-		&i.OrganizationID,
-		&i.Number,
+		&i.CustomerOrganizationID,
+		&i.CustomerOrganizationName,
+		&i.ContractorOrganizationID,
+		&i.ContractorOrganizationName,
+		&i.ContractNumber,
+		&i.ContractStatus,
 		&i.StartDate,
 		&i.EndDate,
+		&i.WorkType,
+		&i.EquipmentType,
+		&i.Region,
+		&i.SubdivisionID,
+		&i.SubdivisionName,
+		&i.UnitID,
+		&i.UnitName,
+		&i.LocationScopeLabel,
+		&i.Source,
 		&i.SubjectOfAgreement,
-		&i.ScheduleID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
-const listAgreements = `-- name: ListAgreements :many
-SELECT id, source, factory_id, organization_id, number, start_date, end_date,
-       subject_of_agreement, schedule_id
-FROM agreements
-ORDER BY created_at DESC
-LIMIT $1 OFFSET $2
+const listActiveContractorOrganizations = `-- name: ListActiveContractorOrganizations :many
+SELECT
+    id,
+    shell_name,
+    short_name,
+    launch_state
+FROM auth_bootstrap_organizations
+WHERE role_title = 'contractor'
+  AND launch_state = 'active'
+ORDER BY shell_name ASC
 `
 
-type ListAgreementsParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+type ListActiveContractorOrganizationsRow struct {
+	ID          pgtype.UUID `json:"id"`
+	ShellName   string      `json:"shellName"`
+	ShortName   *string     `json:"shortName"`
+	LaunchState string      `json:"launchState"`
 }
 
-type ListAgreementsRow struct {
-	ID                 pgtype.UUID    `json:"id"`
-	Source             string         `json:"source"`
-	FactoryID          pgtype.UUID    `json:"factoryId"`
-	OrganizationID     pgtype.UUID    `json:"organizationId"`
-	Number             pgtype.Numeric `json:"number"`
-	StartDate          pgtype.Date    `json:"startDate"`
-	EndDate            pgtype.Date    `json:"endDate"`
-	SubjectOfAgreement string         `json:"subjectOfAgreement"`
-	ScheduleID         pgtype.UUID    `json:"scheduleId"`
-}
-
-func (q *Queries) ListAgreements(ctx context.Context, arg ListAgreementsParams) ([]ListAgreementsRow, error) {
-	rows, err := q.db.Query(ctx, listAgreements, arg.Limit, arg.Offset)
+func (q *Queries) ListActiveContractorOrganizations(ctx context.Context) ([]ListActiveContractorOrganizationsRow, error) {
+	rows, err := q.db.Query(ctx, listActiveContractorOrganizations)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []ListAgreementsRow{}
+	items := []ListActiveContractorOrganizationsRow{}
 	for rows.Next() {
-		var i ListAgreementsRow
+		var i ListActiveContractorOrganizationsRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.Source,
-			&i.FactoryID,
-			&i.OrganizationID,
-			&i.Number,
+			&i.ShellName,
+			&i.ShortName,
+			&i.LaunchState,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAgreementsByContractorOrganization = `-- name: ListAgreementsByContractorOrganization :many
+SELECT
+    a.id,
+    a.customer_organization_id,
+    customer.shell_name AS customer_organization_name,
+    a.contractor_organization_id,
+    contractor.shell_name AS contractor_organization_name,
+    a.contract_number,
+    a.contract_status,
+    a.start_date,
+    a.end_date,
+    a.work_type,
+    a.equipment_type,
+    a.region,
+    a.subdivision_id,
+    subdivision.name AS subdivision_name,
+    a.unit_id,
+    unit.name AS unit_name,
+    a.location_scope_label,
+    a.source,
+    a.subject_of_agreement,
+    a.created_at,
+    a.updated_at
+FROM agreements a
+JOIN auth_bootstrap_organizations customer ON customer.id = a.customer_organization_id
+JOIN auth_bootstrap_organizations contractor ON contractor.id = a.contractor_organization_id
+LEFT JOIN auth_subdivisions subdivision ON subdivision.id = a.subdivision_id
+LEFT JOIN auth_units unit ON unit.id = a.unit_id
+WHERE a.contractor_organization_id = $1
+ORDER BY a.created_at DESC
+`
+
+type ListAgreementsByContractorOrganizationRow struct {
+	ID                         pgtype.UUID        `json:"id"`
+	CustomerOrganizationID     pgtype.UUID        `json:"customerOrganizationId"`
+	CustomerOrganizationName   string             `json:"customerOrganizationName"`
+	ContractorOrganizationID   pgtype.UUID        `json:"contractorOrganizationId"`
+	ContractorOrganizationName string             `json:"contractorOrganizationName"`
+	ContractNumber             *string            `json:"contractNumber"`
+	ContractStatus             *string            `json:"contractStatus"`
+	StartDate                  pgtype.Date        `json:"startDate"`
+	EndDate                    pgtype.Date        `json:"endDate"`
+	WorkType                   *string            `json:"workType"`
+	EquipmentType              *string            `json:"equipmentType"`
+	Region                     *string            `json:"region"`
+	SubdivisionID              pgtype.UUID        `json:"subdivisionId"`
+	SubdivisionName            *string            `json:"subdivisionName"`
+	UnitID                     pgtype.UUID        `json:"unitId"`
+	UnitName                   *string            `json:"unitName"`
+	LocationScopeLabel         *string            `json:"locationScopeLabel"`
+	Source                     *string            `json:"source"`
+	SubjectOfAgreement         *string            `json:"subjectOfAgreement"`
+	CreatedAt                  pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt                  pgtype.Timestamptz `json:"updatedAt"`
+}
+
+func (q *Queries) ListAgreementsByContractorOrganization(ctx context.Context, contractorOrganizationID pgtype.UUID) ([]ListAgreementsByContractorOrganizationRow, error) {
+	rows, err := q.db.Query(ctx, listAgreementsByContractorOrganization, contractorOrganizationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListAgreementsByContractorOrganizationRow{}
+	for rows.Next() {
+		var i ListAgreementsByContractorOrganizationRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.CustomerOrganizationID,
+			&i.CustomerOrganizationName,
+			&i.ContractorOrganizationID,
+			&i.ContractorOrganizationName,
+			&i.ContractNumber,
+			&i.ContractStatus,
 			&i.StartDate,
 			&i.EndDate,
+			&i.WorkType,
+			&i.EquipmentType,
+			&i.Region,
+			&i.SubdivisionID,
+			&i.SubdivisionName,
+			&i.UnitID,
+			&i.UnitName,
+			&i.LocationScopeLabel,
+			&i.Source,
 			&i.SubjectOfAgreement,
-			&i.ScheduleID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAgreementsByCustomerOrganization = `-- name: ListAgreementsByCustomerOrganization :many
+SELECT
+    a.id,
+    a.customer_organization_id,
+    customer.shell_name AS customer_organization_name,
+    a.contractor_organization_id,
+    contractor.shell_name AS contractor_organization_name,
+    a.contract_number,
+    a.contract_status,
+    a.start_date,
+    a.end_date,
+    a.work_type,
+    a.equipment_type,
+    a.region,
+    a.subdivision_id,
+    subdivision.name AS subdivision_name,
+    a.unit_id,
+    unit.name AS unit_name,
+    a.location_scope_label,
+    a.source,
+    a.subject_of_agreement,
+    a.created_at,
+    a.updated_at
+FROM agreements a
+JOIN auth_bootstrap_organizations customer ON customer.id = a.customer_organization_id
+JOIN auth_bootstrap_organizations contractor ON contractor.id = a.contractor_organization_id
+LEFT JOIN auth_subdivisions subdivision ON subdivision.id = a.subdivision_id
+LEFT JOIN auth_units unit ON unit.id = a.unit_id
+WHERE a.customer_organization_id = $1
+ORDER BY a.created_at DESC
+`
+
+type ListAgreementsByCustomerOrganizationRow struct {
+	ID                         pgtype.UUID        `json:"id"`
+	CustomerOrganizationID     pgtype.UUID        `json:"customerOrganizationId"`
+	CustomerOrganizationName   string             `json:"customerOrganizationName"`
+	ContractorOrganizationID   pgtype.UUID        `json:"contractorOrganizationId"`
+	ContractorOrganizationName string             `json:"contractorOrganizationName"`
+	ContractNumber             *string            `json:"contractNumber"`
+	ContractStatus             *string            `json:"contractStatus"`
+	StartDate                  pgtype.Date        `json:"startDate"`
+	EndDate                    pgtype.Date        `json:"endDate"`
+	WorkType                   *string            `json:"workType"`
+	EquipmentType              *string            `json:"equipmentType"`
+	Region                     *string            `json:"region"`
+	SubdivisionID              pgtype.UUID        `json:"subdivisionId"`
+	SubdivisionName            *string            `json:"subdivisionName"`
+	UnitID                     pgtype.UUID        `json:"unitId"`
+	UnitName                   *string            `json:"unitName"`
+	LocationScopeLabel         *string            `json:"locationScopeLabel"`
+	Source                     *string            `json:"source"`
+	SubjectOfAgreement         *string            `json:"subjectOfAgreement"`
+	CreatedAt                  pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt                  pgtype.Timestamptz `json:"updatedAt"`
+}
+
+func (q *Queries) ListAgreementsByCustomerOrganization(ctx context.Context, customerOrganizationID pgtype.UUID) ([]ListAgreementsByCustomerOrganizationRow, error) {
+	rows, err := q.db.Query(ctx, listAgreementsByCustomerOrganization, customerOrganizationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListAgreementsByCustomerOrganizationRow{}
+	for rows.Next() {
+		var i ListAgreementsByCustomerOrganizationRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.CustomerOrganizationID,
+			&i.CustomerOrganizationName,
+			&i.ContractorOrganizationID,
+			&i.ContractorOrganizationName,
+			&i.ContractNumber,
+			&i.ContractStatus,
+			&i.StartDate,
+			&i.EndDate,
+			&i.WorkType,
+			&i.EquipmentType,
+			&i.Region,
+			&i.SubdivisionID,
+			&i.SubdivisionName,
+			&i.UnitID,
+			&i.UnitName,
+			&i.LocationScopeLabel,
+			&i.Source,
+			&i.SubjectOfAgreement,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -193,68 +544,116 @@ func (q *Queries) ListAgreements(ctx context.Context, arg ListAgreementsParams) 
 }
 
 const updateAgreement = `-- name: UpdateAgreement :one
-UPDATE agreements SET
-    source = COALESCE($2, source),
-    factory_id = COALESCE($3, factory_id),
-    organization_id = COALESCE($4, organization_id),
-    number = COALESCE($5, number),
-    start_date = COALESCE($6, start_date),
-    end_date = COALESCE($7, end_date),
-    subject_of_agreement = COALESCE($8, subject_of_agreement),
-    schedule_id = COALESCE($9, schedule_id),
+UPDATE agreements
+SET
+    contractor_organization_id = COALESCE($2, contractor_organization_id),
+    contract_number = COALESCE($3, contract_number),
+    contract_status = COALESCE($4, contract_status),
+    start_date = COALESCE($5, start_date),
+    end_date = COALESCE($6, end_date),
+    work_type = COALESCE($7, work_type),
+    equipment_type = COALESCE($8, equipment_type),
+    region = COALESCE($9, region),
+    subdivision_id = $10,
+    unit_id = $11,
+    location_scope_label = $12,
+    source = $13,
+    subject_of_agreement = $14,
     updated_at = NOW()
 WHERE id = $1
-RETURNING id, source, factory_id, organization_id, number, start_date, end_date,
-          subject_of_agreement, schedule_id
+RETURNING
+    id,
+    customer_organization_id,
+    contractor_organization_id,
+    contract_number,
+    contract_status,
+    start_date,
+    end_date,
+    work_type,
+    equipment_type,
+    region,
+    subdivision_id,
+    unit_id,
+    location_scope_label,
+    source,
+    subject_of_agreement,
+    created_at,
+    updated_at
 `
 
 type UpdateAgreementParams struct {
-	ID                 pgtype.UUID    `json:"id"`
-	Source             string         `json:"source"`
-	FactoryID          pgtype.UUID    `json:"factoryId"`
-	OrganizationID     pgtype.UUID    `json:"organizationId"`
-	Number             pgtype.Numeric `json:"number"`
-	StartDate          pgtype.Date    `json:"startDate"`
-	EndDate            pgtype.Date    `json:"endDate"`
-	SubjectOfAgreement string         `json:"subjectOfAgreement"`
-	ScheduleID         pgtype.UUID    `json:"scheduleId"`
+	ID                       pgtype.UUID `json:"id"`
+	ContractorOrganizationID pgtype.UUID `json:"contractorOrganizationId"`
+	ContractNumber           *string     `json:"contractNumber"`
+	ContractStatus           *string     `json:"contractStatus"`
+	StartDate                pgtype.Date `json:"startDate"`
+	EndDate                  pgtype.Date `json:"endDate"`
+	WorkType                 *string     `json:"workType"`
+	EquipmentType            *string     `json:"equipmentType"`
+	Region                   *string     `json:"region"`
+	SubdivisionID            pgtype.UUID `json:"subdivisionId"`
+	UnitID                   pgtype.UUID `json:"unitId"`
+	LocationScopeLabel       *string     `json:"locationScopeLabel"`
+	Source                   *string     `json:"source"`
+	SubjectOfAgreement       *string     `json:"subjectOfAgreement"`
 }
 
 type UpdateAgreementRow struct {
-	ID                 pgtype.UUID    `json:"id"`
-	Source             string         `json:"source"`
-	FactoryID          pgtype.UUID    `json:"factoryId"`
-	OrganizationID     pgtype.UUID    `json:"organizationId"`
-	Number             pgtype.Numeric `json:"number"`
-	StartDate          pgtype.Date    `json:"startDate"`
-	EndDate            pgtype.Date    `json:"endDate"`
-	SubjectOfAgreement string         `json:"subjectOfAgreement"`
-	ScheduleID         pgtype.UUID    `json:"scheduleId"`
+	ID                       pgtype.UUID        `json:"id"`
+	CustomerOrganizationID   pgtype.UUID        `json:"customerOrganizationId"`
+	ContractorOrganizationID pgtype.UUID        `json:"contractorOrganizationId"`
+	ContractNumber           *string            `json:"contractNumber"`
+	ContractStatus           *string            `json:"contractStatus"`
+	StartDate                pgtype.Date        `json:"startDate"`
+	EndDate                  pgtype.Date        `json:"endDate"`
+	WorkType                 *string            `json:"workType"`
+	EquipmentType            *string            `json:"equipmentType"`
+	Region                   *string            `json:"region"`
+	SubdivisionID            pgtype.UUID        `json:"subdivisionId"`
+	UnitID                   pgtype.UUID        `json:"unitId"`
+	LocationScopeLabel       *string            `json:"locationScopeLabel"`
+	Source                   *string            `json:"source"`
+	SubjectOfAgreement       *string            `json:"subjectOfAgreement"`
+	CreatedAt                pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt                pgtype.Timestamptz `json:"updatedAt"`
 }
 
 func (q *Queries) UpdateAgreement(ctx context.Context, arg UpdateAgreementParams) (UpdateAgreementRow, error) {
 	row := q.db.QueryRow(ctx, updateAgreement,
 		arg.ID,
-		arg.Source,
-		arg.FactoryID,
-		arg.OrganizationID,
-		arg.Number,
+		arg.ContractorOrganizationID,
+		arg.ContractNumber,
+		arg.ContractStatus,
 		arg.StartDate,
 		arg.EndDate,
+		arg.WorkType,
+		arg.EquipmentType,
+		arg.Region,
+		arg.SubdivisionID,
+		arg.UnitID,
+		arg.LocationScopeLabel,
+		arg.Source,
 		arg.SubjectOfAgreement,
-		arg.ScheduleID,
 	)
 	var i UpdateAgreementRow
 	err := row.Scan(
 		&i.ID,
-		&i.Source,
-		&i.FactoryID,
-		&i.OrganizationID,
-		&i.Number,
+		&i.CustomerOrganizationID,
+		&i.ContractorOrganizationID,
+		&i.ContractNumber,
+		&i.ContractStatus,
 		&i.StartDate,
 		&i.EndDate,
+		&i.WorkType,
+		&i.EquipmentType,
+		&i.Region,
+		&i.SubdivisionID,
+		&i.UnitID,
+		&i.LocationScopeLabel,
+		&i.Source,
 		&i.SubjectOfAgreement,
-		&i.ScheduleID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }

@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "data": {
+    "organizationId": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+    "organizationName": "ВРК customer-metrology 1776614151",
+    "organizationRole": "customer",
+    "inviteStatus": "opened",
+    "firstAdminName": "Customer-Metrology Admin 1776614151",
+    "inviteEmail": "customer-metrology-1776614151@vrk.local",
+    "inviteExpiresAt": "2026-04-26T15:55:51Z",
+    "launchState": "shell"
+  }
+}

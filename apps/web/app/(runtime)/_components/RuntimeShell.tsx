@@ -15,7 +15,7 @@ const runtimeNavItems = [
 
 const runtimeFooterItems = [
   { key: "support", label: "Boundary notes", href: "#boundary-notes", icon: ShieldCheck },
-  { key: "logout", label: "Завершить shell", href: "/login", icon: LogOut },
+  { key: "logout", label: "Выйти", href: "/login?logout=1", icon: LogOut },
 ] as const;
 
 const runtimeMetaByPath = {
@@ -43,9 +43,14 @@ function resolveRuntimeMeta(pathname: string) {
 
 export interface RuntimeShellProps {
   children: ReactNode;
+  viewer?: {
+    name: string;
+    role: string;
+  };
+  eyebrow?: string;
 }
 
-export function RuntimeShell({ children }: RuntimeShellProps) {
+export function RuntimeShell({ children, eyebrow = "Stage 02 • Runtime shell", viewer }: RuntimeShellProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const currentMeta = resolveRuntimeMeta(pathname);
@@ -55,17 +60,30 @@ export function RuntimeShell({ children }: RuntimeShellProps) {
       header={
         <TopBar
           breadcrumbs={currentMeta.breadcrumbs}
-          eyebrow="Stage 02 • Runtime shell"
+          eyebrow={eyebrow}
           mobileMenuOpen={mobileOpen}
           notificationsCount={0}
           onMobileMenuOpenChange={setMobileOpen}
-          searchPlaceholder="Поиск и фильтры включатся после Stage 03"
+          searchPlaceholder={viewer ? "Поиск появится в следующих slices Stage 03" : "Поиск и фильтры включатся после Stage 03"}
           searchValue=""
-          user={{
-            name: "Пилотный customer-admin",
-            role: "shell-only bootstrap contour",
-            initials: "VR",
-          }}
+          user={
+            viewer
+              ? {
+                  name: viewer.name,
+                  role: viewer.role,
+                  initials: viewer.name
+                    .split(" ")
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map((part) => part[0]?.toUpperCase() ?? "")
+                    .join(""),
+                }
+              : {
+                  name: "Пилотный customer-admin",
+                  role: "shell-only bootstrap contour",
+                  initials: "VR",
+                }
+          }
         />
       }
       sidebar={
@@ -73,8 +91,8 @@ export function RuntimeShell({ children }: RuntimeShellProps) {
           activeKey={currentMeta.activeKey}
           footerItems={runtimeFooterItems}
           items={runtimeNavItems}
-          metaLabel="Stage 02"
-          metaTitle="Runtime shell"
+          metaLabel={viewer ? "Stage 03" : "Stage 02"}
+          metaTitle={viewer ? "Organization launch" : "Runtime shell"}
           mobileOpen={mobileOpen}
           onMobileOpenChange={setMobileOpen}
         />

@@ -1,0 +1,28 @@
+
+> @vrk/web@0.1.0 browser-smoke /Users/yura-posledov/cursor/vrk/apps/web
+> playwright test --config playwright.config.ts
+
+[2m[WebServer] [22m(node:82528) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+[2m[WebServer] [22m(node:82543) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[2m[WebServer] [22m(Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 3 workers
+
+(node:82714) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:82715) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:82716) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:82714) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:82715) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:82716) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 tests/contracts-routing.smoke.spec.ts:123:7 › stage 03 contracts contour › customer uses /contracts registry and contractor lands in restricted contracts workspace (1.7s)
+  ✓  1 tests/auth-flow.smoke.spec.ts:21:7 › stage 03 first-admin bootstrap › platform admin boots organization, issues employee invite, and scope-aware login works (2.0s)
+  ✓  3 tests/equipment-registries.smoke.spec.ts:286:7 › stage 03 metrology journals and archive contour › customer admin uses one /equipment route for journals and archive while unit user stays read-only (3.2s)
+
+  3 passed (4.3s)

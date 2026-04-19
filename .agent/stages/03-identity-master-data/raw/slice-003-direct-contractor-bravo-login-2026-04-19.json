@@ -1,0 +1,57 @@
+{
+  "success": true,
+  "data": {
+    "sessionToken": "1f9348a3-f3d2-41fc-95f1-afd086e03347",
+    "requiresLaunchWizard": false,
+    "account": {
+      "id": "f01bba57-7959-4811-8b5c-742148b98ecb",
+      "fullName": "Contractor-Bravo Admin 1776595503",
+      "email": "contractor-bravo-1776595503@vrk.local"
+    },
+    "membershipId": "9b1678b6-13da-4258-b6d2-abaf4591c336",
+    "membershipStatus": "active",
+    "organization": {
+      "id": "81a33834-8f27-4a74-9762-efba616acfdd",
+      "roleTitle": "contractor",
+      "name": "ВРК contractor-bravo 1776595503",
+      "shortName": "CON-1776595503",
+      "propertyType": "ООО",
+      "inn": "1776595503",
+      "kpp": "177659550",
+      "legalAddress": "г. Москва, ул. contractor-bravo, д. 1",
+      "contactEmail": "contractor-bravo-1776595503@vrk.local",
+      "contactPhone": "+7 (999) 123-45-67",
+      "launchState": "active"
+    },
+    "grant": {
+      "id": "97a601e0-5f31-4d65-85f7-a4b9776c3bb5",
+      "roleTemplate": "organization_admin",
+      "scopeType": "organization",
+      "scopeId": "81a33834-8f27-4a74-9762-efba616acfdd"
+    },
+    "workspace": {
+      "scopeType": "organization",
+      "scopeId": "81a33834-8f27-4a74-9762-efba616acfdd",
+      "scopeName": "ВРК contractor-bravo 1776595503",
+      "landingTitle": "ВРК contractor-bravo 1776595503",
+      "landingSubtitle": "Администратор организации видит полный org graph и может управлять приглашениями сотрудников.",
+      "landingPath": "/contracts",
+      "canManageEmployeeInvites": true
+    },
+    "subdivisions": [
+      {
+        "id": "2dde6848-65e4-4191-a9c6-f9eb501c368f",
+        "type": "Филиал",
+        "name": "Contractor-Bravo Подразделение 1776595503"
+      }
+    ],
+    "units": [
+      {
+        "id": "8dcdfdab-174b-4b3f-801a-f2b0980d9b95",
+        "type": "Юнит",
+        "name": "Contractor-Bravo Юнит 1776595503",
+        "subdivisionId": "2dde6848-65e4-4191-a9c6-f9eb501c368f"
+      }
+    ]
+  }
+}

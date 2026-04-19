@@ -9,17 +9,27 @@ import (
 )
 
 type Agreement struct {
-	ID                 pgtype.UUID        `json:"id"`
-	Source             string             `json:"source"`
-	FactoryID          pgtype.UUID        `json:"factoryId"`
-	OrganizationID     pgtype.UUID        `json:"organizationId"`
-	Number             pgtype.Numeric     `json:"number"`
-	StartDate          pgtype.Date        `json:"startDate"`
-	EndDate            pgtype.Date        `json:"endDate"`
-	SubjectOfAgreement string             `json:"subjectOfAgreement"`
-	ScheduleID         pgtype.UUID        `json:"scheduleId"`
-	CreatedAt          pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt          pgtype.Timestamptz `json:"updatedAt"`
+	ID                       pgtype.UUID        `json:"id"`
+	Source                   *string            `json:"source"`
+	FactoryID                pgtype.UUID        `json:"factoryId"`
+	OrganizationID           pgtype.UUID        `json:"organizationId"`
+	Number                   pgtype.Numeric     `json:"number"`
+	StartDate                pgtype.Date        `json:"startDate"`
+	EndDate                  pgtype.Date        `json:"endDate"`
+	SubjectOfAgreement       *string            `json:"subjectOfAgreement"`
+	ScheduleID               pgtype.UUID        `json:"scheduleId"`
+	CreatedAt                pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt                pgtype.Timestamptz `json:"updatedAt"`
+	CustomerOrganizationID   pgtype.UUID        `json:"customerOrganizationId"`
+	ContractorOrganizationID pgtype.UUID        `json:"contractorOrganizationId"`
+	ContractNumber           *string            `json:"contractNumber"`
+	ContractStatus           *string            `json:"contractStatus"`
+	WorkType                 *string            `json:"workType"`
+	EquipmentType            *string            `json:"equipmentType"`
+	Region                   *string            `json:"region"`
+	SubdivisionID            pgtype.UUID        `json:"subdivisionId"`
+	UnitID                   pgtype.UUID        `json:"unitId"`
+	LocationScopeLabel       *string            `json:"locationScopeLabel"`
 }
 
 type AgreementWorksCost struct {
@@ -63,6 +73,126 @@ type ApplicationType struct {
 	ID        pgtype.UUID        `json:"id"`
 	Type      string             `json:"type"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt"`
+}
+
+type AuthAccount struct {
+	ID           pgtype.UUID        `json:"id"`
+	FullName     string             `json:"fullName"`
+	Email        string             `json:"email"`
+	PasswordHash string             `json:"passwordHash"`
+	Status       string             `json:"status"`
+	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt    pgtype.Timestamptz `json:"updatedAt"`
+}
+
+type AuthBootstrapOrganization struct {
+	ID                  pgtype.UUID        `json:"id"`
+	RoleTitle           string             `json:"roleTitle"`
+	ShellName           string             `json:"shellName"`
+	ShortName           *string            `json:"shortName"`
+	PropertyType        *string            `json:"propertyType"`
+	Inn                 *string            `json:"inn"`
+	Kpp                 *string            `json:"kpp"`
+	LegalAddress        *string            `json:"legalAddress"`
+	ContactEmail        *string            `json:"contactEmail"`
+	ContactPhone        *string            `json:"contactPhone"`
+	LaunchState         string             `json:"launchState"`
+	FirstAdminAccountID pgtype.UUID        `json:"firstAdminAccountId"`
+	LaunchedAt          pgtype.Timestamptz `json:"launchedAt"`
+	CreatedAt           pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt           pgtype.Timestamptz `json:"updatedAt"`
+}
+
+type AuthEmployeeInvite struct {
+	ID                 pgtype.UUID        `json:"id"`
+	OrganizationID     pgtype.UUID        `json:"organizationId"`
+	FullName           string             `json:"fullName"`
+	Email              string             `json:"email"`
+	RoleTemplate       string             `json:"roleTemplate"`
+	ScopeType          string             `json:"scopeType"`
+	ScopeID            pgtype.UUID        `json:"scopeId"`
+	Status             string             `json:"status"`
+	InviteToken        *string            `json:"inviteToken"`
+	ExpiresAt          pgtype.Timestamptz `json:"expiresAt"`
+	SentAt             pgtype.Timestamptz `json:"sentAt"`
+	OpenedAt           pgtype.Timestamptz `json:"openedAt"`
+	AcceptedAt         pgtype.Timestamptz `json:"acceptedAt"`
+	RevokedAt          pgtype.Timestamptz `json:"revokedAt"`
+	AccountID          pgtype.UUID        `json:"accountId"`
+	CreatedByAccountID pgtype.UUID        `json:"createdByAccountId"`
+	CreatedAt          pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt          pgtype.Timestamptz `json:"updatedAt"`
+}
+
+type AuthFirstAdminInvite struct {
+	ID             pgtype.UUID        `json:"id"`
+	OrganizationID pgtype.UUID        `json:"organizationId"`
+	FullName       string             `json:"fullName"`
+	Email          string             `json:"email"`
+	InviteToken    string             `json:"inviteToken"`
+	Status         string             `json:"status"`
+	ExpiresAt      pgtype.Timestamptz `json:"expiresAt"`
+	OpenedAt       pgtype.Timestamptz `json:"openedAt"`
+	AcceptedAt     pgtype.Timestamptz `json:"acceptedAt"`
+	AccountID      pgtype.UUID        `json:"accountId"`
+	CreatedAt      pgtype.Timestamptz `json:"createdAt"`
+}
+
+type AuthMembership struct {
+	ID               pgtype.UUID        `json:"id"`
+	OrganizationID   pgtype.UUID        `json:"organizationId"`
+	AccountID        pgtype.UUID        `json:"accountId"`
+	MembershipStatus string             `json:"membershipStatus"`
+	CreatedAt        pgtype.Timestamptz `json:"createdAt"`
+}
+
+type AuthScopedGrant struct {
+	ID           pgtype.UUID        `json:"id"`
+	MembershipID pgtype.UUID        `json:"membershipId"`
+	RoleTemplate string             `json:"roleTemplate"`
+	ScopeType    string             `json:"scopeType"`
+	ScopeID      pgtype.UUID        `json:"scopeId"`
+	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
+}
+
+type AuthSession struct {
+	ID           pgtype.UUID        `json:"id"`
+	AccountID    pgtype.UUID        `json:"accountId"`
+	MembershipID pgtype.UUID        `json:"membershipId"`
+	SessionToken string             `json:"sessionToken"`
+	ExpiresAt    pgtype.Timestamptz `json:"expiresAt"`
+	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
+	LastSeenAt   pgtype.Timestamptz `json:"lastSeenAt"`
+}
+
+type AuthSubdivision struct {
+	ID              pgtype.UUID        `json:"id"`
+	OrganizationID  pgtype.UUID        `json:"organizationId"`
+	SubdivisionType string             `json:"subdivisionType"`
+	Name            string             `json:"name"`
+	Code            *string            `json:"code"`
+	Region          *string            `json:"region"`
+	Address         *string            `json:"address"`
+	ManagerName     *string            `json:"managerName"`
+	Contacts        *string            `json:"contacts"`
+	Status          string             `json:"status"`
+	CreatedAt       pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt       pgtype.Timestamptz `json:"updatedAt"`
+}
+
+type AuthUnit struct {
+	ID             pgtype.UUID        `json:"id"`
+	OrganizationID pgtype.UUID        `json:"organizationId"`
+	SubdivisionID  pgtype.UUID        `json:"subdivisionId"`
+	UnitType       string             `json:"unitType"`
+	Name           string             `json:"name"`
+	Code           *string            `json:"code"`
+	Address        *string            `json:"address"`
+	ManagerName    *string            `json:"managerName"`
+	Contacts       *string            `json:"contacts"`
+	Status         string             `json:"status"`
+	CreatedAt      pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt      pgtype.Timestamptz `json:"updatedAt"`
 }
 
 type Equipment struct {

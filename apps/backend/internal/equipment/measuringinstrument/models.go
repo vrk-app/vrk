@@ -1,86 +1,135 @@
 package measuringinstrument
 
-import (
-    "time"
+import "time"
 
-    "github.com/google/uuid"
-)
+type LinkedStandard struct {
+	ID           string  `json:"id"`
+	StandardType string  `json:"standardType"`
+	Model        string  `json:"model"`
+	Identifier   string  `json:"identifier"`
+	SerialNumber *string `json:"serialNumber,omitempty"`
+	Status       string  `json:"status"`
+	ScopeLabel   string  `json:"scopeLabel"`
+}
 
-// MeasuringInstrument — модель для работы со средствами измерения
 type MeasuringInstrument struct {
-    ID                          uuid.UUID
-    RegistryNumber              string
-    MetrologicalOperationTypeID uuid.UUID
-    CertificateNumber           string
-    LastOperationDate           *time.Time
-    NextOperationDate           *time.Time
-    DocumentProviderOrganization string
-    DocumentURL                 string
-    StandardID                  *uuid.UUID
-    OrganizationID              uuid.UUID
-    CreatedAt                   time.Time
-    UpdatedAt                   time.Time
+	ID                 string
+	OrganizationID     string
+	UnitID             string
+	UnitName           string
+	SubdivisionID      *string
+	SubdivisionName    *string
+	EquipmentID        *string
+	EquipmentFullName  *string
+	Name               string
+	InstrumentType     string
+	Model              string
+	RegistrationNumber string
+	SerialNumber       string
+	Status             string
+	PlacementKind      string
+	Comment            *string
+	DocumentURL        *string
+	Standards          []LinkedStandard
+	ArchivedAt         *time.Time
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
 }
 
-// CreateRequest DTO для создания средства измерения
 type CreateRequest struct {
-    RegistryNumber                string  `json:"registryNumber" validate:"required,max=50"`
-    MetrologicalOperationTypeID   string  `json:"metrologicalOperationTypeId" validate:"required"`
-    CertificateNumber             string  `json:"certificateNumber" validate:"required,max=100"`
-    LastOperationDate             *string `json:"lastOperationDate,omitempty"`
-    NextOperationDate             *string `json:"nextOperationDate,omitempty"`
-    DocumentProviderOrganization  string  `json:"documentProviderOrganization" validate:"required,max=100"`
-    DocumentURL                   string  `json:"documentUrl" validate:"required,max=255"`
-    StandardID                    *string `json:"standardId,omitempty"`
-    OrganizationID                string  `json:"organizationId" validate:"required"`
+	UnitID             string   `json:"unitId"`
+	EquipmentID        *string  `json:"equipmentId,omitempty"`
+	Name               string   `json:"name"`
+	InstrumentType     string   `json:"instrumentType"`
+	Model              string   `json:"model"`
+	RegistrationNumber string   `json:"registrationNumber"`
+	SerialNumber       string   `json:"serialNumber"`
+	PlacementKind      string   `json:"placementKind"`
+	StandardIDs        []string `json:"standardIds,omitempty"`
+	Comment            *string  `json:"comment,omitempty"`
+	DocumentURL        *string  `json:"documentUrl,omitempty"`
 }
 
-// UpdateRequest DTO для обновления средства измерения
 type UpdateRequest struct {
-    RegistryNumber                *string `json:"registryNumber,omitempty"`
-    MetrologicalOperationTypeID   *string `json:"metrologicalOperationTypeId,omitempty"`
-    CertificateNumber             *string `json:"certificateNumber,omitempty"`
-    LastOperationDate             *string `json:"lastOperationDate,omitempty"`
-    NextOperationDate             *string `json:"nextOperationDate,omitempty"`
-    DocumentProviderOrganization  *string `json:"documentProviderOrganization,omitempty"`
-    DocumentURL                   *string `json:"documentUrl,omitempty"`
-    StandardID                    *string `json:"standardId,omitempty"`
-    OrganizationID                *string `json:"organizationId,omitempty"`
+	UnitID             *string  `json:"unitId,omitempty"`
+	EquipmentID        *string  `json:"equipmentId,omitempty"`
+	Name               *string  `json:"name,omitempty"`
+	InstrumentType     *string  `json:"instrumentType,omitempty"`
+	Model              *string  `json:"model,omitempty"`
+	RegistrationNumber *string  `json:"registrationNumber,omitempty"`
+	SerialNumber       *string  `json:"serialNumber,omitempty"`
+	PlacementKind      *string  `json:"placementKind,omitempty"`
+	StandardIDs        []string `json:"standardIds,omitempty"`
+	Comment            *string  `json:"comment,omitempty"`
+	DocumentURL        *string  `json:"documentUrl,omitempty"`
 }
 
-// MeasuringInstrumentResponse DTO для ответа
+type CreateJournalRequest struct {
+	OperationType        string  `json:"operationType"`
+	OperationDate        string  `json:"operationDate"`
+	DocumentNumber       string  `json:"documentNumber"`
+	ValidUntil           *string `json:"validUntil,omitempty"`
+	ExecutorOrganization string  `json:"executorOrganization"`
+	AttachmentURL        *string `json:"attachmentUrl,omitempty"`
+	Comment              *string `json:"comment,omitempty"`
+}
+
+type JournalResponse struct {
+	ID                   string  `json:"id"`
+	OperationType        string  `json:"operationType"`
+	OperationDate        string  `json:"operationDate"`
+	DocumentNumber       string  `json:"documentNumber"`
+	ValidUntil           *string `json:"validUntil,omitempty"`
+	ExecutorOrganization string  `json:"executorOrganization"`
+	AttachmentURL        *string `json:"attachmentUrl,omitempty"`
+	Comment              *string `json:"comment,omitempty"`
+	CreatedAt            string  `json:"createdAt"`
+}
+
+type UnitSummary struct {
+	ID              string  `json:"id"`
+	Name            string  `json:"name"`
+	SubdivisionID   *string `json:"subdivisionId,omitempty"`
+	SubdivisionName *string `json:"subdivisionName,omitempty"`
+}
+
+type EquipmentSummary struct {
+	ID       string `json:"id"`
+	FullName string `json:"fullName"`
+}
+
 type MeasuringInstrumentResponse struct {
-    ID                            string  `json:"id"`
-    RegistryNumber                string  `json:"registryNumber"`
-    MetrologicalOperationTypeID   string  `json:"metrologicalOperationTypeId"`
-    CertificateNumber             string  `json:"certificateNumber"`
-    LastOperationDate             *string `json:"lastOperationDate,omitempty"`
-    NextOperationDate             *string `json:"nextOperationDate,omitempty"`
-    DocumentProviderOrganization  string  `json:"documentProviderOrganization"`
-    DocumentURL                   string  `json:"documentUrl"`
-    StandardID                    *string `json:"standardId,omitempty"`
-    OrganizationID                string  `json:"organizationId"`
-    CreatedAt                     string  `json:"createdAt"`
-    UpdatedAt                     string  `json:"updatedAt"`
+	ID                 string            `json:"id"`
+	OrganizationID     string            `json:"organizationId"`
+	Unit               UnitSummary       `json:"unit"`
+	Equipment          *EquipmentSummary `json:"equipment,omitempty"`
+	Name               string            `json:"name"`
+	InstrumentType     string            `json:"instrumentType"`
+	Model              string            `json:"model"`
+	RegistrationNumber string            `json:"registrationNumber"`
+	SerialNumber       string            `json:"serialNumber"`
+	Status             string            `json:"status"`
+	PlacementKind      string            `json:"placementKind"`
+	Comment            *string           `json:"comment,omitempty"`
+	DocumentURL        *string           `json:"documentUrl,omitempty"`
+	Standards          []LinkedStandard  `json:"standards"`
+	JournalCount       int               `json:"journalCount"`
+	NextDueDate        *string           `json:"nextDueDate,omitempty"`
+	LatestJournal      *JournalResponse  `json:"latestJournal,omitempty"`
+	ArchivedAt         *string           `json:"archivedAt,omitempty"`
+	CreatedAt          string            `json:"createdAt"`
+	UpdatedAt          string            `json:"updatedAt"`
 }
 
-// ListFilter для пагинации
-type ListFilter struct {
-    Limit  int32
-    Offset int32
-}
-
-// Meta пагинация
 type Meta struct {
-    Total  int64 `json:"total"`
-    Limit  int32 `json:"limit"`
-    Offset int32 `json:"offset"`
+	Total  int64 `json:"total"`
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
 }
 
-// Response стандартный ответ
 type Response struct {
-    Success bool        `json:"success"`
-    Data    interface{} `json:"data,omitempty"`
-    Error   string      `json:"error,omitempty"`
-    Meta    *Meta       `json:"meta,omitempty"`
+	Success bool        `json:"success"`
+	Data    interface{} `json:"data,omitempty"`
+	Error   string      `json:"error,omitempty"`
+	Meta    *Meta       `json:"meta,omitempty"`
 }

@@ -1,147 +1,261 @@
 package standard
 
 import (
-    "context"
-    "fmt"
-    "time"
+	"context"
+	"fmt"
 
-    "github.com/google/uuid"
-    "github.com/jackc/pgx/v5/pgtype"
-
-    "backend/internal/db/generated"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type StandardRepository interface {
-    Create(ctx context.Context, m Standard) (*Standard, error)
-    GetByID(ctx context.Context, id uuid.UUID) (*Standard, error)
-    Update(ctx context.Context, m Standard) (*Standard, error)
-    Delete(ctx context.Context, id uuid.UUID) error
-    List(ctx context.Context, limit, offset int32) ([]Standard, int64, error)
-    Exists(ctx context.Context, id uuid.UUID) (bool, error)
+	Create(ctx context.Context, item Standard) (*Standard, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*Standard, error)
+	ListByOrganization(ctx context.Context, organizationID uuid.UUID, includeArchived bool) ([]Standard, error)
+	Update(ctx context.Context, item Standard) (*Standard, error)
+	Archive(ctx context.Context, id uuid.UUID) (*Standard, error)
 }
 
 type standardRepository struct {
-    q *generated.Queries
+	db *pgxpool.Pool
 }
 
-func NewRepository(q *generated.Queries) StandardRepository {
-    return &standardRepository{q: q}
+func NewRepository(db *pgxpool.Pool) StandardRepository {
+	return &standardRepository{db: db}
 }
 
-// Хелперы для конвертации
-func toPGUUID(id uuid.UUID) pgtype.UUID {
-    return pgtype.UUID{Bytes: id, Valid: true}
+const standardSelectColumns = `
+    standard.id,
+    standard.organization_id,
+    org.shell_name,
+    standard.subdivision_id,
+    subdivision.name,
+    standard.unit_id,
+    unit.name,
+    standard.owner_label,
+    standard.standard_type,
+    standard.model,
+    standard.identifier,
+    standard.serial_number,
+    standard.metrological_characteristics,
+    standard.status,
+    standard.comment,
+    standard.document_url,
+    (
+        SELECT COUNT(*)
+        FROM registry_measuring_instrument_standards link
+        JOIN registry_measuring_instruments mi ON mi.id = link.measuring_instrument_id
+        WHERE link.standard_id = standard.id AND mi.archived_at IS NULL
+    ) AS linked_measuring_instruments,
+    standard.archived_at,
+    standard.created_at,
+    standard.updated_at
+`
+
+func scanStandard(scanner interface {
+	Scan(dest ...any) error
+}) (*Standard, error) {
+	var item Standard
+	var organizationID uuid.UUID
+	var subdivisionID *uuid.UUID
+	var unitID *uuid.UUID
+
+	if err := scanner.Scan(
+		&item.ID,
+		&organizationID,
+		&item.OrganizationName,
+		&subdivisionID,
+		&item.SubdivisionName,
+		&unitID,
+		&item.UnitName,
+		&item.OwnerLabel,
+		&item.StandardType,
+		&item.Model,
+		&item.Identifier,
+		&item.SerialNumber,
+		&item.MetrologicalCharacteristics,
+		&item.Status,
+		&item.Comment,
+		&item.DocumentURL,
+		&item.LinkedMeasuringInstruments,
+		&item.ArchivedAt,
+		&item.CreatedAt,
+		&item.UpdatedAt,
+	); err != nil {
+		return nil, err
+	}
+
+	item.OrganizationID = organizationID.String()
+	if subdivisionID != nil {
+		value := subdivisionID.String()
+		item.SubdivisionID = &value
+	}
+	if unitID != nil {
+		value := unitID.String()
+		item.UnitID = &value
+	}
+
+	return &item, nil
 }
 
-func toNullDate(t *time.Time) pgtype.Date {
-    if t == nil {
-        return pgtype.Date{}
-    }
-    return pgtype.Date{Time: *t, Valid: true}
-}
+func (r *standardRepository) Create(ctx context.Context, item Standard) (*Standard, error) {
+	query := `
+        INSERT INTO registry_standards (
+            organization_id,
+            subdivision_id,
+            unit_id,
+            owner_label,
+            standard_type,
+            model,
+            identifier,
+            serial_number,
+            metrological_characteristics,
+            status,
+            comment,
+            document_url
+        ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+        )
+        RETURNING id
+    `
 
-func toNullString(s *string) pgtype.Text {
-    if s == nil {
-        return pgtype.Text{}
-    }
-    return pgtype.Text{String: *s, Valid: true}
-}
+	var id uuid.UUID
+	if err := r.db.QueryRow(
+		ctx,
+		query,
+		uuid.MustParse(item.OrganizationID),
+		nullableUUID(item.SubdivisionID),
+		nullableUUID(item.UnitID),
+		item.OwnerLabel,
+		item.StandardType,
+		item.Model,
+		item.Identifier,
+		item.SerialNumber,
+		item.MetrologicalCharacteristics,
+		item.Status,
+		item.Comment,
+		item.DocumentURL,
+	).Scan(&id); err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrCreateFailed, err)
+	}
 
-func fromNullDate(v pgtype.Date) *time.Time {
-    if !v.Valid {
-        return nil
-    }
-    return &v.Time
-}
-
-func fromNullString(v pgtype.Text) *string {
-    if !v.Valid {
-        return nil
-    }
-    return &v.String
-}
-
-// mapRow преобразует строку из generated в Standard
-func mapRow(r *generated.CreateStandardRow) *Standard {
-    return &Standard{
-        ID:                          uuid.UUID(r.ID.Bytes),
-        Model:                       r.Model,
-        CertificateNumber:           r.CertificateNumber,
-        LastOperationDate:           fromNullDate(r.LastOperationDate),
-        NextOperationDate:           fromNullDate(r.NextOperationDate),
-        DocumentProviderOrganization: r.DocumentProviderOrganization,
-        DocumentURL:                 r.DocumentUrl,
-        MetrologicalCharacteristics: r.MetrologicalCharacteristics,
-    }
-}
-
-func (r *standardRepository) Create(ctx context.Context, m Standard) (*Standard, error) {
-    params := generated.CreateStandardParams{
-        Model:                       m.Model,
-        CertificateNumber:           m.CertificateNumber,
-        LastOperationDate:           toNullDate(m.LastOperationDate),
-        NextOperationDate:           toNullDate(m.NextOperationDate),
-        DocumentProviderOrganization: m.DocumentProviderOrganization,
-        DocumentUrl:                 m.DocumentURL,
-        MetrologicalCharacteristics: m.MetrologicalCharacteristics,
-    }
-
-    row, err := r.q.CreateStandard(ctx, params)
-    if err != nil {
-        return nil, fmt.Errorf("%w: %v", ErrCreateFailed, err)
-    }
-    return mapRow(&row), nil
+	return r.GetByID(ctx, id)
 }
 
 func (r *standardRepository) GetByID(ctx context.Context, id uuid.UUID) (*Standard, error) {
-    row, err := r.q.GetStandardByID(ctx, toPGUUID(id))
-    if err != nil {
-        return nil, fmt.Errorf("%w: %v", ErrNotFound, err)
-    }
-    return mapRow((*generated.CreateStandardRow)(&row)), nil
+	query := fmt.Sprintf(`
+        SELECT %s
+        FROM registry_standards standard
+        JOIN auth_bootstrap_organizations org ON org.id = standard.organization_id
+        LEFT JOIN auth_subdivisions subdivision ON subdivision.id = standard.subdivision_id
+        LEFT JOIN auth_units unit ON unit.id = standard.unit_id
+        WHERE standard.id = $1
+    `, standardSelectColumns)
+
+	item, err := scanStandard(r.db.QueryRow(ctx, query, id))
+	if err != nil {
+		return nil, ErrNotFound
+	}
+
+	return item, nil
 }
 
-func (r *standardRepository) Update(ctx context.Context, m Standard) (*Standard, error) {
-    params := generated.UpdateStandardParams{
-        ID:                          toPGUUID(m.ID),
-        Model:                       m.Model,
-        CertificateNumber:           m.CertificateNumber,
-        LastOperationDate:           toNullDate(m.LastOperationDate),
-        NextOperationDate:           toNullDate(m.NextOperationDate),
-        DocumentProviderOrganization: m.DocumentProviderOrganization,
-        DocumentUrl:                 m.DocumentURL,
-        MetrologicalCharacteristics: m.MetrologicalCharacteristics,
-    }
+func (r *standardRepository) ListByOrganization(ctx context.Context, organizationID uuid.UUID, includeArchived bool) ([]Standard, error) {
+	query := fmt.Sprintf(`
+        SELECT %s
+        FROM registry_standards standard
+        JOIN auth_bootstrap_organizations org ON org.id = standard.organization_id
+        LEFT JOIN auth_subdivisions subdivision ON subdivision.id = standard.subdivision_id
+        LEFT JOIN auth_units unit ON unit.id = standard.unit_id
+        WHERE standard.organization_id = $1
+          AND ($2::boolean OR standard.archived_at IS NULL)
+        ORDER BY standard.created_at DESC
+    `, standardSelectColumns)
 
-    row, err := r.q.UpdateStandard(ctx, params)
-    if err != nil {
-        return nil, fmt.Errorf("%w: %v", ErrUpdateFailed, err)
-    }
-    return mapRow((*generated.CreateStandardRow)(&row)), nil
+	rows, err := r.db.Query(ctx, query, organizationID, includeArchived)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrListFailed, err)
+	}
+	defer rows.Close()
+
+	result := make([]Standard, 0)
+	for rows.Next() {
+		item, scanErr := scanStandard(rows)
+		if scanErr != nil {
+			return nil, fmt.Errorf("%w: %v", ErrListFailed, scanErr)
+		}
+		result = append(result, *item)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrListFailed, err)
+	}
+
+	return result, nil
 }
 
-func (r *standardRepository) Delete(ctx context.Context, id uuid.UUID) error {
-    return r.q.DeleteStandard(ctx, toPGUUID(id))
+func (r *standardRepository) Update(ctx context.Context, item Standard) (*Standard, error) {
+	query := `
+        UPDATE registry_standards
+        SET
+            subdivision_id = $2,
+            unit_id = $3,
+            owner_label = $4,
+            standard_type = $5,
+            model = $6,
+            identifier = $7,
+            serial_number = $8,
+            metrological_characteristics = $9,
+            status = $10,
+            comment = $11,
+            document_url = $12,
+            updated_at = NOW()
+        WHERE id = $1
+        RETURNING id
+    `
+
+	var id uuid.UUID
+	if err := r.db.QueryRow(
+		ctx,
+		query,
+		uuid.MustParse(item.ID),
+		nullableUUID(item.SubdivisionID),
+		nullableUUID(item.UnitID),
+		item.OwnerLabel,
+		item.StandardType,
+		item.Model,
+		item.Identifier,
+		item.SerialNumber,
+		item.MetrologicalCharacteristics,
+		item.Status,
+		item.Comment,
+		item.DocumentURL,
+	).Scan(&id); err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrUpdateFailed, err)
+	}
+
+	return r.GetByID(ctx, id)
 }
 
-func (r *standardRepository) Exists(ctx context.Context, id uuid.UUID) (bool, error) {
-    return r.q.StandardExists(ctx, toPGUUID(id))
+func (r *standardRepository) Archive(ctx context.Context, id uuid.UUID) (*Standard, error) {
+	query := `
+        UPDATE registry_standards
+        SET archived_at = NOW(), updated_at = NOW()
+        WHERE id = $1 AND archived_at IS NULL
+        RETURNING id
+    `
+
+	var archivedID uuid.UUID
+	if err := r.db.QueryRow(ctx, query, id).Scan(&archivedID); err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrArchiveFailed, err)
+	}
+
+	return r.GetByID(ctx, archivedID)
 }
 
-func (r *standardRepository) List(ctx context.Context, limit, offset int32) ([]Standard, int64, error) {
-    rows, err := r.q.ListStandards(ctx, generated.ListStandardsParams{
-        Limit:  limit,
-        Offset: offset,
-    })
-    if err != nil {
-        return nil, 0, err
-    }
-
-    total, _ := r.q.CountStandards(ctx)
-
-    result := make([]Standard, len(rows))
-    for i := range rows {
-        result[i] = *mapRow((*generated.CreateStandardRow)(&rows[i]))
-    }
-    return result, total, nil
+func nullableUUID(value *string) interface{} {
+	if value == nil || *value == "" {
+		return nil
+	}
+	return uuid.MustParse(*value)
 }

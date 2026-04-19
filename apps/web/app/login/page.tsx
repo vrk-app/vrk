@@ -1,18 +1,52 @@
 "use client";
 
-import { useTransition, type FormEventHandler } from "react";
+import { useEffect, useState, useTransition, type FormEventHandler } from "react";
 import { useRouter } from "next/navigation";
 import { AuthAside, loginAsideItems } from "@/app/_components/AuthAside";
 import { AuthSplitLayout, ConsentRow, LoginForm } from "@/widgets/Auth";
+import { resolveSessionLandingPath, type ApiEnvelope, type SessionSummaryResponse } from "@/shared/api";
 
 export default function LoginPage() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get("logout") !== "1") {
+      return;
+    }
+
+    void fetch("/api/auth/session/current", { method: "DELETE" });
+  }, []);
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
+    setFormError(null);
+    const formData = new FormData(event.currentTarget);
+
     startTransition(() => {
-      router.push("/company");
+      void fetch("/api/auth/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: String(formData.get("username") ?? ""),
+          password: String(formData.get("password") ?? ""),
+        }),
+      })
+        .then(async (response) => {
+          const body = (await response.json()) as ApiEnvelope<SessionSummaryResponse>;
+          if (!response.ok || !body.success || !body.data) {
+            setFormError(body.error ?? "Не удалось выполнить вход.");
+            return;
+          }
+
+          router.push(resolveSessionLandingPath(body.data));
+          router.refresh();
+        })
+        .catch(() => {
+          setFormError("Не удалось выполнить вход.");
+        });
     });
   };
 
@@ -23,29 +57,29 @@ export default function LoginPage() {
           consent={
             <ConsentRow
               defaultChecked
-              label="Я работаю под своей учетной записью и понимаю, что вход пока остается shell-only boundary."
+              label="Я подтверждаю, что вхожу по приглашенной учетной записи и продолжу работу только в своем организационном контуре."
               links={[
                 { label: "политикой доступа", href: "#access-policy" },
-                { label: "правилами Stage 02", href: "#stage-boundary" },
+                { label: "launch wizard", href: "#launch-wizard" },
               ]}
             />
           }
-          formError="Live auth/session ещё не подключены. Следующий шаг после входа — company shell без persisted state."
+          formError={formError ?? undefined}
           loading={isPending}
           onSubmit={handleSubmit}
-          submitLabel="Открыть company shell"
+          submitLabel="Войти и открыть рабочий contour"
         />
       }
       illustrationSlot={
         <AuthAside
-          badgeLabel="Stage 02 • Login shell"
-          description="Экран входа уже ведёт в продуктовый runtime contour, но честно показывает, что role/session logic ещё не активирована."
+          badgeLabel="Stage 03 • Login"
+          description="После acceptance пользователь возвращается через обычный login и попадает либо в launch wizard, либо сразу в свой разрешенный workspace contour."
           items={loginAsideItems}
-          title="Вход теперь ведёт в route shell, а не в Storybook landing"
+          title="Вход ведет в живой scoped contour, а не в пустой shell"
         />
       }
-      subtitle="Сначала пользователь проходит контролируемый вход, затем попадает в контур компании и видит следующие маршруты bootstrap-потока."
-      title="Открыть рабочий shell customer-admin"
+      subtitle="Приглашенный пользователь логинится по email и паролю. Если bootstrap еще не завершен, система возвращает администратора в launch wizard; иначе открывает только разрешенный рабочий contour."
+      title="Войти в контур организации"
     />
   );
 }

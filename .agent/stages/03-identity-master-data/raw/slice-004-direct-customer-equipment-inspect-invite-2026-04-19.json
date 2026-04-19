@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "data": {
+    "organizationId": "8eaaec80-abde-4d56-b6ba-54b953e72c1d",
+    "organizationName": "ВРК customer-equipment 1776604587",
+    "organizationRole": "customer",
+    "inviteStatus": "opened",
+    "firstAdminName": "Customer-Equipment Admin 1776604587",
+    "inviteEmail": "customer-equipment-1776604587@vrk.local",
+    "inviteExpiresAt": "2026-04-26T13:16:27Z",
+    "launchState": "shell"
+  }
+}

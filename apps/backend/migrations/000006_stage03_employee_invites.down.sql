@@ -1,0 +1,5 @@
+BEGIN;
+
+DROP TABLE IF EXISTS auth_employee_invites CASCADE;
+
+COMMIT;

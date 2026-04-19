@@ -1,0 +1,21 @@
+{
+  "id": "5548316c-c89d-4bf6-8bdc-b6a26bf294b6",
+  "organizationId": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+  "unit": {
+    "id": "f8aa33ec-009d-4a36-89d9-a98d0692fb9d",
+    "name": "Customer-Metrology Юнит 01 1776614151",
+    "subdivisionId": "3f51076c-06cb-4261-b0f2-cfb6b47ba18b",
+    "subdivisionName": "Customer-Metrology Подразделение 1776614151"
+  },
+  "name": "Термометр архивный 1776614151",
+  "instrumentType": "Термометр",
+  "model": "MI-ARC",
+  "registrationNumber": "MI-ARC-1776614151",
+  "serialNumber": "SER-ARC-1776614151",
+  "status": "inactive",
+  "placementKind": "standalone",
+  "standards": [],
+  "journalCount": 0,
+  "createdAt": "2026-04-19T15:55:51Z",
+  "updatedAt": "2026-04-19T15:55:51Z"
+}

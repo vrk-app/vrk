@@ -1,190 +1,248 @@
 package equipment
 
 import (
-    "context"
-    "fmt"
-    "time"
+	"context"
+	"fmt"
 
-    "github.com/google/uuid"
-    "github.com/jackc/pgx/v5/pgtype"
-
-    "backend/internal/db/generated"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type EquipmentRepository interface {
-    Create(ctx context.Context, m Equipment) (*Equipment, error)
-    GetByID(ctx context.Context, id uuid.UUID) (*EquipmentWithDetails, error)
-    Update(ctx context.Context, m Equipment) (*Equipment, error)
-    Delete(ctx context.Context, id uuid.UUID) error
-    List(ctx context.Context, limit, offset int32) ([]EquipmentWithDetails, int64, error)
-    Exists(ctx context.Context, id uuid.UUID) (bool, error)
+	Create(ctx context.Context, item Equipment) (*Equipment, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*Equipment, error)
+	ListByOrganization(ctx context.Context, organizationID uuid.UUID, includeArchived bool) ([]Equipment, error)
+	Update(ctx context.Context, item Equipment) (*Equipment, error)
+	Archive(ctx context.Context, id uuid.UUID) (*Equipment, error)
 }
 
 type equipmentRepository struct {
-    q *generated.Queries
+	db *pgxpool.Pool
 }
 
-func NewRepository(q *generated.Queries) EquipmentRepository {
-    return &equipmentRepository{q: q}
+func NewRepository(db *pgxpool.Pool) EquipmentRepository {
+	return &equipmentRepository{db: db}
 }
 
-func toPGUUID(id uuid.UUID) pgtype.UUID {
-    return pgtype.UUID{Bytes: id, Valid: true}
+const equipmentSelectColumns = `
+    e.id,
+    e.organization_id,
+    e.unit_id,
+    unit.name,
+    unit.subdivision_id,
+    subdivision.name,
+    e.manufacturer,
+    e.classification,
+    e.model,
+    e.full_name,
+    e.factory_number,
+    e.inventory_number,
+    e.manufacture_year,
+    e.status,
+    e.comment,
+    e.document_url,
+    (
+        SELECT COUNT(*)
+        FROM registry_measuring_instruments mi
+        WHERE mi.equipment_id = e.id AND mi.archived_at IS NULL
+    ) AS measuring_instrument_count,
+    e.archived_at,
+    e.created_at,
+    e.updated_at
+`
+
+func scanEquipment(scanner interface {
+	Scan(dest ...any) error
+}) (*Equipment, error) {
+	var item Equipment
+	var unitID uuid.UUID
+	var organizationID uuid.UUID
+	var subdivisionID *uuid.UUID
+
+	if err := scanner.Scan(
+		&item.ID,
+		&organizationID,
+		&unitID,
+		&item.UnitName,
+		&subdivisionID,
+		&item.SubdivisionName,
+		&item.Manufacturer,
+		&item.Classification,
+		&item.Model,
+		&item.FullName,
+		&item.FactoryNumber,
+		&item.InventoryNumber,
+		&item.ManufactureYear,
+		&item.Status,
+		&item.Comment,
+		&item.DocumentURL,
+		&item.MeasuringInstrumentCount,
+		&item.ArchivedAt,
+		&item.CreatedAt,
+		&item.UpdatedAt,
+	); err != nil {
+		return nil, err
+	}
+
+	item.OrganizationID = organizationID.String()
+	item.UnitID = unitID.String()
+	if subdivisionID != nil {
+		value := subdivisionID.String()
+		item.SubdivisionID = &value
+	}
+
+	return &item, nil
 }
 
-func toNullPGUUID(id *uuid.UUID) pgtype.UUID {
-    if id == nil {
-        return pgtype.UUID{}
-    }
-    return pgtype.UUID{Bytes: *id, Valid: true}
+func (r *equipmentRepository) Create(ctx context.Context, item Equipment) (*Equipment, error) {
+	query := `
+        INSERT INTO registry_equipment (
+            organization_id,
+            unit_id,
+            manufacturer,
+            classification,
+            model,
+            full_name,
+            factory_number,
+            inventory_number,
+            manufacture_year,
+            status,
+            comment,
+            document_url
+        ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+        )
+        RETURNING id
+    `
+
+	var id uuid.UUID
+	if err := r.db.QueryRow(
+		ctx,
+		query,
+		uuid.MustParse(item.OrganizationID),
+		uuid.MustParse(item.UnitID),
+		item.Manufacturer,
+		item.Classification,
+		item.Model,
+		item.FullName,
+		item.FactoryNumber,
+		item.InventoryNumber,
+		item.ManufactureYear,
+		item.Status,
+		item.Comment,
+		item.DocumentURL,
+	).Scan(&id); err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrCreateFailed, err)
+	}
+
+	return r.GetByID(ctx, id)
 }
 
-func toNullDate(t *time.Time) pgtype.Date {
-    if t == nil {
-        return pgtype.Date{}
-    }
-    return pgtype.Date{Time: *t, Valid: true}
+func (r *equipmentRepository) GetByID(ctx context.Context, id uuid.UUID) (*Equipment, error) {
+	query := fmt.Sprintf(`
+        SELECT %s
+        FROM registry_equipment e
+        JOIN auth_units unit ON unit.id = e.unit_id
+        LEFT JOIN auth_subdivisions subdivision ON subdivision.id = unit.subdivision_id
+        WHERE e.id = $1
+    `, equipmentSelectColumns)
+
+	item, err := scanEquipment(r.db.QueryRow(ctx, query, id))
+	if err != nil {
+		return nil, ErrNotFound
+	}
+
+	return item, nil
 }
 
-func fromNullUUID(v pgtype.UUID) *uuid.UUID {
-    if !v.Valid {
-        return nil
-    }
-    id := uuid.UUID(v.Bytes)
-    return &id
+func (r *equipmentRepository) ListByOrganization(ctx context.Context, organizationID uuid.UUID, includeArchived bool) ([]Equipment, error) {
+	query := fmt.Sprintf(`
+        SELECT %s
+        FROM registry_equipment e
+        JOIN auth_units unit ON unit.id = e.unit_id
+        LEFT JOIN auth_subdivisions subdivision ON subdivision.id = unit.subdivision_id
+        WHERE e.organization_id = $1
+          AND ($2::boolean OR e.archived_at IS NULL)
+        ORDER BY e.created_at DESC
+    `, equipmentSelectColumns)
+
+	rows, err := r.db.Query(ctx, query, organizationID, includeArchived)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrListFailed, err)
+	}
+	defer rows.Close()
+
+	result := make([]Equipment, 0)
+	for rows.Next() {
+		item, scanErr := scanEquipment(rows)
+		if scanErr != nil {
+			return nil, fmt.Errorf("%w: %v", ErrListFailed, scanErr)
+		}
+		result = append(result, *item)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrListFailed, err)
+	}
+
+	return result, nil
 }
 
-func fromNullDate(v pgtype.Date) *time.Time {
-    if !v.Valid {
-        return nil
-    }
-    return &v.Time
+func (r *equipmentRepository) Update(ctx context.Context, item Equipment) (*Equipment, error) {
+	query := `
+        UPDATE registry_equipment
+        SET
+            unit_id = $2,
+            manufacturer = $3,
+            classification = $4,
+            model = $5,
+            full_name = $6,
+            factory_number = $7,
+            inventory_number = $8,
+            manufacture_year = $9,
+            status = $10,
+            comment = $11,
+            document_url = $12,
+            updated_at = NOW()
+        WHERE id = $1
+        RETURNING id
+    `
+
+	var id uuid.UUID
+	if err := r.db.QueryRow(
+		ctx,
+		query,
+		uuid.MustParse(item.ID),
+		uuid.MustParse(item.UnitID),
+		item.Manufacturer,
+		item.Classification,
+		item.Model,
+		item.FullName,
+		item.FactoryNumber,
+		item.InventoryNumber,
+		item.ManufactureYear,
+		item.Status,
+		item.Comment,
+		item.DocumentURL,
+	).Scan(&id); err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrUpdateFailed, err)
+	}
+
+	return r.GetByID(ctx, id)
 }
 
+func (r *equipmentRepository) Archive(ctx context.Context, id uuid.UUID) (*Equipment, error) {
+	query := `
+        UPDATE registry_equipment
+        SET archived_at = NOW(), updated_at = NOW()
+        WHERE id = $1 AND archived_at IS NULL
+        RETURNING id
+    `
 
-func mapRow(r *generated.CreateEquipmentRow) *Equipment {
-    return &Equipment{
-        ID:                    uuid.UUID(r.ID.Bytes),
-        FactoryNumber:         r.FactoryNumber,
-        InventoryNumber:       r.InventoryNumber,
-        ManufactureYear:       r.ManufactureYear.Time,
-        RegistrationYear:      fromNullDate(r.RegistrationYear),
-        EquipmentDictionaryID: uuid.UUID(r.EquipmentDictionaryID.Bytes),
-        OrganizationID:        uuid.UUID(r.OrganizationID.Bytes),
-        StatusID:              r.StatusID,      
-    }
-}
-func mapRowWithDetails(r *generated.GetEquipmentByIDRow) *EquipmentWithDetails {
-    equipmentName := ""
-    if r.EquipmentName != nil {
-        equipmentName = *r.EquipmentName
-    }
-    model := ""
-    if r.Model != nil {
-        model = *r.Model
-    }
-    manufacturer := ""
-    if r.Manufacturer != nil {
-        manufacturer = *r.Manufacturer
-    }
-    usageClassification := ""
-    if r.UsageClassification != nil {
-        usageClassification = *r.UsageClassification
-    }
-    organizationName := ""
-    if r.OrganizationName != nil {
-        organizationName = *r.OrganizationName
-    }
-    statusName := ""
-    if r.StatusName != nil {
-        statusName = *r.StatusName
-    }
+	var archivedID uuid.UUID
+	if err := r.db.QueryRow(ctx, query, id).Scan(&archivedID); err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrArchiveFailed, err)
+	}
 
-    return &EquipmentWithDetails{
-        ID:                    uuid.UUID(r.ID.Bytes),
-        FactoryNumber:         r.FactoryNumber,
-        InventoryNumber:       r.InventoryNumber,
-        ManufactureYear:       r.ManufactureYear.Time,
-        RegistrationYear:      fromNullDate(r.RegistrationYear),
-        EquipmentDictionaryID: uuid.UUID(r.EquipmentDictionaryID.Bytes),
-        EquipmentName:         equipmentName,
-        Model:                 model,
-        Manufacturer:          manufacturer,
-        UsageClassification:   usageClassification,
-        OrganizationID:        uuid.UUID(r.OrganizationID.Bytes),
-        OrganizationName:      organizationName,
-        StatusID:              r.StatusID,
-        StatusName:            statusName,
-    }
-}
-
-func (r *equipmentRepository) Create(ctx context.Context, m Equipment) (*Equipment, error) {
-    params := generated.CreateEquipmentParams{
-        FactoryNumber:         m.FactoryNumber,
-        InventoryNumber:       m.InventoryNumber,
-        ManufactureYear:       pgtype.Date{Time: m.ManufactureYear, Valid: true},
-        RegistrationYear:      toNullDate(m.RegistrationYear),
-        EquipmentDictionaryID: toPGUUID(m.EquipmentDictionaryID),
-        OrganizationID:        toPGUUID(m.OrganizationID),
-        StatusID:              m.StatusID,
-    }
-
-    row, err := r.q.CreateEquipment(ctx, params)
-    if err != nil {
-        return nil, fmt.Errorf("%w: %v", ErrCreateFailed, err)
-    }
-    return mapRow(&row), nil
-}
-
-func (r *equipmentRepository) GetByID(ctx context.Context, id uuid.UUID) (*EquipmentWithDetails, error) {
-    row, err := r.q.GetEquipmentByID(ctx, toPGUUID(id))
-    if err != nil {
-        return nil, fmt.Errorf("%w: %v", ErrNotFound, err)
-    }
-    return mapRowWithDetails(&row), nil
-}
-
-func (r *equipmentRepository) Update(ctx context.Context, m Equipment) (*Equipment, error) {
-    params := generated.UpdateEquipmentParams{
-        ID:                    toPGUUID(m.ID),
-        FactoryNumber:         m.FactoryNumber,
-        InventoryNumber:       m.InventoryNumber,
-        ManufactureYear:       pgtype.Date{Time: m.ManufactureYear, Valid: true},
-        RegistrationYear:      toNullDate(m.RegistrationYear),
-        EquipmentDictionaryID: toPGUUID(m.EquipmentDictionaryID),
-        OrganizationID:        toPGUUID(m.OrganizationID),
-        StatusID:              m.StatusID,
-    }
-
-    row, err := r.q.UpdateEquipment(ctx, params)
-    if err != nil {
-        return nil, fmt.Errorf("%w: %v", ErrUpdateFailed, err)
-    }
-    return mapRow((*generated.CreateEquipmentRow)(&row)), nil
-}
-
-func (r *equipmentRepository) Delete(ctx context.Context, id uuid.UUID) error {
-    return r.q.DeleteEquipment(ctx, toPGUUID(id))
-}
-
-func (r *equipmentRepository) Exists(ctx context.Context, id uuid.UUID) (bool, error) {
-    return r.q.EquipmentExists(ctx, toPGUUID(id))
-}
-
-func (r *equipmentRepository) List(ctx context.Context, limit, offset int32) ([]EquipmentWithDetails, int64, error) {
-    rows, err := r.q.ListEquipment(ctx, generated.ListEquipmentParams{
-        Limit:  limit,
-        Offset: offset,
-    })
-    if err != nil {
-        return nil, 0, err
-    }
-
-    total, _ := r.q.CountEquipment(ctx)
-
-    result := make([]EquipmentWithDetails, len(rows))
-    for i := range rows {
-        result[i] = *mapRowWithDetails((*generated.GetEquipmentByIDRow)(&rows[i]))
-    }
-    return result, total, nil
+	return r.GetByID(ctx, archivedID)
 }

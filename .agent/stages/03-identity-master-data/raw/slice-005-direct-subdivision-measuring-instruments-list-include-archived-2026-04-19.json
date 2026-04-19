@@ -1,0 +1,148 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": "5548316c-c89d-4bf6-8bdc-b6a26bf294b6",
+      "organizationId": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+      "unit": {
+        "id": "f8aa33ec-009d-4a36-89d9-a98d0692fb9d",
+        "name": "Customer-Metrology Юнит 01 1776614151",
+        "subdivisionId": "3f51076c-06cb-4261-b0f2-cfb6b47ba18b",
+        "subdivisionName": "Customer-Metrology Подразделение 1776614151"
+      },
+      "name": "Термометр архивный 1776614151",
+      "instrumentType": "Термометр",
+      "model": "MI-ARC",
+      "registrationNumber": "MI-ARC-1776614151",
+      "serialNumber": "SER-ARC-1776614151",
+      "status": "inactive",
+      "placementKind": "standalone",
+      "standards": [],
+      "journalCount": 2,
+      "latestJournal": {
+        "id": "4b1166b9-258c-47ec-bc7a-e19f3902625c",
+        "operationType": "suspension",
+        "operationDate": "2026-04-05",
+        "documentNumber": "MI-ARC-SUSP-1776614151",
+        "executorOrganization": "Внутренний метролог",
+        "comment": "Эксплуатация приостановлена",
+        "createdAt": "2026-04-19T15:55:51Z"
+      },
+      "archivedAt": "2026-04-19T15:55:51Z",
+      "createdAt": "2026-04-19T15:55:51Z",
+      "updatedAt": "2026-04-19T15:55:51Z"
+    },
+    {
+      "id": "2e7e2dab-db5c-4b5f-85c7-0132f3491d42",
+      "organizationId": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+      "unit": {
+        "id": "560a11af-2794-4722-a7dc-e46593ab2381",
+        "name": "Второй юнит 1776614151",
+        "subdivisionId": "3f51076c-06cb-4261-b0f2-cfb6b47ba18b",
+        "subdivisionName": "Customer-Metrology Подразделение 1776614151"
+      },
+      "equipment": {
+        "id": "5a6d9806-fb43-4184-8aff-4dd3377d51da",
+        "fullName": "Компрессор второй юнит 1776614151"
+      },
+      "name": "Манометр вторичный 1776614151",
+      "instrumentType": "Манометр",
+      "model": "MI-SEC",
+      "registrationNumber": "MI-SEC-1776614151",
+      "serialNumber": "SER-SEC-1776614151",
+      "status": "active",
+      "placementKind": "built_in",
+      "standards": [
+        {
+          "id": "d858f441-0056-4f56-80f0-5a149fcaeb9d",
+          "standardType": "Эталон расхода",
+          "model": "STD-U2",
+          "identifier": "STD-U2-1776614151",
+          "status": "active",
+          "scopeLabel": "Второй юнит 1776614151"
+        },
+        {
+          "id": "f4061d29-aef4-40e9-9747-b9ff4b1facc0",
+          "standardType": "Эталон давления",
+          "model": "STD-ORG",
+          "identifier": "STD-ORG-1776614151",
+          "status": "inactive",
+          "scopeLabel": "Организация 1776614151"
+        }
+      ],
+      "journalCount": 1,
+      "nextDueDate": "2027-01-31",
+      "latestJournal": {
+        "id": "68a8ec80-37dd-4c42-b917-bbf578cb46f9",
+        "operationType": "verification",
+        "operationDate": "2026-02-11",
+        "documentNumber": "MI-SEC-1776614151",
+        "validUntil": "2027-01-31",
+        "executorOrganization": "ФБУ Ростест-Москва",
+        "comment": "Поверка второго юнита",
+        "createdAt": "2026-04-19T15:55:51Z"
+      },
+      "createdAt": "2026-04-19T15:55:51Z",
+      "updatedAt": "2026-04-19T15:55:51Z"
+    },
+    {
+      "id": "b2528917-a456-4442-b4a1-9960c4e9b580",
+      "organizationId": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+      "unit": {
+        "id": "f8aa33ec-009d-4a36-89d9-a98d0692fb9d",
+        "name": "Customer-Metrology Юнит 01 1776614151",
+        "subdivisionId": "3f51076c-06cb-4261-b0f2-cfb6b47ba18b",
+        "subdivisionName": "Customer-Metrology Подразделение 1776614151"
+      },
+      "equipment": {
+        "id": "c0c347af-d649-4378-b7a9-37da81be1146",
+        "fullName": "Компрессор активный 1776614151"
+      },
+      "name": "Манометр первичный 1776614151",
+      "instrumentType": "Манометр",
+      "model": "MI-PRM",
+      "registrationNumber": "MI-PRM-1776614151",
+      "serialNumber": "SER-PRM-1776614151",
+      "status": "active",
+      "placementKind": "built_in",
+      "standards": [
+        {
+          "id": "b0c7c542-afad-4cac-a6be-cec921a5c4e0",
+          "standardType": "Эталон расхода",
+          "model": "STD-U1",
+          "identifier": "STD-U1-1776614151",
+          "status": "retired",
+          "scopeLabel": "Customer-Metrology Юнит 01 1776614151"
+        },
+        {
+          "id": "f4061d29-aef4-40e9-9747-b9ff4b1facc0",
+          "standardType": "Эталон давления",
+          "model": "STD-ORG",
+          "identifier": "STD-ORG-1776614151",
+          "status": "inactive",
+          "scopeLabel": "Организация 1776614151"
+        }
+      ],
+      "journalCount": 2,
+      "nextDueDate": "2026-12-31",
+      "latestJournal": {
+        "id": "23fd3f49-cecd-4871-90bb-444a9c0f1366",
+        "operationType": "verification",
+        "operationDate": "2026-03-20",
+        "documentNumber": "MI-LATEST-1776614151",
+        "validUntil": "2026-12-31",
+        "executorOrganization": "ФБУ Ростест-Москва",
+        "attachmentUrl": "https://files.vrk.local/mi-latest.pdf",
+        "comment": "Актуальная поверка",
+        "createdAt": "2026-04-19T15:55:51Z"
+      },
+      "createdAt": "2026-04-19T15:55:51Z",
+      "updatedAt": "2026-04-19T15:55:51Z"
+    }
+  ],
+  "meta": {
+    "total": 3,
+    "limit": 0,
+    "offset": 0
+  }
+}

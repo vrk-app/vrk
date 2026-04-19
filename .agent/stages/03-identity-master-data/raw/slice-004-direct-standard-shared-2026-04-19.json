@@ -1,0 +1,16 @@
+{
+  "id": "a48d9419-33cc-42b4-b4ad-9a34e5d4ecb7",
+  "organizationId": "8eaaec80-abde-4d56-b6ba-54b953e72c1d",
+  "ownershipScope": {
+    "scopeType": "organization",
+    "label": "ВРК customer-equipment 1776604587"
+  },
+  "standardType": "Эталон давления",
+  "model": "STD-ORG",
+  "identifier": "STD-ORG-1776604587",
+  "metrologicalCharacteristics": "0.1 кПа, общий контур организации",
+  "status": "active",
+  "linkedMeasuringInstruments": 0,
+  "createdAt": "2026-04-19T13:16:28Z",
+  "updatedAt": "2026-04-19T13:16:28Z"
+}

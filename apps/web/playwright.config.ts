@@ -23,7 +23,8 @@ export default defineConfig({
     stdout: "ignore",
     stderr: "pipe",
     env: {
-      NEXT_PUBLIC_API_BASE_URL: "http://backend:8080",
+      INTERNAL_API_BASE_URL: "http://127.0.0.1:18080",
+      NEXT_PUBLIC_API_BASE_URL: "http://127.0.0.1:18080",
       NEXT_PUBLIC_RUNTIME_DATA_MODE: "seed-read",
       PORT: String(port),
     },

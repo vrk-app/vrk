@@ -1,0 +1,37 @@
+{
+  "success": true,
+  "data": {
+    "sessionToken": "996052f1-ed2b-4912-9975-a6dba11544e5",
+    "requiresLaunchWizard": true,
+    "account": {
+      "id": "609611c3-890e-4f93-8ddf-a20521289368",
+      "fullName": "Contractor-Alpha Admin 1776595503",
+      "email": "contractor-alpha-1776595503@vrk.local"
+    },
+    "membershipId": "f400e081-5d46-4707-b6da-a4604b06aa9b",
+    "membershipStatus": "active",
+    "organization": {
+      "id": "3cb8afce-4a3d-4eeb-92ea-538976fedb51",
+      "roleTitle": "contractor",
+      "name": "ВРК contractor-alpha 1776595503",
+      "launchState": "shell"
+    },
+    "grant": {
+      "id": "0063ff88-3f7a-4d25-8b7b-0cecf2aa61b2",
+      "roleTemplate": "organization_admin",
+      "scopeType": "organization",
+      "scopeId": "3cb8afce-4a3d-4eeb-92ea-538976fedb51"
+    },
+    "workspace": {
+      "scopeType": "organization",
+      "scopeId": "3cb8afce-4a3d-4eeb-92ea-538976fedb51",
+      "scopeName": "ВРК contractor-alpha 1776595503",
+      "landingTitle": "ВРК contractor-alpha 1776595503",
+      "landingSubtitle": "Администратор организации видит полный org graph и может управлять приглашениями сотрудников.",
+      "landingPath": "/company",
+      "canManageEmployeeInvites": false
+    },
+    "subdivisions": [],
+    "units": []
+  }
+}

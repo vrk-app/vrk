@@ -17,9 +17,13 @@ retry_interval_seconds = 1
 
 
 def fetch(url: str):
-    with urllib.request.urlopen(url, timeout=15) as response:
-        body = response.read().decode("utf-8")
-        return response.getcode(), body
+    try:
+        with urllib.request.urlopen(url, timeout=15) as response:
+            body = response.read().decode("utf-8")
+            return response.getcode(), body
+    except urllib.error.HTTPError as error:
+        body = error.read().decode("utf-8")
+        return error.code, body
 
 
 def wait_until(description: str, url: str, validator):
@@ -48,6 +52,13 @@ def assert_backend_ready(status: int, body: str):
     payload = json.loads(body)
     assert status == 200, payload
     assert payload["status"] == "ready", payload
+
+
+def assert_unauthorized(status: int, body: str):
+    payload = json.loads(body)
+    assert status == 401, payload
+    assert payload["success"] is False, payload
+    assert payload["error"] in {"missing bearer token", "unauthorized"}, payload
 
 
 def assert_web_route(status: int, body: str):
@@ -99,10 +110,7 @@ assert org_payload["success"] is True, org_payload
 assert org_payload["data"], org_payload
 
 equipment_status, equipment_body = fetch(f"http://localhost:{backend_port}/api/v1/equipment?limit=1&offset=0")
-equipment_payload = json.loads(equipment_body)
-assert equipment_status == 200, equipment_payload
-assert equipment_payload["success"] is True, equipment_payload
-assert equipment_payload["data"], equipment_payload
+assert_unauthorized(equipment_status, equipment_body)
 
 swagger_status, _ = fetch(f"http://localhost:{backend_port}/swagger/index.html")
 assert swagger_status == 200, swagger_status

@@ -1,7 +1,7 @@
 # Архитектура фронтенда и практики разработки
 
 Статус: accepted baseline  
-Обновлено: 2026-04-18
+Обновлено: 2026-04-19
 
 ## Назначение
 
@@ -83,6 +83,135 @@ flowchart LR
 - эти surfaces могут жить на mock / seed / stub data, если Stage 03 доменная модель еще не активирована;
 - real auth/session/RBAC, invite-based activation, persisted `organization -> subdivision -> unit` state, scoped access grants, contracts/equipment/MI/standards CRUD и invitation workflows остаются ответственностью `Stage 03`;
 - requests contour не должен ложно “оживать” в `Stage 02`: допустим только truthful gated placeholder до Stage 04.
+
+### 1.2.1. Реализованный Stage 03 runtime contour для slice-001
+
+После реализации `slice-001-first-admin-activation-and-org-graph` в `apps/web` одновременно живут два правдивых режима:
+
+- анонимный пользователь все еще видит Stage 02 shell на `/company`, пока у него нет сессии;
+- платформенный админ выпускает invite через `/register`;
+- приглашенный администратор проходит путь `/register/[token] -> /company/setup -> /company`;
+- server-side runtime layout читает текущую session и не пускает активированного администратора в пустой shell;
+- browser не ходит напрямую в container-only backend host: Next route handlers в `app/api/*` проксируют invite/session/bootstrap requests к `apps/backend`;
+- текущая session хранится в HttpOnly cookie `vrk_session`, а server components читают ее через `fetchSessionSummary`.
+
+```mermaid
+flowchart LR
+    A["Browser"] --> B["Next app routes / pages"]
+    B --> C["Next route handlers /app/api/*"]
+    C --> D["apps/backend REST"]
+    D --> C
+    C --> E["HttpOnly vrk_session cookie"]
+    E --> B
+    B --> F["/company/setup or /company"]
+```
+
+### 1.2.2. Реализованный Stage 03 runtime contour для slice-002
+
+После реализации `slice-002-employee-invites-and-scoped-access` web contour расширился поверх того же runtime skeleton, но без widening в Stage 04:
+
+- `/register/[token]` теперь является общим activation route для first-admin и employee invites;
+- Next route handlers в `app/api/auth/invites/*` и `app/api/auth/employee-invites/*` закрывают browser от прямого доступа к internal backend host и держат cookie/session boundary на стороне `apps/web`;
+- `/company` стал scope-aware landing page:
+  - organization-scope пользователь видит весь org graph и, только при `workspace.canManageEmployeeInvites`, employee invite manager;
+  - subdivision-scope пользователь видит только свое подразделение и его child units;
+  - unit-scope пользователь видит только один юнит и не видит broader org graph;
+- `/login` после employee acceptance больше не возвращает пользователя в generic shell, а сразу восстанавливает его сохраненный workspace contour.
+
+```mermaid
+flowchart LR
+    A["/company<br/>organization admin"] --> B["EmployeeInviteManager"]
+    B --> C["/api/auth/employee-invites*"]
+    C --> D["apps/backend /employee-invites*"]
+    D --> E["public token"]
+    E --> F["/register/[token]"]
+    F --> G["/api/auth/invites/*"]
+    G --> H["apps/backend /invites/*"]
+    H --> I["HttpOnly vrk_session"]
+    I --> J["/company scoped landing"]
+```
+
+### 1.2.3. Реализованный Stage 03 runtime contour для slice-003
+
+После реализации `slice-003-contracts-routing-and-workspace-access` contracts contour перестал быть shell-only surface и стал реальным Stage 03 runtime boundary:
+
+- публичный web route остается `/contracts`, даже если backend по-прежнему использует explicit adapter boundary `/agreements`;
+- `app/api/contracts*` скрывает legacy backend naming от browser и держит public naming стабильным;
+- customer `organization_admin` на organization scope получает live contracts registry, contractor lookup и routing preview;
+- минимальный contract status baseline зафиксирован как `inactive / active / expired`;
+- routing preview определяет допустимого contractor из eligible contract context, а не из free-form выбора на будущем request step;
+- contractor login и session restore для active contractor organization возвращают `workspace.landingPath = "/contracts"`;
+- contractor-side `/contracts` показывает только customer contracts, привязанные к contractor organization, без расширения в customer org graph и без доступа к unrelated contracts.
+
+```mermaid
+flowchart LR
+    A["Customer login"] --> B["/company"]
+    B --> C["/contracts"]
+    C --> D["app/api/contracts*"]
+    D --> E["apps/backend /agreements*"]
+    E --> F["contract registry + routing resolve"]
+    G["Contractor login"] --> H["workspace.landingPath = /contracts"]
+    H --> I["contractor-only contracts workspace"]
+    F --> I
+```
+
+### 1.2.4. Реализованный Stage 03 runtime contour для slice-004
+
+После реализации `slice-004-equipment-mi-standard-registries` master-data contour на публичном route `/equipment` перестал быть shell-only surface и стал реальным Stage 03 registry boundary:
+
+- публичный web route остается `/equipment`, а три отдельных registry surfaces переключаются через query-backed tabs `equipment`, `mi`, `standards`;
+- `app/api/equipment*` скрывает browser от internal backend host и держит один public web boundary для equipment, measuring instruments и standards;
+- анонимный пользователь по-прежнему видит truthful shell без live scoped records;
+- customer `organization_admin` на organization scope получает live create/list surface для всех трех registries на одном route;
+- subdivision-scope и unit-scope пользователи попадают на тот же `/equipment`, но получают только scope-filtered read-only contour без broader record leak и без mutate surface;
+- contractor session не получает parallel registry family и остается вне customer master-data contour;
+- relation baseline теперь реальна в runtime и proof bundle:
+  - equipment может существовать без СИ;
+  - СИ может быть `standalone` или `built_in`;
+  - standard остается reusable registry record и не схлопывается в `1:1`.
+
+```mermaid
+flowchart LR
+    A["Browser /equipment?tab=*"] --> B["Next page + app/api/equipment*"]
+    B --> C["backend registries<br/>equipment / measuring-instruments / standards"]
+    C --> D["session-based scope filter"]
+    D --> E["organization scope<br/>create + list on all tabs"]
+    D --> F["subdivision / unit scope<br/>read-only filtered lists"]
+    C --> G["relation layer<br/>equipment -> 0..N MI -> 0..N standards"]
+```
+
+### 1.2.5. Реализованный Stage 03 runtime contour для slice-005
+
+После реализации `slice-005-metrology-journals-archiving-and-proof` тот же `/equipment` route получил journal/archive state без widening в parallel public family:
+
+- server page читает `searchParams.tab` и `searchParams.archived`, нормализует их и передает в `EquipmentRegistryWorkspace`;
+- route state остается URL-backed:
+  - `tab=equipment | mi | standards`;
+  - `archived=1` включает explicit archive visibility внутри того же route;
+- `EquipmentRegistryWorkspace` держит тот же route через `router.replace(...)`, а data fetching на web boundary прокидывает `includeArchived=true` только когда archive visibility явно включена;
+- journal detail panels для measuring instruments и standards живут в том же workspace и используют `app/api/equipment/.../journals`;
+- archive actions идут через `app/api/equipment/.../archive`;
+- active pickers остаются отфильтрованными даже когда archive visibility включена:
+  - built-in MI picker использует только `activeEquipmentRecords`;
+  - standard link picker использует только `activeStandards`;
+- mutate surface остается только у customer `organization_admin` на `organization` scope;
+- subdivision/unit users читают только свой scope-filtered active/archive contour и journal history без broader leak.
+
+```mermaid
+flowchart LR
+    A["/equipment?tab=mi&archived=1"] --> B["page.tsx resolves tab + archived"]
+    B --> C["EquipmentRegistryWorkspace"]
+    C --> D["/api/equipment*?includeArchived=true"]
+    C --> E["/api/equipment/.../journals"]
+    C --> F["/api/equipment/.../archive"]
+    D --> G["backend scoped registries"]
+    E --> H["backend journal endpoints"]
+    F --> I["backend archive endpoints"]
+    G --> J["active lists + archived rows"]
+    C --> K["activeEquipmentRecords / activeStandards pickers only"]
+```
+
+Диаграмма фиксирует текущую frontend boundary для slice-005: query state управляет тем, что видно на одном публичном route, но archived visibility не расширяет mutate surface и не возвращает archived rows в active relation flows.
 
 ### 1.3. Field scaffold boundary
 
@@ -231,6 +360,7 @@ apps/web/shared/api/
 - cache behavior (`revalidate`, tags, bypass, no-store) должен быть явным и единообразным
 - ошибки транспорта и contract-level ошибки нормализуются в одном месте
 - auth/session contract читается централизованно, а не размазанно по компонентам
+- internal backend base URL читается из `INTERNAL_API_BASE_URL` / `NEXT_PUBLIC_API_BASE_URL`, а не хардкодится в UI routes
 
 ### 4.1. Где живет state
 

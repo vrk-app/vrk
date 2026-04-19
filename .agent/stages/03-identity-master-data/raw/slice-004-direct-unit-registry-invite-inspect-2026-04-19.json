@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "data": {
+    "inviteKind": "employee",
+    "organizationId": "8eaaec80-abde-4d56-b6ba-54b953e72c1d",
+    "organizationName": "ВРК customer-equipment 1776604587",
+    "organizationRole": "customer",
+    "inviteStatus": "opened",
+    "inviteeName": "Unit-Registry Employee 1776604587",
+    "inviteEmail": "unit-registry-1776604587@vrk.local",
+    "inviteExpiresAt": "2026-04-26T12:00:00Z",
+    "roleTemplate": "unit_operator",
+    "scopeType": "unit",
+    "scopeLabel": "Customer-Equipment Юнит 01 1776604587",
+    "launchState": "active"
+  }
+}

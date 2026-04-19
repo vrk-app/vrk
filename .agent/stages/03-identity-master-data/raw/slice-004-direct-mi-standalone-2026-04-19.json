@@ -1,0 +1,20 @@
+{
+  "id": "3357ba5e-931e-417b-a46c-643d68379d43",
+  "organizationId": "8eaaec80-abde-4d56-b6ba-54b953e72c1d",
+  "unit": {
+    "id": "94c09426-1b9f-48b4-96b6-c6dd339df480",
+    "name": "Customer-Equipment Юнит 01 1776604587",
+    "subdivisionId": "3d351a71-784f-4a2b-953b-704d61d53a5e",
+    "subdivisionName": "Customer-Equipment Подразделение 1776604587"
+  },
+  "name": "Standalone СИ 1776604587",
+  "instrumentType": "Термометр",
+  "model": "MI-S1",
+  "registrationNumber": "MI-S1-1776604587",
+  "serialNumber": "SER-S1-1776604587",
+  "status": "active",
+  "placementKind": "standalone",
+  "standards": null,
+  "createdAt": "2026-04-19T13:16:28Z",
+  "updatedAt": "2026-04-19T13:16:28Z"
+}

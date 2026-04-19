@@ -1,0 +1,16 @@
+{
+  "status": 201,
+  "response": {
+    "success": true,
+    "data": {
+      "organizationId": "ddff7ca5-7813-4fd3-b74b-f4374b6d539d",
+      "organizationName": "ВРК Юнит 1776543472",
+      "organizationRole": "customer",
+      "inviteId": "9e0b3c47-8b94-4f44-9bc1-26585da885bb",
+      "inviteEmail": "unit-admin-1776543472@vrk.local",
+      "inviteStatus": "sent",
+      "inviteToken": "30959e7f-c69a-498c-92db-56be42f68ca9",
+      "inviteExpiresAt": "2026-04-25T20:17:52Z"
+    }
+  }
+}

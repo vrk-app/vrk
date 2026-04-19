@@ -1,0 +1,21 @@
+Focused post-fix rerun against `.agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-19.md`
+Scope:
+- `apps/web/app/(runtime)/equipment/page.tsx`
+- `apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx`
+
+## apps/web/app/(runtime)/equipment/page.tsx
+
+✓ pass
+
+## apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+
+✓ pass
+
+Post-fix follow-up:
+- `apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:206` adds an opt-in `translate="no"` path for identifier detail cells rendered through `fieldDetail(...)`.
+- `apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:637` equipment `Заводской номер` now renders through the no-translate path.
+- `apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:638` equipment `Инвентарный номер` now renders through the no-translate path.
+- `apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:955` measuring-instrument `Регистрационный номер` now renders through the no-translate path.
+- `apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:956` measuring-instrument `Серийный номер` now renders through the no-translate path.
+- `apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1234` standard `Серийный номер` now renders through the no-translate path.
+- No blocking Web Interface Guidelines findings were observed in the reviewed `/equipment` UI scope after this targeted rerun.

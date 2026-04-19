@@ -1,0 +1,12 @@
+BEGIN;
+
+DROP TABLE IF EXISTS auth_units CASCADE;
+DROP TABLE IF EXISTS auth_subdivisions CASCADE;
+DROP TABLE IF EXISTS auth_sessions CASCADE;
+DROP TABLE IF EXISTS auth_scoped_grants CASCADE;
+DROP TABLE IF EXISTS auth_memberships CASCADE;
+DROP TABLE IF EXISTS auth_first_admin_invites CASCADE;
+DROP TABLE IF EXISTS auth_bootstrap_organizations CASCADE;
+DROP TABLE IF EXISTS auth_accounts CASCADE;
+
+COMMIT;

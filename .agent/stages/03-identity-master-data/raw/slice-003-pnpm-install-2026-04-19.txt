@@ -1,0 +1,15 @@
+ WARN  Unsupported engine: wanted: {"node":"24.14.1"} (current: {"node":"v24.14.0","pnpm":"10.33.0"})
+apps/field                               |  WARN  Unsupported engine: wanted: {"node":"24.14.1"} (current: {"node":"v24.14.0","pnpm":"10.33.0"})
+apps/web                                 |  WARN  Unsupported engine: wanted: {"node":"24.14.1"} (current: {"node":"v24.14.0","pnpm":"10.33.0"})
+Scope: all 3 workspace projects
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +498
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 498, reused 498, downloaded 0, added 263
+Progress: resolved 498, reused 498, downloaded 0, added 496
+Progress: resolved 498, reused 498, downloaded 0, added 498, done
+.../esbuild@0.25.12/node_modules/esbuild postinstall$ node install.js
+.../esbuild@0.25.12/node_modules/esbuild postinstall: Done
+
+Done in 3.2s using pnpm v10.33.0

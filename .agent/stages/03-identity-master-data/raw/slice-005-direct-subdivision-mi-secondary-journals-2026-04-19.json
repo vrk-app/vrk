@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": "68a8ec80-37dd-4c42-b917-bbf578cb46f9",
+      "operationType": "verification",
+      "operationDate": "2026-02-11",
+      "documentNumber": "MI-SEC-1776614151",
+      "validUntil": "2027-01-31",
+      "executorOrganization": "ФБУ Ростест-Москва",
+      "comment": "Поверка второго юнита",
+      "createdAt": "2026-04-19T15:55:51Z"
+    }
+  ]
+}

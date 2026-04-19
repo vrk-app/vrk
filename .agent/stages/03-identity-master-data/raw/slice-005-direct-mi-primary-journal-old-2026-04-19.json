@@ -1,0 +1,11 @@
+{
+  "id": "fad577f1-2c90-422c-9894-6bd1447e6991",
+  "operationType": "verification",
+  "operationDate": "2026-01-10",
+  "documentNumber": "MI-OLD-1776614151",
+  "validUntil": "2026-08-31",
+  "executorOrganization": "ФБУ Ростест-Москва",
+  "attachmentUrl": "https://files.vrk.local/mi-old.pdf",
+  "comment": "Базовая поверка",
+  "createdAt": "2026-04-19T15:55:51Z"
+}

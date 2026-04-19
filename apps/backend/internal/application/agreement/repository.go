@@ -1,132 +1,302 @@
 package agreement
 
 import (
-    "context"
-    "fmt"
+	"context"
+	"errors"
+	"fmt"
+	"time"
 
-    "github.com/google/uuid"
-    "github.com/jackc/pgx/v5/pgtype"
+	"backend/internal/db/generated"
 
-    "backend/internal/db/generated"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type AgreementRepository interface {
-    Create(ctx context.Context, m Agreement) (*Agreement, error)
-    GetByID(ctx context.Context, id uuid.UUID) (*Agreement, error)
-    Update(ctx context.Context, m Agreement) (*Agreement, error)
-    Delete(ctx context.Context, id uuid.UUID) error
-    List(ctx context.Context, limit, offset int32) ([]Agreement, int64, error)
-    Exists(ctx context.Context, id uuid.UUID) (bool, error)
+	Create(ctx context.Context, m Agreement) (*Agreement, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*Agreement, error)
+	ListByCustomerOrganization(ctx context.Context, organizationID uuid.UUID) ([]Agreement, error)
+	ListByContractorOrganization(ctx context.Context, organizationID uuid.UUID) ([]Agreement, error)
+	Update(ctx context.Context, m Agreement) (*Agreement, error)
+	ListActiveContractors(ctx context.Context) ([]ContractorOption, error)
+	GetActiveContractorByID(ctx context.Context, id uuid.UUID) (*ContractorOption, error)
 }
 
 type agreementRepository struct {
-    q *generated.Queries
+	q *generated.Queries
 }
 
 func NewRepository(q *generated.Queries) AgreementRepository {
-    return &agreementRepository{q: q}
-}
-      
-func toPGUUID(id uuid.UUID) pgtype.UUID {
-    return pgtype.UUID{Bytes: id, Valid: true}
-}
-
-func toPGNumeric(n int64) pgtype.Numeric {
-    var num pgtype.Numeric
-    num.Scan(n)
-    return num
-}
-
-func fromPGNumeric(num pgtype.Numeric) int64 {
-    var n int64
-    num.Scan(&n)
-    return n
-}
-
-
-func mapRow(r *generated.CreateAgreementRow) *Agreement {
-    return &Agreement{
-        ID:                 uuid.UUID(r.ID.Bytes),
-        Source:             r.Source,
-        FactoryID:          uuid.UUID(r.FactoryID.Bytes),
-        OrganizationID:     uuid.UUID(r.OrganizationID.Bytes),
-        Number:             fromPGNumeric(r.Number),
-        StartDate:          r.StartDate.Time,
-        EndDate:            r.EndDate.Time,
-        SubjectOfAgreement: r.SubjectOfAgreement,
-        ScheduleID:         uuid.UUID(r.ScheduleID.Bytes),
-    }
+	return &agreementRepository{q: q}
 }
 
 func (r *agreementRepository) Create(ctx context.Context, m Agreement) (*Agreement, error) {
-    params := generated.CreateAgreementParams{
-        Source:             m.Source,
-        FactoryID:          toPGUUID(m.FactoryID),
-        OrganizationID:     toPGUUID(m.OrganizationID),
-        Number:             toPGNumeric(m.Number),
-        StartDate:          pgtype.Date{Time: m.StartDate, Valid: true},
-        EndDate:            pgtype.Date{Time: m.EndDate, Valid: true},
-        SubjectOfAgreement: m.SubjectOfAgreement,
-        ScheduleID:         toPGUUID(m.ScheduleID),
-    }
+	row, err := r.q.CreateAgreement(ctx, generated.CreateAgreementParams{
+		CustomerOrganizationID:   toPGUUID(m.CustomerOrganizationID),
+		ContractorOrganizationID: toPGUUID(m.ContractorOrganizationID),
+		ContractNumber:           stringPtr(m.ContractNumber),
+		ContractStatus:           stringPtr(m.ContractStatus),
+		StartDate:                toPGDate(m.StartDate),
+		EndDate:                  toPGDate(m.EndDate),
+		WorkType:                 stringPtr(m.WorkType),
+		EquipmentType:            stringPtr(m.EquipmentType),
+		Region:                   stringPtr(m.Region),
+		SubdivisionID:            nullablePGUUID(m.SubdivisionID),
+		UnitID:                   nullablePGUUID(m.UnitID),
+		LocationScopeLabel:       cloneString(m.LocationScopeLabel),
+		Source:                   cloneString(m.Source),
+		SubjectOfAgreement:       cloneString(m.SubjectOfAgreement),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrCreateFailed, err)
+	}
 
-    row, err := r.q.CreateAgreement(ctx, params)
-    if err != nil {
-        return nil, fmt.Errorf("%w: %v", ErrCreateFailed, err)
-    }
-    return mapRow(&row), nil
+	return mapCreateAgreementRow(&row), nil
 }
 
 func (r *agreementRepository) GetByID(ctx context.Context, id uuid.UUID) (*Agreement, error) {
-    row, err := r.q.GetAgreementByID(ctx, toPGUUID(id))
-    if err != nil {
-        return nil, fmt.Errorf("%w: %v", ErrNotFound, err)
-    }
-    return mapRow((*generated.CreateAgreementRow)(&row)), nil
+	row, err := r.q.GetAgreementByID(ctx, toPGUUID(id))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("%w: %v", ErrNotFound, err)
+	}
+
+	return mapGetAgreementRow(&row), nil
+}
+
+func (r *agreementRepository) ListByCustomerOrganization(ctx context.Context, organizationID uuid.UUID) ([]Agreement, error) {
+	rows, err := r.q.ListAgreementsByCustomerOrganization(ctx, toPGUUID(organizationID))
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrListFailed, err)
+	}
+
+	result := make([]Agreement, 0, len(rows))
+	for _, row := range rows {
+		result = append(result, *mapCustomerAgreementRow(&row))
+	}
+	return result, nil
+}
+
+func (r *agreementRepository) ListByContractorOrganization(ctx context.Context, organizationID uuid.UUID) ([]Agreement, error) {
+	rows, err := r.q.ListAgreementsByContractorOrganization(ctx, toPGUUID(organizationID))
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrListFailed, err)
+	}
+
+	result := make([]Agreement, 0, len(rows))
+	for _, row := range rows {
+		result = append(result, *mapContractorAgreementRow(&row))
+	}
+	return result, nil
 }
 
 func (r *agreementRepository) Update(ctx context.Context, m Agreement) (*Agreement, error) {
-    params := generated.UpdateAgreementParams{
-        ID:                 toPGUUID(m.ID),
-        Source:             m.Source,
-        FactoryID:          toPGUUID(m.FactoryID),
-        OrganizationID:     toPGUUID(m.OrganizationID),
-        Number:             toPGNumeric(m.Number),
-        StartDate:          pgtype.Date{Time: m.StartDate, Valid: true},
-        EndDate:            pgtype.Date{Time: m.EndDate, Valid: true},
-        SubjectOfAgreement: m.SubjectOfAgreement,
-        ScheduleID:         toPGUUID(m.ScheduleID),
-    }
+	_, err := r.q.UpdateAgreement(ctx, generated.UpdateAgreementParams{
+		ID:                       toPGUUID(m.ID),
+		ContractorOrganizationID: toPGUUID(m.ContractorOrganizationID),
+		ContractNumber:           stringPtr(m.ContractNumber),
+		ContractStatus:           stringPtr(m.ContractStatus),
+		StartDate:                toPGDate(m.StartDate),
+		EndDate:                  toPGDate(m.EndDate),
+		WorkType:                 stringPtr(m.WorkType),
+		EquipmentType:            stringPtr(m.EquipmentType),
+		Region:                   stringPtr(m.Region),
+		SubdivisionID:            nullablePGUUID(m.SubdivisionID),
+		UnitID:                   nullablePGUUID(m.UnitID),
+		LocationScopeLabel:       cloneString(m.LocationScopeLabel),
+		Source:                   cloneString(m.Source),
+		SubjectOfAgreement:       cloneString(m.SubjectOfAgreement),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrUpdateFailed, err)
+	}
 
-    row, err := r.q.UpdateAgreement(ctx, params)
-    if err != nil {
-        return nil, fmt.Errorf("%w: %v", ErrUpdateFailed, err)
-    }
-    return mapRow((*generated.CreateAgreementRow)(&row)), nil
+	return r.GetByID(ctx, m.ID)
 }
 
-func (r *agreementRepository) Delete(ctx context.Context, id uuid.UUID) error {
-    return r.q.DeleteAgreement(ctx, toPGUUID(id))
+func (r *agreementRepository) ListActiveContractors(ctx context.Context) ([]ContractorOption, error) {
+	rows, err := r.q.ListActiveContractorOrganizations(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrListFailed, err)
+	}
+
+	result := make([]ContractorOption, 0, len(rows))
+	for _, row := range rows {
+		result = append(result, ContractorOption{
+			ID:        uuidFromPG(row.ID),
+			Name:      row.ShellName,
+			ShortName: row.ShortName,
+		})
+	}
+	return result, nil
 }
 
-func (r *agreementRepository) Exists(ctx context.Context, id uuid.UUID) (bool, error) {
-    return r.q.AgreementExists(ctx, toPGUUID(id))
+func (r *agreementRepository) GetActiveContractorByID(ctx context.Context, id uuid.UUID) (*ContractorOption, error) {
+	row, err := r.q.GetActiveContractorOrganizationByID(ctx, toPGUUID(id))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrContractorOrganizationInvalid
+		}
+		return nil, fmt.Errorf("%w: %v", ErrContractorOrganizationInvalid, err)
+	}
+
+	return &ContractorOption{
+		ID:        uuidFromPG(row.ID),
+		Name:      row.ShellName,
+		ShortName: row.ShortName,
+	}, nil
 }
 
-func (r *agreementRepository) List(ctx context.Context, limit, offset int32) ([]Agreement, int64, error) {
-    rows, err := r.q.ListAgreements(ctx, generated.ListAgreementsParams{
-        Limit:  limit,
-        Offset: offset,
-    })
-    if err != nil {
-        return nil, 0, err
-    }
+func mapCreateAgreementRow(row *generated.CreateAgreementRow) *Agreement {
+	return &Agreement{
+		ID:                         uuidFromPG(row.ID),
+		CustomerOrganizationID:     uuidFromPG(row.CustomerOrganizationID),
+		CustomerOrganizationName:   row.CustomerOrganizationName,
+		ContractorOrganizationID:   uuidFromPG(row.ContractorOrganizationID),
+		ContractorOrganizationName: row.ContractorOrganizationName,
+		ContractNumber:             derefString(row.ContractNumber),
+		ContractStatus:             derefString(row.ContractStatus),
+		StartDate:                  row.StartDate.Time,
+		EndDate:                    row.EndDate.Time,
+		WorkType:                   derefString(row.WorkType),
+		EquipmentType:              derefString(row.EquipmentType),
+		Region:                     derefString(row.Region),
+		SubdivisionID:              optionalUUID(row.SubdivisionID),
+		SubdivisionName:            row.SubdivisionName,
+		UnitID:                     optionalUUID(row.UnitID),
+		UnitName:                   row.UnitName,
+		LocationScopeLabel:         row.LocationScopeLabel,
+		Source:                     row.Source,
+		SubjectOfAgreement:         row.SubjectOfAgreement,
+		CreatedAt:                  row.CreatedAt.Time,
+		UpdatedAt:                  row.UpdatedAt.Time,
+	}
+}
 
-    total, _ := r.q.CountAgreements(ctx)
+func mapGetAgreementRow(row *generated.GetAgreementByIDRow) *Agreement {
+	return &Agreement{
+		ID:                         uuidFromPG(row.ID),
+		CustomerOrganizationID:     uuidFromPG(row.CustomerOrganizationID),
+		CustomerOrganizationName:   row.CustomerOrganizationName,
+		ContractorOrganizationID:   uuidFromPG(row.ContractorOrganizationID),
+		ContractorOrganizationName: row.ContractorOrganizationName,
+		ContractNumber:             derefString(row.ContractNumber),
+		ContractStatus:             derefString(row.ContractStatus),
+		StartDate:                  row.StartDate.Time,
+		EndDate:                    row.EndDate.Time,
+		WorkType:                   derefString(row.WorkType),
+		EquipmentType:              derefString(row.EquipmentType),
+		Region:                     derefString(row.Region),
+		SubdivisionID:              optionalUUID(row.SubdivisionID),
+		SubdivisionName:            row.SubdivisionName,
+		UnitID:                     optionalUUID(row.UnitID),
+		UnitName:                   row.UnitName,
+		LocationScopeLabel:         row.LocationScopeLabel,
+		Source:                     row.Source,
+		SubjectOfAgreement:         row.SubjectOfAgreement,
+		CreatedAt:                  row.CreatedAt.Time,
+		UpdatedAt:                  row.UpdatedAt.Time,
+	}
+}
 
-    result := make([]Agreement, len(rows))
-    for i := range rows {
-        result[i] = *mapRow((*generated.CreateAgreementRow)(&rows[i]))
-    }
-    return result, total, nil
+func mapCustomerAgreementRow(row *generated.ListAgreementsByCustomerOrganizationRow) *Agreement {
+	return &Agreement{
+		ID:                         uuidFromPG(row.ID),
+		CustomerOrganizationID:     uuidFromPG(row.CustomerOrganizationID),
+		CustomerOrganizationName:   row.CustomerOrganizationName,
+		ContractorOrganizationID:   uuidFromPG(row.ContractorOrganizationID),
+		ContractorOrganizationName: row.ContractorOrganizationName,
+		ContractNumber:             derefString(row.ContractNumber),
+		ContractStatus:             derefString(row.ContractStatus),
+		StartDate:                  row.StartDate.Time,
+		EndDate:                    row.EndDate.Time,
+		WorkType:                   derefString(row.WorkType),
+		EquipmentType:              derefString(row.EquipmentType),
+		Region:                     derefString(row.Region),
+		SubdivisionID:              optionalUUID(row.SubdivisionID),
+		SubdivisionName:            row.SubdivisionName,
+		UnitID:                     optionalUUID(row.UnitID),
+		UnitName:                   row.UnitName,
+		LocationScopeLabel:         row.LocationScopeLabel,
+		Source:                     row.Source,
+		SubjectOfAgreement:         row.SubjectOfAgreement,
+		CreatedAt:                  row.CreatedAt.Time,
+		UpdatedAt:                  row.UpdatedAt.Time,
+	}
+}
+
+func mapContractorAgreementRow(row *generated.ListAgreementsByContractorOrganizationRow) *Agreement {
+	return &Agreement{
+		ID:                         uuidFromPG(row.ID),
+		CustomerOrganizationID:     uuidFromPG(row.CustomerOrganizationID),
+		CustomerOrganizationName:   row.CustomerOrganizationName,
+		ContractorOrganizationID:   uuidFromPG(row.ContractorOrganizationID),
+		ContractorOrganizationName: row.ContractorOrganizationName,
+		ContractNumber:             derefString(row.ContractNumber),
+		ContractStatus:             derefString(row.ContractStatus),
+		StartDate:                  row.StartDate.Time,
+		EndDate:                    row.EndDate.Time,
+		WorkType:                   derefString(row.WorkType),
+		EquipmentType:              derefString(row.EquipmentType),
+		Region:                     derefString(row.Region),
+		SubdivisionID:              optionalUUID(row.SubdivisionID),
+		SubdivisionName:            row.SubdivisionName,
+		UnitID:                     optionalUUID(row.UnitID),
+		UnitName:                   row.UnitName,
+		LocationScopeLabel:         row.LocationScopeLabel,
+		Source:                     row.Source,
+		SubjectOfAgreement:         row.SubjectOfAgreement,
+		CreatedAt:                  row.CreatedAt.Time,
+		UpdatedAt:                  row.UpdatedAt.Time,
+	}
+}
+
+func toPGUUID(id uuid.UUID) pgtype.UUID {
+	return pgtype.UUID{Bytes: id, Valid: true}
+}
+
+func nullablePGUUID(id *uuid.UUID) pgtype.UUID {
+	if id == nil {
+		return pgtype.UUID{}
+	}
+	return toPGUUID(*id)
+}
+
+func optionalUUID(value pgtype.UUID) *uuid.UUID {
+	if !value.Valid {
+		return nil
+	}
+
+	id := uuidFromPG(value)
+	return &id
+}
+
+func toPGDate(value time.Time) pgtype.Date {
+	return pgtype.Date{Time: value, Valid: true}
+}
+
+func uuidFromPG(id pgtype.UUID) uuid.UUID {
+	return uuid.UUID(id.Bytes)
+}
+
+func cloneString(value *string) *string {
+	if value == nil {
+		return nil
+	}
+	cloned := *value
+	return &cloned
+}
+
+func stringPtr(value string) *string {
+	return cloneString(&value)
+}
+
+func derefString(value *string) string {
+	if value == nil {
+		return ""
+	}
+	return *value
 }
