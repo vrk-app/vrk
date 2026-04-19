@@ -1,0 +1,10 @@
+PASS
+index: apps/web/storybook-static/index.json
+layout-topbar--search-unavailable :: Layout/TopBar / Search Unavailable
+layout-topbar--actions-unavailable :: Layout/TopBar / Actions Unavailable
+auth-loginform--validation-error :: Auth/LoginForm / Validation Error
+auth-loginform--server-error :: Auth/LoginForm / Server Error
+foundations-icongallery--navigation-icons :: Foundations/IconGallery / Navigation Icons
+foundations-icongallery--action-icons :: Foundations/IconGallery / Action Icons
+foundations-icongallery--file-type-icons :: Foundations/IconGallery / File Type Icons
+foundations-icongallery--status-icons :: Foundations/IconGallery / Status Icons

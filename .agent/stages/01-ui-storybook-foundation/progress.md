@@ -41,9 +41,9 @@
   - showcase stories for `AuthPage` and `RequestsPage`.
 - Re-ran Stage 01 smoke commands and refreshed raw proof artifacts:
   - `web:typecheck`, `web:lint`, `web:build`, `storybook:build`, `web:smoke`;
-  - copied fresh `storybook-index.json`;
-  - recorded required slice-002 story IDs in `raw/storybook-slice2-story-refs.txt`.
-- Pulled the latest Vercel Web Interface Guidelines source, reviewed the changed UI files, and refreshed `raw/web-design-guidelines.txt` with a `PASS`.
+  - copied fresh `raw/archive/storybook-index.json`;
+  - recorded required slice-002 story IDs in `raw/archive/storybook-slice2-story-refs.txt`.
+- Pulled the latest Vercel Web Interface Guidelines source, reviewed the changed UI files, and refreshed `raw/archive/web-design-guidelines.txt` with a `PASS`.
 - Synced canonical docs so they describe the current Stage 01 baseline as shared primitives plus Wave 1 shell/auth/request-list/showcase slices.
 - Evidence pack for the remaining Stage 01 exit gate is ready for a fresh verifier pass.
 
@@ -66,11 +66,11 @@
   - Storybook typography now matches the Next shell baseline;
   - the landing-page CTA no longer links to a hardcoded local Storybook URL.
 - Captured a fresh post-review proof bundle:
-  - `raw/post-review-harness-check.txt`
-  - `raw/post-review-web-smoke.txt`
-  - `raw/post-review-story-refs.txt`
-  - `raw/post-review-web-interface-guidelines-source.md`
-  - `raw/post-review-web-design-guidelines.txt`
+  - `raw/archive/post-review-harness-check.txt`
+  - `raw/archive/post-review-web-smoke.txt`
+  - `raw/archive/post-review-story-refs.txt`
+  - `raw/archive/post-review-web-interface-guidelines-source.md`
+  - `raw/archive/post-review-web-design-guidelines.txt`
 - Fresh verifier returned `PASS` for the current `apps/web` tree, superseding the stale pre-review verdict.
 
 ### 2026-04-13T10:17:47Z
@@ -87,10 +87,10 @@
   - exact typography metrics in `TokenDocs`;
   - real `plain / bordered / elevated` proof for `Card`.
 - Refreshed the proof inputs for a new verifier pass:
-  - `raw/post-findings-harness-check.txt`
-  - `raw/post-findings-web-smoke.txt`
-  - `raw/post-findings-story-refs.txt`
-  - `raw/post-findings-web-interface-guidelines-source.md`
+  - `raw/archive/post-findings-harness-check.txt`
+  - `raw/archive/post-findings-web-smoke.txt`
+  - `raw/archive/post-findings-story-refs.txt`
+  - `raw/archive/post-findings-web-interface-guidelines-source.md`
 - No additional canonical docs changed in this pass because the fixes only realigned implementation and proof with the existing design-system, backlog, and frontend-architecture source of truth.
 - Evidence bundle is ready for a fresh verifier pass on the current tree.
 
@@ -98,7 +98,7 @@
 
 - Fresh verifier returned `FAIL`, but the blocker was limited to canonical doc/source-backlog drift rather than runtime/UI proof:
   - `docs/design/storybook-component-backlog.md` still described stale contracts for `AppShell`, `TopBar`, and `RequestListItem`;
-  - `raw/post-findings-web-design-guidelines.txt` already passed, so the changed UI slice itself remained review-clean.
+  - `raw/archive/post-findings-web-design-guidelines.txt` already passed, so the changed UI slice itself remained review-clean.
 - Closed the proof gap in the narrowest canonical source of truth:
   - updated `docs/design/storybook-component-backlog.md` for `AppShell`, `SidebarNav`, `TopBar`, and `RequestListItem`;
   - refreshed `evidence.md` / `evidence.json` so they no longer claim that the findings-fix cycle left canonical docs untouched.
@@ -108,12 +108,39 @@
 
 - A new fresh verifier pass returned `PASS` after the backlog sync.
 - Final proof for the current Stage 01 tree now rests on:
-  - `raw/post-findings-harness-check.txt`
-  - `raw/post-findings-web-smoke.txt`
-  - `raw/post-findings-story-refs.txt`
-  - `raw/post-findings-web-design-guidelines.txt`
+  - `raw/archive/post-findings-harness-check.txt`
+  - `raw/archive/post-findings-web-smoke.txt`
+  - `raw/archive/post-findings-story-refs.txt`
+  - `raw/archive/post-findings-web-design-guidelines.txt`
   - `docs/design/storybook-component-backlog.md`
 - Stage `01-ui-storybook-foundation` is again fully proven and ready for handoff to Stage 02.
+
+### 2026-04-18T18:07:59Z
+
+- Reopened the Stage 01 proof loop to replace stale current-tree claims with a fresh authoritative bundle for the live workspace.
+- Closed the remaining current-tree proof gaps without expanding Stage 01:
+  - refreshed the shared token bridge so the design-system aliases for hover, tertiary/disabled text, radius, and elevation are present in both `design-tokens.ts` and `globals.css`;
+  - `IconGallery` stories now prove distinct `NavigationIcons` / `ActionIcons` / `FileTypeIcons` / `StatusIcons` sections instead of aliasing the same mixed render;
+  - `TopBar` notification and user actions now render as unavailable when no runtime callbacks are wired;
+  - the disabled search path stays explicit and now marks the input `readOnly`;
+  - `Layout/TopBar` now proves `ActionsUnavailable`;
+  - `docs/design/storybook-component-backlog.md` now matches the current `TopBar`, `LoginForm`, and `IconGallery` contracts.
+- Recorded repo-local UI workflow evidence for this refresh:
+  - lookup query: `stage 01 auth form top bar icon gallery truthfulness login form backlog token bridge refresh`
+  - decision: `TopBar -> extend`, `LoginForm -> reuse`, `IconGallery -> reuse`
+- Refreshed the Stage 01 raw proof bundle under date-scoped artifacts:
+  - `raw/2026-04-18-storybook-lookup.txt`
+  - `raw/2026-04-18-web-lint.txt`
+  - `raw/2026-04-18-web-typecheck.txt`
+  - `raw/2026-04-18-web-build.txt`
+  - `raw/2026-04-18-storybook-build.txt`
+  - `raw/2026-04-18-story-refs.txt`
+  - `raw/2026-04-18-web-smoke.txt`
+  - `raw/2026-04-18-web-interface-guidelines-source.md`
+  - `raw/2026-04-18-web-design-guidelines.txt`
+  - `raw/2026-04-18-harness-check.txt`
+- Discarded the first bare-shell lint attempt from proof because it ran under Node `20.10.0` and failed the repo engine guard; the authoritative bundle was rerun under Node `24.14.1` via `nvm`.
+- Stage `01-ui-storybook-foundation` remains `PASS`, and the authoritative verdict for the current tree now points only at the fresh `2026-04-18` artifacts.
 
 ### Remaining
 

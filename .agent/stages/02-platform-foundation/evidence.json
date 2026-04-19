@@ -1,26 +1,24 @@
 {
   "stage_id": "02-platform-foundation",
   "sprint_contract_id": "slice-002-platform-baseline-health-ci-field",
+  "verified_head": "94e86aa7ae1cf7d495497611a76f8c0518e3b815",
   "commands": [
-    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 02-platform-foundation",
-    "python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query \"field engineer offline shell status cards sync queue scaffold mobile contour\" --limit 12",
-    "curl -fsSL https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md",
+    "git show -s --format='%H%n%cI%n%s' HEAD > .agent/stages/02-platform-foundation/raw/slice-002-head.txt",
+    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 02-platform-foundation > .agent/stages/02-platform-foundation/raw/slice-002-harness-check.txt 2>&1",
+    "python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query \"field engineer offline shell status cards sync queue scaffold mobile contour\" --limit 12 > .agent/stages/02-platform-foundation/raw/slice-002-storybook-lookup.txt 2>&1",
+    "curl -fsSL https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md > .agent/stages/02-platform-foundation/raw/slice-002-web-interface-guidelines-source.md",
     "pnpm run web:browser-install",
-    "pnpm run web:smoke",
-    "pnpm run web:browser-smoke",
-    "pnpm run field:smoke",
-    "./scripts/backend_go_test.sh",
-    "./scripts/backend_go_build.sh",
-    "make dev",
-    "make smoke",
+    "pnpm run web:smoke > .agent/stages/02-platform-foundation/raw/slice-002-web-smoke.txt 2>&1",
+    "pnpm run web:browser-smoke > .agent/stages/02-platform-foundation/raw/slice-002-web-browser-smoke.txt 2>&1",
+    "pnpm run field:smoke > .agent/stages/02-platform-foundation/raw/slice-002-field-smoke.txt 2>&1",
+    "./scripts/backend_go_test.sh > .agent/stages/02-platform-foundation/raw/slice-002-backend-go-test.txt 2>&1",
+    "./scripts/backend_go_build.sh > .agent/stages/02-platform-foundation/raw/slice-002-backend-go-build.txt 2>&1",
     "make down > .agent/stages/02-platform-foundation/raw/slice-002-startup-reset.txt 2>&1",
     "make dev > .agent/stages/02-platform-foundation/raw/slice-002-startup-make-dev.txt 2>&1",
     "make smoke > .agent/stages/02-platform-foundation/raw/slice-002-platform-smoke.txt 2>&1",
-    "pnpm run web:smoke > .agent/stages/02-platform-foundation/raw/slice-002-web-smoke.txt 2>&1",
-    "pnpm run web:browser-smoke > .agent/stages/02-platform-foundation/raw/slice-002-web-browser-smoke.txt 2>&1",
     "docker compose -f compose.platform.yml ps > .agent/stages/02-platform-foundation/raw/slice-002-compose-ps.txt",
-    "docker compose -f compose.platform.yml ps",
-    "docker compose -f compose.platform.yml logs --tail=200 backend web field"
+    "docker compose -f compose.platform.yml logs --tail=200 backend web field > .agent/stages/02-platform-foundation/raw/slice-002-platform-logs.txt 2>&1",
+    "curl snapshots for healthz, readyz, organizations, equipment, web route walk/H1s, field H1, and field manifest"
   ],
   "tests": [
     {
@@ -60,12 +58,14 @@
     },
     {
       "name": "ui-review",
-      "status": "pass",
-      "artifact": ".agent/stages/02-platform-foundation/raw/slice-002-ui-review.txt"
+      "status": "reused",
+      "artifact": ".agent/stages/02-platform-foundation/raw/slice-002-ui-review.txt",
+      "note": "HEAD^..HEAD changed only apps/web/public/.gitkeep; the apps/field review target stayed unchanged."
     }
   ],
   "artifacts": [
     ".agent/stages/02-platform-foundation/raw/slice-002-harness-check.txt",
+    ".agent/stages/02-platform-foundation/raw/slice-002-head.txt",
     ".agent/stages/02-platform-foundation/raw/slice-002-storybook-lookup.txt",
     ".agent/stages/02-platform-foundation/raw/slice-002-web-interface-guidelines-source.md",
     ".agent/stages/02-platform-foundation/raw/slice-002-ui-review.txt",
@@ -93,6 +93,11 @@
     ".agent/stages/02-platform-foundation/raw/slice-002-field-h1.txt",
     ".agent/stages/02-platform-foundation/raw/slice-002-field-manifest.json"
   ],
+  "ci_status": {
+    "status": "workflow-wired-no-run-proof",
+    "workflow": ".github/workflows/platform-baseline.yml",
+    "note": "The current PASS bundle proves local reproduction only. No GitHub Actions run artifact is attached."
+  },
   "docs_updated": [
     "docs/roadmap.md",
     "CONTRIBUTING.md",
@@ -107,5 +112,5 @@
     ".agent/stages/03-identity-master-data/sprint_contract.md",
     ".agent/stages/03-identity-master-data/progress.md"
   ],
-  "updated_at": "2026-04-18T09:33:06Z"
+  "updated_at": "2026-04-18T18:07:50Z"
 }

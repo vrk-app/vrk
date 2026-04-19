@@ -1,18 +1,26 @@
 {
   "status": "PASS",
-  "summary": "slice-002-platform-baseline-health-ci-field closes the remaining Stage 02 platform tail: root startup and smoke are reproducible through the compose-backed contract, backend health/readiness and structured logs are present, apps/field exists as a truthful manifest-backed scaffold, web auth/register shells now transition into `/company`, the client-side submit path is proven through Playwright browser smoke inside `pnpm run web:smoke`, runtime env boundaries stay truthful inside the live stack, CI reproduces frontend/backend/stack checks, and downstream Stage 03 handoff no longer depends on an open Stage 02 blocker.",
+  "summary": "Stage 02 remains PASS on `94e86aa7ae1cf7d495497611a76f8c0518e3b815`: the compose-backed local startup/smoke contract, backend health/readiness and structured logs, seeded API reads, apps/field manifest-backed scaffold, web auth/register shell submit path into `/company`, and truthful runtime env boundaries were all re-confirmed on the current HEAD. CI wording is intentionally narrower: `.github/workflows/platform-baseline.yml` exists and is wired to the same frontend/backend/stack commands, but this bundle does not attach GitHub Actions run evidence.",
   "failed_criteria": [],
   "proof_gaps": [],
   "exact_reproduction": [
     "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 02-platform-foundation",
     "python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query 'field engineer offline shell status cards sync queue scaffold mobile contour' --limit 12",
     "export NVM_DIR=\"$HOME/.nvm\"; . \"$NVM_DIR/nvm.sh\"; nvm use 24.14.1 >/dev/null; pnpm run web:smoke",
+    "export NVM_DIR=\"$HOME/.nvm\"; . \"$NVM_DIR/nvm.sh\"; nvm use 24.14.1 >/dev/null; pnpm run web:browser-smoke",
     "export NVM_DIR=\"$HOME/.nvm\"; . \"$NVM_DIR/nvm.sh\"; nvm use 24.14.1 >/dev/null; pnpm run field:smoke",
     "./scripts/backend_go_test.sh",
     "./scripts/backend_go_build.sh",
+    "make down",
     "make dev",
     "make smoke"
   ],
+  "verified_head": "94e86aa7ae1cf7d495497611a76f8c0518e3b815",
+  "ci_status": {
+    "status": "workflow-wired-no-run-proof",
+    "workflow": ".github/workflows/platform-baseline.yml",
+    "note": "No GitHub Actions run artifact is attached in the Stage 02 raw bundle."
+  },
   "smallest_safe_fix_direction": "",
-  "last_verified_at": "2026-04-18T09:33:06Z"
+  "last_verified_at": "2026-04-18T18:07:50Z"
 }

@@ -2,29 +2,27 @@
 
 - Stage ID: 02-platform-foundation
 - Sprint Contract: `slice-002-platform-baseline-health-ci-field`
+- Verified HEAD: `94e86aa7ae1cf7d495497611a76f8c0518e3b815` (`fix(ui): track Storybook public dir`)
 
 ## Commands run
 
-- `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 02-platform-foundation`
-- `python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query "field engineer offline shell status cards sync queue scaffold mobile contour" --limit 12`
-- `curl -fsSL https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md`
+- `git show -s --format='%H%n%cI%n%s' HEAD > .agent/stages/02-platform-foundation/raw/slice-002-head.txt`
+- `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 02-platform-foundation > .agent/stages/02-platform-foundation/raw/slice-002-harness-check.txt 2>&1`
+- `python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query "field engineer offline shell status cards sync queue scaffold mobile contour" --limit 12 > .agent/stages/02-platform-foundation/raw/slice-002-storybook-lookup.txt 2>&1`
+- `curl -fsSL https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md > .agent/stages/02-platform-foundation/raw/slice-002-web-interface-guidelines-source.md`
 - `export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.14.1 >/dev/null; pnpm run web:browser-install`
-- `export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.14.1 >/dev/null; pnpm run web:smoke`
-- `export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.14.1 >/dev/null; pnpm run web:browser-smoke`
-- `export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.14.1 >/dev/null; pnpm run field:smoke`
-- `./scripts/backend_go_test.sh`
-- `./scripts/backend_go_build.sh`
-- `make dev`
-- `make smoke`
-- `make down > .agent/stages/02-platform-foundation/raw/slice-002-startup-reset.txt 2>&1`
-- `make dev > .agent/stages/02-platform-foundation/raw/slice-002-startup-make-dev.txt 2>&1`
-- `make smoke > .agent/stages/02-platform-foundation/raw/slice-002-platform-smoke.txt 2>&1`
-- `docker compose -f compose.platform.yml ps > .agent/stages/02-platform-foundation/raw/slice-002-compose-ps.txt`
-- `docker compose -f compose.platform.yml ps`
-- `docker compose -f compose.platform.yml logs --tail=200 backend web field`
-- `curl` for `healthz`, `readyz`, seeded organizations/equipment reads, web route walk, and field manifest
-- `pnpm run web:smoke > .agent/stages/02-platform-foundation/raw/slice-002-web-smoke.txt 2>&1`
-- `pnpm run web:browser-smoke > .agent/stages/02-platform-foundation/raw/slice-002-web-browser-smoke.txt 2>&1`
+- `export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.14.1 >/dev/null; pnpm run web:smoke > .agent/stages/02-platform-foundation/raw/slice-002-web-smoke.txt 2>&1`
+- `export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.14.1 >/dev/null; pnpm run web:browser-smoke > .agent/stages/02-platform-foundation/raw/slice-002-web-browser-smoke.txt 2>&1`
+- `export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"; nvm use 24.14.1 >/dev/null; pnpm run field:smoke > .agent/stages/02-platform-foundation/raw/slice-002-field-smoke.txt 2>&1`
+- `./scripts/backend_go_test.sh > .agent/stages/02-platform-foundation/raw/slice-002-backend-go-test.txt 2>&1`
+- `./scripts/backend_go_build.sh > .agent/stages/02-platform-foundation/raw/slice-002-backend-go-build.txt 2>&1`
+- fresh stack proof script:
+  - `make down > .agent/stages/02-platform-foundation/raw/slice-002-startup-reset.txt 2>&1`
+  - `make dev > .agent/stages/02-platform-foundation/raw/slice-002-startup-make-dev.txt 2>&1`
+  - `make smoke > .agent/stages/02-platform-foundation/raw/slice-002-platform-smoke.txt 2>&1`
+  - `docker compose -f compose.platform.yml ps > .agent/stages/02-platform-foundation/raw/slice-002-compose-ps.txt`
+  - `docker compose -f compose.platform.yml logs --tail=200 backend web field > .agent/stages/02-platform-foundation/raw/slice-002-platform-logs.txt 2>&1`
+  - `curl` snapshots for `healthz`, `readyz`, seeded organizations/equipment reads, web route walk/H1s, field H1, and field manifest
 
 ## Tests run
 
@@ -33,10 +31,9 @@
 - `pnpm run field:smoke`: PASS
 - `./scripts/backend_go_test.sh`: PASS
 - `./scripts/backend_go_build.sh`: PASS
-- `make dev`: PASS
-- `make smoke`: PASS
 - `make dev` from a fresh `make down`, with compose `--wait`: PASS
 - immediate `make smoke` from that fresh startup: PASS
+- UI review artifact: reused intentionally, because `git diff --name-only HEAD^..HEAD` shows only `apps/web/public/.gitkeep` and leaves the `apps/field` review target unchanged
 
 ## Platform/runtime flows exercised
 
@@ -50,6 +47,7 @@
 ## Artifacts collected
 
 - `raw/slice-002-harness-check.txt`
+- `raw/slice-002-head.txt`
 - `raw/slice-002-storybook-lookup.txt`
 - `raw/slice-002-web-interface-guidelines-source.md`
 - `raw/slice-002-ui-review.txt`
@@ -97,7 +95,7 @@
   - `apps/field/app/globals.css`
   - `apps/field/app/manifest.ts`
   - `apps/field/shared/config/env.ts`
-- `$web-design-guidelines` result: no findings recorded in `raw/slice-002-ui-review.txt`
+- `$web-design-guidelines` result: no findings remain recorded in `raw/slice-002-ui-review.txt`; the artifact was re-authorized on the current HEAD because the review target did not change
 
 ## Canonical docs synced
 
@@ -131,7 +129,10 @@
   - roadmap/runtime docs now describe truthful auth/session boundaries rather than live bootstrap.
 - Browser proof is now explicit rather than inferred from route HTML:
   - `apps/web` carries Playwright browser smoke for `/login` and `/register` submit flows into `/company`;
-  - root `pnpm run web:smoke` and the `frontend-workspaces` CI job both execute that flow.
+  - root `pnpm run web:smoke` executes that flow locally, and `.github/workflows/platform-baseline.yml` is wired to run the same command in `frontend-workspaces`.
+- Current PASS bundle is intentionally narrower about CI:
+  - local reproduction is proven by refreshed raw artifacts on `94e86aa7ae1cf7d495497611a76f8c0518e3b815`;
+  - no GitHub Actions run artifact is attached here, so CI is claimed only as workflow wiring.
 - Final routing ownership stays in `apps/web/app/login/page.tsx` and `apps/web/app/register/page.tsx`, so Storybook-backed auth form primitives remain reusable and do not need route-specific client logic.
 - `apps/web` auth/session remains shell-only until Stage 03.
 - `apps/field` remains a truthful PWA-first scaffold; offline draft storage, retry queue state, and conflict handling stay out of Stage 02.

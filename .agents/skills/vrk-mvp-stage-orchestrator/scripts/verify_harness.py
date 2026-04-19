@@ -8,7 +8,7 @@ import json
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Iterable
 
 
 REQUIRED_STAGE_FILES = (
@@ -36,6 +36,14 @@ REQUIRED_UI_LOOKUP_FILES = (
     "docs/design/storybook-component-backlog.md",
     ".agents/skills/vrk-web-ui-workflow/SKILL.md",
     ".agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py",
+)
+
+VALID_VERDICT_STATUSES = {"PENDING", "FAIL", "PASS"}
+
+PLACEHOLDER_MARKERS = (
+    ("{{", "template placeholder"),
+    ("TBD", "unfinished placeholder"),
+    ("Replace this placeholder", "template placeholder"),
 )
 
 
@@ -94,6 +102,172 @@ def collect_stage_artifacts(stage_dir: Path) -> dict[str, object]:
             if (stage_dir / entry).exists()
         ),
     }
+
+
+def read_json(path: Path) -> tuple[Any | None, str | None]:
+    try:
+        return json.loads(path.read_text(encoding="utf-8")), None
+    except FileNotFoundError:
+        return None, f"Missing {path.name}."
+    except json.JSONDecodeError as exc:
+        return None, f"{path.name} is not valid JSON: {exc.msg}."
+
+
+def is_iso_timestamp(value: Any) -> bool:
+    if not isinstance(value, str) or not value.strip():
+        return False
+    candidate = value.replace("Z", "+00:00")
+    try:
+        datetime.fromisoformat(candidate)
+    except ValueError:
+        return False
+    return True
+
+
+def find_placeholder_markers(path: Path) -> list[str]:
+    text = path.read_text(encoding="utf-8")
+    found: list[str] = []
+    for marker, label in PLACEHOLDER_MARKERS:
+        if marker in text:
+            found.append(f"{path.name}: {label} `{marker}`")
+    return found
+
+
+def validate_stage_freeze(stage_dir: Path) -> list[str]:
+    issues: list[str] = []
+    for name in ("stage_spec.md", "sprint_contract.md"):
+        path = stage_dir / name
+        if path.exists():
+            issues.extend(find_placeholder_markers(path))
+    return issues
+
+
+def validate_feature_list(stage_dir: Path, repo_root: Path) -> list[str]:
+    path = stage_dir / "feature_list.json"
+    payload, error = read_json(path)
+    if error:
+        return [error]
+    if not isinstance(payload, list) or not payload:
+        return ["feature_list.json must contain a non-empty JSON array."]
+
+    issues: list[str] = []
+    for index, item in enumerate(payload, start=1):
+        prefix = f"feature_list.json[{index}]"
+        if not isinstance(item, dict):
+            issues.append(f"{prefix} must be an object.")
+            continue
+
+        feature_id = item.get("id")
+        category = item.get("category")
+        description = item.get("description")
+        steps = item.get("steps")
+        passes = item.get("passes")
+        evidence_refs = item.get("evidence_refs")
+
+        if not isinstance(feature_id, str) or not feature_id.strip():
+            issues.append(f"{prefix}.id must be a non-empty string.")
+        elif feature_id == "seed-me":
+            issues.append(f"{prefix}.id still uses the template placeholder `seed-me`.")
+
+        if not isinstance(category, str) or not category.strip():
+            issues.append(f"{prefix}.category must be a non-empty string.")
+
+        if not isinstance(description, str) or not description.strip():
+            issues.append(f"{prefix}.description must be a non-empty string.")
+        elif "Replace this placeholder" in description:
+            issues.append(f"{prefix}.description still contains template text.")
+
+        if not isinstance(steps, list) or not steps:
+            issues.append(f"{prefix}.steps must be a non-empty list of strings.")
+        elif not all(isinstance(step, str) and step.strip() for step in steps):
+            issues.append(f"{prefix}.steps must contain only non-empty strings.")
+
+        if not isinstance(passes, bool):
+            issues.append(f"{prefix}.passes must be a boolean.")
+
+        if not isinstance(evidence_refs, list):
+            issues.append(f"{prefix}.evidence_refs must be a list of repo-relative paths.")
+            continue
+        if not all(isinstance(ref, str) and ref.strip() for ref in evidence_refs):
+            issues.append(f"{prefix}.evidence_refs must contain only non-empty strings.")
+            continue
+        if passes and not evidence_refs:
+            issues.append(f"{prefix} is marked passed but has no evidence_refs.")
+        for ref in evidence_refs:
+            if not (repo_root / ref).exists():
+                issues.append(f"{prefix}.evidence_refs points to a missing path: {ref}")
+
+    return issues
+
+
+def validate_evidence_bundle(stage_dir: Path, repo_root: Path, stage_id: str) -> list[str]:
+    evidence_path = stage_dir / "evidence.json"
+    verdict_path = stage_dir / "verdict.json"
+
+    evidence, evidence_error = read_json(evidence_path)
+    verdict, verdict_error = read_json(verdict_path)
+
+    issues: list[str] = []
+    if evidence_error:
+        issues.append(evidence_error)
+        return issues
+    if verdict_error:
+        issues.append(verdict_error)
+        return issues
+    if not isinstance(evidence, dict):
+        return ["evidence.json must contain a JSON object."]
+    if not isinstance(verdict, dict):
+        return ["verdict.json must contain a JSON object."]
+
+    if evidence.get("stage_id") != stage_id:
+        issues.append(
+            f"evidence.json stage_id must match `{stage_id}`, found `{evidence.get('stage_id')}`."
+        )
+
+    artifacts = evidence.get("artifacts")
+    commands = evidence.get("commands")
+    tests = evidence.get("tests")
+    if not isinstance(commands, list):
+        issues.append("evidence.json.commands must be a list.")
+    if not isinstance(tests, list):
+        issues.append("evidence.json.tests must be a list.")
+    if not isinstance(artifacts, list) or not all(
+        isinstance(artifact, str) and artifact.strip() for artifact in artifacts
+    ):
+        issues.append("evidence.json.artifacts must be a list of repo-relative paths.")
+        artifacts = []
+
+    for artifact in artifacts:
+        if not (repo_root / artifact).exists():
+            issues.append(f"evidence.json.artifacts points to a missing path: {artifact}")
+
+    status = verdict.get("status")
+    if status not in VALID_VERDICT_STATUSES:
+        issues.append(
+            f"verdict.json.status must be one of {sorted(VALID_VERDICT_STATUSES)}, found `{status}`."
+        )
+        return issues
+
+    if status == "PASS":
+        summary = verdict.get("summary")
+        if not isinstance(summary, str) or not summary.strip():
+            issues.append("verdict.json summary must be non-empty when status is PASS.")
+        if not is_iso_timestamp(verdict.get("last_verified_at")):
+            issues.append("verdict.json last_verified_at must be an ISO timestamp when status is PASS.")
+        if not is_iso_timestamp(evidence.get("updated_at")):
+            issues.append("evidence.json updated_at must be an ISO timestamp when verdict status is PASS.")
+        if not artifacts:
+            issues.append("evidence.json must list artifacts when verdict status is PASS.")
+        if not commands:
+            issues.append("evidence.json must list commands when verdict status is PASS.")
+        if not tests:
+            issues.append("evidence.json must list tests when verdict status is PASS.")
+        if verdict.get("failed_criteria"):
+            issues.append("verdict.json failed_criteria must be empty when status is PASS.")
+        if verdict.get("proof_gaps"):
+            issues.append("verdict.json proof_gaps must be empty when status is PASS.")
+
+    return issues
 
 
 def main() -> None:
@@ -219,6 +393,43 @@ def main() -> None:
             else f"Stage artifacts are incomplete for {args.stage_id}: {stage_artifacts['missing']}",
         )
     )
+
+    if stage_artifacts["exists"] and not stage_artifacts["missing"]:
+        stage_freeze_issues = validate_stage_freeze(stage_dir)
+        checks.append(
+            CheckResult(
+                id="stage-freeze",
+                status="PASS" if not stage_freeze_issues else "FAIL",
+                detail=f"Stage spec and sprint contract are frozen for {args.stage_id}."
+                if not stage_freeze_issues
+                else "Stage freeze artifacts still contain placeholders: "
+                + "; ".join(stage_freeze_issues),
+            )
+        )
+
+        feature_list_issues = validate_feature_list(stage_dir, repo_root)
+        checks.append(
+            CheckResult(
+                id="feature-list-quality",
+                status="PASS" if not feature_list_issues else "FAIL",
+                detail=f"feature_list.json is actionable for {args.stage_id}."
+                if not feature_list_issues
+                else "feature_list.json has semantic gaps: "
+                + "; ".join(feature_list_issues),
+            )
+        )
+
+        proof_bundle_issues = validate_evidence_bundle(stage_dir, repo_root, args.stage_id)
+        checks.append(
+            CheckResult(
+                id="proof-bundle-consistency",
+                status="PASS" if not proof_bundle_issues else "FAIL",
+                detail=f"evidence.json and verdict.json are internally consistent for {args.stage_id}."
+                if not proof_bundle_issues
+                else "Proof bundle has semantic gaps: "
+                + "; ".join(proof_bundle_issues),
+            )
+        )
 
     overall_status = "PASS" if all(check.status == "PASS" for check in checks) else "FAIL"
 

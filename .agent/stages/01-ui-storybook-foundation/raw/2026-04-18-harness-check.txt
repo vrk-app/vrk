@@ -1,8 +1,8 @@
 {
   "status": "PASS",
-  "checked_at": "2026-04-18T18:09:04.922117+00:00",
+  "checked_at": "2026-04-18T18:10:39.772143+00:00",
   "repo_root": "/Users/yura-posledov/cursor/vrk",
-  "stage_id": "02-platform-foundation",
+  "stage_id": "01-ui-storybook-foundation",
   "checks": [
     {
       "id": "agents-managed-block",
@@ -42,7 +42,7 @@
     {
       "id": "stage-artifacts",
       "status": "PASS",
-      "detail": "Stage artifacts are complete for 02-platform-foundation."
+      "detail": "Stage artifacts are complete for 01-ui-storybook-foundation."
     }
   ],
   "stage_directories": {
@@ -70,7 +70,7 @@
     ]
   },
   "stage_artifacts": {
-    "path": "/Users/yura-posledov/cursor/vrk/.agent/stages/02-platform-foundation",
+    "path": "/Users/yura-posledov/cursor/vrk/.agent/stages/01-ui-storybook-foundation",
     "exists": true,
     "missing": [],
     "present": [

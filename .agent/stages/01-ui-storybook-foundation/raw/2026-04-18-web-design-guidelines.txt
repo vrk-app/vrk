@@ -1,0 +1,16 @@
+Review target:
+- apps/web/app/globals.css
+- apps/web/shared/config/design-tokens.ts
+- apps/web/stories/foundations/IconGallery.stories.tsx
+- apps/web/stories/layout/TopBar.stories.tsx
+- apps/web/widgets/OperatorShell/ui/TopBar.tsx
+
+Guideline source: raw/2026-04-18-web-interface-guidelines-source.md
+
+Result: PASS
+
+Notes:
+- `TopBar` now renders search, notifications, and user-menu controls truthfully when optional callbacks are omitted: the unavailable path is explicit instead of leaving false-interactive affordances behind.
+- The shared token bridge stays semantic and design-system aligned: `globals.css` and `design-tokens.ts` expose the missing hover, tertiary/disabled text, radius, and elevation aliases without falling back to raw hex usage in component code.
+- `IconGallery` now proves the backlog contract through distinct section stories (`NavigationIcons`, `ActionIcons`, `FileTypeIcons`, `StatusIcons`) instead of four aliases over the same mixed render.
+- No new accessibility, hierarchy, or state-signaling findings remain in the reviewed Stage 01 slice.

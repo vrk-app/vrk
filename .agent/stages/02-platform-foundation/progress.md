@@ -122,7 +122,7 @@
 
 - Re-opened Stage 02 proof after external review flagged one remaining gap: no automated browser smoke proved the client-side submit path from `/login` and `/register` into `/company`.
 - Added Playwright-based browser smoke to `apps/web` and moved it into the authoritative root `pnpm run web:smoke` path instead of leaving the flow implied by static route HTML.
-- Wired `frontend-workspaces` CI to install Playwright Chromium before running `pnpm run web:smoke`, so the browser proof is reproduced in GitHub Actions on the same branch.
+- Wired `frontend-workspaces` CI to install Playwright Chromium before running `pnpm run web:smoke`, so the workflow is configured to run the same browser proof remotely when a GitHub Actions run is present.
 - Synced canonical runtime docs for the changed verification contract:
   - `README.md`
   - `docs/onboarding.md`
@@ -130,6 +130,24 @@
 - Refreshed Stage 02 raw proof for both the aggregate frontend smoke bundle and the dedicated auth browser flow:
   - `raw/slice-002-web-smoke.txt`
   - `raw/slice-002-web-browser-smoke.txt`
+
+### 2026-04-18T18:07:50Z
+
+- Reconfirmed the authoritative Stage 02 PASS bundle on current `HEAD` `94e86aa7ae1cf7d495497611a76f8c0518e3b815` (`fix(ui): track Storybook public dir`).
+- Refreshed local raw proof on the current `HEAD` for:
+  - harness check and Storybook lookup;
+  - frontend smoke and dedicated auth browser smoke;
+  - field smoke;
+  - container-backed backend test/build;
+  - fresh `make down` -> `make dev` -> `make smoke`;
+  - compose status/logs, backend health/readiness, seeded API reads, web route walk/H1s, and field H1/manifest;
+  - explicit `raw/slice-002-head.txt` so the bundle names the verified commit directly.
+- Checked `git diff --name-only HEAD^..HEAD` and found only `apps/web/public/.gitkeep`; the `apps/field` review target stayed unchanged, so `raw/slice-002-ui-review.txt` remains authoritative without inventing a fresh UI-review run.
+- Narrowed the remaining CI wording across the Stage 02 bundle and owned docs:
+  - the repo has a wired workflow at `.github/workflows/platform-baseline.yml`;
+  - this PASS bundle proves local reproduction only;
+  - no GitHub Actions run artifact is attached, so remote CI reproduction is no longer claimed.
+- Stage 02 acceptance remains `PASS` on the current `HEAD` after the wording fix because the proven local platform floor did not regress.
 
 ### Remaining
 
