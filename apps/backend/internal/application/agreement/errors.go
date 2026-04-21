@@ -7,6 +7,7 @@ var (
 	ErrForbidden                      = errors.New("forbidden")
 	ErrInvalidID                      = errors.New("invalid agreement ID")
 	ErrNotFound                       = errors.New("agreement not found")
+	ErrConflict                       = errors.New("agreement was changed by another request, retry the update")
 	ErrCreateFailed                   = errors.New("failed to create agreement")
 	ErrUpdateFailed                   = errors.New("failed to update agreement")
 	ErrListFailed                     = errors.New("failed to list agreements")

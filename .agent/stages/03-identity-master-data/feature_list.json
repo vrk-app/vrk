@@ -15,7 +15,10 @@
       "docs/architecture/identity-master-data.md",
       ".agent/stages/03-identity-master-data/evidence.md",
       ".agent/stages/03-identity-master-data/verdict.json",
-      ".agent/stages/03-identity-master-data/raw/slice-001-web-browser-smoke-2026-04-18.txt"
+      ".agent/stages/03-identity-master-data/raw/slice-001-web-browser-smoke-2026-04-18.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-007-008-direct-summary-2026-04-21.json",
+      ".agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-summary-2026-04-21.json",
+      ".agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-evidence-audit-2026-04-21.txt"
     ]
   },
   {
@@ -54,7 +57,10 @@
       ".agent/stages/03-identity-master-data/evidence.md",
       ".agent/stages/03-identity-master-data/verdict.json",
       ".agent/stages/03-identity-master-data/raw/slice-002-web-browser-smoke-2026-04-19.txt",
-      ".agent/stages/03-identity-master-data/raw/slice-002-direct-scope-proof-summary-2026-04-19.json"
+      ".agent/stages/03-identity-master-data/raw/slice-002-direct-scope-proof-summary-2026-04-19.json",
+      ".agent/stages/03-identity-master-data/raw/slice-007-008-direct-summary-2026-04-21.json",
+      ".agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-summary-2026-04-21.json",
+      ".agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-evidence-audit-2026-04-21.txt"
     ]
   },
   {

@@ -1,0 +1,36 @@
+final final fresh verifier evidence audit: slice-007 + slice-008
+
+repo state:
+- verified head: 86deb3285b46c6dcd9018a3f2564e78dd4f83a33
+- worktree remains dirty; this verdict is scoped strictly to slice-007 + slice-008 on the current repo state
+
+reproduced proof:
+- harness: PASS in raw/slice-007-008-final-final-verifier-harness-2026-04-21.txt
+- backend go test: PASS in raw/slice-007-008-final-final-verifier-backend-go-test-2026-04-21.txt
+- backend go build: PASS in raw/slice-007-008-final-final-verifier-backend-go-build-2026-04-21.txt
+- web typecheck: PASS in raw/slice-007-008-final-final-verifier-web-typecheck-2026-04-21.txt
+- web lint: PASS in raw/slice-007-008-final-final-verifier-web-lint-2026-04-21.txt
+- web build: PASS in raw/slice-007-008-final-final-verifier-web-build-2026-04-21.txt
+- independent live proof: PASS in raw/slice-007-008-final-final-verifier-live-proof-2026-04-21.txt and raw/slice-007-008-final-final-verifier-live-summary-2026-04-21.json
+
+live proof confirms:
+- GET /register -> 200 without leaking PLATFORM_ADMIN_SHARED_SECRET
+- web POST /api/platform/organization-shells -> 201
+- anonymous backend POST /api/v1/platform/organization-shells -> 401
+- anonymous backend GET /api/v1/organizations -> 401
+- authorized backend GET /api/v1/organizations -> 200
+- session restore returns the original explicit membership_id + grant_id
+- multi-access direct login returns truthful 409 instead of issuing a widened session
+
+canonical bundle truthfulness checks:
+- proof_slice007_008_auth_contract.py now includes the anonymous backend POST /api/v1/platform/organization-shells -> 401 check
+- raw/slice-007-008-direct-summary-2026-04-21.json truthfully encodes the primary proof summary fields claimed in evidence.md/evidence.json
+- docs grep on the changed slice shows PLATFORM_ADMIN_SHARED_SECRET, X-VRK-Platform-Admin-Secret, explicit grant_id binding, and no workspace-picker widening reflected in the canonical docs
+
+proof gap:
+- the refreshed bundle still claims a PASS UI review with no findings, but the reproduced web-design-guidelines review fails on apps/web/features/Stage03Bootstrap/ui/PlatformAdminInviteForm.tsx:148 because the async invite-issued success region is not announced with aria-live="polite"
+
+verifier conclusion:
+- product/runtime contract for slice-007 + slice-008 is proven live
+- bundle truthfulness is not fully proven because the current UI review evidence/result is inaccurate
+- verdict must remain FAIL until the UI review artifact and verifier summary are refreshed truthfully, and the smallest safe product fix is to add an aria-live announcement to the async success panel before re-running the UI review

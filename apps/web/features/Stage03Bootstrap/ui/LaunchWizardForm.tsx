@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition, type FormEventHandler } from "react
 import { useRouter } from "next/navigation";
 import { ArrowRight, Building2, Factory, MapPinned, Phone, UserRound } from "lucide-react";
 import { Button, Card, InputField } from "@/shared/ui";
-import { resolveSessionLandingPath, type ApiEnvelope, type LaunchWizardPayload, type SessionSummaryResponse } from "@/shared/api";
+import { parseApiResponse, resolveSessionLandingPath, type LaunchWizardPayload, type SessionSummaryResponse } from "@/shared/api";
 
 type Props = {
   session: SessionSummaryResponse;
@@ -82,19 +82,22 @@ export function LaunchWizardForm({ session }: Props) {
         : {}),
     };
 
-    const response = await fetch("/api/bootstrap", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const body = (await response.json()) as ApiEnvelope<SessionSummaryResponse>;
-    if (!response.ok || !body.success || !body.data) {
-      setError(body.error ?? "Не удалось завершить первичный запуск.");
-      return;
-    }
+    try {
+      const response = await fetch("/api/bootstrap", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const nextSession = await parseApiResponse<SessionSummaryResponse>(
+        response,
+        "Не удалось завершить первичный запуск.",
+      );
 
-    router.push(resolveSessionLandingPath(body.data));
-    router.refresh();
+      router.push(resolveSessionLandingPath(nextSession));
+      router.refresh();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Не удалось завершить первичный запуск.");
+    }
   };
 
   return (

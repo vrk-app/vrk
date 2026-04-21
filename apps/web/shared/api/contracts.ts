@@ -57,13 +57,17 @@ function sessionHeaders(sessionToken: string) {
 }
 
 export async function fetchContractRegistry(sessionToken: string) {
-  return fetchBackend<ContractRecord[]>("/api/v1/agreements", {
+  const result = await fetchBackend<ContractRecord[]>("/api/v1/agreements", {
     headers: sessionHeaders(sessionToken),
   });
+
+  return result.data;
 }
 
 export async function fetchContractorOptions(sessionToken: string) {
-  return fetchBackend<ContractorOption[]>("/api/v1/agreements/contractors", {
+  const result = await fetchBackend<ContractorOption[]>("/api/v1/agreements/contractors", {
     headers: sessionHeaders(sessionToken),
   });
+
+  return result.data;
 }

@@ -1,213 +1,143 @@
 # Sprint Contract
 
 - Stage ID: 03-identity-master-data
-- Slice ID: slice-005-metrology-journals-archiving-and-proof
+- Slice IDs:
+  - `slice-007-stage03-admin-surface-auth-hardening`
+  - `slice-008-stage03-multi-org-session-contract`
 
 ## Objective
 
-Запустить пятый bounded `Stage 03` slice: поверх уже proven `slice-001`, `slice-002`, `slice-003` и `slice-004` включить первый реальный контур, который имеет право заявлять:
+Закрыть оставшиеся Stage 03 remediation findings по admin/auth/session contract, не переоткрывая `slice-009` и не расширяя Stage 03 в multi-workspace picker UI или новую platform identity subsystem.
 
-- journal-driven metrology truth для `measuring instruments` и `standards`;
-- derivation текущего статуса из latest valid journal record, а не из ручного baseline в карточке;
-- archive-only lifecycle proof для:
-  - equipment;
-  - measuring instruments;
-  - standards.
+Текущий bounded remediation wave обязан:
 
-Slice не должен переоткрывать уже proven separate-registry contour из `slice-004`, не должен ломать `/contracts` baseline из `slice-003` и не должен widen-иться в `Stage 04` request runtime или `Stage 05` operational loops.
+- убрать анонимный mutate/read доступ к Stage 03 admin surface на `/api/v1/organizations*`;
+- закрыть публичный `POST /api/v1/platform/organization-shells`, сохранив рабочий web `/register` через server-side Next boundary;
+- ввести deployment-scoped platform-admin credential/header contract как Stage 03-safe переходный механизм;
+- убрать arbitrary access selection через `LIMIT 1` при direct login/session restore;
+- привязать каждую session к explicit active `membership_id + grant_id`;
+- вернуть truthful `409` для direct login, если у аккаунта несколько eligible access paths;
+- сохранить deterministic invite acceptance, потому что invite already scopes membership/grant;
+- синхронизировать Swagger, env/runtime docs и узкие canonical docs по уточненному auth/admin/session contract.
 
-## Acceptance criteria
+Этот remediation wave не должен расширяться в Stage 04 request runtime, Stage 05 execution loops, полноценную platform identity систему, multi-workspace selector/switcher UI или unrelated cleanup из dirty worktree.
 
-- `/equipment` остается canonical public contour для customer-side master-data surface;
-- slice не создает parallel public route family для journals или archive views:
-  - journal/history/archive surfaces живут внутри `/equipment` и его documented tab/detail/filter state;
-  - если нужен query/state refinement, он документируется в evidence и canonical docs;
-- separate registries из proven `slice-004` сохраняются:
-  - equipment;
-  - measuring instruments;
-  - standards;
-- metrology journal становится source of truth минимум для:
-  - measuring instrument status;
-  - measuring instrument next due / validity baseline, если это поле показывается в UI/API;
-  - standard status;
-  - standard next due / validity baseline, если это поле показывается в UI/API;
-- journal record хранит как минимум:
-  - subject type and subject id;
-  - operation type;
-  - operation date;
-  - document number or document reference baseline;
-  - valid-until / effective-until value, если операция задает период действия;
-  - executor organization baseline;
-  - comment baseline;
-  - attachment metadata or truthful no-attachment state без ложного upload-claim;
-- derived current status больше не принимается как manual truth из карточки:
-  - карточка может кэшировать derived value;
-  - proof обязан показать, что latest valid journal record переопределяет older record;
-- latest valid journal record для slice proof трактуется минимально и тестируемо:
-  - используется самый поздний применимый journal entry для конкретного subject;
-  - proof строится на monotonic journal history без двусмысленных ties;
-  - если implementation вводит дополнительные invalidation/tie-break rules, они фиксируются в Swagger/canonical docs в том же slice;
-- archive-only lifecycle реализован минимум для equipment / measuring instruments / standards:
-  - user contour не делает hard delete этих сущностей;
-  - archive action сохраняет record в persistence и переводит его в archived state;
-  - archived records не попадают в default active lists;
-  - archived records не предлагаются в active relation pickers / active create flows;
-  - archived records видимы только через explicit archived/includeArchived/archive tab/filter state;
-- scoped access остается реальным и распространяется на journal/archive contour:
-  - organization-scope пользователь видит весь допустимый active + archived contour своей организации;
-  - subdivision-scope пользователь не видит unrelated records или journal history вне своего subtree;
-  - unit-scope пользователь не видит broader active/archived records и broader journal history;
-  - in-scope archived records и in-scope journal rows остаются видимыми соответствующему narrower scope;
-- archive/journal contour не ломает proven public surfaces:
-  - `/contracts` и backend `/agreements` adapter baseline из `slice-003` остаются доказуемыми;
-  - `/equipment` public contour и separate registry truth из `slice-004` не регрессируют;
-  - proven auth/bootstrap/scoped-access flows из `slice-001` и `slice-002` не регрессируют;
-- canonical docs, OpenAPI и stage artifacts синхронизированы с реально реализованным slice.
+## Frozen contract decisions
 
-## Transition / dependency rules
+- Stage 03 session остается singular.
+- Session restore не делает новый выбор доступа: используется явно сохраненная `grant_id` текущей session.
+- Direct login может автоматически завершиться только если найден ровно один eligible access path.
+- Direct login при нескольких eligible memberships/grants должен возвращать truthful `409`, а не silently выбирать первый доступ.
+- Invite acceptance flow может оставаться deterministic и сразу выпускать session, потому что invite already scopes membership/grant.
+- Для `slice-007` допустим deployment-scoped shared secret в header `X-VRK-Platform-Admin-Secret`; secret живет только на server-side boundaries и не утекает в browser.
 
-- Slice starts on top of the proven Stage 02 runtime/platform floor.
-- Slice starts only after the proven:
-  - `slice-001-first-admin-activation-and-org-graph`;
-  - `slice-002-employee-invites-and-scoped-access`;
-  - `slice-003-contracts-routing-and-workspace-access`;
-  - `slice-004-equipment-mi-standard-registries`.
-- The frozen Stage 03 spec remains valid; this refresh narrows only the active sprint contract and does not re-freeze the whole stage.
-- This is the first Stage 03 slice allowed to claim:
-  - journal-driven metrology truth;
-  - derived status from latest valid record;
-  - archive proof for equipment / measuring instruments / standards.
-- Keep `/equipment` as the truthful public master-data entry contour unless repo truth forces a narrowly documented refinement.
-- Do not widen into:
-  - Stage 04 live request create/detail flows;
-  - Stage 05 contractor execution, materials, documents, estimate approval, or acceptance loops;
-  - parallel route families for MI journals, standard journals, or archives;
-  - full org-scoped dictionary/local-draft proof unless minimally required by already-existing repo truth and explicitly documented;
-  - net-new storage/document-center scope beyond journal attachment baseline already needed for truthful proof.
-- If this slice clarifies latest-valid derivation, archive filters, or route-state assumptions beyond the current canonical docs, refresh the narrowest owning docs in the same slice before proof.
+## Slice 007 acceptance criteria
+
+- `/api/v1/organizations` list/create/get/update/delete больше не доступны анонимно:
+  - все эти admin-surface paths требуют deployment-scoped platform-admin credential;
+  - отсутствие или неверный credential дает truthful `401`;
+  - Stage 03 user sessions не получают параллельный browser-facing путь к этим endpoints в обход server-side boundary.
+- `POST /api/v1/platform/organization-shells` больше не публичный:
+  - backend route требует `X-VRK-Platform-Admin-Secret`;
+  - web `/api/platform/organization-shells` проксирует запрос server-side и inject-ит secret из server env;
+  - browser code не читает и не сериализует secret в client bundle.
+- Новый env/config contract зафиксирован truthfully:
+  - backend не стартует без `PLATFORM_ADMIN_SHARED_SECRET`;
+  - compose / examples / server-side web runtime docs отражают обязательность этого секрета.
+- Swagger и canonical docs отражают новый admin auth contract без widening в полноценную platform identity систему.
+
+## Slice 008 acceptance criteria
+
+- `POST /api/v1/sessions` больше не выбирает arbitrary access path через `LIMIT 1`.
+- Session persistence и restore используют explicit active `membership_id + grant_id`.
+- Direct login contract truthfully classified:
+  - `0` eligible access paths -> existing unauthorized contract;
+  - `1` eligible access path -> session issue succeeds;
+  - `>1` eligible access paths -> `409` с truthful access-selection error.
+- Invite acceptance остается deterministic:
+  - first-admin acceptance выпускает session с explicit `grant_id`;
+  - employee acceptance/upsert path выпускает session с explicit `grant_id`;
+  - replay/expired/revoked invite contracts не деградируют.
+- Stage 03 не строит новый workspace picker/switcher UI; runtime продолжает использовать singular scoped landing, derived from explicit active grant.
+- При SQL changes обновлены migration и `sqlc` artifacts.
+
+## Proof requirements
+
+- harness:
+  - `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data`
+- backend:
+  - `PATH=/Users/yura-posledov/cursor/vrk/.agent/tmp-tools/go/bin:$PATH /Users/yura-posledov/cursor/vrk/.agent/tmp-tools/sqlc generate -f apps/backend/sqlc.yaml`
+  - `PATH=/Users/yura-posledov/cursor/vrk/.agent/tmp-tools/go/bin:$PATH go test ./...`
+  - `PATH=/Users/yura-posledov/cursor/vrk/.agent/tmp-tools/go/bin:$PATH go build -buildvcs=false ./...`
+  - Swagger refresh via local `swag init`
+  - focused unit coverage for platform-admin middleware and `409` session conflict classification
+- web:
+  - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run typecheck`
+  - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run lint`
+  - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run build`
+  - targeted auth smoke / focused proof for `/register`, login, and session restore if runtime stack is available; if blocked, record the exact environment reason and do not claim PASS for that sub-proof
+- verifier:
+  - fresh verifier must inspect admin header enforcement on `/organizations*` and `/platform/organization-shells`
+  - fresh verifier must inspect explicit `grant_id` session binding and truthful `409` conflict path
+  - verifier must not edit production code
 
 ## File / module ownership
 
 - `apps/backend/internal/app/**`
-- `apps/backend/internal/auth/**`
-- `apps/backend/internal/db/**`
-- `apps/backend/internal/equipment/**`
-- `apps/backend/migrations/**`
+- `apps/backend/internal/auth/bootstrap/**`
+- `apps/backend/internal/auth/organization/**`
+- `apps/backend/internal/db/queries/auth/bootstrap.sql`
+- `apps/backend/internal/db/generated/**`
+- `apps/backend/migrations/000010_stage03_session_explicit_grant_binding.*.sql`
+- `apps/backend/internal/infrastructure/config/**`
 - `apps/backend/docs/swagger/**`
-- `apps/web/app/(runtime)/**`
-- `apps/web/app/api/**`
-- `apps/web/features/**`
-- `apps/web/entities/**`
-- `apps/web/shared/**`
-- `apps/web/tests/**`
+- `apps/web/app/api/platform/organization-shells/route.ts`
+- `apps/web/app/api/auth/session/route.ts`
+- `apps/web/app/api/auth/session/current/route.ts`
+- `apps/web/shared/api/{backend.ts,bootstrap.ts,route-proxy.ts,session-server.ts}`
+- `apps/web/app/register/page.tsx`
+- `apps/web/features/Stage03Bootstrap/ui/PlatformAdminInviteForm.tsx`
+- `apps/web/tests/auth-flow.smoke.spec.ts`
+- `apps/web/tests/contracts-routing.smoke.spec.ts`
+- `apps/web/tests/equipment-registries.smoke.spec.ts`
 - `docs/roadmap.md`
-- `docs/PRD-MVP.md`
 - `docs/architecture/identity-master-data.md`
 - `docs/architecture/frontend-architecture.md`
-- `docs/design/customer-admin-bootstrap-flow.md`
+- `docs/onboarding.md`
 - `.agent/stages/03-identity-master-data/**`
 
-## Build / test plan
+## Mandatory UI workflow
 
-- add or reshape protected backend journal contracts for measuring instruments and standards without collapsing the separate registries into one mega-payload;
-- implement journal persistence so current metrology status is derived from journal history rather than only user-edited status baseline fields;
-- keep derivation proof intentionally narrow:
-  - prove ordering by journal history for one measuring instrument;
-  - prove ordering by journal history for one standard;
-  - avoid speculative status engines beyond what current docs require;
-- add or reshape archive actions for equipment / measuring instruments / standards so active records are archived instead of hard-deleted in the normal user contour;
-- ensure archived records are excluded from:
-  - default active lists;
-  - active create/edit pickers;
-  - active journal-append flows when that would falsely resurrect archived entities;
-- make journal and archive visibility depend on the current Stage 03 session/workspace contour:
-  - organization scope;
-  - subdivision scope;
-  - unit scope;
-- expose the live journal/archive contour to web through `/equipment` while preserving the proven separate-registry tabs from `slice-004`;
-- add the necessary web route handlers under `apps/web/app/api/**` so browser code keeps using the public web boundary instead of the internal backend host;
-- refresh Swagger/OpenAPI for changed journal/archive contracts and for any clarified derived-status rule;
-- add a direct proof runner for `slice-005` that seeds or creates the minimal organization/auth baseline and produces:
-  - journal derivation proof;
-  - archive proof;
-  - scope proof;
-  - no-regression baseline for slices `001` to `004`;
-- rerun sufficient floor proof showing no regression for earlier Stage 03 slices.
+Because this remediation wave still touches `apps/web`, the reuse-first Stage 03 UI workflow applies.
 
-### Mandatory UI workflow
-
-Because this slice touches `apps/web`, the builder must use `$vrk-web-ui-workflow` and record the proof path.
-
-- Read:
+- Design context:
   - `.impeccable.md`
   - `docs/design/ui-workflow.md`
   - `docs/design/serviceops-design-system.md`
   - `docs/architecture/frontend-architecture.md`
   - `docs/design/storybook-component-backlog.md`
-- Run the component lookup with a metrology/archive target and save the raw result at:
-  - `.agent/stages/03-identity-master-data/raw/storybook-lookup-slice-005-2026-04-19-orchestrator.txt`
-- Preferred lookup target:
-  - `equipment metrology journals history timeline archive archived filter status badge scope visibility attachments`
-- Keep the decision order:
-  - `reuse`
-  - `extend`
-  - `create`
+- Component lookup target:
+  - `platform admin invite auth route proxy session conflict login restore register boundary`
+- Expected lookup result:
+  - reuse existing auth/layout primitives and feature-local forms; no new reusable component family is justified for this remediation wave.
 - Expected reuse strategy:
-  - keep `/equipment` and the existing registry workspace as the shell;
-  - extend current feature-local `EquipmentRegistryWorkspace` and existing shared primitives before inventing a new reusable family;
-  - keep journal/history/archive UI feature-local unless the lookup proves an obvious reusable candidate already exists;
-- If a new reusable component family becomes unavoidable:
-  - add stories;
-  - update `docs/design/storybook-component-backlog.md`.
-- Use `$impeccable craft` for the live `/equipment` journal/archive contour.
-- Use `$polish` for final alignment.
-- Run `$web-design-guidelines` on the changed UI files and close findings before proof.
+  - keep `/register`, `/login`, and existing auth/bootstrap feature shells;
+  - patch route-handler/server-boundary behavior instead of inventing a new auth UI family;
+  - keep current runtime landing surfaces and avoid adding a workspace picker UI in Stage 03.
 
-## Proof requirements
+## Doc targets
 
-- record the journal flow end-to-end with commands and captured outputs for:
-  - one measuring instrument history walkthrough;
-  - one standard history walkthrough;
-- prove journal-driven derivation with concrete monotonic history:
-  - create or seed an older journal record for the same measuring instrument;
-  - create or seed a newer applicable journal record for that measuring instrument;
-  - show that the derived current status / due baseline follows the newer valid record, not the older one;
-  - repeat the same proof shape for one standard;
-- prove archive-only lifecycle with concrete records:
-  - archive at least one equipment record;
-  - archive at least one measuring instrument record;
-  - archive at least one standard record;
-  - show that each archived record disappears from default active lists;
-  - show that each archived record remains retrievable in explicit archived visibility state;
-  - show that archived record persistence still exists and is not a disguised hard delete;
-- prove scoped journal/archive visibility boundaries on the current auth model:
-  - organization scope sees the full allowed active + archived contour;
-  - subdivision scope sees only in-subtree journal rows and archived records;
-  - unit scope sees only its own allowed journal rows and archived records;
-  - forbidden direct access to broader unrelated journal/archive records is rejected;
-- prove that archive state does not regress the proven separate-registry and relation contour from `slice-004`;
-- rerun sufficient floor proof for slices `001`, `002`, `003`, and `004`:
-  - auth/session/launch baseline;
-  - scoped access baseline;
-  - `/contracts` routing master-data baseline;
-  - `/equipment` separate registry baseline;
-- record OpenAPI refresh output and the exact canonical docs changed for the slice;
-- record UI workflow evidence:
-  - design brief source;
-  - lookup query/result;
-  - reuse/extend/create decision;
-  - rationale for any `create`;
-  - changed UI files;
-  - stories/backlog update note if a new reusable family is introduced;
-  - `$web-design-guidelines` result and finding closure;
-- keep `verdict.json` pending until a fresh verifier reviews the implemented slice.
+- `docs/roadmap.md`
+- `docs/architecture/identity-master-data.md`
+- `docs/architecture/frontend-architecture.md`
+- `docs/onboarding.md`
+- `apps/backend/docs/swagger/**`
 
 ## Non-goals
 
-- Stage 04 request create/detail runtime;
-- Stage 05 contractor execution, assignments, materials, documents, estimates, or acceptance loops;
-- parallel public route families outside `/equipment` for journals or archives;
-- full standalone metrology module outside Stage 03 master-data contour;
-- full org-scoped dictionary/local-draft proof unless current repo truth forces a narrowly documented inclusion;
-- Stage 06 offline/sync behavior;
-- custom role builder, deny-layer, 2FA, bulk import, and external identity providers.
+- reopening `slice-009` in this run;
+- multi-workspace picker/switcher UI;
+- full platform identity / RBAC subsystem beyond the shared-secret admin gate;
+- Stage 04 request flows;
+- Stage 05 execution/materials/documents/acceptance flows;
+- generic cleanup of dirty repo paths not required by findings `1`, `2`, `3`.

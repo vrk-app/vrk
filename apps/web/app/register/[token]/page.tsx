@@ -13,7 +13,7 @@ export default async function RegisterInvitePage({ params }: Props) {
   const { token } = await params;
 
   try {
-    const invite = await fetchBackend<PublicInviteInspectionResponse>(`/api/v1/invites/${token}`);
+    const invite = (await fetchBackend<PublicInviteInspectionResponse>(`/api/v1/invites/${token}`)).data;
 
     const isFirstAdmin = invite.inviteKind === "first_admin";
 

@@ -1,7 +1,7 @@
 # Identity, Access, and Master Data
 
 Статус: accepted baseline  
-Обновлено: 2026-04-19
+Обновлено: 2026-04-20
 
 ## Назначение
 
@@ -71,12 +71,14 @@ flowchart TD
 
 В первом живом Stage 03 slice этот сценарий зафиксирован следующим контрактом:
 
-- `POST /platform/organization-shells` создает `organization shell` и first-admin invite;
+- `POST /platform/organization-shells` создает `organization shell` и first-admin invite, но только за deployment-scoped platform-admin boundary;
+- публичный `/register` не вызывает backend напрямую: Next route handler inject-ит `X-VRK-Platform-Admin-Secret` server-side, а browser не получает secret;
 - `GET /first-admin-invites/{token}` открывает одноразовую ссылку и переводит invite из `sent` в `opened`;
 - `POST /first-admin-invites/{token}/accept` задает пароль, создает `membership`, выдает initial `organization_admin` grant и возвращает session;
 - повторный `accept` по тому же token возвращает конфликт и не может создать вторую активацию;
 - `POST /launch-wizard` сохраняет core organization data и поддерживает оба пути: `organization -> subdivision -> unit` и `organization -> unit`;
-- `POST /sessions` и `GET /sessions/current` позволяют вернуться в тот же organization contour после logout/login.
+- `POST /sessions` и `GET /sessions/current` позволяют вернуться только в тот contour, который привязан к explicit active `membership_id + grant_id`;
+- direct login с несколькими eligible access paths возвращает `409` и не делает silent selection.
 
 ```mermaid
 flowchart LR
@@ -275,22 +277,26 @@ flowchart LR
 
 ### 4.1. Реализованная workspace projection для slice-002
 
-Session summary в slice-002 больше не возвращает только organization-wide contour, а проецирует runtime workspace прямо из scoped grant:
+Session summary в slice-002+ больше не возвращает только organization-wide contour, а проецирует singular runtime workspace прямо из explicit active scoped grant:
 
 - `organization` scope открывает весь org graph ниже и позволяет управлять employee invites только при `organization_admin`;
 - `subdivision` scope открывает целевое подразделение и его дочерние юниты, но не wider organization contour;
 - `unit` scope открывает только один целевой юнит и не раскрывает subdivision/organization graph вверх;
-- один и тот же `/company` route используется как scoped landing page после invite acceptance и последующего login.
+- один и тот же `/company` route используется как scoped landing page после invite acceptance и последующего login;
+- session restore не выбирает новый workspace: он использует сохраненный `grant_id`;
+- если direct login находит несколько eligible memberships/grants, backend возвращает truthful `409`, а не silently выбирает первый доступ.
 
 ```mermaid
 flowchart TD
-    A["Scoped grant"] --> B["organization"]
-    A --> C["subdivision"]
-    A --> D["unit"]
-    B --> E["/company: full org graph"]
-    B --> F["Employee invite manager (only organization_admin)"]
-    C --> G["/company: target subdivision + child units"]
-    D --> H["/company: target unit only"]
+    A["Direct login"] --> B{"eligible access paths"}
+    B -->|0| C["401 unauthorized"]
+    B -->|1| D["Create session with explicit membership_id + grant_id"]
+    B -->|>1| E["409 access selection required"]
+    D --> F{"grant scope"}
+    F -->|organization| G["/company: full org graph"]
+    F -->|subdivision| H["/company: target subdivision + child units"]
+    F -->|unit| I["/company: target unit only"]
+    G --> J["Employee invite manager only for organization_admin"]
 ```
 
 ### 4.2. Реализованный contracts + workspace contour для slice-003
@@ -444,6 +450,7 @@ flowchart TD
   - `tab=equipment | mi | standards`;
   - `archived=1` включает explicit archive visibility на том же route;
 - web route handlers остаются под `app/api/equipment*` и проксируют browser к backend journal/archive endpoints без раскрытия internal host;
+- paginated registry list responses сохраняют envelope `meta` на web boundary, чтобы `/equipment` contour мог truthfully видеть `total/limit/offset`, а не только текущий `data` slice;
 - protected backend contract для slice-005 добавляет:
   - `GET/POST /measuring-instruments/{id}/journals`;
   - `GET/POST /standards/{id}/journals`;

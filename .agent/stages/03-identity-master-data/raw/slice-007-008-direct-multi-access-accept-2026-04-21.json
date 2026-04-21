@@ -1,0 +1,57 @@
+{
+  "success": true,
+  "data": {
+    "sessionToken": "88231a52-566a-49c9-8404-6e9149b43c71",
+    "requiresLaunchWizard": false,
+    "account": {
+      "id": "246eb701-915f-4158-9abd-f1557ab49efb",
+      "fullName": "Shared Admin 1776771010",
+      "email": "shared-1776771010@vrk.local"
+    },
+    "membershipId": "dddbdc9b-7bb8-40fb-b0ef-59bdedc6b9dc",
+    "membershipStatus": "active",
+    "organization": {
+      "id": "64517e0e-c1e1-4518-b1b6-5b8896562d96",
+      "roleTitle": "customer",
+      "name": "VRK beta 1776771010",
+      "shortName": "BET-1776771010",
+      "propertyType": "LLC",
+      "inn": "1776771010",
+      "kpp": "177677101",
+      "legalAddress": "beta street 1",
+      "contactEmail": "beta-1776771010@vrk.local",
+      "contactPhone": "+7 (999) 123-45-67",
+      "launchState": "active"
+    },
+    "grant": {
+      "id": "01d9ad37-81d6-44ba-b0e4-e1c1e48361f4",
+      "roleTemplate": "organization_admin",
+      "scopeType": "organization",
+      "scopeId": "64517e0e-c1e1-4518-b1b6-5b8896562d96"
+    },
+    "workspace": {
+      "scopeType": "organization",
+      "scopeId": "64517e0e-c1e1-4518-b1b6-5b8896562d96",
+      "scopeName": "VRK beta 1776771010",
+      "landingTitle": "VRK beta 1776771010",
+      "landingSubtitle": "Администратор организации видит полный org graph и может управлять приглашениями сотрудников.",
+      "landingPath": "/company",
+      "canManageEmployeeInvites": true
+    },
+    "subdivisions": [
+      {
+        "id": "2761c106-5fc4-47e7-86a1-db79c782739d",
+        "type": "Branch",
+        "name": "beta Branch 1776771010"
+      }
+    ],
+    "units": [
+      {
+        "id": "62ccd8f1-cf15-4383-b0e9-5cc920c96b0c",
+        "type": "Lab",
+        "name": "beta Unit 1776771010",
+        "subdivisionId": "2761c106-5fc4-47e7-86a1-db79c782739d"
+      }
+    ]
+  }
+}

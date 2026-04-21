@@ -1,0 +1,22 @@
+Storybook registry entries: 19
+Query: "equipment metrology journals history timeline archive archived filter status badge scope visibility attachments contracts form scope select validation"
+
+1. Requests/RequestStatusBadge [RequestStatusBadge]
+   story: apps/web/stories/requests/RequestStatusBadge.stories.tsx
+   source: apps/web/entities/Request/ui/RequestStatusBadge.tsx
+   stories: Draft, OnApproval, Approved, InWork, OnSigning, AwaitingPayment, Completed, Reclamation
+   tags: autodocs
+2. Primitives/Badge [Badge]
+   story: apps/web/stories/primitives/Badge.stories.tsx
+   source: apps/web/shared/ui/Badge.tsx
+   stories: Neutral, Success, Warning, Danger, WithIcon, Small, TrendUp, TrendDown, StatusMatrix
+   tags: autodocs
+3. Auth/LoginForm [LoginForm]
+   story: apps/web/stories/auth/LoginForm.stories.tsx
+   source: apps/web/widgets/Auth/ui/LoginForm.tsx
+   stories: Default, ValidationError, ServerError, Loading
+   tags: autodocs
+4. Foundations/IconGallery [IconGalleryShowcase]
+   story: apps/web/stories/foundations/IconGallery.stories.tsx
+   stories: NavigationIcons, ActionIcons, FileTypeIcons, StatusIcons
+   tags: autodocs

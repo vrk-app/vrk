@@ -1,0 +1,35 @@
+{
+  "seed": "1776757418",
+  "register_boundary": {
+    "page_status": 200,
+    "html_secret_leak": false,
+    "web_proxy_status": 201,
+    "web_proxy_invite_id": "3c4b2242-a7b9-4dff-ba61-8cbf9ca15e64"
+  },
+  "admin_surface": {
+    "platform_shell_unauthorized_status": 401,
+    "organizations_unauthorized_status": 401,
+    "organizations_authorized_status": 200
+  },
+  "single_access_login": {
+    "membership_id": "1a8dad85-0800-43f2-847a-bf1b73bcb47b",
+    "grant_id": "ed6b218b-f056-46a3-8bf0-485b5bc37efd"
+  },
+  "session_restore": {
+    "original_membership_id": "1a8dad85-0800-43f2-847a-bf1b73bcb47b",
+    "original_grant_id": "ed6b218b-f056-46a3-8bf0-485b5bc37efd",
+    "second_membership_id": "b975567d-703a-456b-8150-50acde28d8ce",
+    "second_grant_id": "0a23125c-0170-46c0-a7a2-f82d4bfc1323"
+  },
+  "multi_access_login": {
+    "status": 409,
+    "error": "multiple eligible access paths found; explicit workspace selection is required"
+  },
+  "notes": {
+    "workspace_picker_widening_observed": false,
+    "platform_shell_unauthorized_error": "unauthorized",
+    "organizations_unauthorized_error": "unauthorized",
+    "authorized_organizations_total": 5
+  }
+}
+WROTE /Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/raw/slice-007-008-direct-summary-2026-04-21-fresh-verifier.json

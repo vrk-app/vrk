@@ -10,8 +10,10 @@ export {
 } from "./runtime-shell";
 export { SESSION_COOKIE_NAME } from "./bootstrap";
 export { resolveSessionLandingPath } from "./bootstrap";
+export { parseApiResponse } from "./client-envelope";
 export type {
   ApiEnvelope,
+  ApiMeta,
   CreateEmployeeInvitePayload,
   EmployeeInviteResponse,
   InviteInspectionResponse,

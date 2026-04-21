@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "data": {
+    "organizationId": "64517e0e-c1e1-4518-b1b6-5b8896562d96",
+    "organizationName": "VRK beta 1776771010",
+    "organizationRole": "customer",
+    "inviteStatus": "opened",
+    "firstAdminName": "beta Admin 1776771010",
+    "inviteEmail": "beta-1776771010@vrk.local",
+    "inviteExpiresAt": "2026-04-28T11:30:10Z",
+    "launchState": "shell"
+  }
+}

@@ -561,6 +561,7 @@ SET
     subject_of_agreement = $14,
     updated_at = NOW()
 WHERE id = $1
+  AND updated_at = $15
 RETURNING
     id,
     customer_organization_id,
@@ -582,20 +583,21 @@ RETURNING
 `
 
 type UpdateAgreementParams struct {
-	ID                       pgtype.UUID `json:"id"`
-	ContractorOrganizationID pgtype.UUID `json:"contractorOrganizationId"`
-	ContractNumber           *string     `json:"contractNumber"`
-	ContractStatus           *string     `json:"contractStatus"`
-	StartDate                pgtype.Date `json:"startDate"`
-	EndDate                  pgtype.Date `json:"endDate"`
-	WorkType                 *string     `json:"workType"`
-	EquipmentType            *string     `json:"equipmentType"`
-	Region                   *string     `json:"region"`
-	SubdivisionID            pgtype.UUID `json:"subdivisionId"`
-	UnitID                   pgtype.UUID `json:"unitId"`
-	LocationScopeLabel       *string     `json:"locationScopeLabel"`
-	Source                   *string     `json:"source"`
-	SubjectOfAgreement       *string     `json:"subjectOfAgreement"`
+	ID                       pgtype.UUID        `json:"id"`
+	ContractorOrganizationID pgtype.UUID        `json:"contractorOrganizationId"`
+	ContractNumber           *string            `json:"contractNumber"`
+	ContractStatus           *string            `json:"contractStatus"`
+	StartDate                pgtype.Date        `json:"startDate"`
+	EndDate                  pgtype.Date        `json:"endDate"`
+	WorkType                 *string            `json:"workType"`
+	EquipmentType            *string            `json:"equipmentType"`
+	Region                   *string            `json:"region"`
+	SubdivisionID            pgtype.UUID        `json:"subdivisionId"`
+	UnitID                   pgtype.UUID        `json:"unitId"`
+	LocationScopeLabel       *string            `json:"locationScopeLabel"`
+	Source                   *string            `json:"source"`
+	SubjectOfAgreement       *string            `json:"subjectOfAgreement"`
+	UpdatedAt                pgtype.Timestamptz `json:"updatedAt"`
 }
 
 type UpdateAgreementRow struct {
@@ -634,6 +636,7 @@ func (q *Queries) UpdateAgreement(ctx context.Context, arg UpdateAgreementParams
 		arg.LocationScopeLabel,
 		arg.Source,
 		arg.SubjectOfAgreement,
+		arg.UpdatedAt,
 	)
 	var i UpdateAgreementRow
 	err := row.Scan(

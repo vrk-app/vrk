@@ -161,6 +161,13 @@ export type ApiEnvelope<T> = {
   success: boolean;
   data?: T;
   error?: string;
+  meta?: ApiMeta;
+};
+
+export type ApiMeta = {
+  total: number;
+  limit: number;
+  offset: number;
 };
 
 export function resolveSessionLandingPath(session: SessionSummaryResponse) {

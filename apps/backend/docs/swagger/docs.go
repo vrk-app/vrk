@@ -1741,6 +1741,13 @@ const docTemplate = `{
                 "summary": "Получить список организаций",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "Deployment-scoped platform admin secret",
+                        "name": "X-VRK-Platform-Admin-Secret",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "maximum": 100,
                         "minimum": 1,
                         "type": "integer",
@@ -1783,6 +1790,12 @@ const docTemplate = `{
                             ]
                         }
                     },
+                    "401": {
+                        "description": "Неавторизованный admin surface вызов",
+                        "schema": {
+                            "$ref": "#/definitions/organization.Response"
+                        }
+                    },
                     "500": {
                         "description": "Внутренняя ошибка сервера",
                         "schema": {
@@ -1804,6 +1817,13 @@ const docTemplate = `{
                 ],
                 "summary": "Создать организацию",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deployment-scoped platform admin secret",
+                        "name": "X-VRK-Platform-Admin-Secret",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "description": "Данные организации",
                         "name": "request",
@@ -1839,6 +1859,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/organization.Response"
                         }
                     },
+                    "401": {
+                        "description": "Неавторизованный admin surface вызов",
+                        "schema": {
+                            "$ref": "#/definitions/organization.Response"
+                        }
+                    },
                     "500": {
                         "description": "Внутренняя ошибка сервера",
                         "schema": {
@@ -1859,6 +1885,13 @@ const docTemplate = `{
                 ],
                 "summary": "Получить организацию по ID",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deployment-scoped platform admin secret",
+                        "name": "X-VRK-Platform-Admin-Secret",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "description": "ID организации",
@@ -1886,6 +1919,18 @@ const docTemplate = `{
                             ]
                         }
                     },
+                    "400": {
+                        "description": "Неверный ID",
+                        "schema": {
+                            "$ref": "#/definitions/organization.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Неавторизованный admin surface вызов",
+                        "schema": {
+                            "$ref": "#/definitions/organization.Response"
+                        }
+                    },
                     "404": {
                         "description": "Организация не найдена",
                         "schema": {
@@ -1900,7 +1945,59 @@ const docTemplate = `{
                     }
                 }
             },
-            "put": {
+            "delete": {
+                "description": "Удаляет организацию по ID",
+                "tags": [
+                    "organizations"
+                ],
+                "summary": "Удалить организацию",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deployment-scoped platform admin secret",
+                        "name": "X-VRK-Platform-Admin-Secret",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID организации",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Успешное удаление"
+                    },
+                    "400": {
+                        "description": "Неверный ID",
+                        "schema": {
+                            "$ref": "#/definitions/organization.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Неавторизованный admin surface вызов",
+                        "schema": {
+                            "$ref": "#/definitions/organization.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Организация не найдена",
+                        "schema": {
+                            "$ref": "#/definitions/organization.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/organization.Response"
+                        }
+                    }
+                }
+            },
+            "patch": {
                 "description": "Обновляет данные организации",
                 "consumes": [
                     "application/json"
@@ -1913,6 +2010,13 @@ const docTemplate = `{
                 ],
                 "summary": "Обновить организацию",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deployment-scoped platform admin secret",
+                        "name": "X-VRK-Platform-Admin-Secret",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "description": "ID организации",
@@ -1955,41 +2059,20 @@ const docTemplate = `{
                             "$ref": "#/definitions/organization.Response"
                         }
                     },
+                    "401": {
+                        "description": "Неавторизованный admin surface вызов",
+                        "schema": {
+                            "$ref": "#/definitions/organization.Response"
+                        }
+                    },
                     "404": {
                         "description": "Организация не найдена",
                         "schema": {
                             "$ref": "#/definitions/organization.Response"
                         }
                     },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
-                        "schema": {
-                            "$ref": "#/definitions/organization.Response"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Удаляет организацию по ID",
-                "tags": [
-                    "organizations"
-                ],
-                "summary": "Удалить организацию",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID организации",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "Успешное удаление"
-                    },
-                    "404": {
-                        "description": "Организация не найдена",
+                    "409": {
+                        "description": "Конкурирующее обновление",
                         "schema": {
                             "$ref": "#/definitions/organization.Response"
                         }
@@ -2017,6 +2100,13 @@ const docTemplate = `{
                 ],
                 "summary": "Create organization shell",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deployment-scoped platform admin secret",
+                        "name": "X-VRK-Platform-Admin-Secret",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "description": "Organization shell data",
                         "name": "request",
@@ -2052,6 +2142,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/bootstrap.Response"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -2063,7 +2159,7 @@ const docTemplate = `{
         },
         "/sessions": {
             "post": {
-                "description": "Logs the invited organization admin in and returns the current session snapshot.",
+                "description": "Logs the user in when exactly one eligible membership/grant path exists and returns the current session snapshot.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2106,6 +2202,12 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/bootstrap.Response"
                         }
@@ -3860,7 +3962,7 @@ const docTemplate = `{
                 "poaExpirationDate": {
                     "type": "string"
                 },
-                "poaissueDate": {
+                "poaIssueDate": {
                     "type": "string"
                 },
                 "powerOfAttorneyNumber": {

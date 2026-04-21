@@ -1,0 +1,22 @@
+Storybook registry entries: 19
+Query: "platform admin invite auth route proxy session conflict login restore register boundary"
+
+1. Auth/LoginForm [LoginForm]
+   story: apps/web/stories/auth/LoginForm.stories.tsx
+   source: apps/web/widgets/Auth/ui/LoginForm.tsx
+   stories: Default, ValidationError, ServerError, Loading
+   tags: autodocs
+2. Auth/ConsentRow [ConsentRow]
+   story: apps/web/stories/auth/ConsentRow.stories.tsx
+   source: apps/web/widgets/Auth/ui/ConsentRow.tsx
+   stories: Default, Checked, Error, Disabled
+   tags: autodocs
+3. Auth/AuthSplitLayout [AuthSplitLayout]
+   story: apps/web/stories/auth/AuthSplitLayout.stories.tsx
+   source: apps/web/widgets/Auth/ui/AuthSplitLayout.tsx
+   stories: Default, WithoutIllustration, Mobile
+   tags: autodocs
+4. Showcases/AuthPage [AuthPageShowcase]
+   story: apps/web/stories/showcases/AuthPage.stories.tsx
+   stories: Showcase
+   tags: autodocs

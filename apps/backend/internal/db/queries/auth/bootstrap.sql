@@ -81,9 +81,9 @@ SELECT *
 FROM auth_accounts
 WHERE id = $1;
 
--- name: GetAccountAccessByAccountID :one
+-- name: ListAccountAccessPathsByAccountID :many
 SELECT
-    m.id,
+    m.id AS membership_id,
     m.organization_id,
     m.membership_status,
     o.role_title AS organization_role_title,
@@ -103,9 +103,10 @@ SELECT
     g.scope_id AS grant_scope_id
 FROM auth_memberships m
 JOIN auth_bootstrap_organizations o ON o.id = m.organization_id
-LEFT JOIN auth_scoped_grants g ON g.membership_id = m.id
+JOIN auth_scoped_grants g ON g.membership_id = m.id
 WHERE m.account_id = $1
-LIMIT 1;
+  AND m.membership_status = 'active'
+ORDER BY m.created_at ASC, g.created_at ASC;
 
 -- name: UpdateBootstrapOrganizationFirstAdmin :exec
 UPDATE auth_bootstrap_organizations
@@ -151,13 +152,15 @@ RETURNING *;
 INSERT INTO auth_sessions (
     account_id,
     membership_id,
+    grant_id,
     session_token,
     expires_at
 ) VALUES (
     $1,
     $2,
     $3,
-    $4
+    $4,
+    $5
 )
 RETURNING *;
 
@@ -193,8 +196,9 @@ FROM auth_sessions s
 JOIN auth_accounts a ON a.id = s.account_id
 JOIN auth_memberships m ON m.id = s.membership_id
 JOIN auth_bootstrap_organizations o ON o.id = m.organization_id
-LEFT JOIN auth_scoped_grants g ON g.membership_id = m.id
+JOIN auth_scoped_grants g ON g.id = s.grant_id AND g.membership_id = s.membership_id
 WHERE s.session_token = $1
+  AND m.membership_status = 'active'
 LIMIT 1;
 
 -- name: TouchAuthSession :exec

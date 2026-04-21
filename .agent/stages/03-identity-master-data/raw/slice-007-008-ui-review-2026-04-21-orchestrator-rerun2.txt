@@ -1,0 +1,9 @@
+web-design-guidelines source: https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md
+reviewed_at: 2026-04-21T08:39:00Z
+scope:
+- apps/web/app/login/page.tsx
+- apps/web/app/register/[token]/page.tsx
+- apps/web/features/Stage03Bootstrap/ui/PlatformAdminInviteForm.tsx
+result: PASS
+findings:
+- none

@@ -108,13 +108,16 @@ func (q *Queries) CreateOrganization(ctx context.Context, arg CreateOrganization
 	return i, err
 }
 
-const deleteOrganization = `-- name: DeleteOrganization :exec
+const deleteOrganization = `-- name: DeleteOrganization :execrows
 DELETE FROM organization_units WHERE id = $1
 `
 
-func (q *Queries) DeleteOrganization(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deleteOrganization, id)
-	return err
+func (q *Queries) DeleteOrganization(ctx context.Context, id pgtype.UUID) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteOrganization, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const getOrganizationByID = `-- name: GetOrganizationByID :one
@@ -135,7 +138,9 @@ SELECT
     o.power_of_attorney_number,
     o.poa_issue_date, 
     o.poa_expiration_date, 
-    o.logo
+    o.logo,
+    o.created_at,
+    o.updated_at
 FROM organization_units o
 LEFT JOIN property_types pt ON o.property_type_id = pt.id
 LEFT JOIN organization_roles r ON o.role_id = r.id
@@ -144,23 +149,25 @@ WHERE o.id = $1
 `
 
 type GetOrganizationByIDRow struct {
-	ID                    pgtype.UUID `json:"id"`
-	PropertyTypeID        pgtype.UUID `json:"propertyTypeId"`
-	PropertyTypeName      *string     `json:"propertyTypeName"`
-	Name                  string      `json:"name"`
-	ShortName             *string     `json:"shortName"`
-	Inn                   string      `json:"inn"`
-	Kpp                   string      `json:"kpp"`
-	Address               string      `json:"address"`
-	ParentID              pgtype.UUID `json:"parentId"`
-	RoleID                pgtype.UUID `json:"roleId"`
-	RoleTitle             *string     `json:"roleTitle"`
-	DirectorID            pgtype.UUID `json:"directorId"`
-	DirectorName          interface{} `json:"directorName"`
-	PowerOfAttorneyNumber *string     `json:"powerOfAttorneyNumber"`
-	PoaIssueDate          pgtype.Date `json:"poaIssueDate"`
-	PoaExpirationDate     pgtype.Date `json:"poaExpirationDate"`
-	Logo                  *string     `json:"logo"`
+	ID                    pgtype.UUID        `json:"id"`
+	PropertyTypeID        pgtype.UUID        `json:"propertyTypeId"`
+	PropertyTypeName      *string            `json:"propertyTypeName"`
+	Name                  string             `json:"name"`
+	ShortName             *string            `json:"shortName"`
+	Inn                   string             `json:"inn"`
+	Kpp                   string             `json:"kpp"`
+	Address               string             `json:"address"`
+	ParentID              pgtype.UUID        `json:"parentId"`
+	RoleID                pgtype.UUID        `json:"roleId"`
+	RoleTitle             *string            `json:"roleTitle"`
+	DirectorID            pgtype.UUID        `json:"directorId"`
+	DirectorName          interface{}        `json:"directorName"`
+	PowerOfAttorneyNumber *string            `json:"powerOfAttorneyNumber"`
+	PoaIssueDate          pgtype.Date        `json:"poaIssueDate"`
+	PoaExpirationDate     pgtype.Date        `json:"poaExpirationDate"`
+	Logo                  *string            `json:"logo"`
+	CreatedAt             pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt             pgtype.Timestamptz `json:"updatedAt"`
 }
 
 func (q *Queries) GetOrganizationByID(ctx context.Context, id pgtype.UUID) (GetOrganizationByIDRow, error) {
@@ -184,6 +191,8 @@ func (q *Queries) GetOrganizationByID(ctx context.Context, id pgtype.UUID) (GetO
 		&i.PoaIssueDate,
 		&i.PoaExpirationDate,
 		&i.Logo,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
@@ -306,26 +315,28 @@ UPDATE organization_units SET
     logo = $14,
     updated_at = NOW()
 WHERE id = $1
+  AND updated_at = $15
 RETURNING id, property_type_id, name, short_name, inn, kpp, address,
     parent_id, role_id, director_id, power_of_attorney_number,
     poa_issue_date, poa_expiration_date, logo, created_at, updated_at
 `
 
 type UpdateOrganizationParams struct {
-	ID                    pgtype.UUID `json:"id"`
-	PropertyTypeID        pgtype.UUID `json:"propertyTypeId"`
-	RoleID                pgtype.UUID `json:"roleId"`
-	Name                  string      `json:"name"`
-	ShortName             *string     `json:"shortName"`
-	Inn                   string      `json:"inn"`
-	Kpp                   string      `json:"kpp"`
-	Address               string      `json:"address"`
-	ParentID              pgtype.UUID `json:"parentId"`
-	DirectorID            pgtype.UUID `json:"directorId"`
-	PowerOfAttorneyNumber *string     `json:"powerOfAttorneyNumber"`
-	PoaIssueDate          pgtype.Date `json:"poaIssueDate"`
-	PoaExpirationDate     pgtype.Date `json:"poaExpirationDate"`
-	Logo                  *string     `json:"logo"`
+	ID                    pgtype.UUID        `json:"id"`
+	PropertyTypeID        pgtype.UUID        `json:"propertyTypeId"`
+	RoleID                pgtype.UUID        `json:"roleId"`
+	Name                  string             `json:"name"`
+	ShortName             *string            `json:"shortName"`
+	Inn                   string             `json:"inn"`
+	Kpp                   string             `json:"kpp"`
+	Address               string             `json:"address"`
+	ParentID              pgtype.UUID        `json:"parentId"`
+	DirectorID            pgtype.UUID        `json:"directorId"`
+	PowerOfAttorneyNumber *string            `json:"powerOfAttorneyNumber"`
+	PoaIssueDate          pgtype.Date        `json:"poaIssueDate"`
+	PoaExpirationDate     pgtype.Date        `json:"poaExpirationDate"`
+	Logo                  *string            `json:"logo"`
+	UpdatedAt             pgtype.Timestamptz `json:"updatedAt"`
 }
 
 type UpdateOrganizationRow struct {
@@ -363,6 +374,7 @@ func (q *Queries) UpdateOrganization(ctx context.Context, arg UpdateOrganization
 		arg.PoaIssueDate,
 		arg.PoaExpirationDate,
 		arg.Logo,
+		arg.UpdatedAt,
 	)
 	var i UpdateOrganizationRow
 	err := row.Scan(

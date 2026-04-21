@@ -114,33 +114,43 @@ function sessionHeaders(sessionToken: string) {
 
 export async function fetchEquipmentRegistry(sessionToken: string, includeArchived = false) {
   const search = includeArchived ? "?includeArchived=true" : "";
-  return fetchBackend<EquipmentRecord[]>(`/api/v1/equipment${search}`, {
+  const result = await fetchBackend<EquipmentRecord[]>(`/api/v1/equipment${search}`, {
     headers: sessionHeaders(sessionToken),
   });
+
+  return result.data;
 }
 
 export async function fetchMeasuringInstrumentRegistry(sessionToken: string, includeArchived = false) {
   const search = includeArchived ? "?includeArchived=true" : "";
-  return fetchBackend<MeasuringInstrumentRecord[]>(`/api/v1/measuring-instruments${search}`, {
+  const result = await fetchBackend<MeasuringInstrumentRecord[]>(`/api/v1/measuring-instruments${search}`, {
     headers: sessionHeaders(sessionToken),
   });
+
+  return result.data;
 }
 
 export async function fetchStandardRegistry(sessionToken: string, includeArchived = false) {
   const search = includeArchived ? "?includeArchived=true" : "";
-  return fetchBackend<StandardRecord[]>(`/api/v1/standards${search}`, {
+  const result = await fetchBackend<StandardRecord[]>(`/api/v1/standards${search}`, {
     headers: sessionHeaders(sessionToken),
   });
+
+  return result.data;
 }
 
 export async function fetchMeasuringInstrumentJournals(sessionToken: string, measuringInstrumentId: string) {
-  return fetchBackend<JournalRecord[]>(`/api/v1/measuring-instruments/${measuringInstrumentId}/journals`, {
+  const result = await fetchBackend<JournalRecord[]>(`/api/v1/measuring-instruments/${measuringInstrumentId}/journals`, {
     headers: sessionHeaders(sessionToken),
   });
+
+  return result.data;
 }
 
 export async function fetchStandardJournals(sessionToken: string, standardId: string) {
-  return fetchBackend<JournalRecord[]>(`/api/v1/standards/${standardId}/journals`, {
+  const result = await fetchBackend<JournalRecord[]>(`/api/v1/standards/${standardId}/journals`, {
     headers: sessionHeaders(sessionToken),
   });
+
+  return result.data;
 }

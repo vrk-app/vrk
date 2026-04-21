@@ -380,7 +380,7 @@
 - web UI:
   - route contour `/register -> /register/{token} -> /company/setup -> /company`
   - launch wizard и company profile screens
-  - subdivision / unit selectors и scoped workspace switching
+  - subdivision / unit selectors и scoped singular-session landing без multi-workspace picker
   - people, memberships, invites и access grant screens
   - contracts lists, cards and routing surfaces на публичном `/contracts` contour
   - equipment / measuring instrument / standard lists and cards на одном публичном `/equipment` contour с query-backed tabs и explicit archive visibility state
@@ -397,7 +397,9 @@
 - права уровня organization наследуются вниз на subdivision и unit; права subdivision наследуются на дочерние unit; deny-layer в MVP отсутствует
 - пользователь после принятия приглашения видит только свой контур доступа
 - invitation lifecycle и статусы видны администратору и доказаны end-to-end
-- login/session restore возвращает customer contour на `/company`, а active contractor contour на `/contracts`
+- login/session restore возвращает contour, привязанный к explicit active membership/grant: customer contour на `/company`, active contractor contour на `/contracts`
+- direct login с несколькими eligible memberships/grants truthfully возвращает `409`, а не silently выбирает один workspace
+- `/platform/organization-shells` и Stage 03 `organizations` admin surface не доступны анонимно и не раскрывают deployment-scoped admin credential в browser
 - нельзя создать рабочий request flow без зарегистрированного оборудования
 - оборудование, СИ и эталоны существуют как отдельные сущности, а не как одна mega-form
 - `/equipment` остается canonical public contour для equipment/master-data surface, а narrower scopes видят только read-only разрешенный subtree

@@ -76,6 +76,15 @@ func (h *StandardHandler) List(w http.ResponseWriter, r *http.Request) {
 		writeServiceError(w, err)
 		return
 	}
+	if limit <= 0 {
+		limit = 20
+	}
+	if limit > 100 {
+		limit = 100
+	}
+	if offset < 0 {
+		offset = 0
+	}
 
 	sendSuccess(w, http.StatusOK, items, &Meta{
 		Total:  total,

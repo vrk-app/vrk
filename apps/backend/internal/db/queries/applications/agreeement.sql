@@ -172,6 +172,7 @@ SET
     subject_of_agreement = $14,
     updated_at = NOW()
 WHERE id = $1
+  AND updated_at = $15
 RETURNING
     id,
     customer_organization_id,

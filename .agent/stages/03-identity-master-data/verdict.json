@@ -1,40 +1,27 @@
 {
   "status": "PASS",
   "stage_id": "03-identity-master-data",
-  "sprint_contract_id": "slice-005-metrology-journals-archiving-and-proof",
-  "summary": "Fresh verifier rerun on the current dirty worktree at `94e86aa7ae1cf7d495497611a76f8c0518e3b815` reproduced the required Stage 03 floor and slice-005 proof on the live repo state. Harness validation, `make dev`, compose health, `make smoke`, backend test/build, a non-mutating Swagger/OpenAPI refresh-equivalence check, local `apps/web` typecheck/lint/build/browser-smoke under the bundled Node runtime, and `python3 .agent/stages/03-identity-master-data/proof_slice005_metrology_archive.py` all passed. Fresh manual review of `apps/web/app/(runtime)/equipment/page.tsx` and `apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx` against the current Web Interface Guidelines found no blocking issues: `/equipment` remains the canonical public contour with query-backed `tab` and `archived`, archive actions now require explicit confirmation before mutation, MI and standard status/next due derive from the latest applicable journal record, archive replaces hard delete for equipment / MI / standards, scoped journal/archive visibility remains correct, slice-001/002/003/004 floor behavior still holds, and the reviewed docs/artifacts match the current repo truth without widening into Stage 04 or Stage 05.",
-  "verified_head": "94e86aa7ae1cf7d495497611a76f8c0518e3b815",
+  "sprint_contract_id": "slice-007-stage03-admin-surface-auth-hardening + slice-008-stage03-multi-org-session-contract",
+  "summary": "The current repo state at `86deb3285b46c6dcd9018a3f2564e78dd4f83a33` still proves the slice-007/008 contract live on `127.0.0.1:18080` and `127.0.0.1:3100`: Stage 03 admin surface is auth-hardened, `/register` keeps the platform-admin secret server-side only, session restore returns the explicit stored `membership_id + grant_id`, direct multi-access login truthfully returns `409`, and the auth UI still does not widen into a workspace picker. The previously recorded verifier-harvest blocker no longer reproduces because this fresh verifier run completed and wrote a usable verdict.",
+  "verified_head": "86deb3285b46c6dcd9018a3f2564e78dd4f83a33",
   "verified_worktree_dirty": true,
-  "checked_at": "2026-04-19T15:57:59Z",
-  "last_verified_at": "2026-04-19T15:57:59Z",
+  "checked_at": "2026-04-21T11:36:57Z",
+  "last_verified_at": "2026-04-21T11:36:57Z",
   "proven": [
-    "Harness validation passed for `03-identity-master-data` on the current repo state.",
-    "`make dev`, `docker compose -f compose.platform.yml ps`, and `make smoke` passed with healthy `db`, `backend`, `web`, and `field` services on the current dirty worktree.",
-    "`./scripts/backend_go_test.sh` and `./scripts/backend_go_build.sh` passed on the current repo state.",
-    "A non-mutating Swagger/OpenAPI refresh-equivalence check matched the checked-in `apps/backend/docs/swagger` bundle.",
-    "Local `apps/web` proof passed with `pnpm run typecheck`, `pnpm run lint`, `pnpm run build`, and `pnpm run browser-smoke` under `/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin`.",
-    "The browser smoke suite re-proved the Stage 03 floor on the current worktree, including first-admin bootstrap, employee invite acceptance and scoped login restore, the live `/contracts` contour, and the live `/equipment` journal/archive contour.",
-    "`python3 .agent/stages/03-identity-master-data/proof_slice005_metrology_archive.py` passed on a fresh seed and reproduced latest-journal derivation for measuring instruments and standards, archive-only lifecycle for equipment / MI / standards, scoped journal/archive visibility for organization / subdivision / unit contours, forbidden broader direct access, and `/api/v1/agreements` baseline reachability for the authenticated customer org.",
-    "Fresh manual review of `apps/web/app/(runtime)/equipment/page.tsx` and `apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx` against `https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md` found no blocking issues on the current repo state, including no unsafe destructive-action pattern in the reviewed `/equipment` contour.",
-    "Code, docs, and specified stage artifacts were checked for slice-005 drift; the current repo truth remains bounded to Stage 03 and does not falsely claim Stage 04 or Stage 05 proof."
+    "Harness verification passes again on the final post-verdict stage bundle; raw: `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-harness-post-verdict-2026-04-21.txt`.",
+    "A fresh live runtime proof passes on the current running stack and reconfirms `GET /register -> 200` with no browser secret leak, web `POST /api/platform/organization-shells -> 201`, anonymous backend admin-surface `401`, authorized backend `GET /api/v1/organizations -> 200`, explicit session restore to the original `membership_id + grant_id`, and truthful `409` for multi-access login; raw: `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-proof-2026-04-21.txt`, summary: `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-summary-2026-04-21.json`.",
+    "The named current bundle artifacts remain truthful against the fresh run: primary auth proof/summary match again, the current UI review remains PASS, the current harness refresh remains PASS, and the previous control-plane blocker raw is now historical only; audit: `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-evidence-audit-2026-04-21.txt`.",
+    "A fresh Web Interface Guidelines review of the touched auth files is PASS with no findings; raws: `.agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-21-continuation-verifier.md`, `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-ui-review-2026-04-21.txt`.",
+    "Frontend evidence requirements are still present in `evidence.json`: design brief source, Storybook lookup reference, reuse decision, changed UI files, and UI review result are all recorded; audit: `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-evidence-audit-2026-04-21.txt`."
   ],
   "failed_criteria": [],
   "proof_gaps": [],
   "exact_reproduction": [
-    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data",
-    "make dev",
-    "docker compose -f compose.platform.yml ps",
-    "make smoke",
-    "./scripts/backend_go_test.sh",
-    "./scripts/backend_go_build.sh",
-    "tmpbase=$(mktemp -d) && mkdir -p \"$tmpbase/swagger\" && docker run --rm -v /Users/yura-posledov/cursor/vrk:/workspace -v \"$tmpbase\":/tmpbase -w /workspace/apps/backend golang:1.26-alpine sh -lc 'apk add --no-cache git ca-certificates >/dev/null && /usr/local/go/bin/go install github.com/swaggo/swag/cmd/swag@v1.16.6 >/dev/null 2>&1 && /go/bin/swag init -g cmd/api/main.go -o /tmpbase/swagger >/dev/null' && diff -u \"$tmpbase/swagger/docs.go\" /Users/yura-posledov/cursor/vrk/apps/backend/docs/swagger/docs.go && diff -u \"$tmpbase/swagger/swagger.json\" /Users/yura-posledov/cursor/vrk/apps/backend/docs/swagger/swagger.json && diff -u \"$tmpbase/swagger/swagger.yaml\" /Users/yura-posledov/cursor/vrk/apps/backend/docs/swagger/swagger.yaml; rc=$?; rm -rf \"$tmpbase\"; exit $rc",
-    "cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run typecheck",
-    "cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run lint",
-    "cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run build",
-    "cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run browser-smoke",
-    "python3 .agent/stages/03-identity-master-data/proof_slice005_metrology_archive.py",
-    "Fresh manual UI review of `apps/web/app/(runtime)/equipment/page.tsx` and `apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx` against `https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md`",
-    "Manual drift inspection of `docs/roadmap.md`, `docs/PRD-MVP.md`, `docs/architecture/identity-master-data.md`, `docs/architecture/frontend-architecture.md`, `docs/design/customer-admin-bootstrap-flow.md`, `.agent/stages/03-identity-master-data/stage_spec.md`, `.agent/stages/03-identity-master-data/sprint_contract.md`, `.agent/stages/03-identity-master-data/evidence.md`, `.agent/stages/03-identity-master-data/evidence.json`, `.agent/stages/03-identity-master-data/feature_list.json`, and `.agent/stages/03-identity-master-data/progress.md`"
+    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data > .agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-harness-post-verdict-2026-04-21.txt 2>&1",
+    "curl -fsSL https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md > .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-21-continuation-verifier.md",
+    "Fresh live localhost proof on the current stack: `GET http://127.0.0.1:3100/register`, `POST http://127.0.0.1:3100/api/platform/organization-shells`, `POST http://127.0.0.1:18080/api/v1/platform/organization-shells`, `GET http://127.0.0.1:18080/api/v1/organizations`, authorized `GET http://127.0.0.1:18080/api/v1/organizations`, `POST http://127.0.0.1:18080/api/v1/first-admin-invites/{token}/accept`, `POST http://127.0.0.1:18080/api/v1/launch-wizard`, `POST http://127.0.0.1:18080/api/v1/sessions`, `GET http://127.0.0.1:18080/api/v1/sessions/current`, `POST http://127.0.0.1:18080/api/v1/employee-invites`, `POST http://127.0.0.1:18080/api/v1/invites/{token}/accept`, and the final direct `POST http://127.0.0.1:18080/api/v1/sessions -> 409`; results captured in `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-proof-2026-04-21.txt` and `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-summary-2026-04-21.json`.",
+    "Bundle truth audit comparing the fresh verifier summary to `.agent/stages/03-identity-master-data/raw/slice-007-008-direct-summary-2026-04-21.json`, `.agent/stages/03-identity-master-data/raw/slice-007-008-ui-review-2026-04-21-orchestrator-rerun2.txt`, `.agent/stages/03-identity-master-data/raw/slice-007-008-harness-check-2026-04-21-orchestrator-rerun8.txt`, and `.agent/stages/03-identity-master-data/raw/slice-007-008-verifier-agent-blocked-2026-04-21-orchestrator-rerun3.txt` -> `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-evidence-audit-2026-04-21.txt`."
   ],
-  "smallest_safe_fix_direction": "None. No open proof gaps on the current repo state."
+  "smallest_safe_fix_direction": "",
+  "fixer_rerun_required": false
 }

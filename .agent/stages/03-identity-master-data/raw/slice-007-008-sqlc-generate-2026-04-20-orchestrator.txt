@@ -1,0 +1,1 @@
+sqlc_generate_passed

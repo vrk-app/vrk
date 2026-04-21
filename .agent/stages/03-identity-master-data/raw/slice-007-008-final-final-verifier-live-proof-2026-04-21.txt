@@ -1,0 +1,43 @@
+{
+  "seed": "1776760063",
+  "ports": {
+    "backend": "127.0.0.1:18080",
+    "web": "127.0.0.1:3100"
+  },
+  "register_boundary": {
+    "page_status": 200,
+    "html_secret_leak": false,
+    "web_proxy_status": 201,
+    "web_proxy_invite_id": "d49a8a8a-546a-4794-9120-740551f20d1b"
+  },
+  "admin_surface": {
+    "platform_shell_unauthorized_status": 401,
+    "platform_shell_unauthorized_error": "unauthorized",
+    "organizations_unauthorized_status": 401,
+    "organizations_unauthorized_error": "unauthorized",
+    "organizations_authorized_status": 200,
+    "authorized_organizations_total": 5
+  },
+  "single_access_login": {
+    "membership_id": "97c7c3d7-9871-4d3e-91aa-119bd3e9f2ac",
+    "grant_id": "2b03ab93-0ce9-412a-adf1-5c23dd1b8a1c"
+  },
+  "session_restore": {
+    "original_membership_id": "97c7c3d7-9871-4d3e-91aa-119bd3e9f2ac",
+    "original_grant_id": "2b03ab93-0ce9-412a-adf1-5c23dd1b8a1c",
+    "second_membership_id": "87218448-057e-4808-a65b-60ac1630e40f",
+    "second_grant_id": "c5309c37-1424-479f-adc4-88d01c732a9a"
+  },
+  "multi_access_login": {
+    "status": 409,
+    "error": "multiple eligible access paths found; explicit workspace selection is required"
+  },
+  "notes": {
+    "workspace_picker_widening_observed": false,
+    "login_ui_continues_singular_landing": true,
+    "review_basis": [
+      "apps/web/app/login/page.tsx uses resolveSessionLandingPath(session) with no chooser state",
+      "POST /api/v1/sessions returned 409 conflict instead of issuing a widened multi-workspace session"
+    ]
+  }
+}

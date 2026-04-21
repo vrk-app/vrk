@@ -140,7 +140,7 @@ func (a *App) registerRoutes(
 
 	a.router.Route("/api/v1", func(r chi.Router) {
 		// Organizations
-		r.Route("/organizations", func(r chi.Router) {
+		r.With(platformAdminMiddleware(a.cfg.PlatformAdmin.SharedSecret)).Route("/organizations", func(r chi.Router) {
 			r.Get("/", organizationHandler.List)
 			r.Post("/", organizationHandler.Create)
 			r.Get("/{id}", organizationHandler.GetByID)
@@ -148,7 +148,7 @@ func (a *App) registerRoutes(
 			r.Delete("/{id}", organizationHandler.Delete)
 		})
 
-		r.Route("/platform", func(r chi.Router) {
+		r.With(platformAdminMiddleware(a.cfg.PlatformAdmin.SharedSecret)).Route("/platform", func(r chi.Router) {
 			r.Post("/organization-shells", bootstrapHandler.CreateOrganizationShell)
 		})
 

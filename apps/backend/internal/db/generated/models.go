@@ -163,6 +163,7 @@ type AuthSession struct {
 	ExpiresAt    pgtype.Timestamptz `json:"expiresAt"`
 	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
 	LastSeenAt   pgtype.Timestamptz `json:"lastSeenAt"`
+	GrantID      pgtype.UUID        `json:"grantId"`
 }
 
 type AuthSubdivision struct {
@@ -314,6 +315,85 @@ type PropertyType struct {
 	PropertyType string             `json:"propertyType"`
 	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt    pgtype.Timestamptz `json:"updatedAt"`
+}
+
+type RegistryEquipment struct {
+	ID              pgtype.UUID        `json:"id"`
+	OrganizationID  pgtype.UUID        `json:"organizationId"`
+	UnitID          pgtype.UUID        `json:"unitId"`
+	Manufacturer    string             `json:"manufacturer"`
+	Classification  string             `json:"classification"`
+	Model           string             `json:"model"`
+	FullName        string             `json:"fullName"`
+	FactoryNumber   string             `json:"factoryNumber"`
+	InventoryNumber *string            `json:"inventoryNumber"`
+	ManufactureYear int32              `json:"manufactureYear"`
+	Status          string             `json:"status"`
+	Comment         *string            `json:"comment"`
+	DocumentUrl     *string            `json:"documentUrl"`
+	CreatedAt       pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt       pgtype.Timestamptz `json:"updatedAt"`
+	ArchivedAt      pgtype.Timestamptz `json:"archivedAt"`
+}
+
+type RegistryMeasuringInstrument struct {
+	ID                 pgtype.UUID        `json:"id"`
+	OrganizationID     pgtype.UUID        `json:"organizationId"`
+	UnitID             pgtype.UUID        `json:"unitId"`
+	EquipmentID        pgtype.UUID        `json:"equipmentId"`
+	Name               string             `json:"name"`
+	InstrumentType     string             `json:"instrumentType"`
+	Model              string             `json:"model"`
+	RegistrationNumber string             `json:"registrationNumber"`
+	SerialNumber       string             `json:"serialNumber"`
+	Status             string             `json:"status"`
+	PlacementKind      string             `json:"placementKind"`
+	Comment            *string            `json:"comment"`
+	DocumentUrl        *string            `json:"documentUrl"`
+	CreatedAt          pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt          pgtype.Timestamptz `json:"updatedAt"`
+	ArchivedAt         pgtype.Timestamptz `json:"archivedAt"`
+}
+
+type RegistryMeasuringInstrumentStandard struct {
+	ID                    pgtype.UUID        `json:"id"`
+	MeasuringInstrumentID pgtype.UUID        `json:"measuringInstrumentId"`
+	StandardID            pgtype.UUID        `json:"standardId"`
+	CreatedAt             pgtype.Timestamptz `json:"createdAt"`
+}
+
+type RegistryMetrologyJournalEntry struct {
+	ID                   pgtype.UUID        `json:"id"`
+	OrganizationID       pgtype.UUID        `json:"organizationId"`
+	SubjectType          string             `json:"subjectType"`
+	SubjectID            pgtype.UUID        `json:"subjectId"`
+	OperationType        string             `json:"operationType"`
+	OperationDate        pgtype.Date        `json:"operationDate"`
+	DocumentNumber       string             `json:"documentNumber"`
+	ValidUntil           pgtype.Date        `json:"validUntil"`
+	ExecutorOrganization string             `json:"executorOrganization"`
+	AttachmentUrl        *string            `json:"attachmentUrl"`
+	Comment              *string            `json:"comment"`
+	CreatedAt            pgtype.Timestamptz `json:"createdAt"`
+}
+
+type RegistryStandard struct {
+	ID                          pgtype.UUID        `json:"id"`
+	OrganizationID              pgtype.UUID        `json:"organizationId"`
+	SubdivisionID               pgtype.UUID        `json:"subdivisionId"`
+	UnitID                      pgtype.UUID        `json:"unitId"`
+	OwnerLabel                  *string            `json:"ownerLabel"`
+	StandardType                string             `json:"standardType"`
+	Model                       string             `json:"model"`
+	Identifier                  string             `json:"identifier"`
+	SerialNumber                *string            `json:"serialNumber"`
+	MetrologicalCharacteristics string             `json:"metrologicalCharacteristics"`
+	Status                      string             `json:"status"`
+	Comment                     *string            `json:"comment"`
+	DocumentUrl                 *string            `json:"documentUrl"`
+	CreatedAt                   pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt                   pgtype.Timestamptz `json:"updatedAt"`
+	ArchivedAt                  pgtype.Timestamptz `json:"archivedAt"`
 }
 
 type RolePermission struct {

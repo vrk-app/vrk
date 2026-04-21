@@ -1,0 +1,36 @@
+final fresh verifier evidence audit: slice-007 + slice-008
+reviewed_at: 2026-04-21
+
+Fresh verifier reproduction on current repo state:
+- harness: PASS
+- proof script py_compile: PASS
+- backend go test ./...: PASS
+- backend go build -buildvcs=false ./...: PASS
+- web typecheck/lint/build: PASS
+- web-design-guidelines review on changed auth UI files: PASS
+- live stack proof on 127.0.0.1:18080 and 127.0.0.1:3100: PASS
+
+Fresh live proof confirmed:
+- GET /register -> 200 with no PLATFORM_ADMIN_SHARED_SECRET leak
+- web POST /api/platform/organization-shells -> 201
+- backend anonymous POST /api/v1/platform/organization-shells -> 401 unauthorized
+- backend anonymous GET /api/v1/organizations -> 401 unauthorized
+- backend authorized GET /api/v1/organizations -> 200
+- original session restores explicit membership_id + grant_id
+- direct login with multiple eligible access paths -> 409 with truthful conflict message
+- no workspace-picker widening observed in touched auth UI or runtime login contract
+
+Bundle truthfulness audit:
+- the stale blocked-state narrative has been cleared; evidence/progress/problems/verdict no longer present the older offline state as current
+- however, the current canonical primary proof attribution is still overstated:
+  - proof_slice007_008_auth_contract.py checks GET /register, web POST /api/platform/organization-shells, GET /api/v1/organizations (401/200), session restore, and conflict login
+  - it does not check anonymous backend POST /api/v1/platform/organization-shells
+  - evidence.md lines 51-61 present that backend shell-route 401 as covered by the primary targeted proof
+  - verdict.json lines 14-17 and exact_reproduction lines 23-34 still imply the canonical reproduction is complete via the current proof script plus prior build/runtime commands
+- result: the product slice is re-proven live, but the refreshed bundle still has a proof-attribution gap on the verifier-mandated backend /platform/organization-shells check
+
+Conclusion:
+- production/runtime criteria are satisfied on the current repo state
+- bundle-level verdict should remain FAIL until the proof bundle either:
+  - extends proof_slice007_008_auth_contract.py and refreshes the primary raw artifacts, or
+  - narrows evidence/verdict wording so the backend shell-route 401 is attributed only to the fresh-verifier live proof artifacts

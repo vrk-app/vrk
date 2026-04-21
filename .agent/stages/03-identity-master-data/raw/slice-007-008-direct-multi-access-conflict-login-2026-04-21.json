@@ -1,0 +1,4 @@
+{
+  "success": false,
+  "error": "multiple eligible access paths found; explicit workspace selection is required"
+}

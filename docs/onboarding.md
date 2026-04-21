@@ -165,6 +165,7 @@ cp apps/backend/.env.example apps/backend/.env
 
 ```dotenv
 SERVER_PORT=8080
+PLATFORM_ADMIN_SHARED_SECRET=stage03-platform-admin-secret
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres
@@ -172,6 +173,12 @@ DB_PASSWORD=postgres
 DB_NAME=db
 DB_SSL_MODE=disable
 ```
+
+`PLATFORM_ADMIN_SHARED_SECRET` обязателен для Stage 03 admin surface:
+
+- backend не стартует без этого значения;
+- server-side runtime `apps/web` тоже должен получить тот же secret, чтобы `/register` мог проксировать `POST /api/v1/platform/organization-shells` через Next route handler;
+- secret используется только на server-side boundary и не должен попадать в browser-visible env или client bundle.
 
 ## 6. Установка backend tools
 
@@ -260,15 +267,19 @@ http://localhost:8080/swagger/index.html
 
 ```bash
 curl http://localhost:8080/api/v1/organizations/
+curl -H "X-VRK-Platform-Admin-Secret: stage03-platform-admin-secret" \
+  http://localhost:8080/api/v1/organizations/
 curl http://localhost:8080/api/v1/equipment/
 curl http://localhost:8080/api/v1/agreements/
 ```
 
 Ожидаемый результат:
 
-- HTTP `200`;
+- анонимный `GET /api/v1/organizations/` возвращает HTTP `401`;
+- тот же запрос с `X-VRK-Platform-Admin-Secret` возвращает HTTP `200`;
+- `GET /api/v1/equipment/` и `GET /api/v1/agreements/` на живой Stage 03 runtime требуют рабочую auth/session boundary и не должны падать с `5xx`;
 - JSON-ответ без `5xx`;
-- как минимум для `organizations` и `equipment` должен вернуться непустой список или объект с данными, потому что в репозитории есть seed-миграция `apps/backend/migrations/000004_temp_data_for_tests.up.sql`.
+- как минимум для platform-admin `organizations` smoke должен вернуться непустой список или объект с данными, потому что в репозитории есть seed-миграция `apps/backend/migrations/000004_temp_data_for_tests.up.sql`.
 
 ## 11. Создание рабочей ветки
 
@@ -474,6 +485,8 @@ make run
 
 # 6) Separate terminal: smoke
 curl http://localhost:8080/api/v1/organizations/
+curl -H "X-VRK-Platform-Admin-Secret: stage03-platform-admin-secret" \
+  http://localhost:8080/api/v1/organizations/
 curl http://localhost:8080/api/v1/equipment/
 
 # 7) Work in branch

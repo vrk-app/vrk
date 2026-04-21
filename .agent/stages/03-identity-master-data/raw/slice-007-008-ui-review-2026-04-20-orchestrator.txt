@@ -1,0 +1,25 @@
+UI review scope:
+- apps/web/app/register/page.tsx
+- apps/web/features/Stage03Bootstrap/ui/PlatformAdminInviteForm.tsx
+- apps/web/app/login/page.tsx
+- apps/web/app/api/platform/organization-shells/route.ts
+- apps/web/app/api/auth/session/route.ts
+- apps/web/app/api/auth/session/current/route.ts
+- apps/web/shared/api/route-proxy.ts
+
+Review basis:
+- docs/design/serviceops-design-system.md
+- docs/design/ui-workflow.md
+- docs/architecture/frontend-architecture.md
+- .impeccable.md
+- storybook lookup result in raw/storybook-lookup-slice-007-008-2026-04-20-orchestrator.txt
+
+Result:
+- reuse
+- no net-new reusable UI family introduced
+- no blocking Web Interface Guidelines issues found in the touched auth/bootstrap surfaces
+
+Notes:
+- The visible `/register` and `/login` surfaces continue to reuse the existing auth layout and form primitives.
+- The new platform-admin credential stays entirely on the server-side route boundary and does not alter the visible UI hierarchy or introduce unsafe browser-side secret handling.
+- The login surface continues to show a direct, truthful error path, which is consistent with the new `409` access-selection conflict contract.

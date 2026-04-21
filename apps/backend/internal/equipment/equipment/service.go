@@ -127,6 +127,9 @@ func (s *equipmentService) Update(ctx context.Context, token string, id string, 
 	if current.OrganizationID != session.Organization.ID {
 		return nil, ErrForbidden
 	}
+	if current.ArchivedAt != nil {
+		return nil, ErrAlreadyArchived
+	}
 	if _, visible := registryaccess.VisibleUnitMap(session)[current.UnitID]; !visible {
 		return nil, ErrForbidden
 	}

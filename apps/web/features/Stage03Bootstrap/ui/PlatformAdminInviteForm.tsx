@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useTransition, type FormEventHandler } from "react";
 import { ArrowUpRight, Building2, Mail, ShieldCheck, UserRound } from "lucide-react";
 import { Button, Card, InputField, buttonVariants } from "@/shared/ui";
-import type { ApiEnvelope, OrganizationShellResponse } from "@/shared/api";
+import { parseApiResponse, type OrganizationShellResponse } from "@/shared/api";
 
 const roleOptions = [
   { label: "Заказчик", value: "customer" },
@@ -35,18 +35,21 @@ export function PlatformAdminInviteForm() {
       firstAdminEmail: String(formData.get("firstAdminEmail") ?? ""),
     };
 
-    const response = await fetch("/api/platform/organization-shells", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const body = (await response.json()) as ApiEnvelope<OrganizationShellResponse>;
-    if (!response.ok || !body.success || !body.data) {
-      setError(body.error ?? "Не удалось создать shell и приглашение.");
-      return;
-    }
+    try {
+      const response = await fetch("/api/platform/organization-shells", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const shell = await parseApiResponse<OrganizationShellResponse>(
+        response,
+        "Не удалось создать shell и приглашение.",
+      );
 
-    setSuccess(body.data);
+      setSuccess(shell);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Не удалось создать shell и приглашение.");
+    }
   };
 
   return (
@@ -143,7 +146,11 @@ export function PlatformAdminInviteForm() {
         ) : null}
 
         {success && invitePath ? (
-          <div className="grid gap-3 rounded-[var(--radius-xl)] border border-border bg-muted/60 p-4">
+          <div
+            aria-atomic="true"
+            aria-live="polite"
+            className="grid gap-3 rounded-[var(--radius-xl)] border border-border bg-muted/60 p-4"
+          >
             <p className="text-sm font-semibold text-foreground">Приглашение выпущено</p>
             <p className="text-sm leading-6 text-muted-foreground">
               Organization shell создана. Первый администратор должен открыть одноразовую ссылку ниже и задать пароль.

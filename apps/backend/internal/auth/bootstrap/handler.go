@@ -23,9 +23,11 @@ func NewHandler(service Service) *Handler {
 // @Tags         bootstrap
 // @Accept       json
 // @Produce      json
+// @Param        X-VRK-Platform-Admin-Secret header string true "Deployment-scoped platform admin secret"
 // @Param        request body CreateOrganizationShellRequest true "Organization shell data"
 // @Success      201  {object}  Response{data=OrganizationShellResponse}
 // @Failure      400  {object}  Response
+// @Failure      401  {object}  Response
 // @Failure      500  {object}  Response
 // @Router       /platform/organization-shells [post]
 func (h *Handler) CreateOrganizationShell(w http.ResponseWriter, r *http.Request) {
@@ -264,13 +266,14 @@ func (h *Handler) RevokeEmployeeInvite(w http.ResponseWriter, r *http.Request) {
 
 // CreateSession logs a user in by email/password.
 // @Summary      Create auth session
-// @Description  Logs the invited organization admin in and returns the current session snapshot.
+// @Description  Logs the user in when exactly one eligible membership/grant path exists and returns the current session snapshot.
 // @Tags         auth
 // @Accept       json
 // @Produce      json
 // @Param        request body CreateSessionRequest true "Session credentials"
 // @Success      200  {object}  Response{data=SessionSummaryResponse}
 // @Failure      401  {object}  Response
+// @Failure      409  {object}  Response
 // @Failure      500  {object}  Response
 // @Router       /sessions [post]
 func (h *Handler) CreateSession(w http.ResponseWriter, r *http.Request) {
@@ -398,6 +401,7 @@ func writeServiceError(w http.ResponseWriter, err error) {
 	case errors.Is(err, ErrInviteAlreadyAccepted),
 		errors.Is(err, ErrInviteExpired),
 		errors.Is(err, ErrInviteRevoked),
+		errors.Is(err, ErrAccessSelectionRequired),
 		errors.Is(err, ErrLaunchAlreadyCompleted),
 		errors.Is(err, ErrLaunchRequired),
 		errors.Is(err, ErrInviteDraftRequired),

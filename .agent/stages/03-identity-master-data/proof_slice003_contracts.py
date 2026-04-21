@@ -15,6 +15,7 @@ from typing import Any
 
 
 API_BASE = os.getenv("VRK_API_BASE_URL", "http://127.0.0.1:18080")
+PLATFORM_ADMIN_SECRET = os.getenv("PLATFORM_ADMIN_SHARED_SECRET", "stage03-platform-admin-secret")
 ROOT = Path(__file__).resolve().parent
 RAW_DIR = ROOT / "raw"
 TODAY = date.today()
@@ -63,6 +64,7 @@ def request_json(
     *,
     body: dict[str, Any] | None = None,
     token: str | None = None,
+    platform_admin: bool = False,
 ) -> tuple[int, Any]:
     url = f"{API_BASE}{path}"
     headers = {"Accept": "application/json"}
@@ -72,6 +74,8 @@ def request_json(
         data = json.dumps(body).encode("utf-8")
     if token:
         headers["Authorization"] = f"Bearer {token}"
+    if platform_admin:
+        headers["X-VRK-Platform-Admin-Secret"] = PLATFORM_ADMIN_SECRET
 
     req = urllib.request.Request(url, data=data, headers=headers, method=method)
     try:
@@ -90,9 +94,10 @@ def expect_ok(
     *,
     body: dict[str, Any] | None = None,
     token: str | None = None,
+    platform_admin: bool = False,
     expected_status: int,
 ) -> dict[str, Any]:
-    status, payload = request_json(method, path, body=body, token=token)
+    status, payload = request_json(method, path, body=body, token=token, platform_admin=platform_admin)
     if status != expected_status:
         raise HttpFailure(method, path, status, payload)
     if not payload.get("success"):
@@ -106,9 +111,10 @@ def expect_error(
     *,
     body: dict[str, Any] | None = None,
     token: str | None = None,
+    platform_admin: bool = False,
     expected_status: int,
 ) -> dict[str, Any]:
-    status, payload = request_json(method, path, body=body, token=token)
+    status, payload = request_json(method, path, body=body, token=token, platform_admin=platform_admin)
     if status != expected_status:
         raise HttpFailure(method, path, status, payload)
     return payload
@@ -122,6 +128,7 @@ def create_org(label: str, role: str) -> OrgContext:
     create_shell = expect_ok(
         "POST",
         "/api/v1/platform/organization-shells",
+        platform_admin=True,
         expected_status=201,
         body={
             "organizationName": org_name,

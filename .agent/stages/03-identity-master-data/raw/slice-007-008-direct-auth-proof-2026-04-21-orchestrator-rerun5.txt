@@ -1,0 +1,29 @@
+{
+  "seed": "1776760789",
+  "register_boundary": {
+    "page_status": 200,
+    "html_secret_leak": false,
+    "web_proxy_invite_id": "3395dafb-e9bf-4239-a816-1246a9b0fa41"
+  },
+  "admin_surface": {
+    "platform_shell_unauthorized_status": 401,
+    "platform_shell_unauthorized_error": "unauthorized",
+    "unauthorized_status": 401,
+    "unauthorized_error": "unauthorized",
+    "authorized_status": 200
+  },
+  "single_access_login": {
+    "membership_id": "e8531b09-d37e-4366-ac21-27194c91c02c",
+    "grant_id": "d01822ff-dfb7-4091-9235-f58fb526233a"
+  },
+  "session_restore": {
+    "original_membership_id": "e8531b09-d37e-4366-ac21-27194c91c02c",
+    "original_grant_id": "d01822ff-dfb7-4091-9235-f58fb526233a",
+    "second_membership_id": "e52feb65-7e65-4335-964d-ed5c673238ed",
+    "second_grant_id": "37d5e8a3-7d9e-4482-b285-7bfc1fe5169b"
+  },
+  "multi_access_login": {
+    "status": 409,
+    "error": "multiple eligible access paths found; explicit workspace selection is required"
+  }
+}

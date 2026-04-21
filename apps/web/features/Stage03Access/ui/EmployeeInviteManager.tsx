@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { ArrowUpRight, Mail, ShieldCheck, UserRound } from "lucide-react";
 import { Badge, Button, Card, InputField } from "@/shared/ui";
-import type { ApiEnvelope, CreateEmployeeInvitePayload, EmployeeInviteResponse, SessionSummaryResponse } from "@/shared/api";
+import { parseApiResponse, type CreateEmployeeInvitePayload, type EmployeeInviteResponse, type SessionSummaryResponse } from "@/shared/api";
 
 type Props = {
   session: SessionSummaryResponse;
@@ -103,15 +103,13 @@ export function EmployeeInviteManager({ session }: Props) {
 
     try {
       const response = await fetch("/api/auth/employee-invites", { cache: "no-store" });
-      const body = (await response.json()) as ApiEnvelope<EmployeeInviteResponse[]>;
-      if (!response.ok || !body.success || !body.data) {
-        setError(body.error ?? "Не удалось загрузить lifecycle приглашений.");
-        return;
-      }
-
-      setInvites(body.data);
-    } catch {
-      setError("Не удалось загрузить lifecycle приглашений.");
+      const nextInvites = await parseApiResponse<EmployeeInviteResponse[]>(
+        response,
+        "Не удалось загрузить lifecycle приглашений.",
+      );
+      setInvites(nextInvites);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Не удалось загрузить lifecycle приглашений.");
     } finally {
       setLoadingList(false);
     }
@@ -121,49 +119,57 @@ export function EmployeeInviteManager({ session }: Props) {
     setFormError(null);
     setError(null);
 
+    const expiresAtDate = new Date(expiresAt);
+    if (Number.isNaN(expiresAtDate.getTime())) {
+      setFormError("Укажите корректный срок действия ссылки.");
+      return;
+    }
+
     const payload: CreateEmployeeInvitePayload = {
       fullName,
       email,
       roleTemplate,
       scopeType,
       scopeId,
-      expiresAt: new Date(expiresAt).toISOString(),
+      expiresAt: expiresAtDate.toISOString(),
     };
 
-    const response = await fetch("/api/auth/employee-invites", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const body = (await response.json()) as ApiEnvelope<EmployeeInviteResponse>;
-    if (!response.ok || !body.success || !body.data) {
-      setFormError(body.error ?? "Не удалось создать draft приглашения.");
-      return;
-    }
+    try {
+      const response = await fetch("/api/auth/employee-invites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const createdInvite = await parseApiResponse<EmployeeInviteResponse>(
+        response,
+        "Не удалось создать draft приглашения.",
+      );
 
-    setFullName("");
-    setEmail("");
-    setRoleTemplate("unit_operator");
-    setScopeType("unit");
-    setScopeId(session.units[0]?.id ?? session.organization.id);
-    setExpiresAt(toLocalDateTimeInput(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)));
-    const createdInvite = body.data;
-    setInvites((current) => [createdInvite, ...current]);
+      setFullName("");
+      setEmail("");
+      setRoleTemplate("unit_operator");
+      setScopeType("unit");
+      setScopeId(session.units[0]?.id ?? session.organization.id);
+      setExpiresAt(toLocalDateTimeInput(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)));
+      setInvites((current) => [createdInvite, ...current]);
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "Не удалось создать draft приглашения.");
+    }
   }
 
   async function mutateInvite(path: string, fallbackMessage: string) {
     setError(null);
 
-    const response = await fetch(path, { method: "POST" });
-    const body = (await response.json()) as ApiEnvelope<EmployeeInviteResponse>;
-    if (!response.ok || !body.success || !body.data) {
-      setError(body.error ?? fallbackMessage);
+    try {
+      const response = await fetch(path, { method: "POST" });
+      const updatedInvite = await parseApiResponse<EmployeeInviteResponse>(response, fallbackMessage);
+
+      setInvites((current) => current.map((invite) => (invite.id === updatedInvite.id ? updatedInvite : invite)));
+      return updatedInvite;
+    } catch (error) {
+      setError(error instanceof Error ? error.message : fallbackMessage);
       return null;
     }
-
-    const updatedInvite = body.data;
-    setInvites((current) => current.map((invite) => (invite.id === updatedInvite.id ? updatedInvite : invite)));
-    return updatedInvite;
   }
 
   return (

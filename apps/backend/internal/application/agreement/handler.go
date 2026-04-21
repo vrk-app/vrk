@@ -9,6 +9,8 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+const internalServiceErrorMessage = "internal server error"
+
 type AgreementHandler struct {
 	service AgreementService
 }
@@ -221,6 +223,8 @@ func writeServiceError(w http.ResponseWriter, err error) {
 		sendError(w, http.StatusForbidden, err.Error())
 	case errors.Is(err, ErrNotFound):
 		sendError(w, http.StatusNotFound, err.Error())
+	case errors.Is(err, ErrConflict):
+		sendError(w, http.StatusConflict, err.Error())
 	case errors.Is(err, ErrInvalidID),
 		errors.Is(err, ErrInvalidUUID),
 		errors.Is(err, ErrInvalidDate),
@@ -243,7 +247,7 @@ func writeServiceError(w http.ResponseWriter, err error) {
 		errors.Is(err, ErrRoutingRegionRequired):
 		sendError(w, http.StatusBadRequest, err.Error())
 	default:
-		sendError(w, http.StatusInternalServerError, err.Error())
+		sendError(w, http.StatusInternalServerError, internalServiceErrorMessage)
 	}
 }
 

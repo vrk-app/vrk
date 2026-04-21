@@ -12,13 +12,15 @@ import urllib.request
 backend_port = os.getenv("BACKEND_HOST_PORT", "18080")
 web_port = os.getenv("WEB_HOST_PORT", "3100")
 field_port = os.getenv("FIELD_HOST_PORT", "3102")
+platform_admin_secret = os.getenv("PLATFORM_ADMIN_SHARED_SECRET", "stage03-platform-admin-secret")
 startup_timeout_seconds = 45
 retry_interval_seconds = 1
 
 
-def fetch(url: str):
+def fetch(url: str, headers: dict[str, str] | None = None):
+    request = urllib.request.Request(url, headers=headers or {})
     try:
-        with urllib.request.urlopen(url, timeout=15) as response:
+        with urllib.request.urlopen(request, timeout=15) as response:
             body = response.read().decode("utf-8")
             return response.getcode(), body
     except urllib.error.HTTPError as error:
@@ -85,6 +87,12 @@ def assert_field_manifest(status: int, body: str):
     assert payload["name"] == "VRK Field", payload
 
 
+platform_admin_headers = {
+    "Accept": "application/json",
+    "X-VRK-Platform-Admin-Secret": platform_admin_secret,
+}
+
+
 health_status, health_body = wait_until(
     "backend health endpoint",
     f"http://localhost:{backend_port}/healthz",
@@ -103,7 +111,15 @@ ready = json.loads(ready_body)
 assert ready_status == 200, ready
 assert ready["status"] == "ready", ready
 
-org_status, org_body = fetch(f"http://localhost:{backend_port}/api/v1/organizations?limit=1&offset=0")
+org_unauthorized_status, org_unauthorized_body = fetch(
+    f"http://localhost:{backend_port}/api/v1/organizations?limit=1&offset=0"
+)
+assert_unauthorized(org_unauthorized_status, org_unauthorized_body)
+
+org_status, org_body = fetch(
+    f"http://localhost:{backend_port}/api/v1/organizations?limit=1&offset=0",
+    headers=platform_admin_headers,
+)
 org_payload = json.loads(org_body)
 assert org_status == 200, org_payload
 assert org_payload["success"] is True, org_payload

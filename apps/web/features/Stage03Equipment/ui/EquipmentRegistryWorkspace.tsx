@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import type {
   ApiEnvelope,
+  ApiMeta,
   EquipmentRecord,
   JournalRecord,
   MeasuringInstrumentPlacement,
@@ -201,6 +202,48 @@ async function parseEnvelope<T>(response: Response, fallbackMessage: string) {
     throw new Error(body.error ?? fallbackMessage);
   }
   return body.data;
+}
+
+async function parseEnvelopeWithMeta<T>(response: Response, fallbackMessage: string): Promise<{ data: T; meta?: ApiMeta }> {
+  const body = (await response.json()) as ApiEnvelope<T>;
+  if (!response.ok || !body.success || body.data === undefined) {
+    throw new Error(body.error ?? fallbackMessage);
+  }
+  return {
+    data: body.data,
+    meta: body.meta,
+  };
+}
+
+const registryPageSize = 100;
+
+async function fetchAllRegistryPages<T>(path: string, fallbackMessage: string, includeArchived: boolean): Promise<T[]> {
+  const items: T[] = [];
+  let offset = 0;
+
+  for (;;) {
+    const searchParams = new URLSearchParams();
+    if (includeArchived) {
+      searchParams.set("includeArchived", "true");
+    }
+    searchParams.set("limit", String(registryPageSize));
+    searchParams.set("offset", String(offset));
+
+    const response = await fetch(`${path}?${searchParams.toString()}`, { cache: "no-store" });
+    const page = await parseEnvelopeWithMeta<T[]>(response, fallbackMessage);
+    items.push(...page.data);
+
+    const total = page.meta?.total ?? items.length;
+    const nextOffset = (page.meta?.offset ?? offset) + page.data.length;
+    if (page.data.length === 0 || nextOffset >= total) {
+      return items;
+    }
+    if (nextOffset <= offset) {
+      return items;
+    }
+
+    offset = nextOffset;
+  }
 }
 
 function optionalString(value: string) {
@@ -393,27 +436,28 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
 
   const activeEquipmentRecords = equipmentRecords.filter((item) => !item.archivedAt);
   const activeStandards = standards.filter((item) => !item.archivedAt);
+  const availableEquipmentOptions = activeEquipmentRecords.filter(
+    (item) => item.unit.id === measuringInstrumentForm.unitId,
+  );
   const selectedMeasuringInstrument =
     measuringInstruments.find((item) => item.id === selectedMeasuringInstrumentId) ?? null;
   const selectedStandard = standards.find((item) => item.id === selectedStandardId) ?? null;
+  const canSubmitMeasuringInstrument =
+    measuringInstrumentForm.placementKind !== "built_in" || measuringInstrumentForm.equipmentId !== "";
 
   const loadRegistries = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
 
-    const search = showArchived ? "?includeArchived=true" : "";
-
     try {
       const [equipmentData, measuringInstrumentData, standardData] = await Promise.all([
-        fetch(`/api/equipment${search}`, { cache: "no-store" }).then((response) =>
-          parseEnvelope<EquipmentRecord[]>(response, "Не удалось загрузить equipment registry."),
+        fetchAllRegistryPages<EquipmentRecord>("/api/equipment", "Не удалось загрузить equipment registry.", showArchived),
+        fetchAllRegistryPages<MeasuringInstrumentRecord>(
+          "/api/equipment/measuring-instruments",
+          "Не удалось загрузить registry средств измерения.",
+          showArchived,
         ),
-        fetch(`/api/equipment/measuring-instruments${search}`, { cache: "no-store" }).then((response) =>
-          parseEnvelope<MeasuringInstrumentRecord[]>(response, "Не удалось загрузить registry средств измерения."),
-        ),
-        fetch(`/api/equipment/standards${search}`, { cache: "no-store" }).then((response) =>
-          parseEnvelope<StandardRecord[]>(response, "Не удалось загрузить standards registry."),
-        ),
+        fetchAllRegistryPages<StandardRecord>("/api/equipment/standards", "Не удалось загрузить standards registry.", showArchived),
       ]);
 
       setEquipmentRecords(equipmentData);
@@ -488,6 +532,46 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
       setSelectedStandardId(standards[0]?.id ?? "");
     }
   }, [standards, selectedStandardId]);
+
+  useEffect(() => {
+    setMeasuringInstrumentForm((current) => {
+      if (current.placementKind !== "built_in") {
+        if (current.equipmentId === "") {
+          return current;
+        }
+
+        return {
+          ...current,
+          equipmentId: "",
+        };
+      }
+
+      if (current.equipmentId === "" || availableEquipmentOptions.some((item) => item.id === current.equipmentId)) {
+        return current;
+      }
+
+      return {
+        ...current,
+        equipmentId: "",
+      };
+    });
+  }, [availableEquipmentOptions, measuringInstrumentForm.placementKind]);
+
+  useEffect(() => {
+    const activeStandardIDs = new Set(activeStandards.map((item) => item.id));
+
+    setMeasuringInstrumentForm((current) => {
+      const nextStandardIDs = current.standardIds.filter((id) => activeStandardIDs.has(id));
+      if (nextStandardIDs.length === current.standardIds.length) {
+        return current;
+      }
+
+      return {
+        ...current,
+        standardIds: nextStandardIDs,
+      };
+    });
+  }, [activeStandards]);
 
   useEffect(() => {
     if (selectedMeasuringInstrumentId) {
@@ -1128,7 +1212,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                   <select
                     autoComplete="off"
                     className={selectClassName}
-                    disabled={measuringInstrumentForm.placementKind !== "built_in" || !activeEquipmentRecords.length}
+                    disabled={measuringInstrumentForm.placementKind !== "built_in" || !availableEquipmentOptions.length}
                     name="measuring-instrument-equipment-id"
                     onChange={(event) =>
                       setMeasuringInstrumentForm((current) => ({ ...current, equipmentId: event.target.value }))
@@ -1136,15 +1220,13 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                     value={measuringInstrumentForm.equipmentId}
                   >
                     <option value="">
-                      {activeEquipmentRecords.length ? "Выберите equipment record" : "Нет активного оборудования"}
+                      {availableEquipmentOptions.length ? "Выберите equipment record" : "Нет активного оборудования в выбранном юните"}
                     </option>
-                    {activeEquipmentRecords
-                      .filter((item) => item.unit.id === measuringInstrumentForm.unitId)
-                      .map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {item.fullName}
-                        </option>
-                      ))}
+                    {availableEquipmentOptions.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.fullName}
+                      </option>
+                    ))}
                   </select>
                 </label>
                 <label className="grid gap-2.5">
@@ -1219,6 +1301,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                   />
                 </label>
                 <Button
+                  disabled={!canSubmitMeasuringInstrument}
                   fullWidth
                   loading={isPending}
                   onClick={() =>

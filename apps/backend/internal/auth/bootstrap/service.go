@@ -589,11 +589,11 @@ func mapSessionSummary(snapshot *sessionSnapshot) *SessionSummaryResponse {
 		Units:        []UnitResponse{},
 	}
 
-	if session.GrantID.Valid && session.GrantRoleTemplate != nil && session.GrantScopeType != nil && session.GrantScopeID.Valid {
+	if session.GrantID.Valid && session.GrantScopeID.Valid {
 		response.Grant = &SessionGrantResponse{
 			ID:           uuidFromPG(session.GrantID).String(),
-			RoleTemplate: *session.GrantRoleTemplate,
-			ScopeType:    *session.GrantScopeType,
+			RoleTemplate: session.GrantRoleTemplate,
+			ScopeType:    session.GrantScopeType,
 			ScopeID:      uuidFromPG(session.GrantScopeID).String(),
 		}
 	}
@@ -630,14 +630,11 @@ func mapSessionSummary(snapshot *sessionSnapshot) *SessionSummaryResponse {
 
 func resolveWorkspace(snapshot *sessionSnapshot) SessionWorkspaceResponse {
 	session := snapshot.SessionRow
-	roleTemplate := ""
+	roleTemplate := session.GrantRoleTemplate
 	scopeType := "organization"
 	scopeID := uuid.Nil.String()
-	if session.GrantRoleTemplate != nil {
-		roleTemplate = *session.GrantRoleTemplate
-	}
-	if session.GrantScopeType != nil {
-		scopeType = *session.GrantScopeType
+	if session.GrantScopeType != "" {
+		scopeType = session.GrantScopeType
 	}
 	if session.GrantScopeID.Valid {
 		scopeID = uuidFromPG(session.GrantScopeID).String()
@@ -689,10 +686,8 @@ func resolveWorkspace(snapshot *sessionSnapshot) SessionWorkspaceResponse {
 func canManageEmployeeInvites(snapshot *sessionSnapshot) bool {
 	session := snapshot.SessionRow
 	return session.OrganizationLaunchState == "active" &&
-		session.GrantRoleTemplate != nil &&
-		*session.GrantRoleTemplate == "organization_admin" &&
-		session.GrantScopeType != nil &&
-		*session.GrantScopeType == "organization"
+		session.GrantRoleTemplate == "organization_admin" &&
+		session.GrantScopeType == "organization"
 }
 
 func scopeExistsInSnapshot(snapshot *sessionSnapshot, scopeType string, scopeID string) bool {

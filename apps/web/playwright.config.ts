@@ -26,6 +26,7 @@ export default defineConfig({
       INTERNAL_API_BASE_URL: "http://127.0.0.1:18080",
       NEXT_PUBLIC_API_BASE_URL: "http://127.0.0.1:18080",
       NEXT_PUBLIC_RUNTIME_DATA_MODE: "seed-read",
+      PLATFORM_ADMIN_SHARED_SECRET: "stage03-platform-admin-secret",
       PORT: String(port),
     },
   },

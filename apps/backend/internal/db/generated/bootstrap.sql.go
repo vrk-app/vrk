@@ -119,20 +119,23 @@ const createAuthSession = `-- name: CreateAuthSession :one
 INSERT INTO auth_sessions (
     account_id,
     membership_id,
+    grant_id,
     session_token,
     expires_at
 ) VALUES (
     $1,
     $2,
     $3,
-    $4
+    $4,
+    $5
 )
-RETURNING id, account_id, membership_id, session_token, expires_at, created_at, last_seen_at
+RETURNING id, account_id, membership_id, session_token, expires_at, created_at, last_seen_at, grant_id
 `
 
 type CreateAuthSessionParams struct {
 	AccountID    pgtype.UUID        `json:"accountId"`
 	MembershipID pgtype.UUID        `json:"membershipId"`
+	GrantID      pgtype.UUID        `json:"grantId"`
 	SessionToken string             `json:"sessionToken"`
 	ExpiresAt    pgtype.Timestamptz `json:"expiresAt"`
 }
@@ -141,6 +144,7 @@ func (q *Queries) CreateAuthSession(ctx context.Context, arg CreateAuthSessionPa
 	row := q.db.QueryRow(ctx, createAuthSession,
 		arg.AccountID,
 		arg.MembershipID,
+		arg.GrantID,
 		arg.SessionToken,
 		arg.ExpiresAt,
 	)
@@ -153,6 +157,7 @@ func (q *Queries) CreateAuthSession(ctx context.Context, arg CreateAuthSessionPa
 		&i.ExpiresAt,
 		&i.CreatedAt,
 		&i.LastSeenAt,
+		&i.GrantID,
 	)
 	return i, err
 }
@@ -382,80 +387,6 @@ func (q *Queries) DeleteAuthSessionByToken(ctx context.Context, sessionToken str
 	return err
 }
 
-const getAccountAccessByAccountID = `-- name: GetAccountAccessByAccountID :one
-SELECT
-    m.id,
-    m.organization_id,
-    m.membership_status,
-    o.role_title AS organization_role_title,
-    o.shell_name AS organization_shell_name,
-    o.short_name AS organization_short_name,
-    o.property_type AS organization_property_type,
-    o.inn AS organization_inn,
-    o.kpp AS organization_kpp,
-    o.legal_address AS organization_legal_address,
-    o.contact_email AS organization_contact_email,
-    o.contact_phone AS organization_contact_phone,
-    o.launch_state AS organization_launch_state,
-    o.launched_at AS organization_launched_at,
-    g.id AS grant_id,
-    g.role_template AS grant_role_template,
-    g.scope_type AS grant_scope_type,
-    g.scope_id AS grant_scope_id
-FROM auth_memberships m
-JOIN auth_bootstrap_organizations o ON o.id = m.organization_id
-LEFT JOIN auth_scoped_grants g ON g.membership_id = m.id
-WHERE m.account_id = $1
-LIMIT 1
-`
-
-type GetAccountAccessByAccountIDRow struct {
-	ID                       pgtype.UUID        `json:"id"`
-	OrganizationID           pgtype.UUID        `json:"organizationId"`
-	MembershipStatus         string             `json:"membershipStatus"`
-	OrganizationRoleTitle    string             `json:"organizationRoleTitle"`
-	OrganizationShellName    string             `json:"organizationShellName"`
-	OrganizationShortName    *string            `json:"organizationShortName"`
-	OrganizationPropertyType *string            `json:"organizationPropertyType"`
-	OrganizationInn          *string            `json:"organizationInn"`
-	OrganizationKpp          *string            `json:"organizationKpp"`
-	OrganizationLegalAddress *string            `json:"organizationLegalAddress"`
-	OrganizationContactEmail *string            `json:"organizationContactEmail"`
-	OrganizationContactPhone *string            `json:"organizationContactPhone"`
-	OrganizationLaunchState  string             `json:"organizationLaunchState"`
-	OrganizationLaunchedAt   pgtype.Timestamptz `json:"organizationLaunchedAt"`
-	GrantID                  pgtype.UUID        `json:"grantId"`
-	GrantRoleTemplate        *string            `json:"grantRoleTemplate"`
-	GrantScopeType           *string            `json:"grantScopeType"`
-	GrantScopeID             pgtype.UUID        `json:"grantScopeId"`
-}
-
-func (q *Queries) GetAccountAccessByAccountID(ctx context.Context, accountID pgtype.UUID) (GetAccountAccessByAccountIDRow, error) {
-	row := q.db.QueryRow(ctx, getAccountAccessByAccountID, accountID)
-	var i GetAccountAccessByAccountIDRow
-	err := row.Scan(
-		&i.ID,
-		&i.OrganizationID,
-		&i.MembershipStatus,
-		&i.OrganizationRoleTitle,
-		&i.OrganizationShellName,
-		&i.OrganizationShortName,
-		&i.OrganizationPropertyType,
-		&i.OrganizationInn,
-		&i.OrganizationKpp,
-		&i.OrganizationLegalAddress,
-		&i.OrganizationContactEmail,
-		&i.OrganizationContactPhone,
-		&i.OrganizationLaunchState,
-		&i.OrganizationLaunchedAt,
-		&i.GrantID,
-		&i.GrantRoleTemplate,
-		&i.GrantScopeType,
-		&i.GrantScopeID,
-	)
-	return i, err
-}
-
 const getAuthAccountByEmail = `-- name: GetAuthAccountByEmail :one
 SELECT id, full_name, email, password_hash, status, created_at, updated_at
 FROM auth_accounts
@@ -531,8 +462,9 @@ FROM auth_sessions s
 JOIN auth_accounts a ON a.id = s.account_id
 JOIN auth_memberships m ON m.id = s.membership_id
 JOIN auth_bootstrap_organizations o ON o.id = m.organization_id
-LEFT JOIN auth_scoped_grants g ON g.membership_id = m.id
+JOIN auth_scoped_grants g ON g.id = s.grant_id AND g.membership_id = s.membership_id
 WHERE s.session_token = $1
+  AND m.membership_status = 'active'
 LIMIT 1
 `
 
@@ -560,8 +492,8 @@ type GetCurrentSessionRow struct {
 	OrganizationLaunchState  string             `json:"organizationLaunchState"`
 	OrganizationLaunchedAt   pgtype.Timestamptz `json:"organizationLaunchedAt"`
 	GrantID                  pgtype.UUID        `json:"grantId"`
-	GrantRoleTemplate        *string            `json:"grantRoleTemplate"`
-	GrantScopeType           *string            `json:"grantScopeType"`
+	GrantRoleTemplate        string             `json:"grantRoleTemplate"`
+	GrantScopeType           string             `json:"grantScopeType"`
 	GrantScopeID             pgtype.UUID        `json:"grantScopeId"`
 }
 
@@ -657,6 +589,94 @@ func (q *Queries) GetFirstAdminInviteByToken(ctx context.Context, inviteToken st
 		&i.OrganizationLaunchState,
 	)
 	return i, err
+}
+
+const listAccountAccessPathsByAccountID = `-- name: ListAccountAccessPathsByAccountID :many
+SELECT
+    m.id AS membership_id,
+    m.organization_id,
+    m.membership_status,
+    o.role_title AS organization_role_title,
+    o.shell_name AS organization_shell_name,
+    o.short_name AS organization_short_name,
+    o.property_type AS organization_property_type,
+    o.inn AS organization_inn,
+    o.kpp AS organization_kpp,
+    o.legal_address AS organization_legal_address,
+    o.contact_email AS organization_contact_email,
+    o.contact_phone AS organization_contact_phone,
+    o.launch_state AS organization_launch_state,
+    o.launched_at AS organization_launched_at,
+    g.id AS grant_id,
+    g.role_template AS grant_role_template,
+    g.scope_type AS grant_scope_type,
+    g.scope_id AS grant_scope_id
+FROM auth_memberships m
+JOIN auth_bootstrap_organizations o ON o.id = m.organization_id
+JOIN auth_scoped_grants g ON g.membership_id = m.id
+WHERE m.account_id = $1
+  AND m.membership_status = 'active'
+ORDER BY m.created_at ASC, g.created_at ASC
+`
+
+type ListAccountAccessPathsByAccountIDRow struct {
+	MembershipID             pgtype.UUID        `json:"membershipId"`
+	OrganizationID           pgtype.UUID        `json:"organizationId"`
+	MembershipStatus         string             `json:"membershipStatus"`
+	OrganizationRoleTitle    string             `json:"organizationRoleTitle"`
+	OrganizationShellName    string             `json:"organizationShellName"`
+	OrganizationShortName    *string            `json:"organizationShortName"`
+	OrganizationPropertyType *string            `json:"organizationPropertyType"`
+	OrganizationInn          *string            `json:"organizationInn"`
+	OrganizationKpp          *string            `json:"organizationKpp"`
+	OrganizationLegalAddress *string            `json:"organizationLegalAddress"`
+	OrganizationContactEmail *string            `json:"organizationContactEmail"`
+	OrganizationContactPhone *string            `json:"organizationContactPhone"`
+	OrganizationLaunchState  string             `json:"organizationLaunchState"`
+	OrganizationLaunchedAt   pgtype.Timestamptz `json:"organizationLaunchedAt"`
+	GrantID                  pgtype.UUID        `json:"grantId"`
+	GrantRoleTemplate        string             `json:"grantRoleTemplate"`
+	GrantScopeType           string             `json:"grantScopeType"`
+	GrantScopeID             pgtype.UUID        `json:"grantScopeId"`
+}
+
+func (q *Queries) ListAccountAccessPathsByAccountID(ctx context.Context, accountID pgtype.UUID) ([]ListAccountAccessPathsByAccountIDRow, error) {
+	rows, err := q.db.Query(ctx, listAccountAccessPathsByAccountID, accountID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListAccountAccessPathsByAccountIDRow{}
+	for rows.Next() {
+		var i ListAccountAccessPathsByAccountIDRow
+		if err := rows.Scan(
+			&i.MembershipID,
+			&i.OrganizationID,
+			&i.MembershipStatus,
+			&i.OrganizationRoleTitle,
+			&i.OrganizationShellName,
+			&i.OrganizationShortName,
+			&i.OrganizationPropertyType,
+			&i.OrganizationInn,
+			&i.OrganizationKpp,
+			&i.OrganizationLegalAddress,
+			&i.OrganizationContactEmail,
+			&i.OrganizationContactPhone,
+			&i.OrganizationLaunchState,
+			&i.OrganizationLaunchedAt,
+			&i.GrantID,
+			&i.GrantRoleTemplate,
+			&i.GrantScopeType,
+			&i.GrantScopeID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listAuthSubdivisionsByOrganization = `-- name: ListAuthSubdivisionsByOrganization :many

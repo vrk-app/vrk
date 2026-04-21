@@ -4,7 +4,7 @@ import { useState, useTransition, type FormEventHandler } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, LockKeyhole, Mail, UserRound } from "lucide-react";
 import { Button, Card, InputField } from "@/shared/ui";
-import { resolveSessionLandingPath, type ApiEnvelope, type PublicInviteInspectionResponse, type SessionSummaryResponse } from "@/shared/api";
+import { parseApiResponse, resolveSessionLandingPath, type PublicInviteInspectionResponse, type SessionSummaryResponse } from "@/shared/api";
 
 type Props = {
   invite: PublicInviteInspectionResponse;
@@ -25,19 +25,19 @@ export function FirstAdminActivationForm({ invite, inviteToken }: Props) {
       return;
     }
 
-    const response = await fetch(`/api/auth/invites/${inviteToken}/accept`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
-    const body = (await response.json()) as ApiEnvelope<SessionSummaryResponse>;
-    if (!response.ok || !body.success || !body.data) {
-      setError(body.error ?? "Не удалось активировать приглашение.");
-      return;
-    }
+    try {
+      const response = await fetch(`/api/auth/invites/${inviteToken}/accept`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      const session = await parseApiResponse<SessionSummaryResponse>(response, "Не удалось активировать приглашение.");
 
-    router.push(resolveSessionLandingPath(body.data));
-    router.refresh();
+      router.push(resolveSessionLandingPath(session));
+      router.refresh();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Не удалось активировать приглашение.");
+    }
   };
 
   return (

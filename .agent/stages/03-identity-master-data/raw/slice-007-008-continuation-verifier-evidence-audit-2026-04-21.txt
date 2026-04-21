@@ -1,0 +1,20 @@
+slice-007/008 evidence audit
+fresh_summary: .agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-summary-2026-04-21.json
+current_summary: .agent/stages/03-identity-master-data/raw/slice-007-008-direct-summary-2026-04-21.json
+
+- PASS: register page status: 200 reproduced again
+- PASS: register secret leak guard: False reproduced again
+- PASS: anonymous platform shell status: 401 reproduced again
+- PASS: anonymous organizations status: 401 reproduced again
+- PASS: authorized organizations status: 200 reproduced again
+- PASS: direct multi-access login status: 409 reproduced again
+- PASS: direct multi-access login error: 'multiple eligible access paths found; explicit workspace selection is required' reproduced again
+- PASS: session restore original membership: stored original token restored the original membership_id
+- PASS: session restore original grant: stored original token restored the original grant_id
+- PASS: second session divergence: second accepted access path has a different membership_id as expected
+- PASS: evidence UI scope: evidence.json records the current touched UI scope
+- PASS: evidence field design_brief_source: present
+- PASS: evidence field ui_lookup: present
+- PASS: evidence field changed_ui_files: present
+- PASS: evidence field ui_review: present
+- PASS: historical blocker classification: current verifier completion now exists; prior control-plane blocker raw is historical only and no longer blocks current repo truth

@@ -4,11 +4,12 @@ import { useEffect, useState, useTransition, type FormEventHandler } from "react
 import { useRouter } from "next/navigation";
 import { AuthAside, loginAsideItems } from "@/app/_components/AuthAside";
 import { AuthSplitLayout, ConsentRow, LoginForm } from "@/widgets/Auth";
-import { resolveSessionLandingPath, type ApiEnvelope, type SessionSummaryResponse } from "@/shared/api";
+import { parseApiResponse, resolveSessionLandingPath, type SessionSummaryResponse } from "@/shared/api";
 
 export default function LoginPage() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [isLogoutPending, setIsLogoutPending] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -17,11 +18,22 @@ export default function LoginPage() {
       return;
     }
 
-    void fetch("/api/auth/session/current", { method: "DELETE" });
+    setIsLogoutPending(true);
+
+    void fetch("/api/auth/session/current", { method: "DELETE" })
+      .catch(() => null)
+      .finally(() => {
+        window.history.replaceState(null, "", "/login");
+        setIsLogoutPending(false);
+      });
   }, []);
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
+    if (isLogoutPending) {
+      return;
+    }
+
     setFormError(null);
     const formData = new FormData(event.currentTarget);
 
@@ -35,17 +47,12 @@ export default function LoginPage() {
         }),
       })
         .then(async (response) => {
-          const body = (await response.json()) as ApiEnvelope<SessionSummaryResponse>;
-          if (!response.ok || !body.success || !body.data) {
-            setFormError(body.error ?? "Не удалось выполнить вход.");
-            return;
-          }
-
-          router.push(resolveSessionLandingPath(body.data));
+          const session = await parseApiResponse<SessionSummaryResponse>(response, "Не удалось выполнить вход.");
+          router.push(resolveSessionLandingPath(session));
           router.refresh();
         })
-        .catch(() => {
-          setFormError("Не удалось выполнить вход.");
+        .catch((error: unknown) => {
+          setFormError(error instanceof Error ? error.message : "Не удалось выполнить вход.");
         });
     });
   };
@@ -65,7 +72,7 @@ export default function LoginPage() {
             />
           }
           formError={formError ?? undefined}
-          loading={isPending}
+          loading={isPending || isLogoutPending}
           onSubmit={handleSubmit}
           submitLabel="Войти и открыть рабочий contour"
         />

@@ -2,9 +2,11 @@ package equipment
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -204,7 +206,7 @@ func (r *equipmentRepository) Update(ctx context.Context, item Equipment) (*Equi
             comment = $11,
             document_url = $12,
             updated_at = NOW()
-        WHERE id = $1
+        WHERE id = $1 AND archived_at IS NULL
         RETURNING id
     `
 
@@ -225,6 +227,9 @@ func (r *equipmentRepository) Update(ctx context.Context, item Equipment) (*Equi
 		item.Comment,
 		item.DocumentURL,
 	).Scan(&id); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrAlreadyArchived
+		}
 		return nil, fmt.Errorf("%w: %v", ErrUpdateFailed, err)
 	}
 

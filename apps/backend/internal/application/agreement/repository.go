@@ -61,7 +61,7 @@ func (r *agreementRepository) GetByID(ctx context.Context, id uuid.UUID) (*Agree
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrNotFound
 		}
-		return nil, fmt.Errorf("%w: %v", ErrNotFound, err)
+		return nil, err
 	}
 
 	return mapGetAgreementRow(&row), nil
@@ -109,8 +109,12 @@ func (r *agreementRepository) Update(ctx context.Context, m Agreement) (*Agreeme
 		LocationScopeLabel:       cloneString(m.LocationScopeLabel),
 		Source:                   cloneString(m.Source),
 		SubjectOfAgreement:       cloneString(m.SubjectOfAgreement),
+		UpdatedAt:                pgtype.Timestamptz{Time: m.UpdatedAt, Valid: true},
 	})
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrConflict
+		}
 		return nil, fmt.Errorf("%w: %v", ErrUpdateFailed, err)
 	}
 
@@ -140,7 +144,7 @@ func (r *agreementRepository) GetActiveContractorByID(ctx context.Context, id uu
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrContractorOrganizationInvalid
 		}
-		return nil, fmt.Errorf("%w: %v", ErrContractorOrganizationInvalid, err)
+		return nil, err
 	}
 
 	return &ContractorOption{

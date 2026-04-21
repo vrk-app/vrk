@@ -151,12 +151,13 @@ func (r *repository) AcceptInvite(ctx context.Context, invite *generated.GetFirs
 		return nil, err
 	}
 
-	if _, err := qtx.CreateAuthScopedGrant(ctx, generated.CreateAuthScopedGrantParams{
+	grant, err := qtx.CreateAuthScopedGrant(ctx, generated.CreateAuthScopedGrantParams{
 		MembershipID: membership.ID,
 		RoleTemplate: "organization_admin",
 		ScopeType:    "organization",
 		ScopeID:      invite.OrganizationID,
-	}); err != nil {
+	})
+	if err != nil {
 		return nil, err
 	}
 
@@ -170,6 +171,7 @@ func (r *repository) AcceptInvite(ctx context.Context, invite *generated.GetFirs
 	if _, err := qtx.CreateAuthSession(ctx, generated.CreateAuthSessionParams{
 		AccountID:    account.ID,
 		MembershipID: membership.ID,
+		GrantID:      grant.ID,
 		SessionToken: sessionToken,
 		ExpiresAt:    toPGTime(sessionExpiresAt),
 	}); err != nil {
@@ -184,17 +186,20 @@ func (r *repository) AcceptInvite(ctx context.Context, invite *generated.GetFirs
 }
 
 func (r *repository) CreateSession(ctx context.Context, accountID uuid.UUID, sessionToken string, sessionExpiresAt time.Time) (*sessionSnapshot, error) {
-	access, err := r.q.GetAccountAccessByAccountID(ctx, toPGUUID(accountID))
+	accessPaths, err := r.q.ListAccountAccessPathsByAccountID(ctx, toPGUUID(accountID))
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, ErrUnauthorized
-		}
+		return nil, err
+	}
+
+	access, err := selectSingleAccess(accessPaths)
+	if err != nil {
 		return nil, err
 	}
 
 	if _, err := r.q.CreateAuthSession(ctx, generated.CreateAuthSessionParams{
 		AccountID:    toPGUUID(accountID),
-		MembershipID: access.ID,
+		MembershipID: access.MembershipID,
+		GrantID:      access.GrantID,
 		SessionToken: sessionToken,
 		ExpiresAt:    toPGTime(sessionExpiresAt),
 	}); err != nil {
@@ -425,12 +430,13 @@ func (r *repository) AcceptEmployeeInvite(ctx context.Context, invite *generated
 		return nil, err
 	}
 
-	if _, err := qtx.UpsertAuthScopedGrant(ctx, generated.UpsertAuthScopedGrantParams{
+	grant, err := qtx.UpsertAuthScopedGrant(ctx, generated.UpsertAuthScopedGrantParams{
 		MembershipID: membership.ID,
 		RoleTemplate: invite.RoleTemplate,
 		ScopeType:    invite.ScopeType,
 		ScopeID:      invite.ScopeID,
-	}); err != nil {
+	})
+	if err != nil {
 		return nil, err
 	}
 
@@ -444,6 +450,7 @@ func (r *repository) AcceptEmployeeInvite(ctx context.Context, invite *generated
 	if _, err := qtx.CreateAuthSession(ctx, generated.CreateAuthSessionParams{
 		AccountID:    account.ID,
 		MembershipID: membership.ID,
+		GrantID:      grant.ID,
 		SessionToken: sessionToken,
 		ExpiresAt:    toPGTime(sessionExpiresAt),
 	}); err != nil {
@@ -476,12 +483,23 @@ type graphReader interface {
 	ListAuthUnitsByOrganization(ctx context.Context, organizationID pgtype.UUID) ([]generated.AuthUnit, error)
 }
 
+func selectSingleAccess(rows []generated.ListAccountAccessPathsByAccountIDRow) (*generated.ListAccountAccessPathsByAccountIDRow, error) {
+	switch len(rows) {
+	case 0:
+		return nil, ErrUnauthorized
+	case 1:
+		return &rows[0], nil
+	default:
+		return nil, ErrAccessSelectionRequired
+	}
+}
+
 func restrictOrganizationGraph(row generated.GetCurrentSessionRow, subdivisions []generated.AuthSubdivision, units []generated.AuthUnit) ([]generated.AuthSubdivision, []generated.AuthUnit) {
-	if row.GrantScopeType == nil || !row.GrantScopeID.Valid {
+	if !row.GrantScopeID.Valid {
 		return []generated.AuthSubdivision{}, []generated.AuthUnit{}
 	}
 
-	switch *row.GrantScopeType {
+	switch row.GrantScopeType {
 	case "organization":
 		return subdivisions, units
 	case "subdivision":

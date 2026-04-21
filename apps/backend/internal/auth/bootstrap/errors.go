@@ -27,6 +27,7 @@ var (
 	ErrInviteRevokeNotAllowed     = errors.New("invite cannot be revoked in its current state")
 	ErrUnauthorized               = errors.New("unauthorized")
 	ErrForbidden                  = errors.New("forbidden")
+	ErrAccessSelectionRequired    = errors.New("multiple eligible access paths found; explicit workspace selection is required")
 	ErrLaunchAlreadyCompleted     = errors.New("launch wizard already completed")
 	ErrLaunchRequired             = errors.New("organization launch must be completed before inviting employees")
 	ErrStructureModeInvalid       = errors.New("structure mode must be subdivision or unit")

@@ -23,8 +23,7 @@ type Querier interface {
 	CreateFirstAdminInvite(ctx context.Context, arg CreateFirstAdminInviteParams) (AuthFirstAdminInvite, error)
 	CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (CreateOrganizationRow, error)
 	DeleteAuthSessionByToken(ctx context.Context, sessionToken string) error
-	DeleteOrganization(ctx context.Context, id pgtype.UUID) error
-	GetAccountAccessByAccountID(ctx context.Context, accountID pgtype.UUID) (GetAccountAccessByAccountIDRow, error)
+	DeleteOrganization(ctx context.Context, id pgtype.UUID) (int64, error)
 	GetAuthAccountByEmail(ctx context.Context, lower string) (AuthAccount, error)
 	GetAuthAccountByID(ctx context.Context, id pgtype.UUID) (AuthAccount, error)
 	GetCurrentSession(ctx context.Context, sessionToken string) (GetCurrentSessionRow, error)
@@ -32,6 +31,7 @@ type Querier interface {
 	GetEmployeeInviteByToken(ctx context.Context, inviteToken *string) (GetEmployeeInviteByTokenRow, error)
 	GetFirstAdminInviteByToken(ctx context.Context, inviteToken string) (GetFirstAdminInviteByTokenRow, error)
 	GetOrganizationByID(ctx context.Context, id pgtype.UUID) (GetOrganizationByIDRow, error)
+	ListAccountAccessPathsByAccountID(ctx context.Context, accountID pgtype.UUID) ([]ListAccountAccessPathsByAccountIDRow, error)
 	ListAuthSubdivisionsByOrganization(ctx context.Context, organizationID pgtype.UUID) ([]AuthSubdivision, error)
 	ListAuthUnitsByOrganization(ctx context.Context, organizationID pgtype.UUID) ([]AuthUnit, error)
 	ListEmployeeInvitesByOrganization(ctx context.Context, organizationID pgtype.UUID) ([]AuthEmployeeInvite, error)

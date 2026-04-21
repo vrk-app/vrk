@@ -1,0 +1,16 @@
+?   	backend/cmd/api	[no test files]
+?   	backend/docs/swagger	[no test files]
+ok  	backend/internal/app	(cached)
+ok  	backend/internal/application/agreement	(cached)
+?   	backend/internal/application/application	[no test files]
+ok  	backend/internal/auth/bootstrap	(cached)
+ok  	backend/internal/auth/organization	(cached)
+?   	backend/internal/auth/user	[no test files]
+?   	backend/internal/db/generated	[no test files]
+ok  	backend/internal/equipment/equipment	(cached)
+?   	backend/internal/equipment/measuringinstrument	[no test files]
+?   	backend/internal/equipment/metrologyjournal	[no test files]
+?   	backend/internal/equipment/registryaccess	[no test files]
+?   	backend/internal/equipment/standard	[no test files]
+?   	backend/internal/infrastructure/config	[no test files]
+?   	backend/internal/infrastructure/db	[no test files]

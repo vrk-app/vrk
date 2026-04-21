@@ -1,0 +1,65 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": "a91b476d-596d-439f-8f99-9f974ddc5918",
+      "propertyType": "ООО",
+      "name": "ООО \"РемСтрой\"",
+      "shortName": "РемСтрой",
+      "inn": "4567890123",
+      "kpp": "456789012",
+      "address": "г. Москва, ул. Строителей, д. 10",
+      "role": "contractor",
+      "directorName": "Сергей Михайлов"
+    },
+    {
+      "id": "848c76c8-c8f8-4412-aa89-66895f004161",
+      "propertyType": "ООО",
+      "name": "ООО \"Ромашка\"",
+      "shortName": "Ромашка",
+      "inn": "1234567890",
+      "kpp": "123456789",
+      "address": "г. Москва, ул. Цветочная, д. 1",
+      "role": "customer",
+      "directorName": "Иван Петров"
+    },
+    {
+      "id": "6385fa2d-21ea-440d-af8e-b9d74230607d",
+      "propertyType": "ООО",
+      "name": "ООО \"Лютик\"",
+      "shortName": "Лютик",
+      "inn": "2345678901",
+      "kpp": "234567890",
+      "address": "г. Санкт-Петербург, Невский пр., д. 100",
+      "role": "customer",
+      "directorName": "Алексей Сидоров"
+    },
+    {
+      "id": "b58ea83a-bf14-454a-806e-0d57e7e73ea3",
+      "propertyType": "АО",
+      "name": "АО \"Метрология+\"",
+      "shortName": "Метрология+",
+      "inn": "5678901234",
+      "kpp": "567890123",
+      "address": "г. Казань, ул. Лаборантов, д. 5",
+      "role": "contractor",
+      "directorName": "Екатерина Волкова"
+    },
+    {
+      "id": "21c26da7-5e93-4e6b-bc0c-adfd3ee3351e",
+      "propertyType": "АО",
+      "name": "АО \"ТехноСервис\"",
+      "shortName": "ТехноСервис",
+      "inn": "3456789012",
+      "kpp": "345678901",
+      "address": "г. Екатеринбург, ул. Машиностроителей, д. 50",
+      "role": "customer",
+      "directorName": "Дмитрий Кузнецов"
+    }
+  ],
+  "meta": {
+    "total": 5,
+    "limit": 5,
+    "offset": 0
+  }
+}

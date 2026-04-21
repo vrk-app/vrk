@@ -1,4 +1,4 @@
-import type { ApiEnvelope } from "./bootstrap";
+import type { ApiEnvelope, ApiMeta } from "./bootstrap";
 
 const DEFAULT_INTERNAL_API_BASE_URL = "http://127.0.0.1:18080";
 
@@ -12,6 +12,11 @@ export class BackendError extends Error {
   }
 }
 
+export type ApiResult<T> = {
+  data: T;
+  meta?: ApiMeta;
+};
+
 export function getInternalApiBaseUrl() {
   const configured =
     process.env.INTERNAL_API_BASE_URL?.trim() ||
@@ -24,7 +29,7 @@ export function getInternalApiBaseUrl() {
 export async function fetchBackend<T>(
   path: string,
   init: RequestInit = {},
-): Promise<T> {
+): Promise<ApiResult<T>> {
   const headers = new Headers(init.headers);
   if (!headers.has("Content-Type") && init.body) {
     headers.set("Content-Type", "application/json");
@@ -37,7 +42,14 @@ export async function fetchBackend<T>(
   });
 
   const text = await response.text();
-  const payload = text ? (JSON.parse(text) as ApiEnvelope<T>) : undefined;
+  let payload: ApiEnvelope<T> | undefined;
+  if (text) {
+    try {
+      payload = JSON.parse(text) as ApiEnvelope<T>;
+    } catch {
+      throw new BackendError("backend returned invalid JSON", 502);
+    }
+  }
 
   if (!response.ok) {
     throw new BackendError(payload?.error ?? "backend request failed", response.status);
@@ -47,5 +59,8 @@ export async function fetchBackend<T>(
     throw new BackendError(payload?.error ?? "backend payload missing data", response.status);
   }
 
-  return payload.data;
+  return {
+    data: payload.data,
+    meta: payload.meta,
+  };
 }

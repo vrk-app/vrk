@@ -1,7 +1,7 @@
 # Архитектура фронтенда и практики разработки
 
 Статус: accepted baseline  
-Обновлено: 2026-04-19
+Обновлено: 2026-04-20
 
 ## Назначение
 
@@ -93,7 +93,8 @@ flowchart LR
 - приглашенный администратор проходит путь `/register/[token] -> /company/setup -> /company`;
 - server-side runtime layout читает текущую session и не пускает активированного администратора в пустой shell;
 - browser не ходит напрямую в container-only backend host: Next route handlers в `app/api/*` проксируют invite/session/bootstrap requests к `apps/backend`;
-- текущая session хранится в HttpOnly cookie `vrk_session`, а server components читают ее через `fetchSessionSummary`.
+- `/api/platform/organization-shells` inject-ит `X-VRK-Platform-Admin-Secret` только на server side из `PLATFORM_ADMIN_SHARED_SECRET`, поэтому browser не видит deployment-scoped admin credential;
+- текущая session хранится в HttpOnly cookie `vrk_session`, а server components читают ее через request-scoped `fetchSessionSummary`, чтобы layout и page не дублировали один и тот же backend call в рамках одного запроса.
 
 ```mermaid
 flowchart LR
@@ -116,7 +117,9 @@ flowchart LR
   - organization-scope пользователь видит весь org graph и, только при `workspace.canManageEmployeeInvites`, employee invite manager;
   - subdivision-scope пользователь видит только свое подразделение и его child units;
   - unit-scope пользователь видит только один юнит и не видит broader org graph;
-- `/login` после employee acceptance больше не возвращает пользователя в generic shell, а сразу восстанавливает его сохраненный workspace contour.
+- `/login` после employee acceptance больше не возвращает пользователя в generic shell, а сразу восстанавливает его сохраненный scoped contour;
+- Stage 03 намеренно не строит workspace picker UI: session остается singular и привязана к explicit active `grant_id`;
+- если backend при direct login находит несколько eligible memberships/grants, `/api/auth/session` возвращает truthful `409`, а web показывает conflict instead of silently landing in an arbitrary contour.
 
 ```mermaid
 flowchart LR
@@ -189,6 +192,7 @@ flowchart LR
   - `tab=equipment | mi | standards`;
   - `archived=1` включает explicit archive visibility внутри того же route;
 - `EquipmentRegistryWorkspace` держит тот же route через `router.replace(...)`, а data fetching на web boundary прокидывает `includeArchived=true` только когда archive visibility явно включена;
+- shared backend/proxy helpers больше не разворачивают только `data`: для paginated Stage 03 registries они сохраняют backend envelope `meta`, чтобы web boundary не теряла `total/limit/offset` при росте реестров;
 - journal detail panels для measuring instruments и standards живут в том же workspace и используют `app/api/equipment/.../journals`;
 - archive actions идут через `app/api/equipment/.../archive`;
 - active pickers остаются отфильтрованными даже когда archive visibility включена:
@@ -360,6 +364,8 @@ apps/web/shared/api/
 - cache behavior (`revalidate`, tags, bypass, no-store) должен быть явным и единообразным
 - ошибки транспорта и contract-level ошибки нормализуются в одном месте
 - auth/session contract читается централизованно, а не размазанно по компонентам
+- `app/api/*` route handlers должны собираться из общих proxy primitives в `shared/api`, а не копировать вручную `cookies -> auth header -> backend -> error mapping`
+- query/search params, которые составляют часть backend list/filter contract, должны проксироваться через web boundary без выборочного "съедания" отдельных полей
 - internal backend base URL читается из `INTERNAL_API_BASE_URL` / `NEXT_PUBLIC_API_BASE_URL`, а не хардкодится в UI routes
 
 ### 4.1. Где живет state

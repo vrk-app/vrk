@@ -794,7 +794,7 @@ definitions:
         type: string
       poaExpirationDate:
         type: string
-      poaissueDate:
+      poaIssueDate:
         type: string
       powerOfAttorneyNumber:
         type: string
@@ -2132,6 +2132,11 @@ paths:
     get:
       description: Возвращает список организаций с пагинацией
       parameters:
+      - description: Deployment-scoped platform admin secret
+        in: header
+        name: X-VRK-Platform-Admin-Secret
+        required: true
+        type: string
       - default: 10
         description: Количество записей на странице
         in: query
@@ -2161,6 +2166,10 @@ paths:
                 meta:
                   $ref: '#/definitions/organization.Meta'
               type: object
+        "401":
+          description: Неавторизованный admin surface вызов
+          schema:
+            $ref: '#/definitions/organization.Response'
         "500":
           description: Внутренняя ошибка сервера
           schema:
@@ -2173,6 +2182,11 @@ paths:
       - application/json
       description: Создает новую организацию (заказчика или подрядчика)
       parameters:
+      - description: Deployment-scoped platform admin secret
+        in: header
+        name: X-VRK-Platform-Admin-Secret
+        required: true
+        type: string
       - description: Данные организации
         in: body
         name: request
@@ -2195,6 +2209,10 @@ paths:
           description: Неверный запрос
           schema:
             $ref: '#/definitions/organization.Response'
+        "401":
+          description: Неавторизованный admin surface вызов
+          schema:
+            $ref: '#/definitions/organization.Response'
         "500":
           description: Внутренняя ошибка сервера
           schema:
@@ -2206,6 +2224,11 @@ paths:
     delete:
       description: Удаляет организацию по ID
       parameters:
+      - description: Deployment-scoped platform admin secret
+        in: header
+        name: X-VRK-Platform-Admin-Secret
+        required: true
+        type: string
       - description: ID организации
         in: path
         name: id
@@ -2214,6 +2237,14 @@ paths:
       responses:
         "204":
           description: Успешное удаление
+        "400":
+          description: Неверный ID
+          schema:
+            $ref: '#/definitions/organization.Response'
+        "401":
+          description: Неавторизованный admin surface вызов
+          schema:
+            $ref: '#/definitions/organization.Response'
         "404":
           description: Организация не найдена
           schema:
@@ -2228,6 +2259,11 @@ paths:
     get:
       description: Возвращает информацию об организации
       parameters:
+      - description: Deployment-scoped platform admin secret
+        in: header
+        name: X-VRK-Platform-Admin-Secret
+        required: true
+        type: string
       - description: ID организации
         in: path
         name: id
@@ -2245,6 +2281,14 @@ paths:
                 data:
                   $ref: '#/definitions/organization.OrganizationResponse'
               type: object
+        "400":
+          description: Неверный ID
+          schema:
+            $ref: '#/definitions/organization.Response'
+        "401":
+          description: Неавторизованный admin surface вызов
+          schema:
+            $ref: '#/definitions/organization.Response'
         "404":
           description: Организация не найдена
           schema:
@@ -2256,11 +2300,16 @@ paths:
       summary: Получить организацию по ID
       tags:
       - organizations
-    put:
+    patch:
       consumes:
       - application/json
       description: Обновляет данные организации
       parameters:
+      - description: Deployment-scoped platform admin secret
+        in: header
+        name: X-VRK-Platform-Admin-Secret
+        required: true
+        type: string
       - description: ID организации
         in: path
         name: id
@@ -2288,8 +2337,16 @@ paths:
           description: Неверный запрос
           schema:
             $ref: '#/definitions/organization.Response'
+        "401":
+          description: Неавторизованный admin surface вызов
+          schema:
+            $ref: '#/definitions/organization.Response'
         "404":
           description: Организация не найдена
+          schema:
+            $ref: '#/definitions/organization.Response'
+        "409":
+          description: Конкурирующее обновление
           schema:
             $ref: '#/definitions/organization.Response'
         "500":
@@ -2306,6 +2363,11 @@ paths:
       description: Platform admin creates an organization shell and issues the first-admin
         invite.
       parameters:
+      - description: Deployment-scoped platform admin secret
+        in: header
+        name: X-VRK-Platform-Admin-Secret
+        required: true
+        type: string
       - description: Organization shell data
         in: body
         name: request
@@ -2328,6 +2390,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/bootstrap.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
         "500":
           description: Internal Server Error
           schema:
@@ -2339,8 +2405,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Logs the invited organization admin in and returns the current
-        session snapshot.
+      description: Logs the user in when exactly one eligible membership/grant path
+        exists and returns the current session snapshot.
       parameters:
       - description: Session credentials
         in: body
@@ -2362,6 +2428,10 @@ paths:
               type: object
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "409":
+          description: Conflict
           schema:
             $ref: '#/definitions/bootstrap.Response'
         "500":

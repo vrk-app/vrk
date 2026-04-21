@@ -1,6 +1,7 @@
 import { expect, test, type APIRequestContext } from "@playwright/test";
 
 const backendBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:18080";
+const platformAdminSecret = process.env.PLATFORM_ADMIN_SHARED_SECRET ?? "stage03-platform-admin-secret";
 
 type ApiEnvelope<T> = {
   success: boolean;
@@ -34,6 +35,7 @@ async function backend<T>(
     method?: "GET" | "POST";
     token?: string;
     body?: unknown;
+    platformAdmin?: boolean;
   } = {},
 ) {
   const response = await request.fetch(`${backendBaseUrl}${path}`, {
@@ -42,6 +44,7 @@ async function backend<T>(
       Accept: "application/json",
       ...(options.body ? { "Content-Type": "application/json" } : {}),
       ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
+      ...(options.platformAdmin ? { "X-VRK-Platform-Admin-Secret": platformAdminSecret } : {}),
     },
     data: options.body,
   });
@@ -67,6 +70,7 @@ async function bootstrapOrg(
 
   const created = await backend<OrganizationShellResponse>(request, "/api/v1/platform/organization-shells", {
     method: "POST",
+    platformAdmin: true,
     body: {
       organizationName,
       organizationRole: options.role,

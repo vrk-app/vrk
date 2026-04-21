@@ -85,6 +85,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
   const [routingWorkType, setRoutingWorkType] = useState<WorkType>("repair");
   const [routingEquipmentType, setRoutingEquipmentType] = useState("");
   const [routingRegion, setRoutingRegion] = useState("");
+  const isScopeSelectionMissing = scopeType !== "organization" && scopeId === "";
 
   const handleCreate = async () => {
     const locationScopeLabel = resolveScopeLabel(session, scopeType, scopeId);
@@ -361,6 +362,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
 
               <div className="flex flex-wrap gap-3">
                 <Button
+                  disabled={isPending || isScopeSelectionMissing}
                   leftIcon={<ClipboardCheck className="size-4" />}
                   loading={isPending}
                   onClick={() => {
