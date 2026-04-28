@@ -1,4 +1,4 @@
-package measuringinstrument
+package manufacturer
 
 import (
     "encoding/json"
@@ -8,26 +8,26 @@ import (
     "github.com/go-chi/chi/v5"
 )
 
-type MeasuringInstrumentHandler struct {
-    service MeasuringInstrumentService
+type ManufacturerHandler struct {
+    service ManufacturerService
 }
 
-func NewHandler(service MeasuringInstrumentService) *MeasuringInstrumentHandler {
-    return &MeasuringInstrumentHandler{service: service}
+func NewHandler(service ManufacturerService) *ManufacturerHandler {
+    return &ManufacturerHandler{service: service}
 }
 
-// Create создает новое средство измерения
-// @Summary      Создать средство измерения
-// @Description  Создает новое средство измерения (СИ)
+// Create создает нового производителя
+// @Summary      Создать производителя
+// @Description  Создает нового производителя оборудования
 // @Tags         equipment
 // @Accept       json
 // @Produce      json
-// @Param        request body CreateRequest true "Данные средства измерения"
-// @Success      201  {object}  Response{data=MeasuringInstrumentResponse}  "Средство измерения создано"
+// @Param        request body CreateRequest true "Данные производителя"
+// @Success      201  {object}  Response{data=ManufacturerResponse}  "Производитель создан"
 // @Failure      400  {object}  Response  "Неверный запрос"
 // @Failure      500  {object}  Response  "Внутренняя ошибка сервера"
-// @Router       /measuring-instruments [post]
-func (h *MeasuringInstrumentHandler) Create(w http.ResponseWriter, r *http.Request) {
+// @Router       /manufacturers [post]
+func (h *ManufacturerHandler) Create(w http.ResponseWriter, r *http.Request) {
     var req CreateRequest
     if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
         sendError(w, http.StatusBadRequest, "Invalid request body")
@@ -41,17 +41,17 @@ func (h *MeasuringInstrumentHandler) Create(w http.ResponseWriter, r *http.Reque
     sendSuccess(w, http.StatusCreated, resp, nil)
 }
 
-// GetByID возвращает средство измерения по ID
-// @Summary      Получить средство измерения по ID
-// @Description  Возвращает информацию о средстве измерения
+// GetByID возвращает производителя по ID
+// @Summary      Получить производителя по ID
+// @Description  Возвращает информацию о производителе
 // @Tags         equipment
 // @Produce      json
-// @Param        id   path      string  true  "ID средства измерения"
-// @Success      200  {object}  Response{data=MeasuringInstrumentResponse}  "Успешный ответ"
-// @Failure      404  {object}  Response  "Средство измерения не найдено"
+// @Param        id   path      string  true  "ID производителя"
+// @Success      200  {object}  Response{data=ManufacturerResponse}  "Успешный ответ"
+// @Failure      404  {object}  Response  "Производитель не найден"
 // @Failure      500  {object}  Response  "Внутренняя ошибка сервера"
-// @Router       /measuring-instruments/{id} [get]
-func (h *MeasuringInstrumentHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+// @Router       /manufacturers/{id} [get]
+func (h *ManufacturerHandler) GetByID(w http.ResponseWriter, r *http.Request) {
     id := chi.URLParam(r, "id")
     if id == "" {
         sendError(w, http.StatusBadRequest, "ID is required")
@@ -65,20 +65,20 @@ func (h *MeasuringInstrumentHandler) GetByID(w http.ResponseWriter, r *http.Requ
     sendSuccess(w, http.StatusOK, resp, nil)
 }
 
-// Update обновляет средство измерения
-// @Summary      Обновить средство измерения
-// @Description  Обновляет данные средства измерения
+// Update обновляет производителя
+// @Summary      Обновить производителя
+// @Description  Обновляет данные производителя
 // @Tags         equipment
 // @Accept       json
 // @Produce      json
-// @Param        id       path      string         true  "ID средства измерения"
+// @Param        id       path      string         true  "ID производителя"
 // @Param        request  body      UpdateRequest  true  "Данные для обновления"
-// @Success      200      {object}  Response{data=MeasuringInstrumentResponse}  "Успешное обновление"
+// @Success      200      {object}  Response{data=ManufacturerResponse}  "Успешное обновление"
 // @Failure      400      {object}  Response  "Неверный запрос"
-// @Failure      404      {object}  Response  "Средство измерения не найдено"
+// @Failure      404      {object}  Response  "Производитель не найден"
 // @Failure      500      {object}  Response  "Внутренняя ошибка сервера"
-// @Router       /measuring-instruments/{id} [put]
-func (h *MeasuringInstrumentHandler) Update(w http.ResponseWriter, r *http.Request) {
+// @Router       /manufacturers/{id} [put]
+func (h *ManufacturerHandler) Update(w http.ResponseWriter, r *http.Request) {
     id := chi.URLParam(r, "id")
     if id == "" {
         sendError(w, http.StatusBadRequest, "ID is required")
@@ -97,17 +97,16 @@ func (h *MeasuringInstrumentHandler) Update(w http.ResponseWriter, r *http.Reque
     sendSuccess(w, http.StatusOK, resp, nil)
 }
 
-// Delete удаляет средство измерения
-// @Summary      Удалить средство измерения
-// @Description  Удаляет средство измерения по ID
+// Delete удаляет производителя
+// @Summary      Удалить производителя
+// @Description  Удаляет производителя по ID
 // @Tags         equipment
-// @Param        id   path      string  true  "ID средства измерения"
+// @Param        id   path      string  true  "ID производителя"
 // @Success      204  "Успешное удаление"
-// @Failure      404  {object}  Response  "Средство измерения не найдено"
+// @Failure      404  {object}  Response  "Производитель не найден"
 // @Failure      500  {object}  Response  "Внутренняя ошибка сервера"
-// @Router       /measuring-instruments/{id} [delete]
-
-func (h *MeasuringInstrumentHandler) Delete(w http.ResponseWriter, r *http.Request) {
+// @Router       /manufacturers/{id} [delete]
+func (h *ManufacturerHandler) Delete(w http.ResponseWriter, r *http.Request) {
     id := chi.URLParam(r, "id")
     if id == "" {
         sendError(w, http.StatusBadRequest, "ID is required")
@@ -120,17 +119,17 @@ func (h *MeasuringInstrumentHandler) Delete(w http.ResponseWriter, r *http.Reque
     sendSuccess(w, http.StatusNoContent, nil, nil)
 }
 
-// List возвращает список средств измерения
-// @Summary      Получить список средств измерения
-// @Description  Возвращает список средств измерения с пагинацией
+// List возвращает список производителей
+// @Summary      Получить список производителей
+// @Description  Возвращает список производителей с пагинацией
 // @Tags         equipment
 // @Produce      json
 // @Param        limit   query     int  false  "Количество записей на странице"  default(10)  minimum(1)  maximum(100)
 // @Param        offset  query     int  false  "Смещение"                        default(0)   minimum(0)
-// @Success      200     {object}  Response{data=[]MeasuringInstrumentResponse,meta=Meta}  "Успешный ответ"
+// @Success      200     {object}  Response{data=[]ManufacturerResponse,meta=Meta}  "Успешный ответ"
 // @Failure      500     {object}  Response  "Внутренняя ошибка сервера"
-// @Router       /measuring-instruments [get]
-func (h *MeasuringInstrumentHandler) List(w http.ResponseWriter, r *http.Request) {
+// @Router       /manufacturers [get]
+func (h *ManufacturerHandler) List(w http.ResponseWriter, r *http.Request) {
     limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
     offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
     items, total, err := h.service.List(r.Context(), int32(limit), int32(offset))

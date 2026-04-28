@@ -91,6 +91,12 @@ definitions:
     type: object
   equipment.CreateRequest:
     properties:
+      certificateNumber:
+        type: string
+      documentProviderOrganization:
+        type: string
+      documentUrl:
+        type: string
       equipmentDictionaryId:
         type: string
       factoryNumber:
@@ -98,11 +104,23 @@ definitions:
         type: string
       inventoryNumber:
         type: string
+      lastOperationDate:
+        type: string
       manufactureYear:
+        type: string
+      manufacturerId:
+        type: string
+      metrologicalCharacteristics:
+        description: Для эталонов
+        type: string
+      metrologicalOperationTypeId:
+        description: Для средств измерения
+        type: integer
+      nextOperationDate:
         type: string
       organizationId:
         type: string
-      registrationYear:
+      standardId:
         type: string
       statusId:
         maximum: 5
@@ -112,11 +130,14 @@ definitions:
     - equipmentDictionaryId
     - factoryNumber
     - manufactureYear
+    - manufacturerId
     - organizationId
     - statusId
     type: object
   equipment.EquipmentResponse:
     properties:
+      createdAt:
+        type: string
       equipmentName:
         type: string
       factoryNumber:
@@ -127,19 +148,46 @@ definitions:
         type: string
       manufactureYear:
         type: string
-      manufacturer:
+      manufacturerName:
         type: string
+      measuringInstrument:
+        $ref: '#/definitions/equipment.MeasuringInstrumentInfo'
       model:
         type: string
       organizationName:
         type: string
-      registrationYear:
-        type: string
+      standard:
+        $ref: '#/definitions/equipment.StandardInfo'
       statusId:
         type: integer
       statusName:
         type: string
+      updatedAt:
+        type: string
       usageClassification:
+        type: string
+    type: object
+  equipment.MeasuringInstrumentInfo:
+    properties:
+      certificateNumber:
+        type: string
+      documentProviderOrganization:
+        type: string
+      documentUrl:
+        type: string
+      id:
+        type: string
+      lastOperationDate:
+        type: string
+      metrologicalOperationType:
+        type: string
+      metrologicalOperationTypeId:
+        type: integer
+      nextOperationDate:
+        type: string
+      registryNumber:
+        type: string
+      standardId:
         type: string
     type: object
   equipment.Meta:
@@ -161,60 +209,9 @@ definitions:
       success:
         type: boolean
     type: object
-  equipment.UpdateRequest:
-    properties:
-      equipmentDictionaryId:
-        type: string
-      factoryNumber:
-        type: string
-      inventoryNumber:
-        type: string
-      manufactureYear:
-        type: string
-      organizationId:
-        type: string
-      registrationYear:
-        type: string
-      statusId:
-        type: integer
-    type: object
-  measuringinstrument.CreateRequest:
+  equipment.StandardInfo:
     properties:
       certificateNumber:
-        maxLength: 100
-        type: string
-      documentProviderOrganization:
-        maxLength: 100
-        type: string
-      documentUrl:
-        maxLength: 255
-        type: string
-      lastOperationDate:
-        type: string
-      metrologicalOperationTypeId:
-        type: string
-      nextOperationDate:
-        type: string
-      organizationId:
-        type: string
-      registryNumber:
-        maxLength: 50
-        type: string
-      standardId:
-        type: string
-    required:
-    - certificateNumber
-    - documentProviderOrganization
-    - documentUrl
-    - metrologicalOperationTypeId
-    - organizationId
-    - registryNumber
-    type: object
-  measuringinstrument.MeasuringInstrumentResponse:
-    properties:
-      certificateNumber:
-        type: string
-      createdAt:
         type: string
       documentProviderOrganization:
         type: string
@@ -224,20 +221,75 @@ definitions:
         type: string
       lastOperationDate:
         type: string
-      metrologicalOperationTypeId:
+      metrologicalCharacteristics:
         type: string
       nextOperationDate:
         type: string
-      organizationId:
+    type: object
+  equipmentdictionary.ApiResponse:
+    properties:
+      data: {}
+      error:
         type: string
-      registryNumber:
+      meta:
+        $ref: '#/definitions/equipmentdictionary.Meta'
+      success:
+        type: boolean
+    type: object
+  equipmentdictionary.CreateEquipmentDictionaryRequest:
+    properties:
+      fullName:
         type: string
-      standardId:
+      measuringInstrument:
+        $ref: '#/definitions/equipmentdictionary.MeasuringInstrumentInput'
+      model:
+        type: string
+    type: object
+  equipmentdictionary.EquipmentDictionaryFull:
+    properties:
+      createdAt:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      mid:
+        $ref: '#/definitions/equipmentdictionary.MeasuringInstrumentsDictionaryFull'
+      model:
         type: string
       updatedAt:
         type: string
     type: object
-  measuringinstrument.Meta:
+  equipmentdictionary.MeasuringInstrumentInput:
+    properties:
+      metrologicalOperationTypeId:
+        type: integer
+      registryNumber:
+        type: string
+      standards:
+        example:
+        - standardModel
+        items:
+          type: string
+        type: array
+    type: object
+  equipmentdictionary.MeasuringInstrumentsDictionaryFull:
+    properties:
+      id:
+        type: string
+      metrologicalOperationType:
+        type: string
+      metrologicalOperationTypeID:
+        format: int32
+        type: integer
+      registryNumber:
+        type: string
+      standards:
+        items:
+          $ref: '#/definitions/equipmentdictionary.StandardsDictionaryFull'
+        type: array
+    type: object
+  equipmentdictionary.Meta:
     properties:
       limit:
         type: integer
@@ -246,36 +298,109 @@ definitions:
       total:
         type: integer
     type: object
-  measuringinstrument.Response:
+  equipmentdictionary.StandardsDictionaryFull:
+    properties:
+      id:
+        type: string
+      model:
+        type: string
+    type: object
+  equipmentdictionary.UpdateEquipmentDictionaryRequest:
+    properties:
+      fullName:
+        type: string
+      measuringInstrument:
+        $ref: '#/definitions/equipmentdictionary.MeasuringInstrumentInput'
+      measuringInstrumentDictionaryId:
+        type: string
+      model:
+        type: string
+    type: object
+  manufacturer.CreateRequest:
+    properties:
+      classificationID:
+        format: int32
+        type: integer
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  manufacturer.ManufacturerResponse:
+    properties:
+      classificationID:
+        format: int32
+        type: integer
+      createdAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  manufacturer.Meta:
+    properties:
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  manufacturer.Response:
     properties:
       data: {}
       error:
         type: string
       meta:
-        $ref: '#/definitions/measuringinstrument.Meta'
+        $ref: '#/definitions/manufacturer.Meta'
       success:
         type: boolean
     type: object
-  measuringinstrument.UpdateRequest:
+  manufacturer.UpdateRequest:
     properties:
-      certificateNumber:
+      classificationID:
+        format: int32
+        type: integer
+      name:
         type: string
-      documentProviderOrganization:
+    type: object
+  metrologicaltype.CreateRequest:
+    properties:
+      metrologicalOperationType:
         type: string
-      documentUrl:
+    required:
+    - metrologicalOperationType
+    type: object
+  metrologicaltype.Meta:
+    properties:
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  metrologicaltype.MetrologicalTypeResponse:
+    properties:
+      createdAt:
         type: string
-      lastOperationDate:
+      id:
+        type: integer
+      metrologicalOperationType:
         type: string
-      metrologicalOperationTypeId:
+    type: object
+  metrologicaltype.Response:
+    properties:
+      data: {}
+      error:
         type: string
-      nextOperationDate:
-        type: string
-      organizationId:
-        type: string
-      registryNumber:
-        type: string
-      standardId:
-        type: string
+      meta:
+        $ref: '#/definitions/metrologicaltype.Meta'
+      success:
+        type: boolean
     type: object
   organization.CreateRequest:
     properties:
@@ -395,34 +520,14 @@ definitions:
       shortName:
         type: string
     type: object
-  standard.CreateRequest:
+  usageclassification.CreateRequest:
     properties:
-      certificateNumber:
-        maxLength: 100
-        type: string
-      documentProviderOrganization:
-        maxLength: 100
-        type: string
-      documentUrl:
-        maxLength: 255
-        type: string
-      lastOperationDate:
-        type: string
-      metrologicalCharacteristics:
-        type: string
-      model:
-        maxLength: 50
-        type: string
-      nextOperationDate:
+      classification:
         type: string
     required:
-    - certificateNumber
-    - documentProviderOrganization
-    - documentUrl
-    - metrologicalCharacteristics
-    - model
+    - classification
     type: object
-  standard.Meta:
+  usageclassification.Meta:
     properties:
       limit:
         type: integer
@@ -431,55 +536,24 @@ definitions:
       total:
         type: integer
     type: object
-  standard.Response:
+  usageclassification.Response:
     properties:
       data: {}
       error:
         type: string
       meta:
-        $ref: '#/definitions/standard.Meta'
+        $ref: '#/definitions/usageclassification.Meta'
       success:
         type: boolean
     type: object
-  standard.StandardResponse:
+  usageclassification.UsageClassificationResponse:
     properties:
-      certificateNumber:
+      classification:
         type: string
       createdAt:
         type: string
-      documentProviderOrganization:
-        type: string
-      documentUrl:
-        type: string
       id:
-        type: string
-      lastOperationDate:
-        type: string
-      metrologicalCharacteristics:
-        type: string
-      model:
-        type: string
-      nextOperationDate:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  standard.UpdateRequest:
-    properties:
-      certificateNumber:
-        type: string
-      documentProviderOrganization:
-        type: string
-      documentUrl:
-        type: string
-      lastOperationDate:
-        type: string
-      metrologicalCharacteristics:
-        type: string
-      model:
-        type: string
-      nextOperationDate:
-        type: string
+        type: integer
     type: object
 info:
   contact: {}
@@ -730,6 +804,155 @@ paths:
       summary: Создать оборудование
       tags:
       - equipment
+  /equipment-dictionaries:
+    get:
+      parameters:
+      - default: 10
+        description: Количество записей
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Смещение
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/equipmentdictionary.ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/equipmentdictionary.EquipmentDictionaryFull'
+                  type: array
+                meta:
+                  $ref: '#/definitions/equipmentdictionary.Meta'
+              type: object
+      summary: Получить список словарей оборудования
+      tags:
+      - equipment-dictionaries
+    post:
+      consumes:
+      - application/json
+      description: Создаёт equipment_dictionary, при необходимости создаёт measuring_instruments_dictionary
+        и стандарты
+      parameters:
+      - description: Данные
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/equipmentdictionary.CreateEquipmentDictionaryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/equipmentdictionary.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/equipmentdictionary.EquipmentDictionaryFull'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/equipmentdictionary.ApiResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/equipmentdictionary.ApiResponse'
+      summary: Создать словарь оборудования
+      tags:
+      - equipment-dictionaries
+  /equipment-dictionaries/{id}:
+    delete:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/equipmentdictionary.ApiResponse'
+      summary: Удалить словарь оборудования
+      tags:
+      - equipment-dictionaries
+    get:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/equipmentdictionary.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/equipmentdictionary.EquipmentDictionaryFull'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/equipmentdictionary.ApiResponse'
+      summary: Получить словарь оборудования по ID
+      tags:
+      - equipment-dictionaries
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Данные
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/equipmentdictionary.UpdateEquipmentDictionaryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/equipmentdictionary.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/equipmentdictionary.EquipmentDictionaryFull'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/equipmentdictionary.ApiResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/equipmentdictionary.ApiResponse'
+      summary: Обновить словарь оборудования
+      tags:
+      - equipment-dictionaries
   /equipment/{id}:
     delete:
       description: Удаляет оборудование по ID
@@ -784,52 +1007,9 @@ paths:
       summary: Получить оборудование по ID
       tags:
       - equipment
-    put:
-      consumes:
-      - application/json
-      description: Обновляет данные оборудования
-      parameters:
-      - description: ID оборудования
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Данные для обновления
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/equipment.UpdateRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Успешное обновление
-          schema:
-            allOf:
-            - $ref: '#/definitions/equipment.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/equipment.EquipmentResponse'
-              type: object
-        "400":
-          description: Неверный запрос
-          schema:
-            $ref: '#/definitions/equipment.Response'
-        "404":
-          description: Оборудование не найдено
-          schema:
-            $ref: '#/definitions/equipment.Response'
-        "500":
-          description: Внутренняя ошибка сервера
-          schema:
-            $ref: '#/definitions/equipment.Response'
-      summary: Обновить оборудование
-      tags:
-      - equipment
-  /measuring-instruments:
+  /manufacturers:
     get:
-      description: Возвращает список средств измерения с пагинацией
+      description: Возвращает список производителей с пагинацией
       parameters:
       - default: 10
         description: Количество записей на странице
@@ -851,61 +1031,83 @@ paths:
           description: Успешный ответ
           schema:
             allOf:
-            - $ref: '#/definitions/measuringinstrument.Response'
+            - $ref: '#/definitions/manufacturer.Response'
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/measuringinstrument.MeasuringInstrumentResponse'
+                    $ref: '#/definitions/manufacturer.ManufacturerResponse'
                   type: array
                 meta:
-                  $ref: '#/definitions/measuringinstrument.Meta'
+                  $ref: '#/definitions/manufacturer.Meta'
               type: object
         "500":
           description: Внутренняя ошибка сервера
           schema:
-            $ref: '#/definitions/measuringinstrument.Response'
-      summary: Получить список средств измерения
+            $ref: '#/definitions/manufacturer.Response'
+      summary: Получить список производителей
       tags:
       - equipment
     post:
       consumes:
       - application/json
-      description: Создает новое средство измерения (СИ)
+      description: Создает нового производителя оборудования
       parameters:
-      - description: Данные средства измерения
+      - description: Данные производителя
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/measuringinstrument.CreateRequest'
+          $ref: '#/definitions/manufacturer.CreateRequest'
       produces:
       - application/json
       responses:
         "201":
-          description: Средство измерения создано
+          description: Производитель создан
           schema:
             allOf:
-            - $ref: '#/definitions/measuringinstrument.Response'
+            - $ref: '#/definitions/manufacturer.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/measuringinstrument.MeasuringInstrumentResponse'
+                  $ref: '#/definitions/manufacturer.ManufacturerResponse'
               type: object
         "400":
           description: Неверный запрос
           schema:
-            $ref: '#/definitions/measuringinstrument.Response'
+            $ref: '#/definitions/manufacturer.Response'
         "500":
           description: Внутренняя ошибка сервера
           schema:
-            $ref: '#/definitions/measuringinstrument.Response'
-      summary: Создать средство измерения
+            $ref: '#/definitions/manufacturer.Response'
+      summary: Создать производителя
       tags:
       - equipment
-  /measuring-instruments/{id}:
-    get:
-      description: Возвращает информацию о средстве измерения
+  /manufacturers/{id}:
+    delete:
+      description: Удаляет производителя по ID
       parameters:
-      - description: ID средства измерения
+      - description: ID производителя
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: Успешное удаление
+        "404":
+          description: Производитель не найден
+          schema:
+            $ref: '#/definitions/manufacturer.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/manufacturer.Response'
+      summary: Удалить производителя
+      tags:
+      - equipment
+    get:
+      description: Возвращает информацию о производителе
+      parameters:
+      - description: ID производителя
         in: path
         name: id
         required: true
@@ -917,28 +1119,28 @@ paths:
           description: Успешный ответ
           schema:
             allOf:
-            - $ref: '#/definitions/measuringinstrument.Response'
+            - $ref: '#/definitions/manufacturer.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/measuringinstrument.MeasuringInstrumentResponse'
+                  $ref: '#/definitions/manufacturer.ManufacturerResponse'
               type: object
         "404":
-          description: Средство измерения не найдено
+          description: Производитель не найден
           schema:
-            $ref: '#/definitions/measuringinstrument.Response'
+            $ref: '#/definitions/manufacturer.Response'
         "500":
           description: Внутренняя ошибка сервера
           schema:
-            $ref: '#/definitions/measuringinstrument.Response'
-      summary: Получить средство измерения по ID
+            $ref: '#/definitions/manufacturer.Response'
+      summary: Получить производителя по ID
       tags:
       - equipment
     put:
       consumes:
       - application/json
-      description: Обновляет данные средства измерения
+      description: Обновляет данные производителя
       parameters:
-      - description: ID средства измерения
+      - description: ID производителя
         in: path
         name: id
         required: true
@@ -948,7 +1150,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/measuringinstrument.UpdateRequest'
+          $ref: '#/definitions/manufacturer.UpdateRequest'
       produces:
       - application/json
       responses:
@@ -956,26 +1158,135 @@ paths:
           description: Успешное обновление
           schema:
             allOf:
-            - $ref: '#/definitions/measuringinstrument.Response'
+            - $ref: '#/definitions/manufacturer.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/measuringinstrument.MeasuringInstrumentResponse'
+                  $ref: '#/definitions/manufacturer.ManufacturerResponse'
               type: object
         "400":
           description: Неверный запрос
           schema:
-            $ref: '#/definitions/measuringinstrument.Response'
+            $ref: '#/definitions/manufacturer.Response'
         "404":
-          description: Средство измерения не найдено
+          description: Производитель не найден
           schema:
-            $ref: '#/definitions/measuringinstrument.Response'
+            $ref: '#/definitions/manufacturer.Response'
         "500":
           description: Внутренняя ошибка сервера
           schema:
-            $ref: '#/definitions/measuringinstrument.Response'
-      summary: Обновить средство измерения
+            $ref: '#/definitions/manufacturer.Response'
+      summary: Обновить производителя
       tags:
       - equipment
+  /metrological-types:
+    get:
+      parameters:
+      - default: 10
+        description: Количество записей на странице
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Смещение
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/metrologicaltype.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/metrologicaltype.MetrologicalTypeResponse'
+                  type: array
+                meta:
+                  $ref: '#/definitions/metrologicaltype.Meta'
+              type: object
+      summary: Получить список типов метрологических операций
+      tags:
+      - metrological-types
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Данные типа
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/metrologicaltype.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/metrologicaltype.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/metrologicaltype.MetrologicalTypeResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/metrologicaltype.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/metrologicaltype.Response'
+      summary: Создать тип метрологической операции
+      tags:
+      - metrological-types
+  /metrological-types/{id}:
+    delete:
+      parameters:
+      - description: ID типа
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/metrologicaltype.Response'
+      summary: Удалить тип метрологической операции
+      tags:
+      - metrological-types
+    get:
+      parameters:
+      - description: ID типа
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/metrologicaltype.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/metrologicaltype.MetrologicalTypeResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/metrologicaltype.Response'
+      summary: Получить тип метрологической операции по ID
+      tags:
+      - metrological-types
   /organizations:
     get:
       description: Возвращает список организаций с пагинацией
@@ -1147,175 +1458,113 @@ paths:
       summary: Обновить организацию
       tags:
       - organizations
-  /standards:
+  /usage-classifications:
     get:
-      description: Возвращает список эталонов с пагинацией
       parameters:
       - default: 10
         description: Количество записей на странице
         in: query
-        maximum: 100
-        minimum: 1
         name: limit
         type: integer
       - default: 0
         description: Смещение
         in: query
-        minimum: 0
         name: offset
         type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: Успешный ответ
+          description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/standard.Response'
+            - $ref: '#/definitions/usageclassification.Response'
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/standard.StandardResponse'
+                    $ref: '#/definitions/usageclassification.UsageClassificationResponse'
                   type: array
                 meta:
-                  $ref: '#/definitions/standard.Meta'
+                  $ref: '#/definitions/usageclassification.Meta'
               type: object
-        "500":
-          description: Внутренняя ошибка сервера
-          schema:
-            $ref: '#/definitions/standard.Response'
-      summary: Получить список эталонов
+      summary: Получить список классификаций использования
       tags:
-      - equipment
+      - usage-classifications
     post:
       consumes:
       - application/json
-      description: Создает новый эталон для метрологической поверки
       parameters:
-      - description: Данные эталона
+      - description: Данные классификации
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/standard.CreateRequest'
+          $ref: '#/definitions/usageclassification.CreateRequest'
       produces:
       - application/json
       responses:
         "201":
-          description: Эталон создан
+          description: Created
           schema:
             allOf:
-            - $ref: '#/definitions/standard.Response'
+            - $ref: '#/definitions/usageclassification.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/standard.StandardResponse'
+                  $ref: '#/definitions/usageclassification.UsageClassificationResponse'
               type: object
         "400":
-          description: Неверный запрос
+          description: Bad Request
           schema:
-            $ref: '#/definitions/standard.Response'
+            $ref: '#/definitions/usageclassification.Response'
         "500":
-          description: Внутренняя ошибка сервера
+          description: Internal Server Error
           schema:
-            $ref: '#/definitions/standard.Response'
-      summary: Создать эталон
+            $ref: '#/definitions/usageclassification.Response'
+      summary: Создать классификацию использования
       tags:
-      - equipment
-  /standards/{id}:
+      - usage-classifications
+  /usage-classifications/{id}:
     delete:
-      description: Удаляет эталон по ID
       parameters:
-      - description: ID эталона
+      - description: ID классификации
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       responses:
         "204":
-          description: Успешное удаление
+          description: No Content
         "404":
-          description: Эталон не найден
+          description: Not Found
           schema:
-            $ref: '#/definitions/standard.Response'
-        "500":
-          description: Внутренняя ошибка сервера
-          schema:
-            $ref: '#/definitions/standard.Response'
-      summary: Удалить эталон
+            $ref: '#/definitions/usageclassification.Response'
+      summary: Удалить классификацию использования
       tags:
-      - equipment
+      - usage-classifications
     get:
-      description: Возвращает информацию об эталоне
       parameters:
-      - description: ID эталона
+      - description: ID классификации
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: Успешный ответ
+          description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/standard.Response'
+            - $ref: '#/definitions/usageclassification.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/standard.StandardResponse'
+                  $ref: '#/definitions/usageclassification.UsageClassificationResponse'
               type: object
         "404":
-          description: Эталон не найден
+          description: Not Found
           schema:
-            $ref: '#/definitions/standard.Response'
-        "500":
-          description: Внутренняя ошибка сервера
-          schema:
-            $ref: '#/definitions/standard.Response'
-      summary: Получить эталон по ID
+            $ref: '#/definitions/usageclassification.Response'
+      summary: Получить классификацию использования по ID
       tags:
-      - equipment
-    put:
-      consumes:
-      - application/json
-      description: Обновляет данные эталона
-      parameters:
-      - description: ID эталона
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Данные для обновления
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/standard.UpdateRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Успешное обновление
-          schema:
-            allOf:
-            - $ref: '#/definitions/standard.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/standard.StandardResponse'
-              type: object
-        "400":
-          description: Неверный запрос
-          schema:
-            $ref: '#/definitions/standard.Response'
-        "404":
-          description: Эталон не найден
-          schema:
-            $ref: '#/definitions/standard.Response'
-        "500":
-          description: Внутренняя ошибка сервера
-          schema:
-            $ref: '#/definitions/standard.Response'
-      summary: Обновить эталон
-      tags:
-      - equipment
+      - usage-classifications
 swagger: "2.0"

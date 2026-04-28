@@ -24,39 +24,38 @@ func (q *Queries) CountStandards(ctx context.Context) (int64, error) {
 
 const createStandard = `-- name: CreateStandard :one
 INSERT INTO standards (
-    model, certificate_number, last_operation_date, next_operation_date, document_url,
+    equipment_id, certificate_number, last_operation_date, next_operation_date, document_url,
     document_provider_organization, metrological_characteristics
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7
 )
-RETURNING id, model, certificate_number, last_operation_date, next_operation_date,
+RETURNING id, certificate_number, last_operation_date, next_operation_date,
     document_provider_organization, document_url, metrological_characteristics
 `
 
 type CreateStandardParams struct {
-	Model                        string      `json:"model"`
-	CertificateNumber            string      `json:"certificateNumber"`
+	EquipmentID                  pgtype.UUID `json:"equipmentId"`
+	CertificateNumber            *string     `json:"certificateNumber"`
 	LastOperationDate            pgtype.Date `json:"lastOperationDate"`
 	NextOperationDate            pgtype.Date `json:"nextOperationDate"`
-	DocumentUrl                  string      `json:"documentUrl"`
-	DocumentProviderOrganization string      `json:"documentProviderOrganization"`
-	MetrologicalCharacteristics  string      `json:"metrologicalCharacteristics"`
+	DocumentUrl                  *string     `json:"documentUrl"`
+	DocumentProviderOrganization *string     `json:"documentProviderOrganization"`
+	MetrologicalCharacteristics  *string     `json:"metrologicalCharacteristics"`
 }
 
 type CreateStandardRow struct {
 	ID                           pgtype.UUID `json:"id"`
-	Model                        string      `json:"model"`
-	CertificateNumber            string      `json:"certificateNumber"`
+	CertificateNumber            *string     `json:"certificateNumber"`
 	LastOperationDate            pgtype.Date `json:"lastOperationDate"`
 	NextOperationDate            pgtype.Date `json:"nextOperationDate"`
-	DocumentProviderOrganization string      `json:"documentProviderOrganization"`
-	DocumentUrl                  string      `json:"documentUrl"`
-	MetrologicalCharacteristics  string      `json:"metrologicalCharacteristics"`
+	DocumentProviderOrganization *string     `json:"documentProviderOrganization"`
+	DocumentUrl                  *string     `json:"documentUrl"`
+	MetrologicalCharacteristics  *string     `json:"metrologicalCharacteristics"`
 }
 
 func (q *Queries) CreateStandard(ctx context.Context, arg CreateStandardParams) (CreateStandardRow, error) {
 	row := q.db.QueryRow(ctx, createStandard,
-		arg.Model,
+		arg.EquipmentID,
 		arg.CertificateNumber,
 		arg.LastOperationDate,
 		arg.NextOperationDate,
@@ -67,7 +66,6 @@ func (q *Queries) CreateStandard(ctx context.Context, arg CreateStandardParams) 
 	var i CreateStandardRow
 	err := row.Scan(
 		&i.ID,
-		&i.Model,
 		&i.CertificateNumber,
 		&i.LastOperationDate,
 		&i.NextOperationDate,
@@ -88,7 +86,7 @@ func (q *Queries) DeleteStandard(ctx context.Context, id pgtype.UUID) error {
 }
 
 const getStandardByID = `-- name: GetStandardByID :one
-SELECT id, model, certificate_number, last_operation_date, next_operation_date,
+SELECT id, certificate_number, last_operation_date, next_operation_date,
     document_provider_organization, document_url, metrological_characteristics
 FROM standards
 WHERE id = $1
@@ -96,13 +94,12 @@ WHERE id = $1
 
 type GetStandardByIDRow struct {
 	ID                           pgtype.UUID `json:"id"`
-	Model                        string      `json:"model"`
-	CertificateNumber            string      `json:"certificateNumber"`
+	CertificateNumber            *string     `json:"certificateNumber"`
 	LastOperationDate            pgtype.Date `json:"lastOperationDate"`
 	NextOperationDate            pgtype.Date `json:"nextOperationDate"`
-	DocumentProviderOrganization string      `json:"documentProviderOrganization"`
-	DocumentUrl                  string      `json:"documentUrl"`
-	MetrologicalCharacteristics  string      `json:"metrologicalCharacteristics"`
+	DocumentProviderOrganization *string     `json:"documentProviderOrganization"`
+	DocumentUrl                  *string     `json:"documentUrl"`
+	MetrologicalCharacteristics  *string     `json:"metrologicalCharacteristics"`
 }
 
 func (q *Queries) GetStandardByID(ctx context.Context, id pgtype.UUID) (GetStandardByIDRow, error) {
@@ -110,7 +107,6 @@ func (q *Queries) GetStandardByID(ctx context.Context, id pgtype.UUID) (GetStand
 	var i GetStandardByIDRow
 	err := row.Scan(
 		&i.ID,
-		&i.Model,
 		&i.CertificateNumber,
 		&i.LastOperationDate,
 		&i.NextOperationDate,
@@ -122,7 +118,7 @@ func (q *Queries) GetStandardByID(ctx context.Context, id pgtype.UUID) (GetStand
 }
 
 const listStandards = `-- name: ListStandards :many
-SELECT id, model, certificate_number, last_operation_date, next_operation_date,
+SELECT id, certificate_number, last_operation_date, next_operation_date,
     document_provider_organization, document_url, metrological_characteristics
 FROM standards
 ORDER BY created_at DESC
@@ -136,13 +132,12 @@ type ListStandardsParams struct {
 
 type ListStandardsRow struct {
 	ID                           pgtype.UUID `json:"id"`
-	Model                        string      `json:"model"`
-	CertificateNumber            string      `json:"certificateNumber"`
+	CertificateNumber            *string     `json:"certificateNumber"`
 	LastOperationDate            pgtype.Date `json:"lastOperationDate"`
 	NextOperationDate            pgtype.Date `json:"nextOperationDate"`
-	DocumentProviderOrganization string      `json:"documentProviderOrganization"`
-	DocumentUrl                  string      `json:"documentUrl"`
-	MetrologicalCharacteristics  string      `json:"metrologicalCharacteristics"`
+	DocumentProviderOrganization *string     `json:"documentProviderOrganization"`
+	DocumentUrl                  *string     `json:"documentUrl"`
+	MetrologicalCharacteristics  *string     `json:"metrologicalCharacteristics"`
 }
 
 func (q *Queries) ListStandards(ctx context.Context, arg ListStandardsParams) ([]ListStandardsRow, error) {
@@ -156,7 +151,6 @@ func (q *Queries) ListStandards(ctx context.Context, arg ListStandardsParams) ([
 		var i ListStandardsRow
 		if err := rows.Scan(
 			&i.ID,
-			&i.Model,
 			&i.CertificateNumber,
 			&i.LastOperationDate,
 			&i.NextOperationDate,
@@ -187,45 +181,41 @@ func (q *Queries) StandardExists(ctx context.Context, id pgtype.UUID) (bool, err
 
 const updateStandard = `-- name: UpdateStandard :one
 UPDATE standards SET
-    model = $2,
-    certificate_number = $3,
-    last_operation_date = $4,
-    next_operation_date = $5,
-    document_provider_organization = $6,
-    document_url = $7,
-    metrological_characteristics = $8,
+    certificate_number = $2,
+    last_operation_date = $3,
+    next_operation_date = $4,
+    document_provider_organization = $5,
+    document_url = $6,
+    metrological_characteristics = $7,
     updated_at = NOW()
 WHERE id = $1
-RETURNING id, model, certificate_number, last_operation_date, next_operation_date,
+RETURNING id, certificate_number, last_operation_date, next_operation_date,
     document_provider_organization, document_url, metrological_characteristics
 `
 
 type UpdateStandardParams struct {
 	ID                           pgtype.UUID `json:"id"`
-	Model                        string      `json:"model"`
-	CertificateNumber            string      `json:"certificateNumber"`
+	CertificateNumber            *string     `json:"certificateNumber"`
 	LastOperationDate            pgtype.Date `json:"lastOperationDate"`
 	NextOperationDate            pgtype.Date `json:"nextOperationDate"`
-	DocumentProviderOrganization string      `json:"documentProviderOrganization"`
-	DocumentUrl                  string      `json:"documentUrl"`
-	MetrologicalCharacteristics  string      `json:"metrologicalCharacteristics"`
+	DocumentProviderOrganization *string     `json:"documentProviderOrganization"`
+	DocumentUrl                  *string     `json:"documentUrl"`
+	MetrologicalCharacteristics  *string     `json:"metrologicalCharacteristics"`
 }
 
 type UpdateStandardRow struct {
 	ID                           pgtype.UUID `json:"id"`
-	Model                        string      `json:"model"`
-	CertificateNumber            string      `json:"certificateNumber"`
+	CertificateNumber            *string     `json:"certificateNumber"`
 	LastOperationDate            pgtype.Date `json:"lastOperationDate"`
 	NextOperationDate            pgtype.Date `json:"nextOperationDate"`
-	DocumentProviderOrganization string      `json:"documentProviderOrganization"`
-	DocumentUrl                  string      `json:"documentUrl"`
-	MetrologicalCharacteristics  string      `json:"metrologicalCharacteristics"`
+	DocumentProviderOrganization *string     `json:"documentProviderOrganization"`
+	DocumentUrl                  *string     `json:"documentUrl"`
+	MetrologicalCharacteristics  *string     `json:"metrologicalCharacteristics"`
 }
 
 func (q *Queries) UpdateStandard(ctx context.Context, arg UpdateStandardParams) (UpdateStandardRow, error) {
 	row := q.db.QueryRow(ctx, updateStandard,
 		arg.ID,
-		arg.Model,
 		arg.CertificateNumber,
 		arg.LastOperationDate,
 		arg.NextOperationDate,
@@ -236,7 +226,6 @@ func (q *Queries) UpdateStandard(ctx context.Context, arg UpdateStandardParams) 
 	var i UpdateStandardRow
 	err := row.Scan(
 		&i.ID,
-		&i.Model,
 		&i.CertificateNumber,
 		&i.LastOperationDate,
 		&i.NextOperationDate,

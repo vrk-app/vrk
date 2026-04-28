@@ -408,6 +408,249 @@ const docTemplate = `{
                 }
             }
         },
+        "/equipment-dictionaries": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "equipment-dictionaries"
+                ],
+                "summary": "Получить список словарей оборудования",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Количество записей",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Смещение",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/equipmentdictionary.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/equipmentdictionary.EquipmentDictionaryFull"
+                                            }
+                                        },
+                                        "meta": {
+                                            "$ref": "#/definitions/equipmentdictionary.Meta"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Создаёт equipment_dictionary, при необходимости создаёт measuring_instruments_dictionary и стандарты",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "equipment-dictionaries"
+                ],
+                "summary": "Создать словарь оборудования",
+                "parameters": [
+                    {
+                        "description": "Данные",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/equipmentdictionary.CreateEquipmentDictionaryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/equipmentdictionary.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/equipmentdictionary.EquipmentDictionaryFull"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/equipmentdictionary.ApiResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/equipmentdictionary.ApiResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/equipment-dictionaries/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "equipment-dictionaries"
+                ],
+                "summary": "Получить словарь оборудования по ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/equipmentdictionary.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/equipmentdictionary.EquipmentDictionaryFull"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/equipmentdictionary.ApiResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "equipment-dictionaries"
+                ],
+                "summary": "Обновить словарь оборудования",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Данные",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/equipmentdictionary.UpdateEquipmentDictionaryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/equipmentdictionary.ApiResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/equipmentdictionary.EquipmentDictionaryFull"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/equipmentdictionary.ApiResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/equipmentdictionary.ApiResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "equipment-dictionaries"
+                ],
+                "summary": "Удалить словарь оборудования",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/equipmentdictionary.ApiResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/equipment/{id}": {
             "get": {
                 "description": "Возвращает информацию об оборудовании",
@@ -460,75 +703,6 @@ const docTemplate = `{
                     }
                 }
             },
-            "put": {
-                "description": "Обновляет данные оборудования",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "equipment"
-                ],
-                "summary": "Обновить оборудование",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID оборудования",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Данные для обновления",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/equipment.UpdateRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Успешное обновление",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/equipment.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/equipment.EquipmentResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Неверный запрос",
-                        "schema": {
-                            "$ref": "#/definitions/equipment.Response"
-                        }
-                    },
-                    "404": {
-                        "description": "Оборудование не найдено",
-                        "schema": {
-                            "$ref": "#/definitions/equipment.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
-                        "schema": {
-                            "$ref": "#/definitions/equipment.Response"
-                        }
-                    }
-                }
-            },
             "delete": {
                 "description": "Удаляет оборудование по ID",
                 "tags": [
@@ -563,16 +737,16 @@ const docTemplate = `{
                 }
             }
         },
-        "/measuring-instruments": {
+        "/manufacturers": {
             "get": {
-                "description": "Возвращает список средств измерения с пагинацией",
+                "description": "Возвращает список производителей с пагинацией",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "equipment"
                 ],
-                "summary": "Получить список средств измерения",
+                "summary": "Получить список производителей",
                 "parameters": [
                     {
                         "maximum": 100,
@@ -598,7 +772,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/measuringinstrument.Response"
+                                    "$ref": "#/definitions/manufacturer.Response"
                                 },
                                 {
                                     "type": "object",
@@ -606,11 +780,11 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/measuringinstrument.MeasuringInstrumentResponse"
+                                                "$ref": "#/definitions/manufacturer.ManufacturerResponse"
                                             }
                                         },
                                         "meta": {
-                                            "$ref": "#/definitions/measuringinstrument.Meta"
+                                            "$ref": "#/definitions/manufacturer.Meta"
                                         }
                                     }
                                 }
@@ -620,13 +794,13 @@ const docTemplate = `{
                     "500": {
                         "description": "Внутренняя ошибка сервера",
                         "schema": {
-                            "$ref": "#/definitions/measuringinstrument.Response"
+                            "$ref": "#/definitions/manufacturer.Response"
                         }
                     }
                 }
             },
             "post": {
-                "description": "Создает новое средство измерения (СИ)",
+                "description": "Создает нового производителя оборудования",
                 "consumes": [
                     "application/json"
                 ],
@@ -636,31 +810,31 @@ const docTemplate = `{
                 "tags": [
                     "equipment"
                 ],
-                "summary": "Создать средство измерения",
+                "summary": "Создать производителя",
                 "parameters": [
                     {
-                        "description": "Данные средства измерения",
+                        "description": "Данные производителя",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/measuringinstrument.CreateRequest"
+                            "$ref": "#/definitions/manufacturer.CreateRequest"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "Средство измерения создано",
+                        "description": "Производитель создан",
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/measuringinstrument.Response"
+                                    "$ref": "#/definitions/manufacturer.Response"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/measuringinstrument.MeasuringInstrumentResponse"
+                                            "$ref": "#/definitions/manufacturer.ManufacturerResponse"
                                         }
                                     }
                                 }
@@ -670,32 +844,32 @@ const docTemplate = `{
                     "400": {
                         "description": "Неверный запрос",
                         "schema": {
-                            "$ref": "#/definitions/measuringinstrument.Response"
+                            "$ref": "#/definitions/manufacturer.Response"
                         }
                     },
                     "500": {
                         "description": "Внутренняя ошибка сервера",
                         "schema": {
-                            "$ref": "#/definitions/measuringinstrument.Response"
+                            "$ref": "#/definitions/manufacturer.Response"
                         }
                     }
                 }
             }
         },
-        "/measuring-instruments/{id}": {
+        "/manufacturers/{id}": {
             "get": {
-                "description": "Возвращает информацию о средстве измерения",
+                "description": "Возвращает информацию о производителе",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "equipment"
                 ],
-                "summary": "Получить средство измерения по ID",
+                "summary": "Получить производителя по ID",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID средства измерения",
+                        "description": "ID производителя",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -707,13 +881,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/measuringinstrument.Response"
+                                    "$ref": "#/definitions/manufacturer.Response"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/measuringinstrument.MeasuringInstrumentResponse"
+                                            "$ref": "#/definitions/manufacturer.ManufacturerResponse"
                                         }
                                     }
                                 }
@@ -721,21 +895,21 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "Средство измерения не найдено",
+                        "description": "Производитель не найден",
                         "schema": {
-                            "$ref": "#/definitions/measuringinstrument.Response"
+                            "$ref": "#/definitions/manufacturer.Response"
                         }
                     },
                     "500": {
                         "description": "Внутренняя ошибка сервера",
                         "schema": {
-                            "$ref": "#/definitions/measuringinstrument.Response"
+                            "$ref": "#/definitions/manufacturer.Response"
                         }
                     }
                 }
             },
             "put": {
-                "description": "Обновляет данные средства измерения",
+                "description": "Обновляет данные производителя",
                 "consumes": [
                     "application/json"
                 ],
@@ -745,11 +919,11 @@ const docTemplate = `{
                 "tags": [
                     "equipment"
                 ],
-                "summary": "Обновить средство измерения",
+                "summary": "Обновить производителя",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID средства измерения",
+                        "description": "ID производителя",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -760,7 +934,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/measuringinstrument.UpdateRequest"
+                            "$ref": "#/definitions/manufacturer.UpdateRequest"
                         }
                     }
                 ],
@@ -770,13 +944,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/measuringinstrument.Response"
+                                    "$ref": "#/definitions/manufacturer.Response"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/measuringinstrument.MeasuringInstrumentResponse"
+                                            "$ref": "#/definitions/manufacturer.ManufacturerResponse"
                                         }
                                     }
                                 }
@@ -786,19 +960,232 @@ const docTemplate = `{
                     "400": {
                         "description": "Неверный запрос",
                         "schema": {
-                            "$ref": "#/definitions/measuringinstrument.Response"
+                            "$ref": "#/definitions/manufacturer.Response"
                         }
                     },
                     "404": {
-                        "description": "Средство измерения не найдено",
+                        "description": "Производитель не найден",
                         "schema": {
-                            "$ref": "#/definitions/measuringinstrument.Response"
+                            "$ref": "#/definitions/manufacturer.Response"
                         }
                     },
                     "500": {
                         "description": "Внутренняя ошибка сервера",
                         "schema": {
-                            "$ref": "#/definitions/measuringinstrument.Response"
+                            "$ref": "#/definitions/manufacturer.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Удаляет производителя по ID",
+                "tags": [
+                    "equipment"
+                ],
+                "summary": "Удалить производителя",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID производителя",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Успешное удаление"
+                    },
+                    "404": {
+                        "description": "Производитель не найден",
+                        "schema": {
+                            "$ref": "#/definitions/manufacturer.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/manufacturer.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/metrological-types": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "metrological-types"
+                ],
+                "summary": "Получить список типов метрологических операций",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Количество записей на странице",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "Смещение",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/metrologicaltype.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/metrologicaltype.MetrologicalTypeResponse"
+                                            }
+                                        },
+                                        "meta": {
+                                            "$ref": "#/definitions/metrologicaltype.Meta"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "metrological-types"
+                ],
+                "summary": "Создать тип метрологической операции",
+                "parameters": [
+                    {
+                        "description": "Данные типа",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/metrologicaltype.CreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/metrologicaltype.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/metrologicaltype.MetrologicalTypeResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/metrologicaltype.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/metrologicaltype.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/metrological-types/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "metrological-types"
+                ],
+                "summary": "Получить тип метрологической операции по ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID типа",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/metrologicaltype.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/metrologicaltype.MetrologicalTypeResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/metrologicaltype.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "metrological-types"
+                ],
+                "summary": "Удалить тип метрологической операции",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID типа",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/metrologicaltype.Response"
                         }
                     }
                 }
@@ -1078,20 +1465,17 @@ const docTemplate = `{
                 }
             }
         },
-        "/standards": {
+        "/usage-classifications": {
             "get": {
-                "description": "Возвращает список эталонов с пагинацией",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "equipment"
+                    "usage-classifications"
                 ],
-                "summary": "Получить список эталонов",
+                "summary": "Получить список классификаций использования",
                 "parameters": [
                     {
-                        "maximum": 100,
-                        "minimum": 1,
                         "type": "integer",
                         "default": 10,
                         "description": "Количество записей на странице",
@@ -1099,7 +1483,6 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "minimum": 0,
                         "type": "integer",
                         "default": 0,
                         "description": "Смещение",
@@ -1109,11 +1492,11 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Успешный ответ",
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/standard.Response"
+                                    "$ref": "#/definitions/usageclassification.Response"
                                 },
                                 {
                                     "type": "object",
@@ -1121,27 +1504,20 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/standard.StandardResponse"
+                                                "$ref": "#/definitions/usageclassification.UsageClassificationResponse"
                                             }
                                         },
                                         "meta": {
-                                            "$ref": "#/definitions/standard.Meta"
+                                            "$ref": "#/definitions/usageclassification.Meta"
                                         }
                                     }
                                 }
                             ]
-                        }
-                    },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
                         }
                     }
                 }
             },
             "post": {
-                "description": "Создает новый эталон для метрологической поверки",
                 "consumes": [
                     "application/json"
                 ],
@@ -1149,33 +1525,33 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "equipment"
+                    "usage-classifications"
                 ],
-                "summary": "Создать эталон",
+                "summary": "Создать классификацию использования",
                 "parameters": [
                     {
-                        "description": "Данные эталона",
+                        "description": "Данные классификации",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/standard.CreateRequest"
+                            "$ref": "#/definitions/usageclassification.CreateRequest"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "Эталон создан",
+                        "description": "Created",
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/standard.Response"
+                                    "$ref": "#/definitions/usageclassification.Response"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/standard.StandardResponse"
+                                            "$ref": "#/definitions/usageclassification.UsageClassificationResponse"
                                         }
                                     }
                                 }
@@ -1183,34 +1559,33 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Неверный запрос",
+                        "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/standard.Response"
+                            "$ref": "#/definitions/usageclassification.Response"
                         }
                     },
                     "500": {
-                        "description": "Внутренняя ошибка сервера",
+                        "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/standard.Response"
+                            "$ref": "#/definitions/usageclassification.Response"
                         }
                     }
                 }
             }
         },
-        "/standards/{id}": {
+        "/usage-classifications/{id}": {
             "get": {
-                "description": "Возвращает информацию об эталоне",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "equipment"
+                    "usage-classifications"
                 ],
-                "summary": "Получить эталон по ID",
+                "summary": "Получить классификацию использования по ID",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "ID эталона",
+                        "type": "integer",
+                        "description": "ID классификации",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1218,17 +1593,17 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Успешный ответ",
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/standard.Response"
+                                    "$ref": "#/definitions/usageclassification.Response"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/standard.StandardResponse"
+                                            "$ref": "#/definitions/usageclassification.UsageClassificationResponse"
                                         }
                                     }
                                 }
@@ -1236,98 +1611,22 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "Эталон не найден",
+                        "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Обновляет данные эталона",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "equipment"
-                ],
-                "summary": "Обновить эталон",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID эталона",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Данные для обновления",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/standard.UpdateRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Успешное обновление",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/standard.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/standard.StandardResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Неверный запрос",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    },
-                    "404": {
-                        "description": "Эталон не найден",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
+                            "$ref": "#/definitions/usageclassification.Response"
                         }
                     }
                 }
             },
             "delete": {
-                "description": "Удаляет эталон по ID",
                 "tags": [
-                    "equipment"
+                    "usage-classifications"
                 ],
-                "summary": "Удалить эталон",
+                "summary": "Удалить классификацию использования",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "ID эталона",
+                        "type": "integer",
+                        "description": "ID классификации",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1335,18 +1634,12 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "204": {
-                        "description": "Успешное удаление"
+                        "description": "No Content"
                     },
                     "404": {
-                        "description": "Эталон не найден",
+                        "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
+                            "$ref": "#/definitions/usageclassification.Response"
                         }
                     }
                 }
@@ -1491,10 +1784,20 @@ const docTemplate = `{
                 "equipmentDictionaryId",
                 "factoryNumber",
                 "manufactureYear",
+                "manufacturerId",
                 "organizationId",
                 "statusId"
             ],
             "properties": {
+                "certificateNumber": {
+                    "type": "string"
+                },
+                "documentProviderOrganization": {
+                    "type": "string"
+                },
+                "documentUrl": {
+                    "type": "string"
+                },
                 "equipmentDictionaryId": {
                     "type": "string"
                 },
@@ -1505,13 +1808,30 @@ const docTemplate = `{
                 "inventoryNumber": {
                     "type": "string"
                 },
+                "lastOperationDate": {
+                    "type": "string"
+                },
                 "manufactureYear": {
+                    "type": "string"
+                },
+                "manufacturerId": {
+                    "type": "string"
+                },
+                "metrologicalCharacteristics": {
+                    "description": "Для эталонов",
+                    "type": "string"
+                },
+                "metrologicalOperationTypeId": {
+                    "description": "Для средств измерения",
+                    "type": "integer"
+                },
+                "nextOperationDate": {
                     "type": "string"
                 },
                 "organizationId": {
                     "type": "string"
                 },
-                "registrationYear": {
+                "standardId": {
                     "type": "string"
                 },
                 "statusId": {
@@ -1524,6 +1844,9 @@ const docTemplate = `{
         "equipment.EquipmentResponse": {
             "type": "object",
             "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
                 "equipmentName": {
                     "type": "string"
                 },
@@ -1539,8 +1862,11 @@ const docTemplate = `{
                 "manufactureYear": {
                     "type": "string"
                 },
-                "manufacturer": {
+                "manufacturerName": {
                     "type": "string"
+                },
+                "measuringInstrument": {
+                    "$ref": "#/definitions/equipment.MeasuringInstrumentInfo"
                 },
                 "model": {
                     "type": "string"
@@ -1548,8 +1874,8 @@ const docTemplate = `{
                 "organizationName": {
                     "type": "string"
                 },
-                "registrationYear": {
-                    "type": "string"
+                "standard": {
+                    "$ref": "#/definitions/equipment.StandardInfo"
                 },
                 "statusId": {
                     "type": "integer"
@@ -1557,7 +1883,45 @@ const docTemplate = `{
                 "statusName": {
                     "type": "string"
                 },
+                "updatedAt": {
+                    "type": "string"
+                },
                 "usageClassification": {
+                    "type": "string"
+                }
+            }
+        },
+        "equipment.MeasuringInstrumentInfo": {
+            "type": "object",
+            "properties": {
+                "certificateNumber": {
+                    "type": "string"
+                },
+                "documentProviderOrganization": {
+                    "type": "string"
+                },
+                "documentUrl": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastOperationDate": {
+                    "type": "string"
+                },
+                "metrologicalOperationType": {
+                    "type": "string"
+                },
+                "metrologicalOperationTypeId": {
+                    "type": "integer"
+                },
+                "nextOperationDate": {
+                    "type": "string"
+                },
+                "registryNumber": {
+                    "type": "string"
+                },
+                "standardId": {
                     "type": "string"
                 }
             }
@@ -1591,83 +1955,10 @@ const docTemplate = `{
                 }
             }
         },
-        "equipment.UpdateRequest": {
-            "type": "object",
-            "properties": {
-                "equipmentDictionaryId": {
-                    "type": "string"
-                },
-                "factoryNumber": {
-                    "type": "string"
-                },
-                "inventoryNumber": {
-                    "type": "string"
-                },
-                "manufactureYear": {
-                    "type": "string"
-                },
-                "organizationId": {
-                    "type": "string"
-                },
-                "registrationYear": {
-                    "type": "string"
-                },
-                "statusId": {
-                    "type": "integer"
-                }
-            }
-        },
-        "measuringinstrument.CreateRequest": {
-            "type": "object",
-            "required": [
-                "certificateNumber",
-                "documentProviderOrganization",
-                "documentUrl",
-                "metrologicalOperationTypeId",
-                "organizationId",
-                "registryNumber"
-            ],
-            "properties": {
-                "certificateNumber": {
-                    "type": "string",
-                    "maxLength": 100
-                },
-                "documentProviderOrganization": {
-                    "type": "string",
-                    "maxLength": 100
-                },
-                "documentUrl": {
-                    "type": "string",
-                    "maxLength": 255
-                },
-                "lastOperationDate": {
-                    "type": "string"
-                },
-                "metrologicalOperationTypeId": {
-                    "type": "string"
-                },
-                "nextOperationDate": {
-                    "type": "string"
-                },
-                "organizationId": {
-                    "type": "string"
-                },
-                "registryNumber": {
-                    "type": "string",
-                    "maxLength": 50
-                },
-                "standardId": {
-                    "type": "string"
-                }
-            }
-        },
-        "measuringinstrument.MeasuringInstrumentResponse": {
+        "equipment.StandardInfo": {
             "type": "object",
             "properties": {
                 "certificateNumber": {
-                    "type": "string"
-                },
-                "createdAt": {
                     "type": "string"
                 },
                 "documentProviderOrganization": {
@@ -1682,19 +1973,59 @@ const docTemplate = `{
                 "lastOperationDate": {
                     "type": "string"
                 },
-                "metrologicalOperationTypeId": {
+                "metrologicalCharacteristics": {
                     "type": "string"
                 },
                 "nextOperationDate": {
                     "type": "string"
-                },
-                "organizationId": {
+                }
+            }
+        },
+        "equipmentdictionary.ApiResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
                     "type": "string"
                 },
-                "registryNumber": {
+                "meta": {
+                    "$ref": "#/definitions/equipmentdictionary.Meta"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "equipmentdictionary.CreateEquipmentDictionaryRequest": {
+            "type": "object",
+            "properties": {
+                "fullName": {
                     "type": "string"
                 },
-                "standardId": {
+                "measuringInstrument": {
+                    "$ref": "#/definitions/equipmentdictionary.MeasuringInstrumentInput"
+                },
+                "model": {
+                    "type": "string"
+                }
+            }
+        },
+        "equipmentdictionary.EquipmentDictionaryFull": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "mid": {
+                    "$ref": "#/definitions/equipmentdictionary.MeasuringInstrumentsDictionaryFull"
+                },
+                "model": {
                     "type": "string"
                 },
                 "updatedAt": {
@@ -1702,7 +2033,51 @@ const docTemplate = `{
                 }
             }
         },
-        "measuringinstrument.Meta": {
+        "equipmentdictionary.MeasuringInstrumentInput": {
+            "type": "object",
+            "properties": {
+                "metrologicalOperationTypeId": {
+                    "type": "integer"
+                },
+                "registryNumber": {
+                    "type": "string"
+                },
+                "standards": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "standardModel"
+                    ]
+                }
+            }
+        },
+        "equipmentdictionary.MeasuringInstrumentsDictionaryFull": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "metrologicalOperationType": {
+                    "type": "string"
+                },
+                "metrologicalOperationTypeID": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "registryNumber": {
+                    "type": "string"
+                },
+                "standards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/equipmentdictionary.StandardsDictionaryFull"
+                    }
+                }
+            }
+        },
+        "equipmentdictionary.Meta": {
             "type": "object",
             "properties": {
                 "limit": {
@@ -1716,7 +2091,85 @@ const docTemplate = `{
                 }
             }
         },
-        "measuringinstrument.Response": {
+        "equipmentdictionary.StandardsDictionaryFull": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                }
+            }
+        },
+        "equipmentdictionary.UpdateEquipmentDictionaryRequest": {
+            "type": "object",
+            "properties": {
+                "fullName": {
+                    "type": "string"
+                },
+                "measuringInstrument": {
+                    "$ref": "#/definitions/equipmentdictionary.MeasuringInstrumentInput"
+                },
+                "measuringInstrumentDictionaryId": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                }
+            }
+        },
+        "manufacturer.CreateRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "classificationID": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "manufacturer.ManufacturerResponse": {
+            "type": "object",
+            "properties": {
+                "classificationID": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "manufacturer.Meta": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "manufacturer.Response": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -1724,42 +2177,76 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "meta": {
-                    "$ref": "#/definitions/measuringinstrument.Meta"
+                    "$ref": "#/definitions/manufacturer.Meta"
                 },
                 "success": {
                     "type": "boolean"
                 }
             }
         },
-        "measuringinstrument.UpdateRequest": {
+        "manufacturer.UpdateRequest": {
             "type": "object",
             "properties": {
-                "certificateNumber": {
+                "classificationID": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "metrologicaltype.CreateRequest": {
+            "type": "object",
+            "required": [
+                "metrologicalOperationType"
+            ],
+            "properties": {
+                "metrologicalOperationType": {
+                    "type": "string"
+                }
+            }
+        },
+        "metrologicaltype.Meta": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "metrologicaltype.MetrologicalTypeResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
                     "type": "string"
                 },
-                "documentProviderOrganization": {
+                "id": {
+                    "type": "integer"
+                },
+                "metrologicalOperationType": {
+                    "type": "string"
+                }
+            }
+        },
+        "metrologicaltype.Response": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
                     "type": "string"
                 },
-                "documentUrl": {
-                    "type": "string"
+                "meta": {
+                    "$ref": "#/definitions/metrologicaltype.Meta"
                 },
-                "lastOperationDate": {
-                    "type": "string"
-                },
-                "metrologicalOperationTypeId": {
-                    "type": "string"
-                },
-                "nextOperationDate": {
-                    "type": "string"
-                },
-                "organizationId": {
-                    "type": "string"
-                },
-                "registryNumber": {
-                    "type": "string"
-                },
-                "standardId": {
-                    "type": "string"
+                "success": {
+                    "type": "boolean"
                 }
             }
         },
@@ -1938,44 +2425,18 @@ const docTemplate = `{
                 }
             }
         },
-        "standard.CreateRequest": {
+        "usageclassification.CreateRequest": {
             "type": "object",
             "required": [
-                "certificateNumber",
-                "documentProviderOrganization",
-                "documentUrl",
-                "metrologicalCharacteristics",
-                "model"
+                "classification"
             ],
             "properties": {
-                "certificateNumber": {
-                    "type": "string",
-                    "maxLength": 100
-                },
-                "documentProviderOrganization": {
-                    "type": "string",
-                    "maxLength": 100
-                },
-                "documentUrl": {
-                    "type": "string",
-                    "maxLength": 255
-                },
-                "lastOperationDate": {
-                    "type": "string"
-                },
-                "metrologicalCharacteristics": {
-                    "type": "string"
-                },
-                "model": {
-                    "type": "string",
-                    "maxLength": 50
-                },
-                "nextOperationDate": {
+                "classification": {
                     "type": "string"
                 }
             }
         },
-        "standard.Meta": {
+        "usageclassification.Meta": {
             "type": "object",
             "properties": {
                 "limit": {
@@ -1989,7 +2450,7 @@ const docTemplate = `{
                 }
             }
         },
-        "standard.Response": {
+        "usageclassification.Response": {
             "type": "object",
             "properties": {
                 "data": {},
@@ -1997,71 +2458,24 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "meta": {
-                    "$ref": "#/definitions/standard.Meta"
+                    "$ref": "#/definitions/usageclassification.Meta"
                 },
                 "success": {
                     "type": "boolean"
                 }
             }
         },
-        "standard.StandardResponse": {
+        "usageclassification.UsageClassificationResponse": {
             "type": "object",
             "properties": {
-                "certificateNumber": {
+                "classification": {
                     "type": "string"
                 },
                 "createdAt": {
                     "type": "string"
                 },
-                "documentProviderOrganization": {
-                    "type": "string"
-                },
-                "documentUrl": {
-                    "type": "string"
-                },
                 "id": {
-                    "type": "string"
-                },
-                "lastOperationDate": {
-                    "type": "string"
-                },
-                "metrologicalCharacteristics": {
-                    "type": "string"
-                },
-                "model": {
-                    "type": "string"
-                },
-                "nextOperationDate": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "standard.UpdateRequest": {
-            "type": "object",
-            "properties": {
-                "certificateNumber": {
-                    "type": "string"
-                },
-                "documentProviderOrganization": {
-                    "type": "string"
-                },
-                "documentUrl": {
-                    "type": "string"
-                },
-                "lastOperationDate": {
-                    "type": "string"
-                },
-                "metrologicalCharacteristics": {
-                    "type": "string"
-                },
-                "model": {
-                    "type": "string"
-                },
-                "nextOperationDate": {
-                    "type": "string"
+                    "type": "integer"
                 }
             }
         }

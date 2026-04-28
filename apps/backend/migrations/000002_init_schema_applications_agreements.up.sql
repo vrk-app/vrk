@@ -20,7 +20,7 @@ CREATE TABLE application_statuses (
 CREATE TABLE service_types (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(50) NOT NULL,
-    usage_classification_id UUID NOT NULL, -- ⚠️ FK добавим в миграции 3
+    usage_classification_id INT NOT NULL, -- ⚠️ FK добавим в миграции 3
     norm_hour_amount INT NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
