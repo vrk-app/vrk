@@ -41,6 +41,8 @@ export function TopBar({
   ...props
 }: TopBarProps) {
   const isSearchInteractive = typeof onSearch === "function";
+  const isNotificationsInteractive = typeof onNotificationsClick === "function";
+  const isUserMenuInteractive = typeof onUserMenu === "function";
 
   const handleMobileMenuToggle = () => {
     onMobileMenuOpenChange?.(!mobileMenuOpen);
@@ -100,6 +102,7 @@ export function TopBar({
               name="global-search"
               onChange={isSearchInteractive ? (event) => onSearch(event.target.value) : undefined}
               placeholder={searchPlaceholder}
+              readOnly={!isSearchInteractive}
               spellCheck={false}
               type="search"
               value={searchValue}
@@ -108,8 +111,18 @@ export function TopBar({
 
           <div className="flex items-center gap-3">
             <button
-              aria-label="Уведомления"
-              className="relative inline-flex size-11 items-center justify-center rounded-[var(--radius-lg)] border border-border bg-card text-foreground shadow-xs transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              aria-label={
+                isNotificationsInteractive
+                  ? "Уведомления"
+                  : "Уведомления недоступны без подключенного сценария"
+              }
+              className={cn(
+                "relative inline-flex size-11 items-center justify-center rounded-[var(--radius-lg)] border border-border shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                isNotificationsInteractive
+                  ? "bg-card text-foreground hover:bg-muted"
+                  : "cursor-not-allowed bg-muted text-muted-foreground",
+              )}
+              disabled={!isNotificationsInteractive}
               onClick={onNotificationsClick}
               type="button"
             >
@@ -122,18 +135,43 @@ export function TopBar({
             </button>
 
             <button
-              className="inline-flex min-h-11 items-center gap-3 rounded-[var(--radius-lg)] border border-border bg-card px-3 py-2 text-left shadow-xs transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              aria-label={
+                isUserMenuInteractive
+                  ? "Меню пользователя"
+                  : "Меню пользователя недоступно без подключенного сценария"
+              }
+              className={cn(
+                "inline-flex min-h-11 items-center gap-3 rounded-[var(--radius-lg)] border border-border px-3 py-2 text-left shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                isUserMenuInteractive
+                  ? "bg-card hover:bg-muted"
+                  : "cursor-not-allowed bg-muted text-muted-foreground",
+              )}
+              disabled={!isUserMenuInteractive}
               onClick={onUserMenu}
               type="button"
             >
-              <span className="flex size-9 items-center justify-center rounded-full bg-accent-soft text-sm font-semibold text-accent">
+              <span
+                className={cn(
+                  "flex size-9 items-center justify-center rounded-full text-sm font-semibold",
+                  isUserMenuInteractive ? "bg-accent-soft text-accent" : "bg-card text-muted-foreground",
+                )}
+              >
                 {user.initials}
               </span>
               <span className="hidden min-w-0 flex-col sm:flex">
-                <span className="truncate text-sm font-semibold text-foreground">{user.name}</span>
+                <span
+                  className={cn(
+                    "truncate text-sm font-semibold",
+                    isUserMenuInteractive ? "text-foreground" : "text-muted-foreground",
+                  )}
+                >
+                  {user.name}
+                </span>
                 <span className="truncate text-xs text-muted-foreground">{user.role}</span>
               </span>
-              <ChevronDown aria-hidden="true" className="size-4 text-muted-foreground" />
+              {isUserMenuInteractive ? (
+                <ChevronDown aria-hidden="true" className="size-4 text-muted-foreground" />
+              ) : null}
             </button>
           </div>
         </div>

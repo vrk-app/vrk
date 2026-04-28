@@ -19,7 +19,7 @@
 - `apps/field` существует как PWA-first scaffold с явной boundary copy:
   - offline drafts and manual sync are future behavior hooks;
   - Stage 06 offline engine не имитируется как live.
-- Repo-level CI воспроизводимо гоняет lint/test/build/smoke для Stage 02 baseline.
+- Repo-level CI workflow существует и wired к Stage 02 lint/test/build/smoke baseline; remote GitHub Actions reproduction claims требуют отдельного run-proof.
 - Canonical docs, Stage 02 artifacts и downstream Stage 03 handoff отражают, что platform tail закрыт.
 
 ## File / module ownership

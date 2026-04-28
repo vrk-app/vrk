@@ -1,0 +1,15 @@
+checked_at=2026-04-20T16:51:00Z
+docker_ps:
+Cannot connect to the Docker daemon at unix:///Users/yura-posledov/.docker/run/docker.sock. Is the docker daemon running?
+
+backend_health:
+curl: (7) Failed to connect to 127.0.0.1 port 18080 after 0 ms: Couldn't connect to server
+
+web_login_head:
+curl: (7) Failed to connect to 127.0.0.1 port 3100 after 0 ms: Couldn't connect to server
+
+psql_version:
+sh: psql: command not found
+
+pg_port_5432:
+closed

@@ -1,0 +1,7 @@
+
+> @vrk/web@0.1.0 typecheck /Users/yura-posledov/cursor/vrk/apps/web
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Route types generated successfully
+__PASS__

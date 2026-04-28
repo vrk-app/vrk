@@ -1,0 +1,51 @@
+{
+  "success": true,
+  "data": {
+    "sessionToken": "f77d7fa2-35fe-4a9f-86e6-f84821d9f35b",
+    "requiresLaunchWizard": false,
+    "account": {
+      "id": "8a6aea4b-13ba-4c4a-859a-eed591b4e623",
+      "fullName": "Unit-Metrology Employee 1776614151",
+      "email": "unit-metrology-1776614151@vrk.local"
+    },
+    "membershipId": "7ecb97c6-bdc6-4244-899b-b85889b5b079",
+    "membershipStatus": "active",
+    "organization": {
+      "id": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+      "roleTitle": "customer",
+      "name": "ВРК customer-metrology 1776614151",
+      "shortName": "CUS-1776614151",
+      "propertyType": "ООО",
+      "inn": "1776614151",
+      "kpp": "177661415",
+      "legalAddress": "г. Москва, ул. customer-metrology, д. 5",
+      "contactEmail": "customer-metrology-1776614151@vrk.local",
+      "contactPhone": "+7 (999) 123-45-67",
+      "launchState": "active"
+    },
+    "grant": {
+      "id": "aa60c248-3057-473c-81ad-b6b732fa25ee",
+      "roleTemplate": "unit_operator",
+      "scopeType": "unit",
+      "scopeId": "f8aa33ec-009d-4a36-89d9-a98d0692fb9d"
+    },
+    "workspace": {
+      "scopeType": "unit",
+      "scopeId": "f8aa33ec-009d-4a36-89d9-a98d0692fb9d",
+      "scopeName": "Customer-Metrology Юнит 01 1776614151",
+      "landingTitle": "Customer-Metrology Юнит 01 1776614151",
+      "landingSubtitle": "Доступ ограничен выбранным юнитом без расширения вверх по иерархии.",
+      "landingPath": "/company",
+      "canManageEmployeeInvites": false
+    },
+    "subdivisions": [],
+    "units": [
+      {
+        "id": "f8aa33ec-009d-4a36-89d9-a98d0692fb9d",
+        "type": "Юнит",
+        "name": "Customer-Metrology Юнит 01 1776614151",
+        "subdivisionId": "3f51076c-06cb-4261-b0f2-cfb6b47ba18b"
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "d858f441-0056-4f56-80f0-5a149fcaeb9d",
+  "organizationId": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+  "ownershipScope": {
+    "scopeType": "unit",
+    "scopeId": "560a11af-2794-4722-a7dc-e46593ab2381",
+    "label": "Второй юнит 1776614151"
+  },
+  "standardType": "Эталон расхода",
+  "model": "STD-U2",
+  "identifier": "STD-U2-1776614151",
+  "metrologicalCharacteristics": "2.0 л/мин, юнит 02",
+  "status": "inactive",
+  "linkedMeasuringInstruments": 0,
+  "journalCount": 0,
+  "createdAt": "2026-04-19T15:55:51Z",
+  "updatedAt": "2026-04-19T15:55:51Z"
+}

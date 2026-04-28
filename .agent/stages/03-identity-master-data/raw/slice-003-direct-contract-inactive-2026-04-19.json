@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "data": {
+    "id": "17fc446d-b5a6-47c4-88fe-126e709135e6",
+    "customerOrganizationId": "caa71058-2ea7-4b8d-8db4-46b503796bbb",
+    "customerOrganizationName": "ВРК customer-contracts 1776595503",
+    "contractorOrganizationId": "3cb8afce-4a3d-4eeb-92ea-538976fedb51",
+    "contractorOrganizationName": "ВРК contractor-alpha 1776595503",
+    "contractNumber": "CTR-INACTIVE-1776595503",
+    "contractStatus": "inactive",
+    "startDate": "2026-04-29",
+    "endDate": "2026-05-29",
+    "workType": "repair",
+    "equipmentType": "Насос",
+    "region": "Москва",
+    "locationScope": {
+      "scopeType": "unit",
+      "scopeId": "f731faea-6d38-40dc-9b06-cf6a62a09cc3",
+      "label": "Customer-Contracts Юнит 1776595503"
+    },
+    "subjectOfAgreement": "Неактивный контракт вне eligibility",
+    "routingEligible": false
+  }
+}

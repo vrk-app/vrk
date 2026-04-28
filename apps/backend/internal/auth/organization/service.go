@@ -1,51 +1,55 @@
 package organization
 
 import (
-    "context"
-    "time"
+	"context"
+	"strings"
+	"time"
 
-    "github.com/google/uuid"
+	"github.com/google/uuid"
 )
 
 type OrganizationService interface {
-    Create(ctx context.Context, req CreateRequest) (*OrganizationResponse, error)
-    List(ctx context.Context, limit, offset int32) ([]*OrganizationResponse, int64, error)
-    GetByID(ctx context.Context, id string) (*OrganizationResponse, error)
-    Update(ctx context.Context, id string, req UpdateRequest) (*OrganizationResponse, error)
-    Delete(ctx context.Context, id string) error
+	Create(ctx context.Context, req CreateRequest) (*OrganizationResponse, error)
+	List(ctx context.Context, limit, offset int32) ([]*OrganizationResponse, int64, error)
+	GetByID(ctx context.Context, id string) (*OrganizationResponse, error)
+	Update(ctx context.Context, id string, req UpdateRequest) (*OrganizationResponse, error)
+	Delete(ctx context.Context, id string) error
 }
 
 type organizationService struct {
-    repository OrganizationRepository
+	repository OrganizationRepository
 }
 
 func NewService(repository OrganizationRepository) OrganizationService {
-    return &organizationService{repository: repository}
+	return &organizationService{repository: repository}
 }
 
 func (s *organizationService) Create(ctx context.Context, req CreateRequest) (*OrganizationResponse, error) {
-    id := uuid.New()
+	id := uuid.New()
 
-	propertyTypeID, _ := uuid.Parse(req.PropertyTypeID)
-	roleID, _ := uuid.Parse(req.RoleID)
-	directorID, _ := uuid.Parse(req.DirectorID)
-
-	var parentID *uuid.UUID
-	if req.ParentID != nil {
-		p, _ := uuid.Parse(*req.ParentID)
-		parentID = &p
+	propertyTypeID, err := parseRequiredUUID(req.PropertyTypeID)
+	if err != nil {
+		return nil, err
 	}
-
-	var issueDate *time.Time
-	if req.POAIssueDate != nil {
-		t, _ := time.Parse("2006-01-02", *req.POAIssueDate)
-		issueDate = &t
+	roleID, err := parseRequiredUUID(req.RoleID)
+	if err != nil {
+		return nil, err
 	}
-
-	var expDate *time.Time
-	if req.POAExpirationDate != nil {
-		t, _ := time.Parse("2006-01-02", *req.POAExpirationDate)
-		expDate = &t
+	directorID, err := parseRequiredUUID(req.DirectorID)
+	if err != nil {
+		return nil, err
+	}
+	parentID, err := parseOptionalUUID(req.ParentID)
+	if err != nil {
+		return nil, err
+	}
+	issueDate, err := parseOptionalDate(req.POAIssueDate)
+	if err != nil {
+		return nil, err
+	}
+	expDate, err := parseOptionalDate(req.POAExpirationDate)
+	if err != nil {
+		return nil, err
 	}
 
 	model := Organization{
@@ -74,7 +78,10 @@ func (s *organizationService) Create(ctx context.Context, req CreateRequest) (*O
 }
 
 func (s *organizationService) GetByID(ctx context.Context, id string) (*OrganizationResponse, error) {
-	orgID, _ := uuid.Parse(id)
+	orgID, err := uuid.Parse(strings.TrimSpace(id))
+	if err != nil {
+		return nil, ErrInvalidID
+	}
 	org, err := s.repository.GetByID(ctx, orgID)
 	if err != nil {
 		return nil, err
@@ -83,76 +90,79 @@ func (s *organizationService) GetByID(ctx context.Context, id string) (*Organiza
 }
 
 func (s *organizationService) Update(ctx context.Context, id string, req UpdateRequest) (*OrganizationResponse, error) {
-	orgID, err := uuid.Parse(id)
+	orgID, err := uuid.Parse(strings.TrimSpace(id))
 	if err != nil {
 		return nil, ErrInvalidID
 	}
 
-    current, err := s.repository.GetByIDForUpdate(ctx, orgID)
-    if err != nil {
-        return nil, err
-    }
+	current, err := s.repository.GetByIDForUpdate(ctx, orgID)
+	if err != nil {
+		return nil, err
+	}
 
-    if req.Name != nil {
-        current.Name = *req.Name
-    }
-    if req.INN != nil {
-        current.Inn = *req.INN
-    }
-    if req.KPP != nil {
-        current.Kpp = *req.KPP
-    }
-    if req.Address != nil {
-        current.Address = *req.Address
-    }
-    if req.ShortName != nil {
-        current.ShortName = req.ShortName
-    }
-    if req.PowerOfAttorneyNumber != nil {
-        current.PowerOfAttorneyNumber = req.PowerOfAttorneyNumber
-    }
-    if req.Logo != nil {
-        current.Logo = req.Logo
-    }
+	if req.Name != nil {
+		current.Name = strings.TrimSpace(*req.Name)
+	}
+	if req.INN != nil {
+		current.Inn = strings.TrimSpace(*req.INN)
+	}
+	if req.KPP != nil {
+		current.Kpp = strings.TrimSpace(*req.KPP)
+	}
+	if req.Address != nil {
+		current.Address = strings.TrimSpace(*req.Address)
+	}
+	if req.ShortName != nil {
+		current.ShortName = req.ShortName
+	}
+	if req.PowerOfAttorneyNumber != nil {
+		current.PowerOfAttorneyNumber = req.PowerOfAttorneyNumber
+	}
+	if req.Logo != nil {
+		current.Logo = req.Logo
+	}
 
-    if req.PropertyTypeID != nil && *req.PropertyTypeID != "" {
-        current.PropertyTypeID = uuid.MustParse(*req.PropertyTypeID)
-    }
+	if req.PropertyTypeID != nil {
+		current.PropertyTypeID, err = parseRequiredUUID(*req.PropertyTypeID)
+		if err != nil {
+			return nil, err
+		}
+	}
 
-    if req.RoleID != nil && *req.RoleID != "" {
-        current.RoleID = uuid.MustParse(*req.RoleID)
-    }
+	if req.RoleID != nil {
+		current.RoleID, err = parseRequiredUUID(*req.RoleID)
+		if err != nil {
+			return nil, err
+		}
+	}
 
-    if req.DirectorID != nil && *req.DirectorID != "" {
-        current.DirectorID = uuid.MustParse(*req.DirectorID)
-    }
+	if req.DirectorID != nil {
+		current.DirectorID, err = parseRequiredUUID(*req.DirectorID)
+		if err != nil {
+			return nil, err
+		}
+	}
 
-    if req.ParentID != nil {
-        if *req.ParentID == "" {
-            current.ParentID = nil
-        } else {
-            p, _ := uuid.Parse(*req.ParentID)
-            current.ParentID = &p
-        }
-    }
+	if req.ParentID != nil {
+		current.ParentID, err = parseOptionalUUID(req.ParentID)
+		if err != nil {
+			return nil, err
+		}
+	}
 
-    if req.POAIssueDate != nil {
-        if *req.POAIssueDate == "" {
-            current.PoaIssueDate = nil
-        } else {
-            t, _ := time.Parse("2006-01-02", *req.POAIssueDate)
-            current.PoaIssueDate = &t
-        }
-    }
+	if req.POAIssueDate != nil {
+		current.PoaIssueDate, err = parseOptionalDate(req.POAIssueDate)
+		if err != nil {
+			return nil, err
+		}
+	}
 
-    if req.POAExpirationDate != nil {
-        if *req.POAExpirationDate == "" {
-            current.PoaExpirationDate = nil
-        } else {
-            t, _ := time.Parse("2006-01-02", *req.POAExpirationDate)
-            current.PoaExpirationDate = &t
-        }
-    }
+	if req.POAExpirationDate != nil {
+		current.PoaExpirationDate, err = parseOptionalDate(req.POAExpirationDate)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	org, err := s.repository.Update(ctx, *current)
 	if err != nil {
@@ -163,14 +173,17 @@ func (s *organizationService) Update(ctx context.Context, id string, req UpdateR
 }
 
 func (s *organizationService) Delete(ctx context.Context, id string) error {
-	orgID, _ := uuid.Parse(id)
+	orgID, err := uuid.Parse(strings.TrimSpace(id))
+	if err != nil {
+		return ErrInvalidID
+	}
 	return s.repository.Delete(ctx, orgID)
 }
 
 func (s *organizationService) List(ctx context.Context, limit, offset int32) ([]*OrganizationResponse, int64, error) {
-    if limit <= 0 {
-        limit = 10
-    }
+	if limit <= 0 {
+		limit = 10
+	}
 	items, total, err := s.repository.List(ctx, limit, offset)
 	if err != nil {
 		return nil, 0, err
@@ -187,11 +200,11 @@ func (s *organizationService) List(ctx context.Context, limit, offset int32) ([]
 // toResponse
 func toResponseFromOrganization(m Organization) *OrganizationResponse {
 	resp := &OrganizationResponse{
-		ID:             m.ID.String(),
-		Name:           m.Name,
-		INN:            m.Inn,
-		KPP:            m.Kpp,
-		Address:        m.Address,
+		ID:      m.ID.String(),
+		Name:    m.Name,
+		INN:     m.Inn,
+		KPP:     m.Kpp,
+		Address: m.Address,
 	}
 
 	if m.ParentID != nil {
@@ -264,4 +277,49 @@ func toResponseFromOrganizationWithDetails(row OrganizationWithDetails) *Organiz
 	}
 
 	return resp
+}
+
+func parseRequiredUUID(value string) (uuid.UUID, error) {
+	parsed, err := uuid.Parse(strings.TrimSpace(value))
+	if err != nil {
+		return uuid.Nil, ErrInvalidUUID
+	}
+
+	return parsed, nil
+}
+
+func parseOptionalUUID(value *string) (*uuid.UUID, error) {
+	if value == nil {
+		return nil, nil
+	}
+
+	trimmed := strings.TrimSpace(*value)
+	if trimmed == "" {
+		return nil, nil
+	}
+
+	parsed, err := uuid.Parse(trimmed)
+	if err != nil {
+		return nil, ErrInvalidUUID
+	}
+
+	return &parsed, nil
+}
+
+func parseOptionalDate(value *string) (*time.Time, error) {
+	if value == nil {
+		return nil, nil
+	}
+
+	trimmed := strings.TrimSpace(*value)
+	if trimmed == "" {
+		return nil, nil
+	}
+
+	parsed, err := time.Parse("2006-01-02", trimmed)
+	if err != nil {
+		return nil, ErrInvalidDate
+	}
+
+	return &parsed, nil
 }

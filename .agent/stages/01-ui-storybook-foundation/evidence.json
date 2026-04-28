@@ -2,106 +2,102 @@
   "stage_id": "01-ui-storybook-foundation",
   "sprint_contract_id": "slice-002-wave1-shell-auth-request-showcases",
   "prior_proven_slice": "slice-001-storybook-scaffold-and-foundations",
+  "design_brief_source": [
+    ".impeccable.md",
+    "docs/design/serviceops-design-system.md",
+    "docs/design/ui-workflow.md",
+    "docs/architecture/frontend-architecture.md",
+    "docs/design/storybook-component-backlog.md",
+    ".agent/stages/01-ui-storybook-foundation/sprint_contract.md"
+  ],
+  "ui_workflow": {
+    "lookup_query": "stage 01 auth form top bar icon gallery truthfulness login form backlog token bridge refresh",
+    "lookup_artifact": ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-storybook-lookup.txt",
+    "matched_refs": [
+      "Auth/LoginForm -> apps/web/stories/auth/LoginForm.stories.tsx",
+      "Foundations/IconGallery -> apps/web/stories/foundations/IconGallery.stories.tsx",
+      "Layout/TopBar -> apps/web/stories/layout/TopBar.stories.tsx",
+      "Foundations/TokenDocs -> apps/web/stories/foundations/TokenDocs.stories.tsx",
+      "Auth/ConsentRow -> apps/web/stories/auth/ConsentRow.stories.tsx"
+    ],
+    "decision": [
+      "TopBar -> extend",
+      "Token bridge -> extend",
+      "LoginForm -> reuse",
+      "IconGallery -> extend"
+    ],
+    "rationale": "The lookup already exposed viable story-backed candidates, so this cycle extends the existing TopBar, token bridge, and IconGallery proof instead of creating a parallel reusable family."
+  },
   "commands": [
-    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 01-ui-storybook-foundation > .agent/stages/01-ui-storybook-foundation/raw/post-findings-harness-check.txt 2>&1",
-    "curl -sL https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md > .agent/stages/01-ui-storybook-foundation/raw/post-findings-web-interface-guidelines-source.md",
-    "pnpm run web:lint",
-    "pnpm run web:typecheck",
-    "pnpm run web:build",
-    "pnpm run storybook:build",
-    "pnpm run web:smoke > .agent/stages/01-ui-storybook-foundation/raw/post-findings-web-smoke.txt 2>&1"
+    "python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query 'stage 01 auth form top bar icon gallery truthfulness login form backlog token bridge refresh' > .agent/stages/01-ui-storybook-foundation/raw/2026-04-18-storybook-lookup.txt",
+    "export NVM_DIR=\"$HOME/.nvm\"; . \"$NVM_DIR/nvm.sh\"; nvm use 24.14.1 >/dev/null; pnpm run web:lint > .agent/stages/01-ui-storybook-foundation/raw/2026-04-18-web-lint.txt 2>&1",
+    "export NVM_DIR=\"$HOME/.nvm\"; . \"$NVM_DIR/nvm.sh\"; nvm use 24.14.1 >/dev/null; pnpm run web:typecheck > .agent/stages/01-ui-storybook-foundation/raw/2026-04-18-web-typecheck.txt 2>&1",
+    "export NVM_DIR=\"$HOME/.nvm\"; . \"$NVM_DIR/nvm.sh\"; nvm use 24.14.1 >/dev/null; pnpm run web:build > .agent/stages/01-ui-storybook-foundation/raw/2026-04-18-web-build.txt 2>&1",
+    "export NVM_DIR=\"$HOME/.nvm\"; . \"$NVM_DIR/nvm.sh\"; nvm use 24.14.1 >/dev/null; pnpm run storybook:build > .agent/stages/01-ui-storybook-foundation/raw/2026-04-18-storybook-build.txt 2>&1",
+    "python3 - <<'PY' > .agent/stages/01-ui-storybook-foundation/raw/2026-04-18-story-refs.txt ... PY",
+    "export NVM_DIR=\"$HOME/.nvm\"; . \"$NVM_DIR/nvm.sh\"; nvm use 24.14.1 >/dev/null; pnpm run web:smoke > .agent/stages/01-ui-storybook-foundation/raw/2026-04-18-web-smoke.txt 2>&1",
+    "curl -sL https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md > .agent/stages/01-ui-storybook-foundation/raw/2026-04-18-web-interface-guidelines-source.md",
+    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 01-ui-storybook-foundation > .agent/stages/01-ui-storybook-foundation/raw/2026-04-18-harness-check.txt 2>&1"
   ],
   "tests": [
-    "pnpm run web:lint -> PASS",
-    "pnpm run web:typecheck -> PASS",
-    "pnpm run web:build -> PASS",
-    "pnpm run storybook:build -> PASS",
-    "pnpm run web:smoke -> PASS",
-    "post-findings-harness-check -> PASS",
-    "post-findings-story-refs -> PASS",
-    "post-findings-web-design-guidelines -> PASS"
+    "raw/2026-04-18-web-lint.txt -> PASS",
+    "raw/2026-04-18-web-typecheck.txt -> PASS",
+    "raw/2026-04-18-web-build.txt -> PASS",
+    "raw/2026-04-18-storybook-build.txt -> PASS",
+    "raw/2026-04-18-story-refs.txt -> PASS",
+    "raw/2026-04-18-web-smoke.txt -> PASS",
+    "raw/2026-04-18-web-design-guidelines.txt -> PASS",
+    "raw/2026-04-18-harness-check.txt -> PASS"
   ],
   "artifacts": [
-    ".agent/stages/01-ui-storybook-foundation/raw/post-findings-harness-check.txt",
-    ".agent/stages/01-ui-storybook-foundation/raw/post-findings-web-smoke.txt",
-    ".agent/stages/01-ui-storybook-foundation/raw/post-findings-story-refs.txt",
-    ".agent/stages/01-ui-storybook-foundation/raw/post-findings-web-interface-guidelines-source.md",
-    ".agent/stages/01-ui-storybook-foundation/raw/post-findings-web-design-guidelines.txt",
+    ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-storybook-lookup.txt",
+    ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-web-lint.txt",
+    ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-web-typecheck.txt",
+    ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-web-build.txt",
+    ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-storybook-build.txt",
+    ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-story-refs.txt",
+    ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-web-smoke.txt",
+    ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-web-interface-guidelines-source.md",
+    ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-web-design-guidelines.txt",
+    ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-harness-check.txt",
     "apps/web/storybook-static/index.json"
   ],
   "documentation_updates": [
     "docs/design/storybook-component-backlog.md"
   ],
-  "diagram_refs": [
-    "docs/architecture/frontend-architecture.md#1.1.-Текущий-Stage-01-baseline"
-  ],
-  "design_brief_source": [
-    ".impeccable.md",
-    "docs/design/ui-workflow.md",
-    "docs/design/serviceops-design-system.md",
-    "docs/architecture/frontend-architecture.md",
-    "docs/design/storybook-component-backlog.md",
-    ".agent/stages/01-ui-storybook-foundation/sprint_contract.md"
-  ],
   "changed_ui_files": [
     "apps/web/app/globals.css",
-    "apps/web/entities/Request/ui/RequestList.tsx",
-    "apps/web/entities/Request/ui/RequestListItem.tsx",
     "apps/web/shared/config/design-tokens.ts",
-    "apps/web/shared/storybook/fixtures.tsx",
-    "apps/web/shared/ui/Badge.tsx",
-    "apps/web/shared/ui/Card.tsx",
-    "apps/web/stories/foundations/TokenDocs.stories.tsx",
-    "apps/web/stories/layout/AppShell.stories.tsx",
-    "apps/web/stories/layout/SidebarNav.stories.tsx",
-    "apps/web/stories/layout/TopBar.stories.tsx",
-    "apps/web/stories/primitives/Card.stories.tsx",
-    "apps/web/stories/requests/RequestList.stories.tsx",
-    "apps/web/stories/requests/RequestListItem.stories.tsx",
-    "apps/web/widgets/Auth/ui/ConsentRow.tsx",
-    "apps/web/widgets/OperatorShell/ui/AppShell.tsx",
-    "apps/web/widgets/OperatorShell/ui/SidebarNav.tsx",
-    "apps/web/widgets/OperatorShell/ui/TopBar.tsx"
+    "apps/web/stories/foundations/IconGallery.stories.tsx",
+    "apps/web/widgets/OperatorShell/ui/TopBar.tsx",
+    "apps/web/stories/layout/TopBar.stories.tsx"
+  ],
+  "story_references": [
+    "layout-topbar--search-unavailable",
+    "layout-topbar--actions-unavailable",
+    "auth-loginform--validation-error",
+    "auth-loginform--server-error",
+    "foundations-icongallery--navigation-icons",
+    "foundations-icongallery--action-icons",
+    "foundations-icongallery--file-type-icons",
+    "foundations-icongallery--status-icons"
   ],
   "ui_review": {
     "status": "PASS",
-    "artifact": ".agent/stages/01-ui-storybook-foundation/raw/post-findings-web-design-guidelines.txt",
-    "source_artifact": ".agent/stages/01-ui-storybook-foundation/raw/post-findings-web-interface-guidelines-source.md",
+    "artifact": ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-web-design-guidelines.txt",
+    "source_artifact": ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-web-interface-guidelines-source.md",
     "notes": [
-      "TopBar non-wired search now renders truthfully as unavailable",
-      "AppShell runtime no longer contains preview-only banner copy",
-      "SidebarNav has explicit proof for collapsed desktop plus full mobile drawer",
-      "RequestListItem no longer exposes a fake note link and clamps progress to 0..100",
-      "RequestList derives the empty state from total=0",
-      "ConsentRow now separates the accessible label from the validation description",
-      "Badge semantic soft tones use stronger foreground inks for AA contrast",
-      "TokenDocs typography proof renders exact token metrics",
-      "Card now exposes a truthful plain/bordered/elevated split",
-      "Fresh verifier-side UI review found no remaining Web Interface Guidelines gaps in the changed slice"
+      "The shared token bridge now exposes the missing semantic hover, text, radius, and elevation aliases used by the design system.",
+      "IconGallery stories now isolate navigation/action/file/status sections instead of aliasing the same mixed render.",
+      "TopBar action buttons now render as unavailable when callbacks are omitted.",
+      "The non-wired search control keeps an explicit unavailable state and is marked readOnly while disabled.",
+      "TopBar stories now prove both SearchUnavailable and ActionsUnavailable paths."
     ]
   },
-  "story_references": [
-    "layout-topbar--search-unavailable",
-    "layout-sidebarnav--collapsed-mobile-drawer",
-    "requests-requestlistitem--zero-progress",
-    "requests-requestlistitem--overflow-input",
-    "requests-requestlist--derived-empty-from-total",
-    "auth-consentrow--error",
-    "primitives-badge--success",
-    "primitives-badge--warning",
-    "primitives-badge--danger",
-    "primitives-badge--with-icon",
-    "foundations-tokendocs--typography",
-    "primitives-card--base",
-    "primitives-card--bordered",
-    "primitives-card--elevated",
-    "showcases-requestspage--showcase"
-  ],
   "notes": [
-    "This cycle closed ten externally reported material findings without expanding Stage 01 scope.",
-    "A fresh verifier then found canonical backlog drift on AppShell, SidebarNav, TopBar, and RequestListItem; that doc-sync gap is now closed in docs/design/storybook-component-backlog.md.",
-    "Authoritative proof for this cycle comes from the sequential post-findings smoke bundle, not from earlier parallel exploratory command runs.",
-    "The final fresh verifier pass after backlog sync returned PASS."
+    "The initial bare-shell lint attempt under Node 20.10.0 failed the repo engine guard and is excluded from proof.",
+    "The authoritative current-tree bundle uses Node 24.14.1 via nvm for every root pnpm command.",
+    "Non-failing Storybook/tooling warnings remain in raw/2026-04-18-storybook-build.txt but were not introduced by this slice."
   ],
-  "updated_at": "2026-04-13T10:38:02Z"
+  "updated_at": "2026-04-18T18:10:39Z"
 }

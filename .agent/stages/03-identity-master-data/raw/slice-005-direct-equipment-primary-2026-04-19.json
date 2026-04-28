@@ -1,0 +1,22 @@
+{
+  "id": "c0c347af-d649-4378-b7a9-37da81be1146",
+  "organizationId": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+  "unit": {
+    "id": "f8aa33ec-009d-4a36-89d9-a98d0692fb9d",
+    "name": "Customer-Metrology Юнит 01 1776614151",
+    "subdivisionId": "3f51076c-06cb-4261-b0f2-cfb6b47ba18b",
+    "subdivisionName": "Customer-Metrology Подразделение 1776614151"
+  },
+  "manufacturer": "Трансмаш",
+  "classification": "Компрессор",
+  "model": "EQ-PRM",
+  "fullName": "Компрессор активный 1776614151",
+  "factoryNumber": "EQ-PRM-1776614151",
+  "inventoryNumber": "INV-EQ-PRM-1776614151",
+  "manufactureYear": 2022,
+  "status": "active",
+  "comment": "slice-005 equipment EQ-PRM-1776614151",
+  "measuringInstrumentCount": 0,
+  "createdAt": "2026-04-19T15:55:51Z",
+  "updatedAt": "2026-04-19T15:55:51Z"
+}

@@ -1,0 +1,45 @@
+{
+  "status": 200,
+  "response": {
+    "success": true,
+    "data": {
+      "sessionToken": "7a8b1013-616c-4eb8-b7e4-9081679e3ba2",
+      "requiresLaunchWizard": false,
+      "account": {
+        "id": "fc802298-e357-4a66-9aef-70756434b1fa",
+        "fullName": "Ирина Орлова 1776543472",
+        "email": "unit-admin-1776543472@vrk.local"
+      },
+      "membershipId": "4f1ed410-bcf0-402b-b8f2-fba4e463a594",
+      "membershipStatus": "active",
+      "organization": {
+        "id": "ddff7ca5-7813-4fd3-b74b-f4374b6d539d",
+        "roleTitle": "customer",
+        "name": "ВРК Юнит 1776543472",
+        "shortName": "ВРК Юнит",
+        "propertyType": "ООО",
+        "inn": "9876543210",
+        "kpp": "987654321",
+        "legalAddress": "г. Москва, ул. Производственная, д. 7",
+        "contactEmail": "unit-admin-1776543472@vrk.local",
+        "contactPhone": "+7 (999) 765-43-21",
+        "launchState": "active"
+      },
+      "grant": {
+        "id": "74ca913f-f66c-4757-b937-080e3dd5100c",
+        "roleTemplate": "organization_admin",
+        "scopeType": "organization",
+        "scopeId": "ddff7ca5-7813-4fd3-b74b-f4374b6d539d"
+      },
+      "subdivisions": [],
+      "units": [
+        {
+          "id": "0540cade-daab-48ee-bc98-9190f0d62875",
+          "type": "Сервисный центр",
+          "name": "Юнит без подразделения",
+          "code": "UNIT-01"
+        }
+      ]
+    }
+  }
+}

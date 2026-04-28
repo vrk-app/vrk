@@ -1,0 +1,22 @@
+{
+  "id": "aa76c4d7-824f-443e-945d-bcb04866b580",
+  "organizationId": "8eaaec80-abde-4d56-b6ba-54b953e72c1d",
+  "unit": {
+    "id": "2d609225-35a3-46be-92c4-ddceb5107c04",
+    "name": "Второй юнит 1776604587",
+    "subdivisionId": "3d351a71-784f-4a2b-953b-704d61d53a5e",
+    "subdivisionName": "Customer-Equipment Подразделение 1776604587"
+  },
+  "manufacturer": "Трансмаш",
+  "classification": "Компрессор",
+  "model": "KM-300",
+  "fullName": "Компрессор 02 1776604587",
+  "factoryNumber": "E2-1776604587",
+  "inventoryNumber": "INV-E2-1776604587",
+  "manufactureYear": 2023,
+  "status": "active",
+  "comment": "slice-004 equipment E2-1776604587",
+  "measuringInstrumentCount": 0,
+  "createdAt": "2026-04-19T13:16:28Z",
+  "updatedAt": "2026-04-19T13:16:28Z"
+}

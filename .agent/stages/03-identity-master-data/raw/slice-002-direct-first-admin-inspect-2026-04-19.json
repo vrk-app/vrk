@@ -1,0 +1,16 @@
+{
+  "status": 200,
+  "response": {
+    "success": true,
+    "data": {
+      "organizationId": "31ba2fbd-7ef7-43d2-b79d-ec48b9322e22",
+      "organizationName": "ВРК Scope Proof 1776553455",
+      "organizationRole": "customer",
+      "inviteStatus": "opened",
+      "firstAdminName": "Анна Орлова 1776553455",
+      "inviteEmail": "proof-admin-1776553455@vrk.local",
+      "inviteExpiresAt": "2026-04-25T23:04:15Z",
+      "launchState": "shell"
+    }
+  }
+}

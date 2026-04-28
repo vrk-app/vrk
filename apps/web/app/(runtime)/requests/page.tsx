@@ -1,5 +1,8 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { ArrowRight, LockKeyhole } from "lucide-react";
-import { requestsShell } from "@/shared/api";
+import { SESSION_COOKIE_NAME, requestsShell } from "@/shared/api";
+import { fetchSessionSummary } from "@/shared/api/session-server";
 import { Badge, Card } from "@/shared/ui";
 import { PageHeader } from "@/widgets/OperatorShell";
 
@@ -14,7 +17,13 @@ function ActionLink({ href, label }: { href: string; label: string }) {
   );
 }
 
-export default function RequestsPage() {
+export default async function RequestsPage() {
+  const cookieStore = await cookies();
+  const session = await fetchSessionSummary(cookieStore.get(SESSION_COOKIE_NAME)?.value);
+  if (session?.requiresLaunchWizard) {
+    redirect("/company/setup");
+  }
+
   return (
     <>
       <PageHeader

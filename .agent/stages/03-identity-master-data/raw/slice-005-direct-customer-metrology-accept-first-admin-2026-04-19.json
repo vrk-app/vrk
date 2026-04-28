@@ -1,0 +1,37 @@
+{
+  "success": true,
+  "data": {
+    "sessionToken": "36821c7f-5630-40f4-8394-ae7bc97e2b51",
+    "requiresLaunchWizard": true,
+    "account": {
+      "id": "eee4ce30-cb24-407e-a4fa-9b6b28a5c48c",
+      "fullName": "Customer-Metrology Admin 1776614151",
+      "email": "customer-metrology-1776614151@vrk.local"
+    },
+    "membershipId": "f45e4f44-c7d5-4671-8fd0-632a8afbc5f5",
+    "membershipStatus": "active",
+    "organization": {
+      "id": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+      "roleTitle": "customer",
+      "name": "ВРК customer-metrology 1776614151",
+      "launchState": "shell"
+    },
+    "grant": {
+      "id": "70e6dce1-7a3a-4b94-aa1f-5b56824384b3",
+      "roleTemplate": "organization_admin",
+      "scopeType": "organization",
+      "scopeId": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32"
+    },
+    "workspace": {
+      "scopeType": "organization",
+      "scopeId": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+      "scopeName": "ВРК customer-metrology 1776614151",
+      "landingTitle": "ВРК customer-metrology 1776614151",
+      "landingSubtitle": "Администратор организации видит полный org graph и может управлять приглашениями сотрудников.",
+      "landingPath": "/company",
+      "canManageEmployeeInvites": false
+    },
+    "subdivisions": [],
+    "units": []
+  }
+}

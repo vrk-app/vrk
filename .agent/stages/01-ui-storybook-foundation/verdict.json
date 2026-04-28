@@ -1,7 +1,20 @@
 {
   "status": "PASS",
-  "summary": "Stage `01-ui-storybook-foundation` is proven on the current `apps/web` tree. Fresh verifier checks confirm that `.agent/stages/01-ui-storybook-foundation/raw/post-findings-harness-check.txt` still passes, no files under `apps/web` are newer than `.agent/stages/01-ui-storybook-foundation/raw/post-findings-web-smoke.txt`, every story ID listed in `.agent/stages/01-ui-storybook-foundation/raw/post-findings-story-refs.txt` still resolves in `apps/web/storybook-static/index.json`, and `.agent/stages/01-ui-storybook-foundation/raw/post-findings-web-design-guidelines.txt` continues to pass the mandatory UI review gate. The prior blocker is now closed: `docs/design/storybook-component-backlog.md` matches the current `AppShell`, `SidebarNav`, `TopBar`, and `RequestListItem` contracts, and `.agent/stages/01-ui-storybook-foundation/evidence.md` plus `evidence.json` record that canonical doc-sync. Stage 01 therefore satisfies the sprint contract and the stage acceptance criteria on the current tree.",
+  "summary": "Stage `01-ui-storybook-foundation` is proven on the current `apps/web` tree with the fresh 2026-04-18 bundle. The current proof confirms that the shared token bridge now carries the missing semantic aliases from the ServiceOps design system, `IconGallery` story refs resolve as distinct per-section proofs, `TopBar` no longer exposes false-interactive notification or user actions when callbacks are missing, and `docs/design/storybook-component-backlog.md` now matches the current `TopBar`, `LoginForm`, and `IconGallery` contracts. The authoritative raw bundle for the current tree is `.agent/stages/01-ui-storybook-foundation/raw/2026-04-18-*` together with `apps/web/storybook-static/index.json`; lint, typecheck, Next build, Storybook build, browser smoke, UI review, story-ref extraction, and the repo-local harness check all pass on Node 24.14.1.",
   "failed_criteria": [],
   "proof_gaps": [],
-  "last_verified_at": "2026-04-13T10:36:39Z"
+  "authoritative_artifacts": [
+    ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-storybook-lookup.txt",
+    ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-web-lint.txt",
+    ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-web-typecheck.txt",
+    ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-web-build.txt",
+    ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-storybook-build.txt",
+    ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-story-refs.txt",
+    ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-web-smoke.txt",
+    ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-web-interface-guidelines-source.md",
+    ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-web-design-guidelines.txt",
+    ".agent/stages/01-ui-storybook-foundation/raw/2026-04-18-harness-check.txt",
+    "apps/web/storybook-static/index.json"
+  ],
+  "last_verified_at": "2026-04-18T18:10:39Z"
 }

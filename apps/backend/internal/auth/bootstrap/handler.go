@@ -1,0 +1,458 @@
+package bootstrap
+
+import (
+	"encoding/json"
+	"errors"
+	"net/http"
+	"strings"
+
+	"github.com/go-chi/chi/v5"
+)
+
+type Handler struct {
+	service Service
+}
+
+func NewHandler(service Service) *Handler {
+	return &Handler{service: service}
+}
+
+// CreateOrganizationShell creates an organization shell and first-admin invite.
+// @Summary      Create organization shell
+// @Description  Platform admin creates an organization shell and issues the first-admin invite.
+// @Tags         bootstrap
+// @Accept       json
+// @Produce      json
+// @Param        X-VRK-Platform-Admin-Secret header string true "Deployment-scoped platform admin secret"
+// @Param        request body CreateOrganizationShellRequest true "Organization shell data"
+// @Success      201  {object}  Response{data=OrganizationShellResponse}
+// @Failure      400  {object}  Response
+// @Failure      401  {object}  Response
+// @Failure      500  {object}  Response
+// @Router       /platform/organization-shells [post]
+func (h *Handler) CreateOrganizationShell(w http.ResponseWriter, r *http.Request) {
+	var req CreateOrganizationShellRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		sendError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	resp, err := h.service.CreateOrganizationShell(r.Context(), req)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusCreated, resp)
+}
+
+// InspectInvite loads first-admin invite details and marks it opened on first read.
+// @Summary      Inspect first-admin invite
+// @Description  Opens the first-admin invite link before password setup.
+// @Tags         bootstrap
+// @Produce      json
+// @Param        token path string true "Invite token"
+// @Success      200  {object}  Response{data=InviteInspectionResponse}
+// @Failure      404  {object}  Response
+// @Failure      409  {object}  Response
+// @Router       /first-admin-invites/{token} [get]
+func (h *Handler) InspectInvite(w http.ResponseWriter, r *http.Request) {
+	token := chi.URLParam(r, "token")
+	resp, err := h.service.InspectInvite(r.Context(), token)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp)
+}
+
+// AcceptInvite accepts the first-admin invite and creates an authenticated session.
+// @Summary      Accept first-admin invite
+// @Description  Sets the invited admin password, creates membership and organization-admin grant, and starts a session.
+// @Tags         bootstrap
+// @Accept       json
+// @Produce      json
+// @Param        token path string true "Invite token"
+// @Param        request body AcceptInviteRequest true "Password payload"
+// @Success      200  {object}  Response{data=SessionSummaryResponse}
+// @Failure      400  {object}  Response
+// @Failure      404  {object}  Response
+// @Failure      409  {object}  Response
+// @Router       /first-admin-invites/{token}/accept [post]
+func (h *Handler) AcceptInvite(w http.ResponseWriter, r *http.Request) {
+	var req AcceptInviteRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		sendError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	token := chi.URLParam(r, "token")
+	resp, err := h.service.AcceptInvite(r.Context(), token, req)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp)
+}
+
+// InspectPublicInvite loads either a first-admin or employee invite by token.
+// @Summary      Inspect public invite
+// @Description  Opens a public invite link and returns the current invite state for first-admin and employee activation flows.
+// @Tags         bootstrap
+// @Produce      json
+// @Param        token path string true "Invite token"
+// @Success      200  {object}  Response{data=PublicInviteInspectionResponse}
+// @Failure      404  {object}  Response
+// @Failure      409  {object}  Response
+// @Router       /invites/{token} [get]
+func (h *Handler) InspectPublicInvite(w http.ResponseWriter, r *http.Request) {
+	token := chi.URLParam(r, "token")
+	resp, err := h.service.InspectPublicInvite(r.Context(), token)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp)
+}
+
+// AcceptPublicInvite accepts either a first-admin or employee invite.
+// @Summary      Accept public invite
+// @Description  Sets the invited user's password, creates or links identity, provisions membership and scoped grant, and starts a session.
+// @Tags         bootstrap
+// @Accept       json
+// @Produce      json
+// @Param        token path string true "Invite token"
+// @Param        request body AcceptInviteRequest true "Password payload"
+// @Success      200  {object}  Response{data=SessionSummaryResponse}
+// @Failure      400  {object}  Response
+// @Failure      404  {object}  Response
+// @Failure      409  {object}  Response
+// @Router       /invites/{token}/accept [post]
+func (h *Handler) AcceptPublicInvite(w http.ResponseWriter, r *http.Request) {
+	var req AcceptInviteRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		sendError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	token := chi.URLParam(r, "token")
+	resp, err := h.service.AcceptPublicInvite(r.Context(), token, req)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp)
+}
+
+// ListEmployeeInvites returns the organization employee-invite registry.
+// @Summary      List employee invites
+// @Description  Returns the employee invite lifecycle visible to the active organization admin.
+// @Tags         employee-invites
+// @Produce      json
+// @Success      200  {object}  Response{data=[]EmployeeInviteResponse}
+// @Failure      401  {object}  Response
+// @Failure      403  {object}  Response
+// @Router       /employee-invites [get]
+func (h *Handler) ListEmployeeInvites(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	resp, err := h.service.ListEmployeeInvites(r.Context(), token)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp)
+}
+
+// CreateEmployeeInvite creates a draft employee invite.
+// @Summary      Create employee invite draft
+// @Description  Creates a draft employee invite for the active organization admin with role template, scope, and expiry policy.
+// @Tags         employee-invites
+// @Accept       json
+// @Produce      json
+// @Param        request body CreateEmployeeInviteRequest true "Employee invite payload"
+// @Success      201  {object}  Response{data=EmployeeInviteResponse}
+// @Failure      400  {object}  Response
+// @Failure      401  {object}  Response
+// @Failure      403  {object}  Response
+// @Failure      409  {object}  Response
+// @Router       /employee-invites [post]
+func (h *Handler) CreateEmployeeInvite(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	var req CreateEmployeeInviteRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		sendError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	resp, err := h.service.CreateEmployeeInvite(r.Context(), token, req)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusCreated, resp)
+}
+
+// SendEmployeeInvite sends a previously created draft invite.
+// @Summary      Send employee invite
+// @Description  Transitions a draft employee invite to sent and issues a one-time token.
+// @Tags         employee-invites
+// @Produce      json
+// @Param        inviteID path string true "Employee invite ID"
+// @Success      200  {object}  Response{data=EmployeeInviteResponse}
+// @Failure      401  {object}  Response
+// @Failure      403  {object}  Response
+// @Failure      404  {object}  Response
+// @Failure      409  {object}  Response
+// @Router       /employee-invites/{inviteID}/send [post]
+func (h *Handler) SendEmployeeInvite(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	resp, err := h.service.SendEmployeeInvite(r.Context(), token, chi.URLParam(r, "inviteID"))
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp)
+}
+
+// RevokeEmployeeInvite revokes a draft or pending employee invite.
+// @Summary      Revoke employee invite
+// @Description  Revokes a draft, sent, or opened employee invite.
+// @Tags         employee-invites
+// @Produce      json
+// @Param        inviteID path string true "Employee invite ID"
+// @Success      200  {object}  Response{data=EmployeeInviteResponse}
+// @Failure      401  {object}  Response
+// @Failure      403  {object}  Response
+// @Failure      404  {object}  Response
+// @Failure      409  {object}  Response
+// @Router       /employee-invites/{inviteID}/revoke [post]
+func (h *Handler) RevokeEmployeeInvite(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	resp, err := h.service.RevokeEmployeeInvite(r.Context(), token, chi.URLParam(r, "inviteID"))
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp)
+}
+
+// CreateSession logs a user in by email/password.
+// @Summary      Create auth session
+// @Description  Logs the user in when exactly one eligible membership/grant path exists and returns the current session snapshot.
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        request body CreateSessionRequest true "Session credentials"
+// @Success      200  {object}  Response{data=SessionSummaryResponse}
+// @Failure      401  {object}  Response
+// @Failure      409  {object}  Response
+// @Failure      500  {object}  Response
+// @Router       /sessions [post]
+func (h *Handler) CreateSession(w http.ResponseWriter, r *http.Request) {
+	var req CreateSessionRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		sendError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	resp, err := h.service.CreateSession(r.Context(), req)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp)
+}
+
+// CurrentSession returns the active session snapshot.
+// @Summary      Get current session
+// @Description  Returns the authenticated admin session and launch-wizard state.
+// @Tags         auth
+// @Produce      json
+// @Success      200  {object}  Response{data=SessionSummaryResponse}
+// @Failure      401  {object}  Response
+// @Router       /sessions/current [get]
+func (h *Handler) CurrentSession(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	resp, err := h.service.GetSession(r.Context(), token)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp)
+}
+
+// DeleteCurrentSession logs the current user out.
+// @Summary      Delete current session
+// @Description  Deletes the authenticated session token.
+// @Tags         auth
+// @Success      204  {object}  Response
+// @Failure      401  {object}  Response
+// @Router       /sessions/current [delete]
+func (h *Handler) DeleteCurrentSession(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	if err := h.service.DeleteSession(r.Context(), token); err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// CompleteLaunchWizard saves organization data and the first subdivision/unit.
+// @Summary      Complete launch wizard
+// @Description  Saves the core organization data and creates the first subdivision or direct unit.
+// @Tags         bootstrap
+// @Accept       json
+// @Produce      json
+// @Param        request body CompleteLaunchRequest true "Launch wizard payload"
+// @Success      200  {object}  Response{data=SessionSummaryResponse}
+// @Failure      400  {object}  Response
+// @Failure      401  {object}  Response
+// @Failure      409  {object}  Response
+// @Router       /launch-wizard [post]
+func (h *Handler) CompleteLaunchWizard(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	var req CompleteLaunchRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		sendError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	resp, err := h.service.CompleteLaunch(r.Context(), token, req)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp)
+}
+
+func sendSuccess(w http.ResponseWriter, status int, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(Response{
+		Success: true,
+		Data:    data,
+	})
+}
+
+func sendError(w http.ResponseWriter, status int, message string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(Response{
+		Success: false,
+		Error:   message,
+	})
+}
+
+func writeServiceError(w http.ResponseWriter, err error) {
+	switch {
+	case errors.Is(err, ErrInviteNotFound):
+		sendError(w, http.StatusNotFound, err.Error())
+	case errors.Is(err, ErrInvalidCredentials), errors.Is(err, ErrUnauthorized):
+		sendError(w, http.StatusUnauthorized, err.Error())
+	case errors.Is(err, ErrForbidden):
+		sendError(w, http.StatusForbidden, err.Error())
+	case errors.Is(err, ErrInviteAlreadyAccepted),
+		errors.Is(err, ErrInviteExpired),
+		errors.Is(err, ErrInviteRevoked),
+		errors.Is(err, ErrAccessSelectionRequired),
+		errors.Is(err, ErrLaunchAlreadyCompleted),
+		errors.Is(err, ErrLaunchRequired),
+		errors.Is(err, ErrInviteDraftRequired),
+		errors.Is(err, ErrInviteSendNotAllowed),
+		errors.Is(err, ErrInviteRevokeNotAllowed):
+		sendError(w, http.StatusConflict, err.Error())
+	case errors.Is(err, ErrOrganizationNameRequired),
+		errors.Is(err, ErrFirstAdminNameRequired),
+		errors.Is(err, ErrEmployeeNameRequired),
+		errors.Is(err, ErrEmailRequired),
+		errors.Is(err, ErrInvalidEmail),
+		errors.Is(err, ErrInvalidOrganizationRole),
+		errors.Is(err, ErrInviteRoleTemplateRequired),
+		errors.Is(err, ErrInviteRoleTemplateInvalid),
+		errors.Is(err, ErrInviteScopeTypeInvalid),
+		errors.Is(err, ErrInviteScopeTargetRequired),
+		errors.Is(err, ErrInviteScopeTargetInvalid),
+		errors.Is(err, ErrInviteExpiryRequired),
+		errors.Is(err, ErrInviteExpiryInvalid),
+		errors.Is(err, ErrPasswordTooShort),
+		errors.Is(err, ErrPropertyTypeRequired),
+		errors.Is(err, ErrInnRequired),
+		errors.Is(err, ErrKppRequired),
+		errors.Is(err, ErrLegalAddressRequired),
+		errors.Is(err, ErrContactPhoneRequired),
+		errors.Is(err, ErrSubdivisionNameRequired),
+		errors.Is(err, ErrSubdivisionTypeRequired),
+		errors.Is(err, ErrUnitNameRequired),
+		errors.Is(err, ErrUnitTypeRequired),
+		errors.Is(err, ErrStructureModeInvalid):
+		sendError(w, http.StatusBadRequest, err.Error())
+	default:
+		sendError(w, http.StatusInternalServerError, err.Error())
+	}
+}
+
+func readBearerToken(r *http.Request) (string, error) {
+	header := strings.TrimSpace(r.Header.Get("Authorization"))
+	if header == "" {
+		return "", ErrUnauthorized
+	}
+
+	const prefix = "Bearer "
+	if !strings.HasPrefix(header, prefix) {
+		return "", ErrUnauthorized
+	}
+
+	token := strings.TrimSpace(strings.TrimPrefix(header, prefix))
+	if token == "" {
+		return "", ErrUnauthorized
+	}
+
+	return token, nil
+}

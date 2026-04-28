@@ -1,0 +1,16 @@
+UI review gate: PASS
+
+Guidelines source:
+- `.agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-19.md`
+
+Reviewed files:
+- `apps/web/app/(runtime)/contracts/page.tsx`
+- `apps/web/features/Stage03Contracts/ui/ContractsRegistry.tsx`
+- `apps/web/app/login/page.tsx`
+- `apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx`
+- `apps/web/features/Stage03Bootstrap/ui/LaunchWizardForm.tsx`
+
+Result:
+- no remaining guideline findings after adding `aria-hidden` to decorative contracts-surface icons
+- customer `/contracts` contour keeps a single primary action zone per card and preserves clear B2B hierarchy
+- contractor `/contracts` contour removes customer-only management controls and keeps the restricted workspace legible

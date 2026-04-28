@@ -1,0 +1,51 @@
+{
+  "success": true,
+  "data": {
+    "sessionToken": "7b6b66b7-6276-47b3-a849-ee7c323b3db7",
+    "requiresLaunchWizard": false,
+    "account": {
+      "id": "c0c5ad31-6603-429d-a270-7156e91f3d61",
+      "fullName": "Unit-Registry Employee 1776604587",
+      "email": "unit-registry-1776604587@vrk.local"
+    },
+    "membershipId": "1dfc7b24-2226-4aa1-9182-e8b338d1c5d9",
+    "membershipStatus": "active",
+    "organization": {
+      "id": "8eaaec80-abde-4d56-b6ba-54b953e72c1d",
+      "roleTitle": "customer",
+      "name": "ВРК customer-equipment 1776604587",
+      "shortName": "CUS-1776604587",
+      "propertyType": "ООО",
+      "inn": "1776604587",
+      "kpp": "177660458",
+      "legalAddress": "г. Москва, ул. customer-equipment, д. 1",
+      "contactEmail": "customer-equipment-1776604587@vrk.local",
+      "contactPhone": "+7 (999) 123-45-67",
+      "launchState": "active"
+    },
+    "grant": {
+      "id": "3ff5f83f-2ba8-47b5-b67c-137ff85289c9",
+      "roleTemplate": "unit_operator",
+      "scopeType": "unit",
+      "scopeId": "94c09426-1b9f-48b4-96b6-c6dd339df480"
+    },
+    "workspace": {
+      "scopeType": "unit",
+      "scopeId": "94c09426-1b9f-48b4-96b6-c6dd339df480",
+      "scopeName": "Customer-Equipment Юнит 01 1776604587",
+      "landingTitle": "Customer-Equipment Юнит 01 1776604587",
+      "landingSubtitle": "Доступ ограничен выбранным юнитом без расширения вверх по иерархии.",
+      "landingPath": "/company",
+      "canManageEmployeeInvites": false
+    },
+    "subdivisions": [],
+    "units": [
+      {
+        "id": "94c09426-1b9f-48b4-96b6-c6dd339df480",
+        "type": "Юнит",
+        "name": "Customer-Equipment Юнит 01 1776604587",
+        "subdivisionId": "3d351a71-784f-4a2b-953b-704d61d53a5e"
+      }
+    ]
+  }
+}

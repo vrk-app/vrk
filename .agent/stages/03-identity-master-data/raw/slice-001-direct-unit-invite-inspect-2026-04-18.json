@@ -1,0 +1,16 @@
+{
+  "status": 200,
+  "response": {
+    "success": true,
+    "data": {
+      "organizationId": "ddff7ca5-7813-4fd3-b74b-f4374b6d539d",
+      "organizationName": "ВРК Юнит 1776543472",
+      "organizationRole": "customer",
+      "inviteStatus": "opened",
+      "firstAdminName": "Ирина Орлова 1776543472",
+      "inviteEmail": "unit-admin-1776543472@vrk.local",
+      "inviteExpiresAt": "2026-04-25T20:17:52Z",
+      "launchState": "shell"
+    }
+  }
+}

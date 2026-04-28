@@ -1,145 +1,531 @@
 basePath: /api/v1
 definitions:
+  agreement.AgreementLocationScopeResponse:
+    properties:
+      label:
+        type: string
+      scopeId:
+        type: string
+      scopeType:
+        type: string
+    type: object
   agreement.AgreementResponse:
     properties:
+      contractNumber:
+        type: string
+      contractStatus:
+        type: string
+      contractorOrganizationId:
+        type: string
+      contractorOrganizationName:
+        type: string
+      customerOrganizationId:
+        type: string
+      customerOrganizationName:
+        type: string
       endDate:
         type: string
-      factoryId:
+      equipmentType:
         type: string
       id:
         type: string
-      number:
-        type: integer
-      organizationId:
+      locationScope:
+        $ref: '#/definitions/agreement.AgreementLocationScopeResponse'
+      region:
         type: string
-      scheduleId:
-        type: string
+      routingEligible:
+        type: boolean
       source:
         type: string
       startDate:
         type: string
       subjectOfAgreement:
+        type: string
+      workType:
+        type: string
+    type: object
+  agreement.ContractorOptionResponse:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      shortName:
         type: string
     type: object
   agreement.CreateRequest:
     properties:
+      contractNumber:
+        type: string
+      contractStatus:
+        type: string
+      contractorOrganizationId:
+        type: string
       endDate:
-        description: формат "2006-01-02"
         type: string
-      factoryId:
+      equipmentType:
         type: string
-      number:
-        type: integer
-      organizationId:
+      locationScopeLabel:
         type: string
-      scheduleId:
+      region:
         type: string
       source:
         type: string
       startDate:
-        description: формат "2006-01-02"
+        type: string
+      subdivisionId:
         type: string
       subjectOfAgreement:
         type: string
-    required:
-    - endDate
-    - factoryId
-    - number
-    - organizationId
-    - scheduleId
-    - source
-    - startDate
-    - subjectOfAgreement
-    type: object
-  agreement.Meta:
-    properties:
-      limit:
-        type: integer
-      offset:
-        type: integer
-      total:
-        type: integer
+      unitId:
+        type: string
+      workType:
+        type: string
     type: object
   agreement.Response:
     properties:
       data: {}
       error:
         type: string
-      meta:
-        $ref: '#/definitions/agreement.Meta'
       success:
         type: boolean
     type: object
+  agreement.RoutingResolutionItem:
+    properties:
+      contract:
+        $ref: '#/definitions/agreement.AgreementResponse'
+      contractor:
+        $ref: '#/definitions/agreement.ContractorOptionResponse'
+    type: object
+  agreement.RoutingResolveRequest:
+    properties:
+      equipmentType:
+        type: string
+      region:
+        type: string
+      unitId:
+        type: string
+      workType:
+        type: string
+    type: object
+  agreement.RoutingResolveResponse:
+    properties:
+      equipmentType:
+        type: string
+      matches:
+        items:
+          $ref: '#/definitions/agreement.RoutingResolutionItem'
+        type: array
+      region:
+        type: string
+      unitId:
+        type: string
+      workType:
+        type: string
+    type: object
   agreement.UpdateRequest:
     properties:
+      contractNumber:
+        type: string
+      contractStatus:
+        type: string
+      contractorOrganizationId:
+        type: string
       endDate:
         type: string
-      factoryId:
+      equipmentType:
         type: string
-      number:
-        type: integer
-      organizationId:
+      locationScopeLabel:
         type: string
-      scheduleId:
+      region:
         type: string
       source:
         type: string
       startDate:
         type: string
+      subdivisionId:
+        type: string
       subjectOfAgreement:
+        type: string
+      unitId:
+        type: string
+      workType:
+        type: string
+    type: object
+  bootstrap.AcceptInviteRequest:
+    properties:
+      password:
+        type: string
+    type: object
+  bootstrap.CompleteLaunchRequest:
+    properties:
+      contactEmail:
+        type: string
+      contactPhone:
+        type: string
+      inn:
+        type: string
+      kpp:
+        type: string
+      legalAddress:
+        type: string
+      organizationName:
+        type: string
+      propertyType:
+        type: string
+      shortName:
+        type: string
+      structureMode:
+        type: string
+      subdivision:
+        $ref: '#/definitions/bootstrap.LaunchSubdivisionInput'
+      unit:
+        $ref: '#/definitions/bootstrap.LaunchUnitInput'
+    type: object
+  bootstrap.CreateEmployeeInviteRequest:
+    properties:
+      email:
+        type: string
+      expiresAt:
+        type: string
+      fullName:
+        type: string
+      roleTemplate:
+        type: string
+      scopeId:
+        type: string
+      scopeType:
+        type: string
+    type: object
+  bootstrap.CreateOrganizationShellRequest:
+    properties:
+      firstAdminEmail:
+        type: string
+      firstAdminName:
+        type: string
+      organizationName:
+        type: string
+      organizationRole:
+        type: string
+    type: object
+  bootstrap.CreateSessionRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  bootstrap.EmployeeInviteResponse:
+    properties:
+      acceptPath:
+        type: string
+      acceptedAt:
+        type: string
+      email:
+        type: string
+      expiresAt:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+      inviteToken:
+        type: string
+      openedAt:
+        type: string
+      revokedAt:
+        type: string
+      roleTemplate:
+        type: string
+      scopeId:
+        type: string
+      scopeLabel:
+        type: string
+      scopeType:
+        type: string
+      sentAt:
+        type: string
+      status:
+        type: string
+    type: object
+  bootstrap.InviteInspectionResponse:
+    properties:
+      firstAdminName:
+        type: string
+      inviteEmail:
+        type: string
+      inviteExpiresAt:
+        type: string
+      inviteStatus:
+        type: string
+      launchState:
+        type: string
+      organizationId:
+        type: string
+      organizationName:
+        type: string
+      organizationRole:
+        type: string
+    type: object
+  bootstrap.LaunchSubdivisionInput:
+    properties:
+      address:
+        type: string
+      code:
+        type: string
+      contacts:
+        type: string
+      managerName:
+        type: string
+      name:
+        type: string
+      region:
+        type: string
+      type:
+        type: string
+    type: object
+  bootstrap.LaunchUnitInput:
+    properties:
+      address:
+        type: string
+      code:
+        type: string
+      contacts:
+        type: string
+      managerName:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+    type: object
+  bootstrap.OrganizationShellResponse:
+    properties:
+      inviteEmail:
+        type: string
+      inviteExpiresAt:
+        type: string
+      inviteId:
+        type: string
+      inviteStatus:
+        type: string
+      inviteToken:
+        type: string
+      organizationId:
+        type: string
+      organizationName:
+        type: string
+      organizationRole:
+        type: string
+    type: object
+  bootstrap.PublicInviteInspectionResponse:
+    properties:
+      inviteEmail:
+        type: string
+      inviteExpiresAt:
+        type: string
+      inviteKind:
+        type: string
+      inviteStatus:
+        type: string
+      inviteeName:
+        type: string
+      launchState:
+        type: string
+      organizationId:
+        type: string
+      organizationName:
+        type: string
+      organizationRole:
+        type: string
+      roleTemplate:
+        type: string
+      scopeLabel:
+        type: string
+      scopeType:
+        type: string
+    type: object
+  bootstrap.Response:
+    properties:
+      data: {}
+      error:
+        type: string
+      success:
+        type: boolean
+    type: object
+  bootstrap.SessionAccountResponse:
+    properties:
+      email:
+        type: string
+      fullName:
+        type: string
+      id:
+        type: string
+    type: object
+  bootstrap.SessionGrantResponse:
+    properties:
+      id:
+        type: string
+      roleTemplate:
+        type: string
+      scopeId:
+        type: string
+      scopeType:
+        type: string
+    type: object
+  bootstrap.SessionOrganizationResponse:
+    properties:
+      contactEmail:
+        type: string
+      contactPhone:
+        type: string
+      id:
+        type: string
+      inn:
+        type: string
+      kpp:
+        type: string
+      launchState:
+        type: string
+      legalAddress:
+        type: string
+      name:
+        type: string
+      propertyType:
+        type: string
+      roleTitle:
+        type: string
+      shortName:
+        type: string
+    type: object
+  bootstrap.SessionSummaryResponse:
+    properties:
+      account:
+        $ref: '#/definitions/bootstrap.SessionAccountResponse'
+      grant:
+        $ref: '#/definitions/bootstrap.SessionGrantResponse'
+      membershipId:
+        type: string
+      membershipStatus:
+        type: string
+      organization:
+        $ref: '#/definitions/bootstrap.SessionOrganizationResponse'
+      requiresLaunchWizard:
+        type: boolean
+      sessionToken:
+        type: string
+      subdivisions:
+        items:
+          $ref: '#/definitions/bootstrap.SubdivisionResponse'
+        type: array
+      units:
+        items:
+          $ref: '#/definitions/bootstrap.UnitResponse'
+        type: array
+      workspace:
+        $ref: '#/definitions/bootstrap.SessionWorkspaceResponse'
+    type: object
+  bootstrap.SessionWorkspaceResponse:
+    properties:
+      canManageEmployeeInvites:
+        type: boolean
+      landingPath:
+        type: string
+      landingSubtitle:
+        type: string
+      landingTitle:
+        type: string
+      scopeId:
+        type: string
+      scopeName:
+        type: string
+      scopeType:
+        type: string
+    type: object
+  bootstrap.SubdivisionResponse:
+    properties:
+      code:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      type:
+        type: string
+    type: object
+  bootstrap.UnitResponse:
+    properties:
+      code:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      subdivisionId:
+        type: string
+      type:
         type: string
     type: object
   equipment.CreateRequest:
     properties:
-      equipmentDictionaryId:
+      classification:
+        type: string
+      comment:
+        type: string
+      documentUrl:
         type: string
       factoryNumber:
-        maxLength: 50
+        type: string
+      fullName:
         type: string
       inventoryNumber:
         type: string
       manufactureYear:
-        type: string
-      organizationId:
-        type: string
-      registrationYear:
-        type: string
-      statusId:
-        maximum: 5
-        minimum: 1
         type: integer
-    required:
-    - equipmentDictionaryId
-    - factoryNumber
-    - manufactureYear
-    - organizationId
-    - statusId
+      manufacturer:
+        type: string
+      model:
+        type: string
+      status:
+        type: string
+      unitId:
+        type: string
     type: object
   equipment.EquipmentResponse:
     properties:
-      equipmentName:
+      archivedAt:
+        type: string
+      classification:
+        type: string
+      comment:
+        type: string
+      createdAt:
+        type: string
+      documentUrl:
         type: string
       factoryNumber:
+        type: string
+      fullName:
         type: string
       id:
         type: string
       inventoryNumber:
         type: string
       manufactureYear:
-        type: string
+        type: integer
       manufacturer:
         type: string
+      measuringInstrumentCount:
+        type: integer
       model:
         type: string
-      organizationName:
+      organizationId:
         type: string
-      registrationYear:
+      status:
         type: string
-      statusId:
-        type: integer
-      statusName:
-        type: string
-      usageClassification:
+      unit:
+        $ref: '#/definitions/equipment.UnitSummary'
+      updatedAt:
         type: string
     type: object
   equipment.Meta:
@@ -161,79 +547,173 @@ definitions:
       success:
         type: boolean
     type: object
+  equipment.UnitSummary:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      subdivisionId:
+        type: string
+      subdivisionName:
+        type: string
+    type: object
   equipment.UpdateRequest:
     properties:
-      equipmentDictionaryId:
+      classification:
+        type: string
+      comment:
+        type: string
+      documentUrl:
         type: string
       factoryNumber:
+        type: string
+      fullName:
         type: string
       inventoryNumber:
         type: string
       manufactureYear:
-        type: string
-      organizationId:
-        type: string
-      registrationYear:
-        type: string
-      statusId:
         type: integer
+      manufacturer:
+        type: string
+      model:
+        type: string
+      status:
+        type: string
+      unitId:
+        type: string
+    type: object
+  measuringinstrument.CreateJournalRequest:
+    properties:
+      attachmentUrl:
+        type: string
+      comment:
+        type: string
+      documentNumber:
+        type: string
+      executorOrganization:
+        type: string
+      operationDate:
+        type: string
+      operationType:
+        type: string
+      validUntil:
+        type: string
     type: object
   measuringinstrument.CreateRequest:
     properties:
-      certificateNumber:
-        maxLength: 100
-        type: string
-      documentProviderOrganization:
-        maxLength: 100
+      comment:
         type: string
       documentUrl:
-        maxLength: 255
         type: string
-      lastOperationDate:
+      equipmentId:
         type: string
-      metrologicalOperationTypeId:
+      instrumentType:
         type: string
-      nextOperationDate:
+      model:
         type: string
-      organizationId:
+      name:
         type: string
-      registryNumber:
-        maxLength: 50
+      placementKind:
         type: string
-      standardId:
+      registrationNumber:
         type: string
-    required:
-    - certificateNumber
-    - documentProviderOrganization
-    - documentUrl
-    - metrologicalOperationTypeId
-    - organizationId
-    - registryNumber
+      serialNumber:
+        type: string
+      standardIds:
+        items:
+          type: string
+        type: array
+      unitId:
+        type: string
     type: object
-  measuringinstrument.MeasuringInstrumentResponse:
+  measuringinstrument.EquipmentSummary:
     properties:
-      certificateNumber:
-        type: string
-      createdAt:
-        type: string
-      documentProviderOrganization:
-        type: string
-      documentUrl:
+      fullName:
         type: string
       id:
         type: string
-      lastOperationDate:
+    type: object
+  measuringinstrument.JournalResponse:
+    properties:
+      attachmentUrl:
         type: string
-      metrologicalOperationTypeId:
+      comment:
         type: string
-      nextOperationDate:
+      createdAt:
+        type: string
+      documentNumber:
+        type: string
+      executorOrganization:
+        type: string
+      id:
+        type: string
+      operationDate:
+        type: string
+      operationType:
+        type: string
+      validUntil:
+        type: string
+    type: object
+  measuringinstrument.LinkedStandard:
+    properties:
+      id:
+        type: string
+      identifier:
+        type: string
+      model:
+        type: string
+      scopeLabel:
+        type: string
+      serialNumber:
+        type: string
+      standardType:
+        type: string
+      status:
+        type: string
+    type: object
+  measuringinstrument.MeasuringInstrumentResponse:
+    properties:
+      archivedAt:
+        type: string
+      comment:
+        type: string
+      createdAt:
+        type: string
+      documentUrl:
+        type: string
+      equipment:
+        $ref: '#/definitions/measuringinstrument.EquipmentSummary'
+      id:
+        type: string
+      instrumentType:
+        type: string
+      journalCount:
+        type: integer
+      latestJournal:
+        $ref: '#/definitions/measuringinstrument.JournalResponse'
+      model:
+        type: string
+      name:
+        type: string
+      nextDueDate:
         type: string
       organizationId:
         type: string
-      registryNumber:
+      placementKind:
         type: string
-      standardId:
+      registrationNumber:
         type: string
+      serialNumber:
+        type: string
+      standards:
+        items:
+          $ref: '#/definitions/measuringinstrument.LinkedStandard'
+        type: array
+      status:
+        type: string
+      unit:
+        $ref: '#/definitions/measuringinstrument.UnitSummary'
       updatedAt:
         type: string
     type: object
@@ -256,25 +736,42 @@ definitions:
       success:
         type: boolean
     type: object
+  measuringinstrument.UnitSummary:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      subdivisionId:
+        type: string
+      subdivisionName:
+        type: string
+    type: object
   measuringinstrument.UpdateRequest:
     properties:
-      certificateNumber:
-        type: string
-      documentProviderOrganization:
+      comment:
         type: string
       documentUrl:
         type: string
-      lastOperationDate:
+      equipmentId:
         type: string
-      metrologicalOperationTypeId:
+      instrumentType:
         type: string
-      nextOperationDate:
+      model:
         type: string
-      organizationId:
+      name:
         type: string
-      registryNumber:
+      placementKind:
         type: string
-      standardId:
+      registrationNumber:
+        type: string
+      serialNumber:
+        type: string
+      standardIds:
+        items:
+          type: string
+        type: array
+      unitId:
         type: string
     type: object
   organization.CreateRequest:
@@ -297,7 +794,7 @@ definitions:
         type: string
       poaExpirationDate:
         type: string
-      poaissueDate:
+      poaIssueDate:
         type: string
       powerOfAttorneyNumber:
         type: string
@@ -395,32 +892,66 @@ definitions:
       shortName:
         type: string
     type: object
+  standard.CreateJournalRequest:
+    properties:
+      attachmentUrl:
+        type: string
+      comment:
+        type: string
+      documentNumber:
+        type: string
+      executorOrganization:
+        type: string
+      operationDate:
+        type: string
+      operationType:
+        type: string
+      validUntil:
+        type: string
+    type: object
   standard.CreateRequest:
     properties:
-      certificateNumber:
-        maxLength: 100
-        type: string
-      documentProviderOrganization:
-        maxLength: 100
+      comment:
         type: string
       documentUrl:
-        maxLength: 255
         type: string
-      lastOperationDate:
+      identifier:
         type: string
       metrologicalCharacteristics:
         type: string
       model:
-        maxLength: 50
         type: string
-      nextOperationDate:
+      ownerLabel:
         type: string
-    required:
-    - certificateNumber
-    - documentProviderOrganization
-    - documentUrl
-    - metrologicalCharacteristics
-    - model
+      serialNumber:
+        type: string
+      standardType:
+        type: string
+      subdivisionId:
+        type: string
+      unitId:
+        type: string
+    type: object
+  standard.JournalResponse:
+    properties:
+      attachmentUrl:
+        type: string
+      comment:
+        type: string
+      createdAt:
+        type: string
+      documentNumber:
+        type: string
+      executorOrganization:
+        type: string
+      id:
+        type: string
+      operationDate:
+        type: string
+      operationType:
+        type: string
+      validUntil:
+        type: string
     type: object
   standard.Meta:
     properties:
@@ -430,6 +961,15 @@ definitions:
         type: integer
       total:
         type: integer
+    type: object
+  standard.OwnershipScopeResponse:
+    properties:
+      label:
+        type: string
+      scopeId:
+        type: string
+      scopeType:
+        type: string
     type: object
   standard.Response:
     properties:
@@ -443,42 +983,64 @@ definitions:
     type: object
   standard.StandardResponse:
     properties:
-      certificateNumber:
+      archivedAt:
+        type: string
+      comment:
         type: string
       createdAt:
-        type: string
-      documentProviderOrganization:
         type: string
       documentUrl:
         type: string
       id:
         type: string
-      lastOperationDate:
+      identifier:
         type: string
+      journalCount:
+        type: integer
+      latestJournal:
+        $ref: '#/definitions/standard.JournalResponse'
+      linkedMeasuringInstruments:
+        type: integer
       metrologicalCharacteristics:
         type: string
       model:
         type: string
-      nextOperationDate:
+      nextDueDate:
+        type: string
+      organizationId:
+        type: string
+      ownershipScope:
+        $ref: '#/definitions/standard.OwnershipScopeResponse'
+      serialNumber:
+        type: string
+      standardType:
+        type: string
+      status:
         type: string
       updatedAt:
         type: string
     type: object
   standard.UpdateRequest:
     properties:
-      certificateNumber:
-        type: string
-      documentProviderOrganization:
+      comment:
         type: string
       documentUrl:
         type: string
-      lastOperationDate:
+      identifier:
         type: string
       metrologicalCharacteristics:
         type: string
       model:
         type: string
-      nextOperationDate:
+      ownerLabel:
+        type: string
+      serialNumber:
+        type: string
+      standardType:
+        type: string
+      subdivisionId:
+        type: string
+      unitId:
         type: string
     type: object
 info:
@@ -487,26 +1049,13 @@ info:
 paths:
   /agreements:
     get:
-      description: Возвращает список договоров с пагинацией
-      parameters:
-      - default: 10
-        description: Количество записей на странице
-        in: query
-        maximum: 100
-        minimum: 1
-        name: limit
-        type: integer
-      - default: 0
-        description: Смещение
-        in: query
-        minimum: 0
-        name: offset
-        type: integer
+      description: Returns contracts visible to the authenticated customer or contractor
+        organization through the agreements adapter boundary.
       produces:
       - application/json
       responses:
         "200":
-          description: Успешный ответ
+          description: OK
           schema:
             allOf:
             - $ref: '#/definitions/agreement.Response'
@@ -515,22 +1064,25 @@ paths:
                   items:
                     $ref: '#/definitions/agreement.AgreementResponse'
                   type: array
-                meta:
-                  $ref: '#/definitions/agreement.Meta'
               type: object
-        "500":
-          description: Внутренняя ошибка сервера
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/agreement.Response'
-      summary: Получить список договоров
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/agreement.Response'
+      summary: List contracts
       tags:
       - agreements
     post:
       consumes:
       - application/json
-      description: Создает новый договор между заказчиком и подрядчиком
+      description: Creates a Stage 03 contract bound to a customer organization and
+        contractor organization while preserving the backend agreements adapter boundary.
       parameters:
-      - description: Данные договора
+      - description: Contract payload
         in: body
         name: request
         required: true
@@ -540,7 +1092,7 @@ paths:
       - application/json
       responses:
         "201":
-          description: Договор создан
+          description: Created
           schema:
             allOf:
             - $ref: '#/definitions/agreement.Response'
@@ -549,43 +1101,34 @@ paths:
                   $ref: '#/definitions/agreement.AgreementResponse'
               type: object
         "400":
-          description: Неверный запрос
+          description: Bad Request
           schema:
             $ref: '#/definitions/agreement.Response'
-        "500":
-          description: Внутренняя ошибка сервера
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/agreement.Response'
-      summary: Создать договор
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/agreement.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/agreement.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/agreement.Response'
+      summary: Create contract
       tags:
       - agreements
   /agreements/{id}:
-    delete:
-      description: Удаляет договор по ID
-      parameters:
-      - description: ID договора
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "204":
-          description: Успешное удаление
-        "404":
-          description: Договор не найден
-          schema:
-            $ref: '#/definitions/agreement.Response'
-        "500":
-          description: Внутренняя ошибка сервера
-          schema:
-            $ref: '#/definitions/agreement.Response'
-      summary: Удалить договор
-      tags:
-      - agreements
     get:
-      description: Возвращает информацию о договоре
+      description: Returns one contract visible to the authenticated customer or contractor
+        organization.
       parameters:
-      - description: ID договора
+      - description: Contract ID
         in: path
         name: id
         required: true
@@ -594,7 +1137,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Успешный ответ
+          description: OK
           schema:
             allOf:
             - $ref: '#/definitions/agreement.Response'
@@ -602,28 +1145,33 @@ paths:
                 data:
                   $ref: '#/definitions/agreement.AgreementResponse'
               type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/agreement.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/agreement.Response'
         "404":
-          description: Договор не найден
+          description: Not Found
           schema:
             $ref: '#/definitions/agreement.Response'
-        "500":
-          description: Внутренняя ошибка сервера
-          schema:
-            $ref: '#/definitions/agreement.Response'
-      summary: Получить договор по ID
+      summary: Get contract by ID
       tags:
       - agreements
     put:
       consumes:
       - application/json
-      description: Обновляет данные существующего договора
+      description: Updates one customer-owned contract through the legacy agreements
+        path while keeping the public web contour named contracts.
       parameters:
-      - description: ID договора
+      - description: Contract ID
         in: path
         name: id
         required: true
         type: string
-      - description: Данные для обновления
+      - description: Contract update payload
         in: body
         name: request
         required: true
@@ -633,7 +1181,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Успешное обновление
+          description: OK
           schema:
             allOf:
             - $ref: '#/definitions/agreement.Response'
@@ -642,33 +1190,264 @@ paths:
                   $ref: '#/definitions/agreement.AgreementResponse'
               type: object
         "400":
-          description: Неверный запрос
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/agreement.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/agreement.Response'
+        "403":
+          description: Forbidden
           schema:
             $ref: '#/definitions/agreement.Response'
         "404":
-          description: Договор не найден
+          description: Not Found
           schema:
             $ref: '#/definitions/agreement.Response'
-        "500":
-          description: Внутренняя ошибка сервера
+        "409":
+          description: Conflict
           schema:
             $ref: '#/definitions/agreement.Response'
-      summary: Обновить договор
+      summary: Update contract
       tags:
       - agreements
+  /agreements/contractors:
+    get:
+      description: Returns active contractor organizations that can be bound to a
+        customer contract.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/agreement.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/agreement.ContractorOptionResponse'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/agreement.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/agreement.Response'
+      summary: List active contractor organizations
+      tags:
+      - agreements
+  /agreements/routing/resolve:
+    post:
+      consumes:
+      - application/json
+      description: Resolves routing-eligible contracts and the allowed contractor
+        from customer contract context without enabling live Stage 04 request creation.
+      parameters:
+      - description: Routing resolve payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/agreement.RoutingResolveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/agreement.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/agreement.RoutingResolveResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/agreement.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/agreement.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/agreement.Response'
+      summary: Resolve contract routing
+      tags:
+      - agreements
+  /employee-invites:
+    get:
+      description: Returns the employee invite lifecycle visible to the active organization
+        admin.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/bootstrap.EmployeeInviteResponse'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: List employee invites
+      tags:
+      - employee-invites
+    post:
+      consumes:
+      - application/json
+      description: Creates a draft employee invite for the active organization admin
+        with role template, scope, and expiry policy.
+      parameters:
+      - description: Employee invite payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/bootstrap.CreateEmployeeInviteRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.EmployeeInviteResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Create employee invite draft
+      tags:
+      - employee-invites
+  /employee-invites/{inviteID}/revoke:
+    post:
+      description: Revokes a draft, sent, or opened employee invite.
+      parameters:
+      - description: Employee invite ID
+        in: path
+        name: inviteID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.EmployeeInviteResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Revoke employee invite
+      tags:
+      - employee-invites
+  /employee-invites/{inviteID}/send:
+    post:
+      description: Transitions a draft employee invite to sent and issues a one-time
+        token.
+      parameters:
+      - description: Employee invite ID
+        in: path
+        name: inviteID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.EmployeeInviteResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Send employee invite
+      tags:
+      - employee-invites
   /equipment:
     get:
-      description: Возвращает список оборудования с пагинацией
+      description: Returns equipment records visible inside the authenticated customer
+        organization/session scope.
       parameters:
-      - default: 10
-        description: Количество записей на странице
+      - default: 20
+        description: Page size
         in: query
         maximum: 100
         minimum: 1
         name: limit
         type: integer
       - default: 0
-        description: Смещение
+        description: Offset
         in: query
         minimum: 0
         name: offset
@@ -677,7 +1456,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Успешный ответ
+          description: OK
           schema:
             allOf:
             - $ref: '#/definitions/equipment.Response'
@@ -689,19 +1468,24 @@ paths:
                 meta:
                   $ref: '#/definitions/equipment.Meta'
               type: object
-        "500":
-          description: Внутренняя ошибка сервера
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/equipment.Response'
-      summary: Получить список оборудования
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/equipment.Response'
+      summary: List equipment registry
       tags:
       - equipment
     post:
       consumes:
       - application/json
-      description: Создает новую единицу оборудования
+      description: Creates one equipment registry record inside the authenticated
+        customer organization and visible unit contour.
       parameters:
-      - description: Данные оборудования
+      - description: Equipment payload
         in: body
         name: request
         required: true
@@ -711,7 +1495,7 @@ paths:
       - application/json
       responses:
         "201":
-          description: Оборудование создано
+          description: Created
           schema:
             allOf:
             - $ref: '#/definitions/equipment.Response'
@@ -720,43 +1504,26 @@ paths:
                   $ref: '#/definitions/equipment.EquipmentResponse'
               type: object
         "400":
-          description: Неверный запрос
+          description: Bad Request
           schema:
             $ref: '#/definitions/equipment.Response'
-        "500":
-          description: Внутренняя ошибка сервера
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/equipment.Response'
-      summary: Создать оборудование
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/equipment.Response'
+      summary: Create equipment registry record
       tags:
       - equipment
   /equipment/{id}:
-    delete:
-      description: Удаляет оборудование по ID
-      parameters:
-      - description: ID оборудования
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "204":
-          description: Успешное удаление
-        "404":
-          description: Оборудование не найдено
-          schema:
-            $ref: '#/definitions/equipment.Response'
-        "500":
-          description: Внутренняя ошибка сервера
-          schema:
-            $ref: '#/definitions/equipment.Response'
-      summary: Удалить оборудование
-      tags:
-      - equipment
     get:
-      description: Возвращает информацию об оборудовании
+      description: Returns one equipment record visible inside the authenticated customer
+        organization/session scope.
       parameters:
-      - description: ID оборудования
+      - description: Equipment ID
         in: path
         name: id
         required: true
@@ -765,7 +1532,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Успешный ответ
+          description: OK
           schema:
             allOf:
             - $ref: '#/definitions/equipment.Response'
@@ -773,28 +1540,33 @@ paths:
                 data:
                   $ref: '#/definitions/equipment.EquipmentResponse'
               type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/equipment.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/equipment.Response'
         "404":
-          description: Оборудование не найдено
+          description: Not Found
           schema:
             $ref: '#/definitions/equipment.Response'
-        "500":
-          description: Внутренняя ошибка сервера
-          schema:
-            $ref: '#/definitions/equipment.Response'
-      summary: Получить оборудование по ID
+      summary: Get equipment registry record
       tags:
       - equipment
-    put:
+    patch:
       consumes:
       - application/json
-      description: Обновляет данные оборудования
+      description: Updates one equipment record inside the authenticated customer
+        organization/session scope.
       parameters:
-      - description: ID оборудования
+      - description: Equipment ID
         in: path
         name: id
         required: true
         type: string
-      - description: Данные для обновления
+      - description: Equipment patch payload
         in: body
         name: request
         required: true
@@ -804,7 +1576,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Успешное обновление
+          description: OK
           schema:
             allOf:
             - $ref: '#/definitions/equipment.Response'
@@ -813,33 +1585,270 @@ paths:
                   $ref: '#/definitions/equipment.EquipmentResponse'
               type: object
         "400":
-          description: Неверный запрос
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/equipment.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/equipment.Response'
+        "403":
+          description: Forbidden
           schema:
             $ref: '#/definitions/equipment.Response'
         "404":
-          description: Оборудование не найдено
+          description: Not Found
           schema:
             $ref: '#/definitions/equipment.Response'
-        "500":
-          description: Внутренняя ошибка сервера
-          schema:
-            $ref: '#/definitions/equipment.Response'
-      summary: Обновить оборудование
+      summary: Update equipment registry record
       tags:
       - equipment
+  /equipment/{id}/archive:
+    post:
+      description: Archives one equipment record inside the authenticated customer
+        organization/session scope.
+      parameters:
+      - description: Equipment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/equipment.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/equipment.EquipmentResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/equipment.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/equipment.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/equipment.Response'
+      summary: Archive equipment registry record
+      tags:
+      - equipment
+  /first-admin-invites/{token}:
+    get:
+      description: Opens the first-admin invite link before password setup.
+      parameters:
+      - description: Invite token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.InviteInspectionResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Inspect first-admin invite
+      tags:
+      - bootstrap
+  /first-admin-invites/{token}/accept:
+    post:
+      consumes:
+      - application/json
+      description: Sets the invited admin password, creates membership and organization-admin
+        grant, and starts a session.
+      parameters:
+      - description: Invite token
+        in: path
+        name: token
+        required: true
+        type: string
+      - description: Password payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/bootstrap.AcceptInviteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.SessionSummaryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Accept first-admin invite
+      tags:
+      - bootstrap
+  /invites/{token}:
+    get:
+      description: Opens a public invite link and returns the current invite state
+        for first-admin and employee activation flows.
+      parameters:
+      - description: Invite token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.PublicInviteInspectionResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Inspect public invite
+      tags:
+      - bootstrap
+  /invites/{token}/accept:
+    post:
+      consumes:
+      - application/json
+      description: Sets the invited user's password, creates or links identity, provisions
+        membership and scoped grant, and starts a session.
+      parameters:
+      - description: Invite token
+        in: path
+        name: token
+        required: true
+        type: string
+      - description: Password payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/bootstrap.AcceptInviteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.SessionSummaryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Accept public invite
+      tags:
+      - bootstrap
+  /launch-wizard:
+    post:
+      consumes:
+      - application/json
+      description: Saves the core organization data and creates the first subdivision
+        or direct unit.
+      parameters:
+      - description: Launch wizard payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/bootstrap.CompleteLaunchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.SessionSummaryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Complete launch wizard
+      tags:
+      - bootstrap
   /measuring-instruments:
     get:
-      description: Возвращает список средств измерения с пагинацией
+      description: Returns measuring instrument records visible inside the authenticated
+        customer session scope.
       parameters:
-      - default: 10
-        description: Количество записей на странице
+      - default: 20
+        description: Page size
         in: query
         maximum: 100
         minimum: 1
         name: limit
         type: integer
       - default: 0
-        description: Смещение
+        description: Offset
         in: query
         minimum: 0
         name: offset
@@ -848,7 +1857,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Успешный ответ
+          description: OK
           schema:
             allOf:
             - $ref: '#/definitions/measuringinstrument.Response'
@@ -860,19 +1869,24 @@ paths:
                 meta:
                   $ref: '#/definitions/measuringinstrument.Meta'
               type: object
-        "500":
-          description: Внутренняя ошибка сервера
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/measuringinstrument.Response'
-      summary: Получить список средств измерения
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+      summary: List measuring instruments registry
       tags:
       - equipment
     post:
       consumes:
       - application/json
-      description: Создает новое средство измерения (СИ)
+      description: Creates one measuring instrument registry record inside the authenticated
+        customer organization.
       parameters:
-      - description: Данные средства измерения
+      - description: Measuring instrument payload
         in: body
         name: request
         required: true
@@ -882,7 +1896,7 @@ paths:
       - application/json
       responses:
         "201":
-          description: Средство измерения создано
+          description: Created
           schema:
             allOf:
             - $ref: '#/definitions/measuringinstrument.Response'
@@ -891,21 +1905,26 @@ paths:
                   $ref: '#/definitions/measuringinstrument.MeasuringInstrumentResponse'
               type: object
         "400":
-          description: Неверный запрос
+          description: Bad Request
           schema:
             $ref: '#/definitions/measuringinstrument.Response'
-        "500":
-          description: Внутренняя ошибка сервера
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/measuringinstrument.Response'
-      summary: Создать средство измерения
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+      summary: Create measuring instrument registry record
       tags:
       - equipment
   /measuring-instruments/{id}:
     get:
-      description: Возвращает информацию о средстве измерения
+      description: Returns one measuring instrument record visible inside the authenticated
+        customer session scope.
       parameters:
-      - description: ID средства измерения
+      - description: Measuring instrument ID
         in: path
         name: id
         required: true
@@ -914,7 +1933,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Успешный ответ
+          description: OK
           schema:
             allOf:
             - $ref: '#/definitions/measuringinstrument.Response'
@@ -922,28 +1941,33 @@ paths:
                 data:
                   $ref: '#/definitions/measuringinstrument.MeasuringInstrumentResponse'
               type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
         "404":
-          description: Средство измерения не найдено
+          description: Not Found
           schema:
             $ref: '#/definitions/measuringinstrument.Response'
-        "500":
-          description: Внутренняя ошибка сервера
-          schema:
-            $ref: '#/definitions/measuringinstrument.Response'
-      summary: Получить средство измерения по ID
+      summary: Get measuring instrument registry record
       tags:
       - equipment
-    put:
+    patch:
       consumes:
       - application/json
-      description: Обновляет данные средства измерения
+      description: Updates one measuring instrument record inside the authenticated
+        customer organization.
       parameters:
-      - description: ID средства измерения
+      - description: Measuring instrument ID
         in: path
         name: id
         required: true
         type: string
-      - description: Данные для обновления
+      - description: Measuring instrument patch payload
         in: body
         name: request
         required: true
@@ -953,7 +1977,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Успешное обновление
+          description: OK
           schema:
             allOf:
             - $ref: '#/definitions/measuringinstrument.Response'
@@ -962,24 +1986,157 @@ paths:
                   $ref: '#/definitions/measuringinstrument.MeasuringInstrumentResponse'
               type: object
         "400":
-          description: Неверный запрос
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+        "403":
+          description: Forbidden
           schema:
             $ref: '#/definitions/measuringinstrument.Response'
         "404":
-          description: Средство измерения не найдено
+          description: Not Found
           schema:
             $ref: '#/definitions/measuringinstrument.Response'
-        "500":
-          description: Внутренняя ошибка сервера
+      summary: Update measuring instrument registry record
+      tags:
+      - equipment
+  /measuring-instruments/{id}/archive:
+    post:
+      description: Archives one measuring instrument record inside the authenticated
+        customer organization/session scope.
+      parameters:
+      - description: Measuring instrument ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/measuringinstrument.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/measuringinstrument.MeasuringInstrumentResponse'
+              type: object
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/measuringinstrument.Response'
-      summary: Обновить средство измерения
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+      summary: Archive measuring instrument registry record
+      tags:
+      - equipment
+  /measuring-instruments/{id}/journals:
+    get:
+      description: Returns metrology journal entries for one measuring instrument
+        visible inside the authenticated customer session scope.
+      parameters:
+      - description: Measuring instrument ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/measuringinstrument.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/measuringinstrument.JournalResponse'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+      summary: List measuring instrument journal
+      tags:
+      - equipment
+    post:
+      consumes:
+      - application/json
+      description: Appends one metrology journal entry to the measuring instrument
+        visible inside the authenticated customer organization.
+      parameters:
+      - description: Measuring instrument ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Journal payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/measuringinstrument.CreateJournalRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/measuringinstrument.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/measuringinstrument.JournalResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/measuringinstrument.Response'
+      summary: Create measuring instrument journal entry
       tags:
       - equipment
   /organizations:
     get:
       description: Возвращает список организаций с пагинацией
       parameters:
+      - description: Deployment-scoped platform admin secret
+        in: header
+        name: X-VRK-Platform-Admin-Secret
+        required: true
+        type: string
       - default: 10
         description: Количество записей на странице
         in: query
@@ -1009,6 +2166,10 @@ paths:
                 meta:
                   $ref: '#/definitions/organization.Meta'
               type: object
+        "401":
+          description: Неавторизованный admin surface вызов
+          schema:
+            $ref: '#/definitions/organization.Response'
         "500":
           description: Внутренняя ошибка сервера
           schema:
@@ -1021,6 +2182,11 @@ paths:
       - application/json
       description: Создает новую организацию (заказчика или подрядчика)
       parameters:
+      - description: Deployment-scoped platform admin secret
+        in: header
+        name: X-VRK-Platform-Admin-Secret
+        required: true
+        type: string
       - description: Данные организации
         in: body
         name: request
@@ -1043,6 +2209,10 @@ paths:
           description: Неверный запрос
           schema:
             $ref: '#/definitions/organization.Response'
+        "401":
+          description: Неавторизованный admin surface вызов
+          schema:
+            $ref: '#/definitions/organization.Response'
         "500":
           description: Внутренняя ошибка сервера
           schema:
@@ -1054,6 +2224,11 @@ paths:
     delete:
       description: Удаляет организацию по ID
       parameters:
+      - description: Deployment-scoped platform admin secret
+        in: header
+        name: X-VRK-Platform-Admin-Secret
+        required: true
+        type: string
       - description: ID организации
         in: path
         name: id
@@ -1062,6 +2237,14 @@ paths:
       responses:
         "204":
           description: Успешное удаление
+        "400":
+          description: Неверный ID
+          schema:
+            $ref: '#/definitions/organization.Response'
+        "401":
+          description: Неавторизованный admin surface вызов
+          schema:
+            $ref: '#/definitions/organization.Response'
         "404":
           description: Организация не найдена
           schema:
@@ -1076,6 +2259,11 @@ paths:
     get:
       description: Возвращает информацию об организации
       parameters:
+      - description: Deployment-scoped platform admin secret
+        in: header
+        name: X-VRK-Platform-Admin-Secret
+        required: true
+        type: string
       - description: ID организации
         in: path
         name: id
@@ -1093,6 +2281,14 @@ paths:
                 data:
                   $ref: '#/definitions/organization.OrganizationResponse'
               type: object
+        "400":
+          description: Неверный ID
+          schema:
+            $ref: '#/definitions/organization.Response'
+        "401":
+          description: Неавторизованный admin surface вызов
+          schema:
+            $ref: '#/definitions/organization.Response'
         "404":
           description: Организация не найдена
           schema:
@@ -1104,11 +2300,16 @@ paths:
       summary: Получить организацию по ID
       tags:
       - organizations
-    put:
+    patch:
       consumes:
       - application/json
       description: Обновляет данные организации
       parameters:
+      - description: Deployment-scoped platform admin secret
+        in: header
+        name: X-VRK-Platform-Admin-Secret
+        required: true
+        type: string
       - description: ID организации
         in: path
         name: id
@@ -1136,8 +2337,16 @@ paths:
           description: Неверный запрос
           schema:
             $ref: '#/definitions/organization.Response'
+        "401":
+          description: Неавторизованный admin surface вызов
+          schema:
+            $ref: '#/definitions/organization.Response'
         "404":
           description: Организация не найдена
+          schema:
+            $ref: '#/definitions/organization.Response'
+        "409":
+          description: Конкурирующее обновление
           schema:
             $ref: '#/definitions/organization.Response'
         "500":
@@ -1147,19 +2356,141 @@ paths:
       summary: Обновить организацию
       tags:
       - organizations
+  /platform/organization-shells:
+    post:
+      consumes:
+      - application/json
+      description: Platform admin creates an organization shell and issues the first-admin
+        invite.
+      parameters:
+      - description: Deployment-scoped platform admin secret
+        in: header
+        name: X-VRK-Platform-Admin-Secret
+        required: true
+        type: string
+      - description: Organization shell data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/bootstrap.CreateOrganizationShellRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.OrganizationShellResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Create organization shell
+      tags:
+      - bootstrap
+  /sessions:
+    post:
+      consumes:
+      - application/json
+      description: Logs the user in when exactly one eligible membership/grant path
+        exists and returns the current session snapshot.
+      parameters:
+      - description: Session credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/bootstrap.CreateSessionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.SessionSummaryResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Create auth session
+      tags:
+      - auth
+  /sessions/current:
+    delete:
+      description: Deletes the authenticated session token.
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Delete current session
+      tags:
+      - auth
+    get:
+      description: Returns the authenticated admin session and launch-wizard state.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.SessionSummaryResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Get current session
+      tags:
+      - auth
   /standards:
     get:
-      description: Возвращает список эталонов с пагинацией
+      description: Returns standard records visible inside the authenticated customer
+        session scope.
       parameters:
-      - default: 10
-        description: Количество записей на странице
+      - default: 20
+        description: Page size
         in: query
         maximum: 100
         minimum: 1
         name: limit
         type: integer
       - default: 0
-        description: Смещение
+        description: Offset
         in: query
         minimum: 0
         name: offset
@@ -1168,7 +2499,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Успешный ответ
+          description: OK
           schema:
             allOf:
             - $ref: '#/definitions/standard.Response'
@@ -1180,19 +2511,24 @@ paths:
                 meta:
                   $ref: '#/definitions/standard.Meta'
               type: object
-        "500":
-          description: Внутренняя ошибка сервера
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/standard.Response'
-      summary: Получить список эталонов
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/standard.Response'
+      summary: List standards registry
       tags:
       - equipment
     post:
       consumes:
       - application/json
-      description: Создает новый эталон для метрологической поверки
+      description: Creates one standard registry record inside the authenticated customer
+        organization.
       parameters:
-      - description: Данные эталона
+      - description: Standard payload
         in: body
         name: request
         required: true
@@ -1202,7 +2538,7 @@ paths:
       - application/json
       responses:
         "201":
-          description: Эталон создан
+          description: Created
           schema:
             allOf:
             - $ref: '#/definitions/standard.Response'
@@ -1211,43 +2547,26 @@ paths:
                   $ref: '#/definitions/standard.StandardResponse'
               type: object
         "400":
-          description: Неверный запрос
+          description: Bad Request
           schema:
             $ref: '#/definitions/standard.Response'
-        "500":
-          description: Внутренняя ошибка сервера
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/standard.Response'
-      summary: Создать эталон
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/standard.Response'
+      summary: Create standard registry record
       tags:
       - equipment
   /standards/{id}:
-    delete:
-      description: Удаляет эталон по ID
-      parameters:
-      - description: ID эталона
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "204":
-          description: Успешное удаление
-        "404":
-          description: Эталон не найден
-          schema:
-            $ref: '#/definitions/standard.Response'
-        "500":
-          description: Внутренняя ошибка сервера
-          schema:
-            $ref: '#/definitions/standard.Response'
-      summary: Удалить эталон
-      tags:
-      - equipment
     get:
-      description: Возвращает информацию об эталоне
+      description: Returns one standard record visible inside the authenticated customer
+        session scope.
       parameters:
-      - description: ID эталона
+      - description: Standard ID
         in: path
         name: id
         required: true
@@ -1256,7 +2575,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Успешный ответ
+          description: OK
           schema:
             allOf:
             - $ref: '#/definitions/standard.Response'
@@ -1264,28 +2583,32 @@ paths:
                 data:
                   $ref: '#/definitions/standard.StandardResponse'
               type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/standard.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/standard.Response'
         "404":
-          description: Эталон не найден
+          description: Not Found
           schema:
             $ref: '#/definitions/standard.Response'
-        "500":
-          description: Внутренняя ошибка сервера
-          schema:
-            $ref: '#/definitions/standard.Response'
-      summary: Получить эталон по ID
+      summary: Get standard registry record
       tags:
       - equipment
-    put:
+    patch:
       consumes:
       - application/json
-      description: Обновляет данные эталона
+      description: Updates one standard record inside the authenticated customer organization.
       parameters:
-      - description: ID эталона
+      - description: Standard ID
         in: path
         name: id
         required: true
         type: string
-      - description: Данные для обновления
+      - description: Standard patch payload
         in: body
         name: request
         required: true
@@ -1295,7 +2618,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Успешное обновление
+          description: OK
           schema:
             allOf:
             - $ref: '#/definitions/standard.Response'
@@ -1304,18 +2627,146 @@ paths:
                   $ref: '#/definitions/standard.StandardResponse'
               type: object
         "400":
-          description: Неверный запрос
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/standard.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/standard.Response'
+        "403":
+          description: Forbidden
           schema:
             $ref: '#/definitions/standard.Response'
         "404":
-          description: Эталон не найден
+          description: Not Found
           schema:
             $ref: '#/definitions/standard.Response'
-        "500":
-          description: Внутренняя ошибка сервера
+      summary: Update standard registry record
+      tags:
+      - equipment
+  /standards/{id}/archive:
+    post:
+      description: Archives one standard record inside the authenticated customer
+        organization/session scope.
+      parameters:
+      - description: Standard ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/standard.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/standard.StandardResponse'
+              type: object
+        "401":
+          description: Unauthorized
           schema:
             $ref: '#/definitions/standard.Response'
-      summary: Обновить эталон
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/standard.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/standard.Response'
+      summary: Archive standard registry record
+      tags:
+      - equipment
+  /standards/{id}/journals:
+    get:
+      description: Returns metrology journal entries for one standard visible inside
+        the authenticated customer session scope.
+      parameters:
+      - description: Standard ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/standard.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/standard.JournalResponse'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/standard.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/standard.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/standard.Response'
+      summary: List standard journal
+      tags:
+      - equipment
+    post:
+      consumes:
+      - application/json
+      description: Appends one metrology journal entry to the standard visible inside
+        the authenticated customer organization.
+      parameters:
+      - description: Standard ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Journal payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/standard.CreateJournalRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/standard.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/standard.JournalResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/standard.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/standard.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/standard.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/standard.Response'
+      summary: Create standard journal entry
       tags:
       - equipment
 swagger: "2.0"

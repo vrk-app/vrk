@@ -2,10 +2,12 @@ package organization
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"backend/internal/db/generated"
@@ -39,7 +41,6 @@ func toNullPGUUID(id *uuid.UUID) pgtype.UUID {
 	}
 	return pgtype.UUID{Bytes: *id, Valid: true}
 }
-
 
 func toNullDate(t *time.Time) pgtype.Date {
 	if t == nil {
@@ -91,33 +92,41 @@ func (r *organizationRepository) Create(ctx context.Context, m Organization) (*O
 func (r *organizationRepository) GetByID(ctx context.Context, id uuid.UUID) (*OrganizationWithDetails, error) {
 	row, err := r.q.GetOrganizationByID(ctx, toPGUUID(id))
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrNotFound, err)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, err
 	}
 	return mapRowWithDetails(&row), nil
 }
 
 func (r *organizationRepository) GetByIDForUpdate(ctx context.Context, id uuid.UUID) (*Organization, error) {
-    row, err := r.q.GetOrganizationByID(ctx, toPGUUID(id))
-    if err != nil {
-        return nil, fmt.Errorf("%w: %v", ErrNotFound, err)
-    }
-    
-    return &Organization{
-        ID:                    uuid.UUID(row.ID.Bytes),
-        PropertyTypeID:        uuid.UUID(row.PropertyTypeID.Bytes),
-        Name:                  row.Name,
-        Inn:                   row.Inn,
-        Kpp:                   row.Kpp,
-        Address:               row.Address,
-        RoleID:                uuid.UUID(row.RoleID.Bytes),
-        DirectorID:            uuid.UUID(row.DirectorID.Bytes),
-        ParentID:              fromNullUUID(row.ParentID),
-        ShortName:             row.ShortName,
-        PowerOfAttorneyNumber: row.PowerOfAttorneyNumber,
-        PoaIssueDate:          fromNullDate(row.PoaIssueDate),
-        PoaExpirationDate:     fromNullDate(row.PoaExpirationDate),
-        Logo:                  row.Logo,
-    }, nil
+	row, err := r.q.GetOrganizationByID(ctx, toPGUUID(id))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+
+	return &Organization{
+		ID:                    uuid.UUID(row.ID.Bytes),
+		PropertyTypeID:        uuid.UUID(row.PropertyTypeID.Bytes),
+		Name:                  row.Name,
+		Inn:                   row.Inn,
+		Kpp:                   row.Kpp,
+		Address:               row.Address,
+		RoleID:                uuid.UUID(row.RoleID.Bytes),
+		DirectorID:            uuid.UUID(row.DirectorID.Bytes),
+		ParentID:              fromNullUUID(row.ParentID),
+		ShortName:             row.ShortName,
+		PowerOfAttorneyNumber: row.PowerOfAttorneyNumber,
+		PoaIssueDate:          fromNullDate(row.PoaIssueDate),
+		PoaExpirationDate:     fromNullDate(row.PoaExpirationDate),
+		Logo:                  row.Logo,
+		CreatedAt:             row.CreatedAt.Time,
+		UpdatedAt:             row.UpdatedAt.Time,
+	}, nil
 }
 
 func (r *organizationRepository) Update(ctx context.Context, m Organization) (*Organization, error) {
@@ -136,10 +145,14 @@ func (r *organizationRepository) Update(ctx context.Context, m Organization) (*O
 		PoaIssueDate:          toNullDate(m.PoaIssueDate),
 		PoaExpirationDate:     toNullDate(m.PoaExpirationDate),
 		Logo:                  m.Logo,
+		UpdatedAt:             pgtype.Timestamptz{Time: m.UpdatedAt, Valid: true},
 	}
 
 	row, err := r.q.UpdateOrganization(ctx, params)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrConflict
+		}
 		return nil, fmt.Errorf("%w: %v", ErrUpdateFailed, err)
 	}
 
@@ -147,7 +160,15 @@ func (r *organizationRepository) Update(ctx context.Context, m Organization) (*O
 }
 
 func (r *organizationRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return r.q.DeleteOrganization(ctx, toPGUUID(id))
+	rowsAffected, err := r.q.DeleteOrganization(ctx, toPGUUID(id))
+	if err != nil {
+		return fmt.Errorf("%w: %v", ErrDeleteFailed, err)
+	}
+	if rowsAffected == 0 {
+		return ErrNotFound
+	}
+
+	return nil
 }
 
 func (r *organizationRepository) Exists(ctx context.Context, id uuid.UUID) (bool, error) {
@@ -167,12 +188,11 @@ func (r *organizationRepository) List(ctx context.Context, limit, offset int32) 
 
 	result := make([]OrganizationWithDetails, len(rows))
 	for i := range rows {
-		result[i] = *mapRowWithDetails((*generated.GetOrganizationByIDRow)(&rows[i]))
+		result[i] = *mapListRowWithDetails(&rows[i])
 	}
 
 	return result, total, nil
 }
-
 
 func mapRow(r *generated.CreateOrganizationRow) *Organization {
 	return &Organization{
@@ -190,46 +210,102 @@ func mapRow(r *generated.CreateOrganizationRow) *Organization {
 		PoaIssueDate:          fromNullDate(r.PoaIssueDate),
 		PoaExpirationDate:     fromNullDate(r.PoaExpirationDate),
 		Logo:                  r.Logo,
+		CreatedAt:             r.CreatedAt.Time,
+		UpdatedAt:             r.UpdatedAt.Time,
 	}
 }
+
 func mapRowWithDetails(r *generated.GetOrganizationByIDRow) *OrganizationWithDetails {
+	return mapOrganizationWithDetails(
+		r.ID,
+		r.PropertyTypeName,
+		r.Name,
+		r.Inn,
+		r.Kpp,
+		r.Address,
+		r.RoleTitle,
+		r.DirectorName,
+		r.ParentID,
+		r.ShortName,
+		r.PowerOfAttorneyNumber,
+		r.PoaIssueDate,
+		r.PoaExpirationDate,
+		r.Logo,
+	)
+}
+
+func mapListRowWithDetails(r *generated.ListOrganizationsRow) *OrganizationWithDetails {
+	return mapOrganizationWithDetails(
+		r.ID,
+		r.PropertyTypeName,
+		r.Name,
+		r.Inn,
+		r.Kpp,
+		r.Address,
+		r.RoleTitle,
+		r.DirectorName,
+		r.ParentID,
+		r.ShortName,
+		r.PowerOfAttorneyNumber,
+		r.PoaIssueDate,
+		r.PoaExpirationDate,
+		r.Logo,
+	)
+}
+
+func mapOrganizationWithDetails(
+	id pgtype.UUID,
+	propertyTypeName *string,
+	name string,
+	inn string,
+	kpp string,
+	address string,
+	roleTitle *string,
+	directorName any,
+	parent pgtype.UUID,
+	shortName *string,
+	powerOfAttorneyNumber *string,
+	poaIssueDate pgtype.Date,
+	poaExpirationDate pgtype.Date,
+	logo *string,
+) *OrganizationWithDetails {
 	var parentID *uuid.UUID
-	if r.ParentID.Valid {
-		id := uuid.UUID(r.ParentID.Bytes)
-		parentID = &id
+	if parent.Valid {
+		value := uuid.UUID(parent.Bytes)
+		parentID = &value
 	}
 
-	propertyTypeName := ""
-	if r.PropertyTypeName != nil {
-		propertyTypeName = *r.PropertyTypeName
+	resolvedPropertyTypeName := ""
+	if propertyTypeName != nil {
+		resolvedPropertyTypeName = *propertyTypeName
 	}
 
-	roleTitle := ""
-	if r.RoleTitle != nil {
-		roleTitle = *r.RoleTitle
+	resolvedRoleTitle := ""
+	if roleTitle != nil {
+		resolvedRoleTitle = *roleTitle
 	}
 
-	directorName := ""
-	if r.DirectorName != nil {
-		if v, ok := r.DirectorName.(string); ok {
-			directorName = v
+	resolvedDirectorName := ""
+	if directorName != nil {
+		if v, ok := directorName.(string); ok {
+			resolvedDirectorName = v
 		}
 	}
 
 	return &OrganizationWithDetails{
-		ID:                    uuid.UUID(r.ID.Bytes),
-		PropertyTypeName:      propertyTypeName,
-		Name:                  r.Name,
-		Inn:                   r.Inn,
-		Kpp:                   r.Kpp,
-		Address:               r.Address,
-		RoleTitle:             roleTitle,
-		DirectorName:          directorName,
+		ID:                    uuid.UUID(id.Bytes),
+		PropertyTypeName:      resolvedPropertyTypeName,
+		Name:                  name,
+		Inn:                   inn,
+		Kpp:                   kpp,
+		Address:               address,
+		RoleTitle:             resolvedRoleTitle,
+		DirectorName:          resolvedDirectorName,
 		ParentID:              parentID,
-		ShortName:             r.ShortName,
-		PowerOfAttorneyNumber: r.PowerOfAttorneyNumber,
-		PoaIssueDate:          fromNullDate(r.PoaIssueDate),
-		PoaExpirationDate:     fromNullDate(r.PoaExpirationDate),
-		Logo:                  r.Logo,
+		ShortName:             shortName,
+		PowerOfAttorneyNumber: powerOfAttorneyNumber,
+		PoaIssueDate:          fromNullDate(poaIssueDate),
+		PoaExpirationDate:     fromNullDate(poaExpirationDate),
+		Logo:                  logo,
 	}
 }

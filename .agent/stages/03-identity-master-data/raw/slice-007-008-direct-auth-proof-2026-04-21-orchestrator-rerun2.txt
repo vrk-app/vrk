@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice007_008_auth_contract.py", line 423, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice007_008_auth_contract.py", line 284, in main
+    register_boundary = assert_register_boundary()
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice007_008_auth_contract.py", line 154, in assert_register_boundary
+    shell = expect_ok(
+        WEB_BASE,
+    ...<8 lines>...
+        },
+    )
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice007_008_auth_contract.py", line 120, in expect_ok
+    raise HttpFailure(method, f"{base_url}{path}", status, payload)
+HttpFailure: POST http://127.0.0.1:3100/api/platform/organization-shells -> 200

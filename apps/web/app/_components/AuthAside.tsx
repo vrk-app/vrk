@@ -50,18 +50,18 @@ export function AuthAside({
 
 export const loginAsideItems = [
   {
-    title: "Контролируемый вход",
-    detail: "Статус входа уже объясняет роль shell-only режима без обещаний live auth.",
+    title: "Приглашенная учетная запись",
+    detail: "Любой приглашенный пользователь входит только после invite acceptance и получает только свой разрешенный контур.",
     icon: <ShieldCheck aria-hidden="true" className="size-5" />,
   },
   {
-    title: "Company contour",
-    detail: "После входа пользователь попадает в /company и видит онбординг компании как следующий шаг.",
+    title: "Launch или workspace",
+    detail: "Если организация еще не запущена, login возвращает администратора в wizard; иначе открывает конкретный workspace.",
     icon: <Building2 aria-hidden="true" className="size-5" />,
   },
   {
-    title: "Operational routes",
-    detail: "Equipment, contracts и requests уже видны как карта runtime shell, но не как live продукт.",
+    title: "Границы stage-а",
+    detail: "Equipment, contracts и requests не расширяются этим slice вне разрешенного scope и следующего stage-order.",
     icon: <Wrench aria-hidden="true" className="size-5" />,
   },
 ] as const;

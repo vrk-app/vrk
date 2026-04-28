@@ -1,26 +1,124 @@
 {
   "stage_id": "03-identity-master-data",
-  "sprint_contract_id": "slice-001-first-admin-activation-and-org-graph",
+  "sprint_contract_id": "slice-007-stage03-admin-surface-auth-hardening + slice-008-stage03-multi-org-session-contract",
   "commands": [
-    "rg -n \"Stage 02|Stage 03|identity|master data|equipment|contracts|invitation|onboarding|organization|branch|unit|measuring|standard|эталон|СИ|подраздел\" docs apps .agent/stages/02-platform-foundation .agent/stages/03-identity-master-data",
-    "sed -n on roadmap, PRD, frontend architecture, customer-admin flow, and Stage 03 artifacts for scope re-sync",
-    "sed -n on AGENTS, documentation workflow, Stage 02 progress/feature list, and Stage 03 artifacts for harness-plan re-sync",
-    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data"
+    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data",
+    "PATH=/Users/yura-posledov/cursor/vrk/.agent/tmp-tools/go/bin:$PATH /Users/yura-posledov/cursor/vrk/.agent/tmp-tools/sqlc generate -f apps/backend/sqlc.yaml",
+    "cd apps/backend && env PATH=/Users/yura-posledov/cursor/vrk/.agent/tmp-tools/go/bin:$PATH go test ./...",
+    "cd apps/backend && env PATH=/Users/yura-posledov/cursor/vrk/.agent/tmp-tools/go/bin:$PATH go build -buildvcs=false ./...",
+    "make clean",
+    "make dev",
+    "cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run typecheck",
+    "cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run lint",
+    "cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run build",
+    "docker compose -f compose.platform.yml up --build -d --wait web",
+    "python3 -m py_compile .agent/stages/03-identity-master-data/proof_slice007_008_auth_contract.py",
+    "python3 .agent/stages/03-identity-master-data/proof_slice007_008_auth_contract.py",
+    "review the touched auth/bootstrap UI against https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md",
+    "launch one brand-new fresh verifier leaf for the refreshed slice-007 + slice-008 bundle and wait for a harvestable verdict"
   ],
   "tests": [
-    "verify_harness: PASS"
+    "verify_harness (orchestrator rerun9): PASS",
+    "sqlc generate: PASS",
+    "backend go test ./...: PASS",
+    "backend go build -buildvcs=false ./...: PASS",
+    "compose clean runtime floor: PASS",
+    "web typecheck (orchestrator rerun2): PASS",
+    "web lint (orchestrator rerun2): PASS",
+    "web build (orchestrator rerun2): PASS",
+    "web rebuild on current dirty worktree (orchestrator rerun3): PASS",
+    "proof script py_compile (orchestrator rerun4): PASS",
+    "targeted live auth smoke (/register, admin boundary enforcement, session restore, multi-access 409) (orchestrator rerun7): PASS",
+    "orchestrator web-design-guidelines review (rerun2): PASS",
+    "brand-new fresh verifier leaf on the refreshed bundle: PASS",
+    "fresh verifier evidence audit on the final bundle: PASS"
   ],
   "artifacts": [
-    "docs/roadmap.md",
-    "docs/PRD-MVP.md",
-    "docs/design/customer-admin-bootstrap-flow.md",
-    "docs/architecture/frontend-architecture.md",
-    "docs/architecture/identity-master-data.md",
-    ".agent/stages/03-identity-master-data/stage_spec.md",
-    ".agent/stages/03-identity-master-data/feature_list.json",
-    ".agent/stages/03-identity-master-data/sprint_contract.md",
     ".agent/stages/03-identity-master-data/progress.md",
-    ".agent/stages/03-identity-master-data/raw/harness-check-2026-04-18.txt"
+    ".agent/stages/03-identity-master-data/feature_list.json",
+    ".agent/stages/03-identity-master-data/evidence.md",
+    ".agent/stages/03-identity-master-data/evidence.json",
+    ".agent/stages/03-identity-master-data/verdict.json",
+    ".agent/stages/03-identity-master-data/problems.md",
+    ".agent/stages/03-identity-master-data/proof_slice007_008_auth_contract.py",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-harness-check-2026-04-21-orchestrator-rerun9.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-sqlc-generate-2026-04-21-orchestrator-rerun.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-backend-go-test-2026-04-21-orchestrator-rerun.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-backend-go-build-2026-04-21-orchestrator-rerun.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-make-clean-2026-04-21-orchestrator.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-make-dev-2026-04-21-orchestrator-clean.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-web-typecheck-2026-04-21-orchestrator-rerun2.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-web-lint-2026-04-21-orchestrator-rerun2.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-web-build-2026-04-21-orchestrator-rerun2.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-web-rebuild-2026-04-21-orchestrator-rerun3.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-proof-py-compile-2026-04-21-orchestrator-rerun4.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-direct-auth-proof-2026-04-21-orchestrator-rerun7.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-direct-summary-2026-04-21.json",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-ui-review-2026-04-21-orchestrator-rerun2.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-harness-post-verdict-2026-04-21.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-proof-2026-04-21.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-summary-2026-04-21.json",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-ui-review-2026-04-21.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-evidence-audit-2026-04-21.txt",
+    ".agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-21-continuation-verifier.md",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-verifier-agent-blocked-2026-04-21-orchestrator-rerun3.txt",
+    "apps/backend/docs/swagger/docs.go",
+    "apps/backend/docs/swagger/swagger.json",
+    "apps/backend/docs/swagger/swagger.yaml",
+    "apps/backend/migrations/000010_stage03_session_explicit_grant_binding.up.sql",
+    "apps/backend/internal/db/queries/auth/bootstrap.sql",
+    "apps/backend/internal/db/generated/bootstrap.sql.go",
+    "apps/web/shared/api/route-proxy.ts",
+    "apps/web/app/api/platform/organization-shells/route.ts"
   ],
-  "updated_at": "2026-04-18T06:04:47Z"
+  "docs_synced": [
+    "docs/roadmap.md",
+    "docs/architecture/identity-master-data.md",
+    "docs/architecture/frontend-architecture.md",
+    "docs/onboarding.md",
+    "apps/backend/docs/swagger/docs.go",
+    "apps/backend/docs/swagger/swagger.json",
+    "apps/backend/docs/swagger/swagger.yaml"
+  ],
+  "ui_lookup": {
+    "query": "platform admin invite auth route proxy session conflict login restore register boundary",
+    "result": "Lookup surfaced existing auth/layout primitives such as LoginForm, ConsentRow, and AuthSplitLayout, so the remediation wave reused the current auth surface instead of creating a new reusable family.",
+    "decision": "reuse",
+    "artifact": ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-007-008-2026-04-20-orchestrator.txt"
+  },
+  "design_brief_source": {
+    "artifact": ".agent/stages/03-identity-master-data/sprint_contract.md",
+    "section": "Objective",
+    "summary": "Close the remaining Stage 03 admin/auth/session truthfulness findings without widening into a workspace picker or a full platform identity subsystem."
+  },
+  "changed_ui_files": [
+    "apps/web/app/login/page.tsx",
+    "apps/web/app/register/[token]/page.tsx",
+    "apps/web/features/Stage03Bootstrap/ui/PlatformAdminInviteForm.tsx"
+  ],
+  "ui_review": {
+    "gate": "$web-design-guidelines",
+    "status": "PASS",
+    "closed": true,
+    "source": ".agent/stages/03-identity-master-data/raw/slice-007-008-ui-review-2026-04-21-orchestrator-rerun2.txt",
+    "artifact": ".agent/stages/03-identity-master-data/raw/slice-007-008-ui-review-2026-04-21-orchestrator-rerun2.txt",
+    "scope": [
+      "apps/web/app/login/page.tsx",
+      "apps/web/app/register/[token]/page.tsx",
+      "apps/web/features/Stage03Bootstrap/ui/PlatformAdminInviteForm.tsx"
+    ],
+    "notes": [
+      "The touched auth/bootstrap UI continues to reuse the existing auth layout and feature-local form primitives.",
+      "No workspace-picker widening or duplicate reusable family was introduced in the Stage 03 auth surfaces.",
+      "The async invite-issued success region now announces state changes with aria-live and aria-atomic.",
+      "A fresh verifier reran the Web Interface Guidelines check and recorded a final PASS in raw/slice-007-008-continuation-verifier-ui-review-2026-04-21.txt."
+    ]
+  },
+  "updated_at": "2026-04-21T11:44:04Z",
+  "notes": [
+    "The current primary local truth refresh is anchored by raw/slice-007-008-harness-check-2026-04-21-orchestrator-rerun9.txt and raw/slice-007-008-direct-auth-proof-2026-04-21-orchestrator-rerun7.txt.",
+    "The brand-new fresh verifier completed harvestably and upgraded the continuation run from PENDING to PASS without requiring a fixer rerun.",
+    "The prior control-plane blocker raw raw/slice-007-008-verifier-agent-blocked-2026-04-21-orchestrator-rerun3.txt is now historical only.",
+    "Only slice-007/008-related Stage 03 artifacts were refreshed in this final closure step; no unrelated Stage 03 entries were widened or reopened."
+  ]
 }

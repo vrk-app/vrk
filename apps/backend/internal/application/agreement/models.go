@@ -1,68 +1,136 @@
 package agreement
 
 import (
-    "time"
+	"time"
 
-    "github.com/google/uuid"
+	"github.com/google/uuid"
+)
+
+const (
+	ContractStatusInactive = "inactive"
+	ContractStatusActive   = "active"
+	ContractStatusExpired  = "expired"
+
+	WorkTypeRepair       = "repair"
+	WorkTypeMaintenance  = "maintenance"
+	WorkTypeVerification = "verification"
 )
 
 type Agreement struct {
-    ID                 uuid.UUID
-    Source             string
-    FactoryID          uuid.UUID
-    OrganizationID     uuid.UUID
-    Number             int64
-    StartDate          time.Time
-    EndDate            time.Time
-    SubjectOfAgreement string
-    ScheduleID         uuid.UUID
-    CreatedAt          time.Time
-    UpdatedAt          time.Time
+	ID                         uuid.UUID
+	CustomerOrganizationID     uuid.UUID
+	CustomerOrganizationName   string
+	ContractorOrganizationID   uuid.UUID
+	ContractorOrganizationName string
+	ContractNumber             string
+	ContractStatus             string
+	StartDate                  time.Time
+	EndDate                    time.Time
+	WorkType                   string
+	EquipmentType              string
+	Region                     string
+	SubdivisionID              *uuid.UUID
+	SubdivisionName            *string
+	UnitID                     *uuid.UUID
+	UnitName                   *string
+	LocationScopeLabel         *string
+	Source                     *string
+	SubjectOfAgreement         *string
+	CreatedAt                  time.Time
+	UpdatedAt                  time.Time
+}
+
+type ContractorOption struct {
+	ID        uuid.UUID
+	Name      string
+	ShortName *string
 }
 
 type CreateRequest struct {
-    Source             string `json:"source" validate:"required"`
-    FactoryID          string `json:"factoryId" validate:"required"`
-    OrganizationID     string `json:"organizationId" validate:"required"`
-    Number             int64  `json:"number" validate:"required"`
-    StartDate          string `json:"startDate" validate:"required"` // формат "2006-01-02"
-    EndDate            string `json:"endDate" validate:"required"`   // формат "2006-01-02"
-    SubjectOfAgreement string `json:"subjectOfAgreement" validate:"required"`
-    ScheduleID         string `json:"scheduleId" validate:"required"`
+	ContractorOrganizationID string  `json:"contractorOrganizationId"`
+	ContractNumber           string  `json:"contractNumber"`
+	ContractStatus           string  `json:"contractStatus"`
+	StartDate                string  `json:"startDate"`
+	EndDate                  string  `json:"endDate"`
+	WorkType                 string  `json:"workType"`
+	EquipmentType            string  `json:"equipmentType"`
+	Region                   string  `json:"region"`
+	SubdivisionID            *string `json:"subdivisionId,omitempty"`
+	UnitID                   *string `json:"unitId,omitempty"`
+	LocationScopeLabel       *string `json:"locationScopeLabel,omitempty"`
+	Source                   *string `json:"source,omitempty"`
+	SubjectOfAgreement       *string `json:"subjectOfAgreement,omitempty"`
 }
 
 type UpdateRequest struct {
-    Source             *string `json:"source,omitempty"`
-    FactoryID          *string `json:"factoryId,omitempty"`
-    OrganizationID     *string `json:"organizationId,omitempty"`
-    Number             *int64  `json:"number,omitempty"`
-    StartDate          *string `json:"startDate,omitempty"`
-    EndDate            *string `json:"endDate,omitempty"`
-    SubjectOfAgreement *string `json:"subjectOfAgreement,omitempty"`
-    ScheduleID         *string `json:"scheduleId,omitempty"`
+	ContractorOrganizationID *string `json:"contractorOrganizationId,omitempty"`
+	ContractNumber           *string `json:"contractNumber,omitempty"`
+	ContractStatus           *string `json:"contractStatus,omitempty"`
+	StartDate                *string `json:"startDate,omitempty"`
+	EndDate                  *string `json:"endDate,omitempty"`
+	WorkType                 *string `json:"workType,omitempty"`
+	EquipmentType            *string `json:"equipmentType,omitempty"`
+	Region                   *string `json:"region,omitempty"`
+	SubdivisionID            *string `json:"subdivisionId,omitempty"`
+	UnitID                   *string `json:"unitId,omitempty"`
+	LocationScopeLabel       *string `json:"locationScopeLabel,omitempty"`
+	Source                   *string `json:"source,omitempty"`
+	SubjectOfAgreement       *string `json:"subjectOfAgreement,omitempty"`
+}
+
+type AgreementLocationScopeResponse struct {
+	ScopeType string  `json:"scopeType"`
+	ScopeID   *string `json:"scopeId,omitempty"`
+	Label     string  `json:"label"`
 }
 
 type AgreementResponse struct {
-    ID                 string `json:"id"`
-    Source             string `json:"source"`
-    FactoryID          string `json:"factoryId"`
-    OrganizationID     string `json:"organizationId"`
-    Number             int64  `json:"number"`
-    StartDate          string `json:"startDate"`
-    EndDate            string `json:"endDate"`
-    SubjectOfAgreement string `json:"subjectOfAgreement"`
-    ScheduleID         string `json:"scheduleId"`
+	ID                         string                         `json:"id"`
+	CustomerOrganizationID     string                         `json:"customerOrganizationId"`
+	CustomerOrganizationName   string                         `json:"customerOrganizationName"`
+	ContractorOrganizationID   string                         `json:"contractorOrganizationId"`
+	ContractorOrganizationName string                         `json:"contractorOrganizationName"`
+	ContractNumber             string                         `json:"contractNumber"`
+	ContractStatus             string                         `json:"contractStatus"`
+	StartDate                  string                         `json:"startDate"`
+	EndDate                    string                         `json:"endDate"`
+	WorkType                   string                         `json:"workType"`
+	EquipmentType              string                         `json:"equipmentType"`
+	Region                     string                         `json:"region"`
+	LocationScope              AgreementLocationScopeResponse `json:"locationScope"`
+	Source                     *string                        `json:"source,omitempty"`
+	SubjectOfAgreement         *string                        `json:"subjectOfAgreement,omitempty"`
+	RoutingEligible            bool                           `json:"routingEligible"`
 }
 
-type Meta struct {
-    Total  int64 `json:"total"`
-    Limit  int32 `json:"limit"`
-    Offset int32 `json:"offset"`
+type ContractorOptionResponse struct {
+	ID        string  `json:"id"`
+	Name      string  `json:"name"`
+	ShortName *string `json:"shortName,omitempty"`
+}
+
+type RoutingResolveRequest struct {
+	UnitID        string `json:"unitId"`
+	WorkType      string `json:"workType"`
+	EquipmentType string `json:"equipmentType"`
+	Region        string `json:"region"`
+}
+
+type RoutingResolutionItem struct {
+	Contract   AgreementResponse        `json:"contract"`
+	Contractor ContractorOptionResponse `json:"contractor"`
+}
+
+type RoutingResolveResponse struct {
+	UnitID        string                  `json:"unitId"`
+	WorkType      string                  `json:"workType"`
+	EquipmentType string                  `json:"equipmentType"`
+	Region        string                  `json:"region"`
+	Matches       []RoutingResolutionItem `json:"matches"`
 }
 
 type Response struct {
-    Success bool        `json:"success"`
-    Data    interface{} `json:"data,omitempty"`
-    Error   string      `json:"error,omitempty"`
-    Meta    *Meta       `json:"meta,omitempty"`
+	Success bool        `json:"success"`
+	Data    interface{} `json:"data,omitempty"`
+	Error   string      `json:"error,omitempty"`
 }

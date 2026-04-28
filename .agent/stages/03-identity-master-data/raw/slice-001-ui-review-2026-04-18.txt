@@ -1,0 +1,83 @@
+## apps/web/features/Stage03Bootstrap/ui/PlatformAdminInviteForm.tsx
+
+✓ pass
+
+## apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx
+
+✓ pass
+
+## apps/web/features/Stage03Bootstrap/ui/LaunchWizardForm.tsx
+
+✓ pass
+
+## apps/web/app/register/page.tsx
+
+✓ pass
+
+## apps/web/app/register/[token]/page.tsx
+
+✓ pass
+
+## apps/web/app/login/page.tsx
+
+✓ pass
+
+## apps/web/app/(runtime)/company/page.tsx
+
+✓ pass
+
+## apps/web/app/(runtime)/company/setup/page.tsx
+
+✓ pass
+
+## apps/web/app/(runtime)/layout.tsx
+
+✓ pass
+
+## apps/web/app/(runtime)/_components/RuntimeShell.tsx
+
+✓ pass
+
+## apps/web/app/(runtime)/contracts/page.tsx
+
+✓ pass
+
+## apps/web/app/(runtime)/equipment/page.tsx
+
+✓ pass
+
+## apps/web/app/(runtime)/requests/page.tsx
+
+✓ pass
+
+## apps/web/app/_components/AuthAside.tsx
+
+✓ pass
+
+## apps/web/app/globals.css
+
+✓ pass
+
+## apps/web/shared/config/design-tokens.ts
+
+✓ pass
+
+## apps/web/shared/ui/Button.tsx
+
+✓ pass
+
+## apps/web/shared/ui/index.ts
+
+✓ pass
+
+## apps/web/stories/foundations/IconGallery.stories.tsx
+
+✓ pass
+
+## apps/web/stories/layout/TopBar.stories.tsx
+
+✓ pass
+
+## apps/web/widgets/OperatorShell/ui/TopBar.tsx
+
+✓ pass

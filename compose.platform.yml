@@ -46,6 +46,7 @@ services:
       DB_SSL_MODE: disable
       DB_USER: postgres
       ENVIRONMENT: development
+      PLATFORM_ADMIN_SHARED_SECRET: stage03-platform-admin-secret
       SERVER_PORT: "8080"
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O - http://localhost:8080/healthz >/dev/null"]
@@ -64,8 +65,10 @@ services:
       backend:
         condition: service_healthy
     environment:
+      INTERNAL_API_BASE_URL: http://backend:8080
       NEXT_PUBLIC_API_BASE_URL: http://backend:8080
       NEXT_PUBLIC_RUNTIME_DATA_MODE: seed-read
+      PLATFORM_ADMIN_SHARED_SECRET: stage03-platform-admin-secret
       PORT: "3000"
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:3000/login >/dev/null"]

@@ -1,0 +1,85 @@
+{
+  "seed": "1776614151",
+  "organizationId": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+  "subdivisionId": "3f51076c-06cb-4261-b0f2-cfb6b47ba18b",
+  "unitOneId": "f8aa33ec-009d-4a36-89d9-a98d0692fb9d",
+  "unitTwoId": "560a11af-2794-4722-a7dc-e46593ab2381",
+  "equipmentIds": {
+    "zeroMI": "e205035d-b8f1-4571-821f-3cd36209e151",
+    "primary": "c0c347af-d649-4378-b7a9-37da81be1146",
+    "secondary": "5a6d9806-fb43-4184-8aff-4dd3377d51da",
+    "archived": "34f00c2d-c0ef-4953-a877-80a9fd49a657"
+  },
+  "measuringInstrumentIds": {
+    "primary": "b2528917-a456-4442-b4a1-9960c4e9b580",
+    "secondary": "2e7e2dab-db5c-4b5f-85c7-0132f3491d42",
+    "archived": "5548316c-c89d-4bf6-8bdc-b6a26bf294b6"
+  },
+  "standardIds": {
+    "shared": "f4061d29-aef4-40e9-9747-b9ff4b1facc0",
+    "subdivision": "d6c8c1c2-a707-45f0-9eac-bf4b5066d2a2",
+    "unitOne": "b0c7c542-afad-4cac-a6be-cec921a5c4e0",
+    "unitTwo": "d858f441-0056-4f56-80f0-5a149fcaeb9d",
+    "archived": "2f74b7e8-993c-4118-860e-0cf28c078c7c"
+  },
+  "checks": {
+    "adminEquipmentCount": 3,
+    "adminEquipmentArchivedCount": 4,
+    "adminMeasuringInstrumentCount": 2,
+    "adminMeasuringInstrumentArchivedCount": 3,
+    "adminStandardCount": 4,
+    "adminStandardArchivedCount": 5,
+    "equipmentWithoutMI": true,
+    "equipmentWithMI": true,
+    "sharedStandardReusable": true,
+    "miPrimaryDerivedStatusActive": true,
+    "miPrimaryLatestJournalControlsStatus": true,
+    "miPrimaryNextDueFromLatestJournal": true,
+    "miArchiveDerivedInactive": true,
+    "miArchiveLatestSuspensionWins": true,
+    "standardRetiredFromLatestJournal": true,
+    "standardRetiredLatestJournalControlsStatus": true,
+    "archivedStandardDerivedDueDate": true,
+    "archiveHiddenFromActiveEquipmentList": true,
+    "archiveVisibleInEquipmentListWhenRequested": true,
+    "archiveHiddenFromActiveMIList": true,
+    "archiveVisibleInMIListWhenRequested": true,
+    "archiveHiddenFromActiveStandardList": true,
+    "archiveVisibleInStandardListWhenRequested": true,
+    "archiveBlocksMIJournalMutation": true,
+    "archiveBlocksStandardJournalMutation": true,
+    "subdivisionUserSeesBothUnitsAndArchive": true,
+    "subdivisionUserNoOrgStandardLeak": true,
+    "subdivisionUserSeesUnitTwoJournal": true,
+    "subdivisionUserSeesUnitTwoStandardJournal": true,
+    "unitUserVisibleEquipment": [
+      "Компрессор активный 1776614151",
+      "Насос без метрологии 1776614151"
+    ],
+    "unitUserVisibleEquipmentWithArchive": [
+      "Компрессор активный 1776614151",
+      "Насос без метрологии 1776614151",
+      "Оборудование в архив 1776614151"
+    ],
+    "unitUserVisibleMI": [
+      "Манометр первичный 1776614151"
+    ],
+    "unitUserVisibleMIWithArchive": [
+      "Манометр первичный 1776614151",
+      "Термометр архивный 1776614151"
+    ],
+    "unitUserNoEquipmentLeak": true,
+    "unitUserNoMILLeak": true,
+    "unitUserNoBroaderStandardLeak": true,
+    "unitUserKeepsOwnStandard": true,
+    "unitUserKeepsArchivedOwnStandard": true,
+    "unitUserSeesOwnJournal": true,
+    "unitUserSeesArchivedJournal": true,
+    "unitForbiddenEquipment": true,
+    "unitForbiddenMIJournal": true,
+    "unitForbiddenStandardJournal": true,
+    "journalCountsPersisted": true,
+    "contractsBaselineReachable": true,
+    "archiveRowsPersist": true
+  }
+}

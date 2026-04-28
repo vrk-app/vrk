@@ -1,0 +1,45 @@
+Storybook registry entries: 19
+Query: "stage 01 auth form top bar icon gallery truthfulness login form backlog token bridge refresh"
+
+1. Auth/LoginForm [LoginForm]
+   story: apps/web/stories/auth/LoginForm.stories.tsx
+   source: apps/web/widgets/Auth/ui/LoginForm.tsx
+   stories: Default, ValidationError, ServerError, Loading
+   tags: autodocs
+2. Foundations/IconGallery [IconGalleryShowcase]
+   story: apps/web/stories/foundations/IconGallery.stories.tsx
+   stories: NavigationIcons, ActionIcons, FileTypeIcons, StatusIcons
+   tags: autodocs
+3. Layout/TopBar [TopBar]
+   story: apps/web/stories/layout/TopBar.stories.tsx
+   source: apps/web/widgets/OperatorShell/ui/TopBar.tsx
+   stories: Default, WithUnreadCount, WithoutNotifications, SearchUnavailable, ActionsUnavailable, LongUserName
+   tags: autodocs
+4. Foundations/TokenDocs [TokenDocsShowcase]
+   story: apps/web/stories/foundations/TokenDocs.stories.tsx
+   stories: All, Colors, Typography, Spacing, Elevation, Radii
+   tags: autodocs
+5. Auth/ConsentRow [ConsentRow]
+   story: apps/web/stories/auth/ConsentRow.stories.tsx
+   source: apps/web/widgets/Auth/ui/ConsentRow.tsx
+   stories: Default, Checked, Error, Disabled
+   tags: autodocs
+6. Showcases/AuthPage [AuthPageShowcase]
+   story: apps/web/stories/showcases/AuthPage.stories.tsx
+   stories: Showcase
+   tags: autodocs
+7. Auth/AuthSplitLayout [AuthSplitLayout]
+   story: apps/web/stories/auth/AuthSplitLayout.stories.tsx
+   source: apps/web/widgets/Auth/ui/AuthSplitLayout.tsx
+   stories: Default, WithoutIllustration, Mobile
+   tags: autodocs
+8. Primitives/Badge [Badge]
+   story: apps/web/stories/primitives/Badge.stories.tsx
+   source: apps/web/shared/ui/Badge.tsx
+   stories: Neutral, Success, Warning, Danger, WithIcon, Small, TrendUp, TrendDown, StatusMatrix
+   tags: autodocs
+9. Primitives/Button [Button]
+   story: apps/web/stories/primitives/Button.stories.tsx
+   source: apps/web/shared/ui/Button.tsx
+   stories: Default, Hover, Focus, Primary, Secondary, Ghost, Danger, WithLeftIcon, WithRightIcon, Loading, Disabled, FullWidth
+   tags: autodocs

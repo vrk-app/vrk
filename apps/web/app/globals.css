@@ -20,6 +20,10 @@
   --accent-strong: 224 76% 48%;
   --accent-foreground: 0 0% 100%;
   --accent-soft: 217 100% 97%;
+  --interactive-hover: 224 76% 48%;
+  --surface-hover: 210 40% 96%;
+  --text-tertiary: 215 16% 65%;
+  --text-disabled: 213 18% 77%;
   --success: 142 72% 36%;
   --success-strong: 142 72% 29%;
   --success-soft: 138 76% 97%;
@@ -39,6 +43,7 @@
   --shadow-sm: 0 1px 3px rgba(16, 24, 40, 0.08), 0 1px 2px rgba(16, 24, 40, 0.04);
   --shadow-md: 0 8px 24px rgba(16, 24, 40, 0.08);
   --shadow-lg: 0 16px 40px rgba(16, 24, 40, 0.12);
+  --shadow-xl: 0 24px 64px rgba(16, 24, 40, 0.16);
   --radius-xs: 0.375rem;
   --radius-sm: 0.5rem;
   --radius-md: 0.625rem;
@@ -46,6 +51,7 @@
   --radius-xl: 1rem;
   --radius-2xl: 1.25rem;
   --radius-3xl: 1.75rem;
+  --radius-full: 9999px;
 }
 
 @theme inline {
@@ -68,6 +74,10 @@
   --color-accent-strong: hsl(var(--accent-strong));
   --color-accent-foreground: hsl(var(--accent-foreground));
   --color-accent-soft: hsl(var(--accent-soft));
+  --color-interactive-hover: hsl(var(--interactive-hover));
+  --color-surface-hover: hsl(var(--surface-hover));
+  --color-text-tertiary: hsl(var(--text-tertiary));
+  --color-text-disabled: hsl(var(--text-disabled));
   --color-success: hsl(var(--success));
   --color-success-strong: hsl(var(--success-strong));
   --color-success-soft: hsl(var(--success-soft));
@@ -132,6 +142,10 @@ input {
 
 @utility shadow-lg {
   box-shadow: var(--shadow-lg);
+}
+
+@utility shadow-xl {
+  box-shadow: var(--shadow-xl);
 }
 
 @utility story-shell {

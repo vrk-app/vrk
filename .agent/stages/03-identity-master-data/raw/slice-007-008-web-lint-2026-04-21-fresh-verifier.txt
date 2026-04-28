@@ -1,0 +1,4 @@
+
+> @vrk/web@0.1.0 lint /Users/yura-posledov/cursor/vrk/apps/web
+> eslint .
+

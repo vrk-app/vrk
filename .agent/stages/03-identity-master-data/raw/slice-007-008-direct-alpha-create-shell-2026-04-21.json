@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "data": {
+    "organizationId": "ec2a7fe8-46a4-45ec-ab2d-10248196ab17",
+    "organizationName": "VRK alpha 1776771010",
+    "organizationRole": "customer",
+    "inviteId": "01c1e8db-5f11-4e24-8ec8-8c996ca7c359",
+    "inviteEmail": "shared-1776771010@vrk.local",
+    "inviteStatus": "sent",
+    "inviteToken": "9cb24cc4-8b4b-46fc-b97e-7d3205a55b05",
+    "inviteExpiresAt": "2026-04-28T11:30:10Z"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": "879dedb3-b1a4-4594-8006-4ac699213b51",
+      "operationType": "verification",
+      "operationDate": "2026-03-01",
+      "documentNumber": "STD-ARC-ACT-1776614151",
+      "validUntil": "2026-10-31",
+      "executorOrganization": "ФБУ Ростест-Москва",
+      "comment": "Архивный эталон с сохраненной историей",
+      "createdAt": "2026-04-19T15:55:51Z"
+    }
+  ]
+}

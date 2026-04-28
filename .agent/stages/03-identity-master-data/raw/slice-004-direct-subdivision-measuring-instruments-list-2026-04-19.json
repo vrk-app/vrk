@@ -1,0 +1,112 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": "9531eb47-2f18-4667-9bf9-2b4c6721ecac",
+      "organizationId": "8eaaec80-abde-4d56-b6ba-54b953e72c1d",
+      "unit": {
+        "id": "2d609225-35a3-46be-92c4-ddceb5107c04",
+        "name": "Второй юнит 1776604587",
+        "subdivisionId": "3d351a71-784f-4a2b-953b-704d61d53a5e",
+        "subdivisionName": "Customer-Equipment Подразделение 1776604587"
+      },
+      "equipment": {
+        "id": "aa76c4d7-824f-443e-945d-bcb04866b580",
+        "fullName": "Компрессор 02 1776604587"
+      },
+      "name": "Манометр вторичный 1776604587",
+      "instrumentType": "Манометр",
+      "model": "MI-B2",
+      "registrationNumber": "MI-B2-1776604587",
+      "serialNumber": "SER-B2-1776604587",
+      "status": "active",
+      "placementKind": "built_in",
+      "standards": [
+        {
+          "id": "38b7b577-ad76-49be-b393-eeb340f4d8a3",
+          "standardType": "Эталон расхода",
+          "model": "STD-U2",
+          "identifier": "STD-U2-1776604587",
+          "status": "active",
+          "scopeLabel": "Второй юнит 1776604587"
+        },
+        {
+          "id": "a48d9419-33cc-42b4-b4ad-9a34e5d4ecb7",
+          "standardType": "Эталон давления",
+          "model": "STD-ORG",
+          "identifier": "STD-ORG-1776604587",
+          "status": "active",
+          "scopeLabel": "ВРК customer-equipment 1776604587"
+        }
+      ],
+      "createdAt": "2026-04-19T13:16:28Z",
+      "updatedAt": "2026-04-19T13:16:28Z"
+    },
+    {
+      "id": "3357ba5e-931e-417b-a46c-643d68379d43",
+      "organizationId": "8eaaec80-abde-4d56-b6ba-54b953e72c1d",
+      "unit": {
+        "id": "94c09426-1b9f-48b4-96b6-c6dd339df480",
+        "name": "Customer-Equipment Юнит 01 1776604587",
+        "subdivisionId": "3d351a71-784f-4a2b-953b-704d61d53a5e",
+        "subdivisionName": "Customer-Equipment Подразделение 1776604587"
+      },
+      "name": "Standalone СИ 1776604587",
+      "instrumentType": "Термометр",
+      "model": "MI-S1",
+      "registrationNumber": "MI-S1-1776604587",
+      "serialNumber": "SER-S1-1776604587",
+      "status": "active",
+      "placementKind": "standalone",
+      "standards": null,
+      "createdAt": "2026-04-19T13:16:28Z",
+      "updatedAt": "2026-04-19T13:16:28Z"
+    },
+    {
+      "id": "ec680acc-c0f6-4309-8270-31e5cfac1db2",
+      "organizationId": "8eaaec80-abde-4d56-b6ba-54b953e72c1d",
+      "unit": {
+        "id": "94c09426-1b9f-48b4-96b6-c6dd339df480",
+        "name": "Customer-Equipment Юнит 01 1776604587",
+        "subdivisionId": "3d351a71-784f-4a2b-953b-704d61d53a5e",
+        "subdivisionName": "Customer-Equipment Подразделение 1776604587"
+      },
+      "equipment": {
+        "id": "49e0948e-2f10-443d-8a54-c60ef3ca7b40",
+        "fullName": "Компрессор 01 1776604587"
+      },
+      "name": "Манометр built-in 1776604587",
+      "instrumentType": "Манометр",
+      "model": "MI-B1",
+      "registrationNumber": "MI-B1-1776604587",
+      "serialNumber": "SER-B1-1776604587",
+      "status": "active",
+      "placementKind": "built_in",
+      "standards": [
+        {
+          "id": "1a46ec29-d826-4a06-b83f-4bcc2f6597c9",
+          "standardType": "Эталон температуры",
+          "model": "STD-SUB",
+          "identifier": "STD-SUB-1776604587",
+          "status": "active",
+          "scopeLabel": "Customer-Equipment Подразделение 1776604587"
+        },
+        {
+          "id": "a48d9419-33cc-42b4-b4ad-9a34e5d4ecb7",
+          "standardType": "Эталон давления",
+          "model": "STD-ORG",
+          "identifier": "STD-ORG-1776604587",
+          "status": "active",
+          "scopeLabel": "ВРК customer-equipment 1776604587"
+        }
+      ],
+      "createdAt": "2026-04-19T13:16:28Z",
+      "updatedAt": "2026-04-19T13:16:28Z"
+    }
+  ],
+  "meta": {
+    "total": 3,
+    "limit": 0,
+    "offset": 0
+  }
+}

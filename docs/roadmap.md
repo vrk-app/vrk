@@ -335,7 +335,7 @@
   - request contour shown truthfully as gated or placeholder until Stage 04
   - health endpoint ok
 - Storybook и app runtime используют одну и ту же UI foundation
-- CI воспроизводимо гоняет lint/test/build/smoke
+- CI workflow существует и wired к Stage 02 lint/test/build/smoke contract; remote GitHub Actions reproduction должна подтверждаться отдельным run-proof
 
 ---
 
@@ -350,6 +350,7 @@
 - activation flow:
   - платформенный админ создает заготовку организации и отправляет first-admin invite по email
   - первый администратор принимает одноразовое приглашение, задает пароль и проходит launch wizard
+  - повторная активация тем же invite token отклоняется и не создает второй session/membership baseline
   - ручная раздача паролей не используется как основной сценарий
 - auth flow:
   - login
@@ -368,37 +369,44 @@
   - employee invitation statuses: draft / sent / opened / accepted / expired / revoked
 - contractor/customer relation layer
 - contracts registry
-- contract status baseline для customer-admin contour
+- contract status baseline `inactive / active / expired` для customer-admin contour
 - equipment registry
 - measuring instruments registry
 - standards registry
-- metrology operation journals и attachment baseline
-- org-scoped dictionaries с local draft entries
+- metrology operation journals, URL/reference attachment baseline и derived status for MI / standards
+- bounded ownership-scope labels for standards; standalone org-scoped dictionary/local-draft CRUD остается вне proven Stage 03 contract
 - archive baseline для организаций, подразделений, юнитов, пользователей, договоров, оборудования, СИ и эталонов
 - audit baseline для auth + CRUD changes
 - web UI:
+  - route contour `/register -> /register/{token} -> /company/setup -> /company`
   - launch wizard и company profile screens
-  - subdivision / unit selectors и scoped workspace switching
+  - subdivision / unit selectors и scoped singular-session landing без multi-workspace picker
   - people, memberships, invites и access grant screens
-  - contracts lists, cards and routing surfaces
-  - equipment / measuring instrument / standard lists and cards
+  - contracts lists, cards and routing surfaces на публичном `/contracts` contour
+  - equipment / measuring instrument / standard lists and cards на одном публичном `/equipment` contour с query-backed tabs и explicit archive visibility state
 
 ### Что обязательно доказать
 
 - company onboarding shell из Stage 02 backed реальной org/subdivision/unit моделью
+- анонимный `/company` shell из Stage 02 сохраняется как truthful public contour до появления сессии
 - first-admin activation начинается по invite link, а не с заранее выданного логина/пароля
+- после invite acceptance пользователь получает session и попадает в `/company/setup`, а после завершения wizard — в `/company`
 - launch wizard проводит администратора через организацию, первое подразделение, первый юнит, приглашения и первое оборудование
 - юнит может существовать напрямую под организацией без обязательного промежуточного подразделения
 - user account, membership и scoped grants существуют как отдельные сущности
 - права уровня organization наследуются вниз на subdivision и unit; права subdivision наследуются на дочерние unit; deny-layer в MVP отсутствует
 - пользователь после принятия приглашения видит только свой контур доступа
 - invitation lifecycle и статусы видны администратору и доказаны end-to-end
+- login/session restore возвращает contour, привязанный к explicit active membership/grant: customer contour на `/company`, active contractor contour на `/contracts`
+- direct login с несколькими eligible memberships/grants truthfully возвращает `409`, а не silently выбирает один workspace
+- `/platform/organization-shells` и Stage 03 `organizations` admin surface не доступны анонимно и не раскрывают deployment-scoped admin credential в browser
 - нельзя создать рабочий request flow без зарегистрированного оборудования
 - оборудование, СИ и эталоны существуют как отдельные сущности, а не как одна mega-form
-- текущий метрологический статус рассчитывается из последней действующей записи журнала, а не только из denormalized полей последней/следующей даты
+- `/equipment` остается canonical public contour для equipment/master-data surface, а narrower scopes видят только read-only разрешенный subtree
+- текущий метрологический статус и ближайшая дата для СИ/эталонов рассчитываются из последней применимой записи журнала, а не только из denormalized полей карточки
 - эталон остается самостоятельным реестром и может использоваться повторно, без жесткой связи `1:1` с одним СИ
-- договор ограничивает допустимого подрядчика
-- archive применяется вместо physical delete для ключевых master-data сущностей
+- договор ограничивает допустимого подрядчика, а routing eligibility считается только для `active` + in-window contract
+- archive применяется вместо physical delete для ключевых master-data сущностей, archived rows скрыты из default active lists и открываются только через explicit archive state
 - база ролей и организаций масштабируется под multi-org model
 
 ### Предпочтительный subagent plan
@@ -419,7 +427,7 @@
 
 - customer admin активируется по invite, завершает launch wizard и управляет организацией, подразделениями и юнитами
 - сотрудники приглашаются по email и получают только scoped access своего уровня
-- contracts + equipment + measuring instruments + standards CRUD/archiving flows работают end-to-end
+- contracts + equipment + measuring instruments + standards CRUD, journal и archive flows работают end-to-end
 - contractor user видит только свой релевантный контур в рамках договоров и выданных грантов
 - audit trail фиксирует критичные действия
 - seeded demo data пригодны для Stage 04

@@ -1,0 +1,57 @@
+{
+  "success": true,
+  "data": {
+    "id": "b2528917-a456-4442-b4a1-9960c4e9b580",
+    "organizationId": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+    "unit": {
+      "id": "f8aa33ec-009d-4a36-89d9-a98d0692fb9d",
+      "name": "Customer-Metrology Юнит 01 1776614151",
+      "subdivisionId": "3f51076c-06cb-4261-b0f2-cfb6b47ba18b",
+      "subdivisionName": "Customer-Metrology Подразделение 1776614151"
+    },
+    "equipment": {
+      "id": "c0c347af-d649-4378-b7a9-37da81be1146",
+      "fullName": "Компрессор активный 1776614151"
+    },
+    "name": "Манометр первичный 1776614151",
+    "instrumentType": "Манометр",
+    "model": "MI-PRM",
+    "registrationNumber": "MI-PRM-1776614151",
+    "serialNumber": "SER-PRM-1776614151",
+    "status": "active",
+    "placementKind": "built_in",
+    "standards": [
+      {
+        "id": "b0c7c542-afad-4cac-a6be-cec921a5c4e0",
+        "standardType": "Эталон расхода",
+        "model": "STD-U1",
+        "identifier": "STD-U1-1776614151",
+        "status": "retired",
+        "scopeLabel": "Customer-Metrology Юнит 01 1776614151"
+      },
+      {
+        "id": "f4061d29-aef4-40e9-9747-b9ff4b1facc0",
+        "standardType": "Эталон давления",
+        "model": "STD-ORG",
+        "identifier": "STD-ORG-1776614151",
+        "status": "inactive",
+        "scopeLabel": "Организация 1776614151"
+      }
+    ],
+    "journalCount": 2,
+    "nextDueDate": "2026-12-31",
+    "latestJournal": {
+      "id": "23fd3f49-cecd-4871-90bb-444a9c0f1366",
+      "operationType": "verification",
+      "operationDate": "2026-03-20",
+      "documentNumber": "MI-LATEST-1776614151",
+      "validUntil": "2026-12-31",
+      "executorOrganization": "ФБУ Ростест-Москва",
+      "attachmentUrl": "https://files.vrk.local/mi-latest.pdf",
+      "comment": "Актуальная поверка",
+      "createdAt": "2026-04-19T15:55:51Z"
+    },
+    "createdAt": "2026-04-19T15:55:51Z",
+    "updatedAt": "2026-04-19T15:55:51Z"
+  }
+}

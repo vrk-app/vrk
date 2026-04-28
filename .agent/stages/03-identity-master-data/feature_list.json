@@ -8,11 +8,17 @@
       "Accept the invite via one-time link and set a password",
       "Land the invited admin in the launch wizard instead of an empty dashboard"
     ],
-    "passes": false,
+    "passes": true,
     "evidence_refs": [
       "docs/roadmap.md",
       "docs/PRD-MVP.md",
-      "docs/architecture/identity-master-data.md"
+      "docs/architecture/identity-master-data.md",
+      ".agent/stages/03-identity-master-data/evidence.md",
+      ".agent/stages/03-identity-master-data/verdict.json",
+      ".agent/stages/03-identity-master-data/raw/slice-001-web-browser-smoke-2026-04-18.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-007-008-direct-summary-2026-04-21.json",
+      ".agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-summary-2026-04-21.json",
+      ".agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-evidence-audit-2026-04-21.txt"
     ]
   },
   {
@@ -24,11 +30,14 @@
       "Create subdivisions with a typed subdivision model",
       "Create units both under a subdivision and directly under an organization"
     ],
-    "passes": false,
+    "passes": true,
     "evidence_refs": [
       "docs/roadmap.md",
       "docs/PRD-MVP.md",
-      "docs/architecture/identity-master-data.md"
+      "docs/architecture/identity-master-data.md",
+      ".agent/stages/03-identity-master-data/evidence.md",
+      ".agent/stages/03-identity-master-data/verdict.json",
+      ".agent/stages/03-identity-master-data/raw/slice-001-direct-unit-proof-summary-2026-04-18.json"
     ]
   },
   {
@@ -40,11 +49,18 @@
       "Support role templates and scopes for organization, subdivision, and unit",
       "Track invite statuses draft, sent, opened, accepted, expired, and revoked"
     ],
-    "passes": false,
+    "passes": true,
     "evidence_refs": [
       "docs/architecture/identity-master-data.md",
+      "docs/architecture/frontend-architecture.md",
       "docs/design/customer-admin-bootstrap-flow.md",
-      ".agent/stages/03-identity-master-data/stage_spec.md"
+      ".agent/stages/03-identity-master-data/evidence.md",
+      ".agent/stages/03-identity-master-data/verdict.json",
+      ".agent/stages/03-identity-master-data/raw/slice-002-web-browser-smoke-2026-04-19.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-002-direct-scope-proof-summary-2026-04-19.json",
+      ".agent/stages/03-identity-master-data/raw/slice-007-008-direct-summary-2026-04-21.json",
+      ".agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-summary-2026-04-21.json",
+      ".agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-evidence-audit-2026-04-21.txt"
     ]
   },
   {
@@ -56,11 +72,17 @@
       "Keep contractor selection constrained by contract context",
       "Expose the resulting routing master data to later request creation"
     ],
-    "passes": false,
+    "passes": true,
     "evidence_refs": [
       "docs/roadmap.md",
       "docs/PRD-MVP.md",
-      ".agent/stages/03-identity-master-data/stage_spec.md"
+      "docs/architecture/identity-master-data.md",
+      "docs/architecture/frontend-architecture.md",
+      "docs/design/customer-admin-bootstrap-flow.md",
+      ".agent/stages/03-identity-master-data/evidence.md",
+      ".agent/stages/03-identity-master-data/verdict.json",
+      ".agent/stages/03-identity-master-data/raw/slice-003-web-browser-smoke-2026-04-19-rerun.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-003-direct-proof-summary-2026-04-19.json"
     ]
   },
   {
@@ -72,11 +94,18 @@
       "Create measuring instrument cards as their own entity",
       "Create standards as a standalone registry with reusable references"
     ],
-    "passes": false,
+    "passes": true,
     "evidence_refs": [
+      "docs/roadmap.md",
       "docs/PRD-MVP.md",
       "docs/architecture/identity-master-data.md",
-      ".agent/stages/03-identity-master-data/stage_spec.md"
+      "docs/architecture/frontend-architecture.md",
+      "docs/design/customer-admin-bootstrap-flow.md",
+      ".agent/stages/03-identity-master-data/evidence.md",
+      ".agent/stages/03-identity-master-data/verdict.json",
+      ".agent/stages/03-identity-master-data/raw/slice-004-web-browser-smoke-2026-04-19.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-004-direct-proof-summary-2026-04-19.json",
+      ".agent/stages/03-identity-master-data/raw/slice-004-ui-review-2026-04-19.txt"
     ]
   },
   {
@@ -88,27 +117,41 @@
       "Support many-to-many or reusable links between measuring instruments and standards",
       "Derive operational status and next due date from journal history"
     ],
-    "passes": false,
+    "passes": true,
     "evidence_refs": [
+      "docs/roadmap.md",
       "docs/PRD-MVP.md",
       "docs/architecture/identity-master-data.md",
-      ".agent/stages/03-identity-master-data/stage_spec.md"
+      "docs/architecture/frontend-architecture.md",
+      ".agent/stages/03-identity-master-data/stage_spec.md",
+      ".agent/stages/03-identity-master-data/evidence.md",
+      ".agent/stages/03-identity-master-data/verdict.json",
+      ".agent/stages/03-identity-master-data/raw/slice-005-direct-proof-summary-2026-04-19.json",
+      ".agent/stages/03-identity-master-data/raw/slice-005-web-browser-smoke-2026-04-19.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-005-ui-review-2026-04-19.txt"
     ]
   },
   {
     "id": "stage03-archiving-dictionaries-and-proof",
     "category": "documentation",
-    "description": "Stage 03 keeps archive-only lifecycle rules, organization-scoped dictionaries, and canonical documentation synchronized with the implementation and proof bundle.",
+    "description": "Stage 03 keeps archive-only lifecycle rules, bounded dictionary assumptions, and canonical documentation synchronized with the implementation and proof bundle.",
     "steps": [
       "Use archive instead of hard delete for core master-data entities",
-      "Support local draft dictionary entries inside an organization",
+      "Keep dictionary scope bounded and explicitly document why slice-005 does not widen into standalone local-draft dictionary CRUD",
       "Sync roadmap, PRD, architecture docs, and stage artifacts as decisions are implemented"
     ],
-    "passes": false,
+    "passes": true,
     "evidence_refs": [
       "docs/roadmap.md",
+      "docs/PRD-MVP.md",
+      "docs/architecture/identity-master-data.md",
+      "docs/architecture/frontend-architecture.md",
       "docs/architecture/documentation-workflow.md",
-      ".agent/stages/03-identity-master-data/progress.md"
+      ".agent/stages/03-identity-master-data/progress.md",
+      ".agent/stages/03-identity-master-data/evidence.md",
+      ".agent/stages/03-identity-master-data/verdict.json",
+      ".agent/stages/03-identity-master-data/raw/slice-005-direct-proof-summary-2026-04-19.json",
+      ".agent/stages/03-identity-master-data/raw/slice-005-ui-review-2026-04-19.txt"
     ]
   }
 ]

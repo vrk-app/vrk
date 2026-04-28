@@ -1,0 +1,83 @@
+{
+  "status": 200,
+  "response": {
+    "success": true,
+    "data": [
+      {
+        "id": "323c28ef-46f2-460e-b485-e1c8d0adef9b",
+        "fullName": "Елена Просроченная 1776553455",
+        "email": "proof-expired-1776553455@vrk.local",
+        "roleTemplate": "observer",
+        "scopeType": "unit",
+        "scopeId": "246b98d8-de5f-4a30-9e67-893b597facd0",
+        "scopeLabel": "Юнит 1776553455",
+        "status": "expired",
+        "inviteToken": "bf15330c-4a2e-4510-8f4a-45c32efb4cb9",
+        "acceptPath": "/register/bf15330c-4a2e-4510-8f4a-45c32efb4cb9",
+        "expiresAt": "2026-04-18T23:04:18Z",
+        "sentAt": "2026-04-18T23:04:15Z"
+      },
+      {
+        "id": "9959c06e-2fae-4cdb-a71d-6ce5464ee7fe",
+        "fullName": "Роман Отозванный 1776553455",
+        "email": "proof-revoked-1776553455@vrk.local",
+        "roleTemplate": "observer",
+        "scopeType": "unit",
+        "scopeId": "246b98d8-de5f-4a30-9e67-893b597facd0",
+        "scopeLabel": "Юнит 1776553455",
+        "status": "revoked",
+        "inviteToken": "67d8d0aa-5b91-4249-b077-06062a70ae65",
+        "acceptPath": "/register/67d8d0aa-5b91-4249-b077-06062a70ae65",
+        "expiresAt": "2026-04-19T00:04:15Z",
+        "sentAt": "2026-04-18T23:04:15Z",
+        "revokedAt": "2026-04-18T23:04:16Z"
+      },
+      {
+        "id": "92f7ca91-3405-444a-a34d-d744d499c84c",
+        "fullName": "Павел Оператор 1776553455",
+        "email": "proof-unit-1776553455@vrk.local",
+        "roleTemplate": "unit_operator",
+        "scopeType": "unit",
+        "scopeId": "246b98d8-de5f-4a30-9e67-893b597facd0",
+        "scopeLabel": "Юнит 1776553455",
+        "status": "accepted",
+        "inviteToken": "8df71217-d286-4e00-9724-f050ab9ddea3",
+        "acceptPath": "/register/8df71217-d286-4e00-9724-f050ab9ddea3",
+        "expiresAt": "2026-04-19T00:04:15Z",
+        "sentAt": "2026-04-18T23:04:15Z",
+        "acceptedAt": "2026-04-18T23:04:16Z"
+      },
+      {
+        "id": "82b99409-3a71-4f58-8970-707bad914cab",
+        "fullName": "Светлана Руководитель 1776553455",
+        "email": "proof-sub-1776553455@vrk.local",
+        "roleTemplate": "subdivision_manager",
+        "scopeType": "subdivision",
+        "scopeId": "d56765e8-ccc4-47be-bd1e-57673eb2e1ad",
+        "scopeLabel": "Подразделение 1776553455",
+        "status": "accepted",
+        "inviteToken": "3928b506-7f63-4d79-bcf7-6a10f84092ce",
+        "acceptPath": "/register/3928b506-7f63-4d79-bcf7-6a10f84092ce",
+        "expiresAt": "2026-04-19T00:04:15Z",
+        "sentAt": "2026-04-18T23:04:15Z",
+        "openedAt": "2026-04-18T23:04:15Z",
+        "acceptedAt": "2026-04-18T23:04:15Z"
+      },
+      {
+        "id": "c8b877b1-f220-4543-99eb-2eaa9afe6c7a",
+        "fullName": "Олег Наблюдатель 1776553455",
+        "email": "proof-org-1776553455@vrk.local",
+        "roleTemplate": "observer",
+        "scopeType": "organization",
+        "scopeId": "31ba2fbd-7ef7-43d2-b79d-ec48b9322e22",
+        "scopeLabel": "ВРК Scope Proof 1776553455",
+        "status": "accepted",
+        "inviteToken": "36109e60-068b-482c-871f-e1dd4a534ca2",
+        "acceptPath": "/register/36109e60-068b-482c-871f-e1dd4a534ca2",
+        "expiresAt": "2026-04-19T00:04:15Z",
+        "sentAt": "2026-04-18T23:04:15Z",
+        "acceptedAt": "2026-04-18T23:04:15Z"
+      }
+    ]
+  }
+}

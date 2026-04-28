@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "data": {
+    "inviteKind": "employee",
+    "organizationId": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+    "organizationName": "ВРК customer-metrology 1776614151",
+    "organizationRole": "customer",
+    "inviteStatus": "opened",
+    "inviteeName": "Subdivision-Metrology Employee 1776614151",
+    "inviteEmail": "subdivision-metrology-1776614151@vrk.local",
+    "inviteExpiresAt": "2026-04-26T12:00:00Z",
+    "roleTemplate": "subdivision_manager",
+    "scopeType": "subdivision",
+    "scopeLabel": "Customer-Metrology Подразделение 1776614151",
+    "launchState": "active"
+  }
+}

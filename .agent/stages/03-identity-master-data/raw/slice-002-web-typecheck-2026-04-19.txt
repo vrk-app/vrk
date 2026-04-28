@@ -1,0 +1,8 @@
+
+> vrk-platform@ web:typecheck /Users/yura-posledov/cursor/vrk
+> pnpm --filter @vrk/web typecheck
+
+
+> @vrk/web@0.1.0 typecheck /Users/yura-posledov/cursor/vrk/apps/web
+> tsc --noEmit
+

@@ -1,0 +1,14 @@
+{
+  "success": true,
+  "data": {
+    "id": "a897d201-6254-48cd-9a4b-4cf09f0bc112",
+    "fullName": "Shared Admin 1776771010",
+    "email": "shared-1776771010@vrk.local",
+    "roleTemplate": "organization_admin",
+    "scopeType": "organization",
+    "scopeId": "64517e0e-c1e1-4518-b1b6-5b8896562d96",
+    "scopeLabel": "VRK beta 1776771010",
+    "status": "draft",
+    "expiresAt": "2026-04-28T00:00:00Z"
+  }
+}

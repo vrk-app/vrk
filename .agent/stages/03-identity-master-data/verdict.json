@@ -1,7 +1,27 @@
 {
-  "status": "PENDING",
-  "summary": "Stage 03 scope and canonical docs were frozen, but no implementation slice has been built or verified yet.",
+  "status": "PASS",
+  "stage_id": "03-identity-master-data",
+  "sprint_contract_id": "slice-007-stage03-admin-surface-auth-hardening + slice-008-stage03-multi-org-session-contract",
+  "summary": "The current repo state at `86deb3285b46c6dcd9018a3f2564e78dd4f83a33` still proves the slice-007/008 contract live on `127.0.0.1:18080` and `127.0.0.1:3100`: Stage 03 admin surface is auth-hardened, `/register` keeps the platform-admin secret server-side only, session restore returns the explicit stored `membership_id + grant_id`, direct multi-access login truthfully returns `409`, and the auth UI still does not widen into a workspace picker. The previously recorded verifier-harvest blocker no longer reproduces because this fresh verifier run completed and wrote a usable verdict.",
+  "verified_head": "86deb3285b46c6dcd9018a3f2564e78dd4f83a33",
+  "verified_worktree_dirty": true,
+  "checked_at": "2026-04-21T11:36:57Z",
+  "last_verified_at": "2026-04-21T11:36:57Z",
+  "proven": [
+    "Harness verification passes again on the final post-verdict stage bundle; raw: `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-harness-post-verdict-2026-04-21.txt`.",
+    "A fresh live runtime proof passes on the current running stack and reconfirms `GET /register -> 200` with no browser secret leak, web `POST /api/platform/organization-shells -> 201`, anonymous backend admin-surface `401`, authorized backend `GET /api/v1/organizations -> 200`, explicit session restore to the original `membership_id + grant_id`, and truthful `409` for multi-access login; raw: `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-proof-2026-04-21.txt`, summary: `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-summary-2026-04-21.json`.",
+    "The named current bundle artifacts remain truthful against the fresh run: primary auth proof/summary match again, the current UI review remains PASS, the current harness refresh remains PASS, and the previous control-plane blocker raw is now historical only; audit: `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-evidence-audit-2026-04-21.txt`.",
+    "A fresh Web Interface Guidelines review of the touched auth files is PASS with no findings; raws: `.agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-21-continuation-verifier.md`, `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-ui-review-2026-04-21.txt`.",
+    "Frontend evidence requirements are still present in `evidence.json`: design brief source, Storybook lookup reference, reuse decision, changed UI files, and UI review result are all recorded; audit: `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-evidence-audit-2026-04-21.txt`."
+  ],
   "failed_criteria": [],
   "proof_gaps": [],
-  "last_verified_at": null
+  "exact_reproduction": [
+    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data > .agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-harness-post-verdict-2026-04-21.txt 2>&1",
+    "curl -fsSL https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md > .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-21-continuation-verifier.md",
+    "Fresh live localhost proof on the current stack: `GET http://127.0.0.1:3100/register`, `POST http://127.0.0.1:3100/api/platform/organization-shells`, `POST http://127.0.0.1:18080/api/v1/platform/organization-shells`, `GET http://127.0.0.1:18080/api/v1/organizations`, authorized `GET http://127.0.0.1:18080/api/v1/organizations`, `POST http://127.0.0.1:18080/api/v1/first-admin-invites/{token}/accept`, `POST http://127.0.0.1:18080/api/v1/launch-wizard`, `POST http://127.0.0.1:18080/api/v1/sessions`, `GET http://127.0.0.1:18080/api/v1/sessions/current`, `POST http://127.0.0.1:18080/api/v1/employee-invites`, `POST http://127.0.0.1:18080/api/v1/invites/{token}/accept`, and the final direct `POST http://127.0.0.1:18080/api/v1/sessions -> 409`; results captured in `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-proof-2026-04-21.txt` and `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-summary-2026-04-21.json`.",
+    "Bundle truth audit comparing the fresh verifier summary to `.agent/stages/03-identity-master-data/raw/slice-007-008-direct-summary-2026-04-21.json`, `.agent/stages/03-identity-master-data/raw/slice-007-008-ui-review-2026-04-21-orchestrator-rerun2.txt`, `.agent/stages/03-identity-master-data/raw/slice-007-008-harness-check-2026-04-21-orchestrator-rerun8.txt`, and `.agent/stages/03-identity-master-data/raw/slice-007-008-verifier-agent-blocked-2026-04-21-orchestrator-rerun3.txt` -> `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-evidence-audit-2026-04-21.txt`."
+  ],
+  "smallest_safe_fix_direction": "",
+  "fixer_rerun_required": false
 }

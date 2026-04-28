@@ -1,0 +1,15 @@
+Fresh leaf verifier attempts on 2026-04-21 did not produce a usable independent verdict.
+
+Attempts:
+- `vrk_stage_verifier` leaf `019daed6-97b9-76d1-a9ad-e6ea7cbd4a40`
+- read-only verifier leaf `019daedd-19bd-7341-bede-cfd38f6b8879`
+
+Observed orchestrator behavior:
+- `wait_agent` timed out repeatedly while waiting for both leaves to reach a final status;
+- after explicit interrupt requests asking each leaf to wrap up immediately, `wait_agent` still returned no final status payload;
+- `close_agent` returned `previous_status: running` for both leaves, so no usable leaf-verifier message or artifact write could be harvested.
+
+Impact:
+- the mandatory fresh leaf-verifier step was launched on a fresh leaf in this continuation run, but no usable verifier verdict was produced;
+- no production code or canonical docs were modified by these leaves;
+- live auth smoke remained separately blocked by environment, as recorded in `.agent/stages/03-identity-master-data/raw/slice-007-008-runtime-blockers-2026-04-21-orchestrator.txt` and `.agent/stages/03-identity-master-data/raw/slice-007-008-direct-auth-proof-2026-04-21-orchestrator.txt`.

@@ -1,0 +1,18 @@
+{
+  "id": "2f74b7e8-993c-4118-860e-0cf28c078c7c",
+  "organizationId": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+  "ownershipScope": {
+    "scopeType": "unit",
+    "scopeId": "f8aa33ec-009d-4a36-89d9-a98d0692fb9d",
+    "label": "Customer-Metrology Юнит 01 1776614151"
+  },
+  "standardType": "Эталон напряжения",
+  "model": "STD-ARC",
+  "identifier": "STD-ARC-1776614151",
+  "metrologicalCharacteristics": "0.5 В, архивный контур",
+  "status": "inactive",
+  "linkedMeasuringInstruments": 0,
+  "journalCount": 0,
+  "createdAt": "2026-04-19T15:55:51Z",
+  "updatedAt": "2026-04-19T15:55:51Z"
+}

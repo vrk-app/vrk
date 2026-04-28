@@ -1,11 +1,15 @@
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { Building2, MapPinned, ShieldCheck } from "lucide-react";
-import { companyShell, getRuntimeBootstrap } from "@/shared/api";
+import { SESSION_COOKIE_NAME, companyShell, getRuntimeBootstrap } from "@/shared/api";
+import { fetchSessionSummary } from "@/shared/api/session-server";
 import { Badge, Button, Card } from "@/shared/ui";
+import { EmployeeInviteManager } from "@/features/Stage03Access";
 import { PageHeader } from "@/widgets/OperatorShell";
 
 export const dynamic = "force-dynamic";
 
-export default function CompanyPage() {
+function AnonymousCompanyShell() {
   const runtimeBootstrap = getRuntimeBootstrap();
 
   return (
@@ -83,6 +87,142 @@ export default function CompanyPage() {
           </div>
         </Card>
       </div>
+    </>
+  );
+}
+
+export default async function CompanyPage() {
+  const cookieStore = await cookies();
+  const session = await fetchSessionSummary(cookieStore.get(SESSION_COOKIE_NAME)?.value);
+
+  if (!session) {
+    return <AnonymousCompanyShell />;
+  }
+
+  if (session.requiresLaunchWizard) {
+    redirect("/company/setup");
+  }
+
+  const isOrganizationWorkspace = session.workspace.scopeType === "organization";
+  const canManageEmployeeInvites = session.workspace.canManageEmployeeInvites;
+
+  return (
+    <>
+      <PageHeader
+        actions={
+          <Badge tone={isOrganizationWorkspace ? "interactive" : "warning"}>
+            Stage 03 • {session.workspace.scopeType} workspace
+          </Badge>
+        }
+        subtitle={
+          isOrganizationWorkspace
+            ? "Организация уже прошла initial launch wizard. Ниже отображаются сохраненные реквизиты, структура и lifecycle приглашений сотрудников."
+            : `${session.workspace.landingSubtitle} Организация: ${session.organization.name}.`
+        }
+        title={session.workspace.landingTitle}
+      />
+
+      <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+        <Card className="gap-4" padding="lg">
+          <div className="space-y-2">
+            <Badge tone={isOrganizationWorkspace ? "info" : "warning"}>
+              {isOrganizationWorkspace ? "Organization profile" : "Allowed workspace"}
+            </Badge>
+            <h2 className="text-xl font-semibold text-foreground">
+              {isOrganizationWorkspace ? "Сохраненные core fields" : "Контур доступа после login"}
+            </h2>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="rounded-[var(--radius-lg)] border border-border bg-muted/50 px-4 py-3 text-sm">
+              <div className="text-muted-foreground">Workspace scope</div>
+              <div className="mt-1 font-semibold text-foreground">{session.workspace.scopeType}</div>
+            </div>
+            <div className="rounded-[var(--radius-lg)] border border-border bg-muted/50 px-4 py-3 text-sm">
+              <div className="text-muted-foreground">Scope target</div>
+              <div className="mt-1 font-semibold text-foreground">{session.workspace.scopeName}</div>
+            </div>
+            <div className="rounded-[var(--radius-lg)] border border-border bg-muted/50 px-4 py-3 text-sm">
+              <div className="text-muted-foreground">Membership / grant</div>
+              <div className="mt-1 font-semibold text-foreground">
+                {session.membershipStatus} / {session.grant?.roleTemplate ?? "organization_admin"}
+              </div>
+            </div>
+            <div className="rounded-[var(--radius-lg)] border border-border bg-muted/50 px-4 py-3 text-sm">
+              <div className="text-muted-foreground">Пользователь</div>
+              <div className="mt-1 font-semibold text-foreground">{session.account.fullName}</div>
+              <div className="text-muted-foreground">{session.account.email}</div>
+            </div>
+            {isOrganizationWorkspace ? (
+              <>
+                <div className="rounded-[var(--radius-lg)] border border-border bg-muted/50 px-4 py-3 text-sm">
+                  <div className="text-muted-foreground">ОПФ</div>
+                  <div className="mt-1 font-semibold text-foreground">{session.organization.propertyType}</div>
+                </div>
+                <div className="rounded-[var(--radius-lg)] border border-border bg-muted/50 px-4 py-3 text-sm">
+                  <div className="text-muted-foreground">Краткое наименование</div>
+                  <div className="mt-1 font-semibold text-foreground">{session.organization.shortName ?? "—"}</div>
+                </div>
+                <div className="rounded-[var(--radius-lg)] border border-border bg-muted/50 px-4 py-3 text-sm">
+                  <div className="text-muted-foreground">ИНН / КПП</div>
+                  <div className="mt-1 font-semibold text-foreground">
+                    {session.organization.inn} / {session.organization.kpp}
+                  </div>
+                </div>
+                <div className="rounded-[var(--radius-lg)] border border-border bg-muted/50 px-4 py-3 text-sm">
+                  <div className="text-muted-foreground">Контакты</div>
+                  <div className="mt-1 font-semibold text-foreground">{session.organization.contactEmail}</div>
+                  <div className="text-muted-foreground">{session.organization.contactPhone}</div>
+                </div>
+              </>
+            ) : null}
+          </div>
+          {isOrganizationWorkspace ? (
+            <div className="rounded-[var(--radius-lg)] border border-border bg-card px-4 py-3 text-sm">
+              <div className="text-muted-foreground">Юридический адрес</div>
+              <div className="mt-1 font-semibold text-foreground">{session.organization.legalAddress}</div>
+            </div>
+          ) : (
+            <div className="rounded-[var(--radius-lg)] border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
+              Контур intentionally сужен до разрешенного scope. Organization-wide invite management и broader registry
+              blocks скрыты для этого пользователя.
+            </div>
+          )}
+        </Card>
+
+        <Card className="gap-4" data-testid="scope-graph" padding="lg">
+          <div className="space-y-2">
+            <Badge tone="interactive">Visible graph</Badge>
+            <h2 className="text-lg font-semibold text-foreground">Подразделения и юниты в текущем scope</h2>
+          </div>
+          <div className="grid gap-3">
+            {session.subdivisions.length ? (
+              session.subdivisions.map((subdivision) => (
+                <div className="rounded-[var(--radius-lg)] border border-border bg-card px-4 py-3" key={subdivision.id}>
+                  <p className="text-sm font-semibold text-foreground">{subdivision.name}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{subdivision.type}</p>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-[var(--radius-lg)] border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
+                {session.workspace.scopeType === "unit"
+                  ? "Подразделение не раскрывается для unit-scope пользователя."
+                  : "Подразделений в текущем контуре нет."}
+              </div>
+            )}
+            {session.units.map((unit) => (
+              <div className="rounded-[var(--radius-lg)] border border-border bg-card px-4 py-3" key={unit.id}>
+                <p className="text-sm font-semibold text-foreground">{unit.name}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{unit.type}</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {unit.subdivisionId ? "Привязан к подразделению" : "Подчинен напрямую организации"}
+                </p>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      {canManageEmployeeInvites ? <EmployeeInviteManager session={session} /> : null}
     </>
   );
 }

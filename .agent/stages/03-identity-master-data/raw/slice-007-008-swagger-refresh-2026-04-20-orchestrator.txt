@@ -1,0 +1,64 @@
+2026/04/20 19:51:00 Generate swagger docs....
+2026/04/20 19:51:00 Generate general API Info, search dir:./
+2026/04/20 19:51:00 warning: failed to get package name in dir: ./, error: execute go list command, exit status 1, stdout:, stderr:no Go files in /Users/yura-posledov/cursor/vrk/apps/backend
+2026/04/20 19:51:00 Generating agreement.CreateRequest
+2026/04/20 19:51:00 Generating agreement.Response
+2026/04/20 19:51:00 Generating agreement.AgreementResponse
+2026/04/20 19:51:00 Generating agreement.AgreementLocationScopeResponse
+2026/04/20 19:51:00 Generating agreement.UpdateRequest
+2026/04/20 19:51:00 Generating agreement.ContractorOptionResponse
+2026/04/20 19:51:00 Generating agreement.RoutingResolveRequest
+2026/04/20 19:51:00 Generating agreement.RoutingResolveResponse
+2026/04/20 19:51:00 Generating agreement.RoutingResolutionItem
+2026/04/20 19:51:00 Generating bootstrap.CreateOrganizationShellRequest
+2026/04/20 19:51:00 Generating bootstrap.Response
+2026/04/20 19:51:00 Generating bootstrap.OrganizationShellResponse
+2026/04/20 19:51:00 Generating bootstrap.InviteInspectionResponse
+2026/04/20 19:51:00 Generating bootstrap.AcceptInviteRequest
+2026/04/20 19:51:00 Generating bootstrap.SessionSummaryResponse
+2026/04/20 19:51:00 Generating bootstrap.SessionAccountResponse
+2026/04/20 19:51:00 Generating bootstrap.SessionOrganizationResponse
+2026/04/20 19:51:00 Generating bootstrap.SessionGrantResponse
+2026/04/20 19:51:00 Generating bootstrap.SessionWorkspaceResponse
+2026/04/20 19:51:00 Generating bootstrap.SubdivisionResponse
+2026/04/20 19:51:00 Generating bootstrap.UnitResponse
+2026/04/20 19:51:00 Generating bootstrap.PublicInviteInspectionResponse
+2026/04/20 19:51:00 Generating bootstrap.EmployeeInviteResponse
+2026/04/20 19:51:00 Generating bootstrap.CreateEmployeeInviteRequest
+2026/04/20 19:51:00 Generating bootstrap.CreateSessionRequest
+2026/04/20 19:51:00 Generating bootstrap.CompleteLaunchRequest
+2026/04/20 19:51:00 Generating bootstrap.LaunchSubdivisionInput
+2026/04/20 19:51:00 Generating bootstrap.LaunchUnitInput
+2026/04/20 19:51:00 Generating organization.CreateRequest
+2026/04/20 19:51:00 Generating organization.Response
+2026/04/20 19:51:00 Generating organization.Meta
+2026/04/20 19:51:00 Generating organization.OrganizationResponse
+2026/04/20 19:51:00 Generating organization.UpdateRequest
+2026/04/20 19:51:00 Generating equipment.CreateRequest
+2026/04/20 19:51:00 Generating equipment.Response
+2026/04/20 19:51:00 Generating equipment.Meta
+2026/04/20 19:51:00 Generating equipment.EquipmentResponse
+2026/04/20 19:51:00 Generating equipment.UnitSummary
+2026/04/20 19:51:00 Generating equipment.UpdateRequest
+2026/04/20 19:51:00 Generating measuringinstrument.CreateRequest
+2026/04/20 19:51:00 Generating measuringinstrument.Response
+2026/04/20 19:51:00 Generating measuringinstrument.Meta
+2026/04/20 19:51:00 Generating measuringinstrument.MeasuringInstrumentResponse
+2026/04/20 19:51:00 Generating measuringinstrument.UnitSummary
+2026/04/20 19:51:00 Generating measuringinstrument.EquipmentSummary
+2026/04/20 19:51:00 Generating measuringinstrument.LinkedStandard
+2026/04/20 19:51:00 Generating measuringinstrument.JournalResponse
+2026/04/20 19:51:00 Generating measuringinstrument.UpdateRequest
+2026/04/20 19:51:00 Generating measuringinstrument.CreateJournalRequest
+2026/04/20 19:51:00 Generating standard.CreateRequest
+2026/04/20 19:51:00 Generating standard.Response
+2026/04/20 19:51:00 Generating standard.Meta
+2026/04/20 19:51:00 Generating standard.StandardResponse
+2026/04/20 19:51:00 Generating standard.OwnershipScopeResponse
+2026/04/20 19:51:00 Generating standard.JournalResponse
+2026/04/20 19:51:00 Generating standard.UpdateRequest
+2026/04/20 19:51:00 Generating standard.CreateJournalRequest
+2026/04/20 19:51:00 create docs.go at docs/swagger/docs.go
+2026/04/20 19:51:00 create swagger.json at docs/swagger/swagger.json
+2026/04/20 19:51:00 create swagger.yaml at docs/swagger/swagger.yaml
+swagger_refresh_passed

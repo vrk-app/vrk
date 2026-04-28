@@ -1,0 +1,210 @@
+docker compose -f compose.platform.yml up --build -d --wait
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.38kB done
+#1 DONE 0.0s
+
+#2 [field internal] load build definition from Dockerfile
+#2 transferring dockerfile: 533B done
+#2 DONE 0.0s
+
+#3 [web internal] load build definition from Dockerfile
+#3 transferring dockerfile: 529B done
+#3 DONE 0.0s
+
+#4 [backend internal] load build definition from Dockerfile
+#4 transferring dockerfile: 1.49kB done
+#4 DONE 0.0s
+
+#5 [field internal] load metadata for docker.io/library/node:24.14.1-alpine
+#5 DONE 0.1s
+
+#6 [backend internal] load metadata for docker.io/library/golang:1.26-alpine
+#6 DONE 0.1s
+
+#7 [field internal] load .dockerignore
+#7 transferring context: 190B done
+#7 DONE 0.0s
+
+#8 [web 1/9] FROM docker.io/library/node:24.14.1-alpine@sha256:8510330d3eb72c804231a834b1a8ebb55cb3796c3e4431297a24d246b8add4d5
+#8 resolve docker.io/library/node:24.14.1-alpine@sha256:8510330d3eb72c804231a834b1a8ebb55cb3796c3e4431297a24d246b8add4d5 done
+#8 DONE 0.0s
+
+#9 [web internal] load build context
+#9 transferring context: 4.48MB 0.6s done
+#9 transferring context: 4.48MB 0.6s done
+#9 DONE 0.6s
+
+#10 [web 3/9] RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
+#10 CACHED
+
+#11 [web 7/9] RUN pnpm install --frozen-lockfile
+#11 CACHED
+
+#12 [web 8/9] COPY . .
+#12 CACHED
+
+#13 [web 2/9] WORKDIR /workspace
+#13 CACHED
+
+#14 [web 4/9] COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+#14 CACHED
+
+#15 [web 6/9] COPY apps/field/package.json apps/field/package.json
+#15 CACHED
+
+#16 [web 5/9] COPY apps/web/package.json apps/web/package.json
+#16 CACHED
+
+#17 [field 9/9] RUN pnpm --filter @vrk/field build
+#17 CACHED
+
+#18 [web 9/9] RUN pnpm --filter @vrk/web build
+#18 CACHED
+
+#19 [backend internal] load metadata for docker.io/library/alpine:3.19
+#19 DONE 0.8s
+
+#20 [backend internal] load .dockerignore
+#20 transferring context: 44B done
+#20 DONE 0.0s
+
+#21 [backend builder  1/12] FROM docker.io/library/golang:1.26-alpine@sha256:f85330846cde1e57ca9ec309382da3b8e6ae3ab943d2739500e08c86393a21b1
+#21 resolve docker.io/library/golang:1.26-alpine@sha256:f85330846cde1e57ca9ec309382da3b8e6ae3ab943d2739500e08c86393a21b1 0.0s done
+#21 DONE 0.0s
+
+#22 [backend stage-1 1/7] FROM docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1
+#22 resolve docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1 0.0s done
+#22 DONE 0.0s
+
+#23 [backend internal] load build context
+#23 transferring context: 6.26kB done
+#23 DONE 0.0s
+
+#24 [web] exporting to image
+#24 exporting layers done
+#24 exporting manifest sha256:b5645f7ac54a66fcb7e2167ddf83e0ba926ea9e79ba1dfb1e50970032243b245 0.0s done
+#24 exporting config sha256:72cf5f66a1729b89bc6a3c3bf8055ebc29bf372767de581ea66a99713c1c4d57 done
+#24 exporting attestation manifest sha256:c651916ea0d5994711c99c2b2a4ca962250802f6459fbdc287af5acfa38abc16 0.0s done
+#24 exporting manifest list sha256:5bec8398e6b316539fb8487ebdaa8d84082c1d5bf73f8dd98473c863337a0fd7 done
+#24 naming to docker.io/library/vrk-web:latest done
+#24 unpacking to docker.io/library/vrk-web:latest 0.0s done
+#24 DONE 0.1s
+
+#25 [field] exporting to image
+#25 exporting layers done
+#25 exporting manifest sha256:455843d5d82fa1dedf6b11a7b2a4bf651b8531a617d3fdf3b00c3a14fc72cbcf 0.0s done
+#25 exporting config sha256:676749aba6c8c82df2bfbccb486c5a42a65ecd4767fbbd8415046bd92ddde80d done
+#25 exporting attestation manifest sha256:792c0bcee4313a666de5b889494aedb1683ad41a3c04b8c4f69adbea6be48354 0.0s done
+#25 exporting manifest list sha256:fad1152a3bffbc5ab7f53ba040e566d7c30bb3f561c12b3d6d41971041a2cad5 done
+#25 naming to docker.io/library/vrk-field:latest done
+#25 unpacking to docker.io/library/vrk-field:latest 0.0s done
+#25 DONE 0.1s
+
+#26 [backend builder  7/12] COPY sqlc.yaml ./
+#26 CACHED
+
+#27 [backend stage-1 5/7] COPY --chown=appuser:appgroup migrations /app/migrations
+#27 CACHED
+
+#28 [backend stage-1 6/7] RUN chown -R appuser:appgroup /app
+#28 CACHED
+
+#29 [backend builder  4/12] WORKDIR /app
+#29 CACHED
+
+#30 [backend stage-1 3/7] RUN addgroup -g 1001 -S appgroup &&     adduser -u 1001 -S appuser -G appgroup
+#30 CACHED
+
+#31 [backend builder  8/12] COPY internal/db/queries ./internal/db/queries
+#31 CACHED
+
+#32 [backend builder  3/12] RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0
+#32 CACHED
+
+#33 [backend builder  2/12] RUN apk add --no-cache git ca-certificates tzdata
+#33 CACHED
+
+#34 [backend builder 12/12] RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build     -ldflags="-w -s"     -o /app/bin/api     ./cmd/api
+#34 CACHED
+
+#35 [backend builder  6/12] RUN go mod download
+#35 CACHED
+
+#36 [backend builder 10/12] RUN sqlc generate
+#36 CACHED
+
+#37 [backend stage-1 2/7] RUN apk add --no-cache ca-certificates tzdata wget
+#37 CACHED
+
+#38 [backend builder  5/12] COPY go.mod go.sum ./
+#38 CACHED
+
+#39 [backend builder  9/12] COPY migrations ./migrations
+#39 CACHED
+
+#40 [backend stage-1 4/7] COPY --from=builder --chown=appuser:appgroup /app/bin/api /app/api
+#40 CACHED
+
+#41 [backend builder 11/12] COPY . .
+#41 CACHED
+
+#42 [backend stage-1 7/7] WORKDIR /app
+#42 CACHED
+
+#43 [backend] exporting to image
+#43 exporting layers done
+#43 exporting manifest sha256:1141794193c7ad1fb1ed198c9e6a03ce78d71dc724a016f9d035cab8c0a68d6e done
+#43 exporting config sha256:b3b6583631aa3ef43c617819981fc6f4d6d2e917fba0990283a92054b4041a52 done
+#43 exporting attestation manifest sha256:e4435d4b5ec69b2845f4ca7cf2aea6b750f02111cbbc4c10dc3ba025071557ad 0.0s done
+#43 exporting manifest list sha256:ca533c2b715e757ed4544b0700dc6710366d2d1cfc17dee6d95dda3f9439a967 0.0s done
+#43 naming to docker.io/library/vrk-backend:latest done
+#43 unpacking to docker.io/library/vrk-backend:latest
+#43 unpacking to docker.io/library/vrk-backend:latest done
+#43 DONE 0.1s
+
+#44 [field] resolving provenance for metadata file
+#44 DONE 0.0s
+
+#45 [web] resolving provenance for metadata file
+#45 DONE 0.0s
+
+#46 [backend] resolving provenance for metadata file
+#46 DONE 0.0s
+ vrk-backend  Built
+ vrk-web  Built
+ vrk-field  Built
+ Container vrk-db-1  Running
+ Container vrk-backend-1  Recreate
+ Container vrk-backend-1  Recreated
+ Container vrk-field-1  Recreate
+ Container vrk-web-1  Recreate
+ Container vrk-web-1  Recreated
+ Container vrk-field-1  Recreated
+ Container vrk-db-1  Waiting
+ Container vrk-db-1  Healthy
+ Container vrk-migrate-1  Starting
+ Container vrk-migrate-1  Started
+ Container vrk-db-1  Waiting
+ Container vrk-migrate-1  Waiting
+ Container vrk-db-1  Healthy
+ Container vrk-migrate-1  Exited
+ Container vrk-backend-1  Starting
+ Container vrk-backend-1  Started
+ Container vrk-backend-1  Waiting
+ Container vrk-backend-1  Waiting
+ Container vrk-backend-1  Healthy
+ Container vrk-field-1  Starting
+ Container vrk-backend-1  Healthy
+ Container vrk-web-1  Starting
+ Container vrk-field-1  Started
+ Container vrk-web-1  Started
+ Container vrk-db-1  Waiting
+ Container vrk-migrate-1  Waiting
+ Container vrk-backend-1  Waiting
+ Container vrk-web-1  Waiting
+ Container vrk-field-1  Waiting
+ Container vrk-backend-1  Healthy
+ Container vrk-migrate-1  Exited
+ Container vrk-db-1  Healthy
+ Container vrk-web-1  Healthy
+ Container vrk-field-1  Healthy

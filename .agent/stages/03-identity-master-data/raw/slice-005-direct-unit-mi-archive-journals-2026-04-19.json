@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": "4b1166b9-258c-47ec-bc7a-e19f3902625c",
+      "operationType": "suspension",
+      "operationDate": "2026-04-05",
+      "documentNumber": "MI-ARC-SUSP-1776614151",
+      "executorOrganization": "Внутренний метролог",
+      "comment": "Эксплуатация приостановлена",
+      "createdAt": "2026-04-19T15:55:51Z"
+    },
+    {
+      "id": "246b9d58-8436-4a10-8f5b-773cdc9ce6f9",
+      "operationType": "verification",
+      "operationDate": "2026-02-01",
+      "documentNumber": "MI-ARC-OLD-1776614151",
+      "validUntil": "2026-06-30",
+      "executorOrganization": "ФБУ Ростест-Москва",
+      "comment": "Последняя поверка перед приостановкой",
+      "createdAt": "2026-04-19T15:55:51Z"
+    }
+  ]
+}

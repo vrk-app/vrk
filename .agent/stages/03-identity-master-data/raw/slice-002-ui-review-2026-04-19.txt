@@ -1,0 +1,27 @@
+## apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx
+
+✓ pass
+
+## apps/web/app/(runtime)/company/page.tsx
+
+✓ pass
+
+## apps/web/app/register/[token]/page.tsx
+
+✓ pass
+
+## apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx
+
+✓ pass
+
+## apps/web/app/login/page.tsx
+
+✓ pass
+
+## apps/web/app/_components/AuthAside.tsx
+
+✓ pass
+
+## apps/web/app/(runtime)/layout.tsx
+
+✓ pass

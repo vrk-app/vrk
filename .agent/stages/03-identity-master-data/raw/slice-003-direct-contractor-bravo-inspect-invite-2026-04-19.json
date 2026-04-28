@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "data": {
+    "organizationId": "81a33834-8f27-4a74-9762-efba616acfdd",
+    "organizationName": "ВРК contractor-bravo 1776595503",
+    "organizationRole": "contractor",
+    "inviteStatus": "opened",
+    "firstAdminName": "Contractor-Bravo Admin 1776595503",
+    "inviteEmail": "contractor-bravo-1776595503@vrk.local",
+    "inviteExpiresAt": "2026-04-26T10:45:03Z",
+    "launchState": "shell"
+  }
+}

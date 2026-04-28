@@ -1,0 +1,61 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": "a31cfc62-81f8-457c-b5b0-6bac8385fe68",
+      "name": "VRK browser-contractor-alpha 1776594138405"
+    },
+    {
+      "id": "476a0e9f-8864-4ca2-8408-32d5dd8ad82b",
+      "name": "VRK verify-contractor-alpha 1776594096",
+      "shortName": "VERIFY-C"
+    },
+    {
+      "id": "c4b98f5c-c4db-4594-b4d9-6e1590c4160e",
+      "name": "VRK verify-contractor-bravo 1776594096",
+      "shortName": "VERIFY-C"
+    },
+    {
+      "id": "71e6765c-e68d-4980-bc1e-f319282e4d17",
+      "name": "ВРК contractor-alpha 1776592819",
+      "shortName": "CON-1776592819"
+    },
+    {
+      "id": "adcff096-37f6-4a34-b23b-f99a8cbd48d3",
+      "name": "ВРК contractor-alpha 1776594988",
+      "shortName": "CON-1776594988"
+    },
+    {
+      "id": "3cb8afce-4a3d-4eeb-92ea-538976fedb51",
+      "name": "ВРК contractor-alpha 1776595503",
+      "shortName": "CON-1776595503"
+    },
+    {
+      "id": "5f428586-9140-4bc4-a4f9-d417b92ef001",
+      "name": "ВРК contractor-alpha-1776592981760"
+    },
+    {
+      "id": "beb75459-4bae-4dee-99ef-1d3e25a242a7",
+      "name": "ВРК contractor-alpha-1776593016911"
+    },
+    {
+      "id": "18c98e64-aa7d-4b2e-a33d-8e3ee2896878",
+      "name": "ВРК contractor-alpha-1776595069918"
+    },
+    {
+      "id": "63751ed7-34a0-46b6-b9e2-825c6e9370dc",
+      "name": "ВРК contractor-bravo 1776592819",
+      "shortName": "CON-1776592819"
+    },
+    {
+      "id": "ba37d1e6-685f-4b5c-9ffb-cd92f746c0db",
+      "name": "ВРК contractor-bravo 1776594988",
+      "shortName": "CON-1776594988"
+    },
+    {
+      "id": "81a33834-8f27-4a74-9762-efba616acfdd",
+      "name": "ВРК contractor-bravo 1776595503",
+      "shortName": "CON-1776595503"
+    }
+  ]
+}

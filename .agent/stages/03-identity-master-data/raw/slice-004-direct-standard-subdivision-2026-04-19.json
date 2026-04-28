@@ -1,0 +1,17 @@
+{
+  "id": "1a46ec29-d826-4a06-b83f-4bcc2f6597c9",
+  "organizationId": "8eaaec80-abde-4d56-b6ba-54b953e72c1d",
+  "ownershipScope": {
+    "scopeType": "subdivision",
+    "scopeId": "3d351a71-784f-4a2b-953b-704d61d53a5e",
+    "label": "Customer-Equipment Подразделение 1776604587"
+  },
+  "standardType": "Эталон температуры",
+  "model": "STD-SUB",
+  "identifier": "STD-SUB-1776604587",
+  "metrologicalCharacteristics": "0.3°C, контур подразделения",
+  "status": "active",
+  "linkedMeasuringInstruments": 0,
+  "createdAt": "2026-04-19T13:16:28Z",
+  "updatedAt": "2026-04-19T13:16:28Z"
+}

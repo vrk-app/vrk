@@ -71,7 +71,7 @@
 - Runtime shell не притворяется Stage 03: mock / seed / stub boundaries явные, а недоступные contours отражены truthfully.
 - Request contour не выдается за живой продуктовый path до Stage 04; допустим только gated / placeholder state.
 - `make dev` / аналог поднимает backend, web runtime и field scaffold; health endpoint доступен.
-- CI воспроизводимо гоняет lint/test/build/smoke.
+- CI workflow существует и wired к lint/test/build/smoke expectations; отдельный GitHub Actions run должен подтверждаться собственным evidence.
 - Канонические docs, `feature_list.json`, `progress.md`, `evidence.*` и `verdict.json` поддерживаются в актуальном состоянии.
 
 ## Technical ownership / paths

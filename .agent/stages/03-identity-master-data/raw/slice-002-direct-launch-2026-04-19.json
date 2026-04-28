@@ -1,0 +1,61 @@
+{
+  "status": 200,
+  "response": {
+    "success": true,
+    "data": {
+      "sessionToken": "86e7de48-c73b-4252-b8cc-34dbf8f3a545",
+      "requiresLaunchWizard": false,
+      "account": {
+        "id": "03d667f6-d1f1-41dc-90ed-2344fe27b436",
+        "fullName": "Анна Орлова 1776553455",
+        "email": "proof-admin-1776553455@vrk.local"
+      },
+      "membershipId": "5d36be9e-a580-4207-a6f3-8eb57e9c9258",
+      "membershipStatus": "active",
+      "organization": {
+        "id": "31ba2fbd-7ef7-43d2-b79d-ec48b9322e22",
+        "roleTitle": "customer",
+        "name": "ВРК Scope Proof 1776553455",
+        "shortName": "ВРК Proof",
+        "propertyType": "ООО",
+        "inn": "1234567890",
+        "kpp": "123456789",
+        "legalAddress": "г. Москва, ул. Проверочная, д. 19",
+        "contactEmail": "proof-admin-1776553455@vrk.local",
+        "contactPhone": "+7 (999) 555-00-19",
+        "launchState": "active"
+      },
+      "grant": {
+        "id": "c9ab97c2-b274-4f29-ad46-fda331631e25",
+        "roleTemplate": "organization_admin",
+        "scopeType": "organization",
+        "scopeId": "31ba2fbd-7ef7-43d2-b79d-ec48b9322e22"
+      },
+      "workspace": {
+        "scopeType": "organization",
+        "scopeId": "31ba2fbd-7ef7-43d2-b79d-ec48b9322e22",
+        "scopeName": "ВРК Scope Proof 1776553455",
+        "landingTitle": "ВРК Scope Proof 1776553455",
+        "landingSubtitle": "Администратор организации видит полный org graph и может управлять приглашениями сотрудников.",
+        "canManageEmployeeInvites": true
+      },
+      "subdivisions": [
+        {
+          "id": "d56765e8-ccc4-47be-bd1e-57673eb2e1ad",
+          "type": "Филиал",
+          "name": "Подразделение 1776553455",
+          "code": "SUB-01"
+        }
+      ],
+      "units": [
+        {
+          "id": "246b98d8-de5f-4a30-9e67-893b597facd0",
+          "type": "Лаборатория",
+          "name": "Юнит 1776553455",
+          "code": "UNIT-01",
+          "subdivisionId": "d56765e8-ccc4-47be-bd1e-57673eb2e1ad"
+        }
+      ]
+    }
+  }
+}

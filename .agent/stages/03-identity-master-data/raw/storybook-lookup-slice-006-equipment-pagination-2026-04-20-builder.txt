@@ -1,0 +1,18 @@
+Storybook registry entries: 19
+Query: "equipment registry workspace pagination loading"
+
+1. Requests/RequestList [RequestList]
+   story: apps/web/stories/requests/RequestList.stories.tsx
+   source: apps/web/entities/Request/ui/RequestList.tsx
+   stories: Default, Loading, Empty, DerivedEmptyFromTotal, ManyItems, OutOfRangePage
+   tags: autodocs
+2. Auth/LoginForm [LoginForm]
+   story: apps/web/stories/auth/LoginForm.stories.tsx
+   source: apps/web/widgets/Auth/ui/LoginForm.tsx
+   stories: Default, ValidationError, ServerError, Loading
+   tags: autodocs
+3. Primitives/Button [Button]
+   story: apps/web/stories/primitives/Button.stories.tsx
+   source: apps/web/shared/ui/Button.tsx
+   stories: Default, Hover, Focus, Primary, Secondary, Ghost, Danger, WithLeftIcon, WithRightIcon, Loading, Disabled, FullWidth
+   tags: autodocs

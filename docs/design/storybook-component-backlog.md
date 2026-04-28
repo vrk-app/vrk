@@ -64,7 +64,7 @@
 ### FND-02 IconGallery [P0]
 
 - Назначение: каталог системных и доменных иконок: навигация, файлы, статусы, действия.
-- Обязательные props: `icons`, `sizes`.
+- Proof contract: story showcase читает `ICON_SECTIONS` из shared fixtures и доказывает системный size ladder `16 / 20 / 24 / 32` без отдельного runtime component API.
 - Состояния: `default`.
 - Stories: `NavigationIcons`, `ActionIcons`, `FileTypeIcons`, `StatusIcons`.
 
@@ -244,9 +244,9 @@
 - Назначение: хлебные крошки / поиск / уведомления / профиль.
 - Обязательные props: `searchValue`, `notificationsCount`, `user`, `breadcrumbs`.
 - Опциональные callbacks: `onSearch`, `onNotificationsClick`, `onUserMenu`.
-- Состояния: `with notifications`, `without notifications`, `long username`, `search unavailable`.
-- Stories: `Default`, `WithUnreadCount`, `WithoutNotifications`, `LongUserName`, `SearchUnavailable`.
-- Примечание: если `onSearch` не передан, поиск должен отображаться как явно недоступный, а не как фальшиво интерактивный control.
+- Состояния: `with notifications`, `without notifications`, `long username`, `search unavailable`, `actions unavailable`.
+- Stories: `Default`, `WithUnreadCount`, `WithoutNotifications`, `LongUserName`, `SearchUnavailable`, `ActionsUnavailable`.
+- Примечание: если опциональный callback (`onSearch`, `onNotificationsClick`, `onUserMenu`) не передан, соответствующий control должен отображаться как явно недоступный, а не как фальшиво интерактивный.
 
 ### LAY-04 Breadcrumbs [P0]
 
@@ -479,8 +479,9 @@
 ### AUTH-02 LoginForm [P0]
 
 - Назначение: форма входа.
-- Обязательные props: `fields`, `submitLabel`, `loading`, `error`, `consent`.
+- Обязательные props: `fields`, `submitLabel`, `loading`, `fieldErrors`, `formError`, `consent`.
 - Состояния: `pristine`, `validation error`, `server error`, `loading`.
+- Примечание: `fieldErrors` отвечает за ошибки конкретных полей, а `formError` — за общий сбой формы или auth boundary.
 - Stories: `Default`, `ValidationError`, `ServerError`, `Loading`.
 
 ### AUTH-03 TwoFactorForm [P1]

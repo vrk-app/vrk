@@ -1,0 +1,21 @@
+{
+  "status": 200,
+  "response": {
+    "success": true,
+    "data": {
+      "id": "9959c06e-2fae-4cdb-a71d-6ce5464ee7fe",
+      "fullName": "Роман Отозванный 1776553455",
+      "email": "proof-revoked-1776553455@vrk.local",
+      "roleTemplate": "observer",
+      "scopeType": "unit",
+      "scopeId": "246b98d8-de5f-4a30-9e67-893b597facd0",
+      "scopeLabel": "Юнит 1776553455",
+      "status": "revoked",
+      "inviteToken": "67d8d0aa-5b91-4249-b077-06062a70ae65",
+      "acceptPath": "/register/67d8d0aa-5b91-4249-b077-06062a70ae65",
+      "expiresAt": "2026-04-19T00:04:15Z",
+      "sentAt": "2026-04-18T23:04:15Z",
+      "revokedAt": "2026-04-18T23:04:16Z"
+    }
+  }
+}

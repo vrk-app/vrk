@@ -1,0 +1,17 @@
+{
+  "id": "f4061d29-aef4-40e9-9747-b9ff4b1facc0",
+  "organizationId": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+  "ownershipScope": {
+    "scopeType": "organization",
+    "label": "Организация 1776614151"
+  },
+  "standardType": "Эталон давления",
+  "model": "STD-ORG",
+  "identifier": "STD-ORG-1776614151",
+  "metrologicalCharacteristics": "0.1 кПа, общий контур организации",
+  "status": "inactive",
+  "linkedMeasuringInstruments": 0,
+  "journalCount": 0,
+  "createdAt": "2026-04-19T15:55:51Z",
+  "updatedAt": "2026-04-19T15:55:51Z"
+}

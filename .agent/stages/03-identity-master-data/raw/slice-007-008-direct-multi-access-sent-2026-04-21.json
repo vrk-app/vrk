@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "data": {
+    "id": "a897d201-6254-48cd-9a4b-4cf09f0bc112",
+    "fullName": "Shared Admin 1776771010",
+    "email": "shared-1776771010@vrk.local",
+    "roleTemplate": "organization_admin",
+    "scopeType": "organization",
+    "scopeId": "64517e0e-c1e1-4518-b1b6-5b8896562d96",
+    "scopeLabel": "VRK beta 1776771010",
+    "status": "sent",
+    "inviteToken": "4f7287e1-a03d-44c3-b47a-021606ee7215",
+    "acceptPath": "/register/4f7287e1-a03d-44c3-b47a-021606ee7215",
+    "expiresAt": "2026-04-28T00:00:00Z",
+    "sentAt": "2026-04-21T11:30:10Z"
+  }
+}

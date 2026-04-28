@@ -1,0 +1,22 @@
+{
+  "id": "955bef81-aa33-40ee-8d37-716a650457da",
+  "organizationId": "8eaaec80-abde-4d56-b6ba-54b953e72c1d",
+  "unit": {
+    "id": "94c09426-1b9f-48b4-96b6-c6dd339df480",
+    "name": "Customer-Equipment Юнит 01 1776604587",
+    "subdivisionId": "3d351a71-784f-4a2b-953b-704d61d53a5e",
+    "subdivisionName": "Customer-Equipment Подразделение 1776604587"
+  },
+  "manufacturer": "Трансмаш",
+  "classification": "Насос",
+  "model": "NP-100",
+  "fullName": "Насос без СИ 1776604587",
+  "factoryNumber": "E0-1776604587",
+  "inventoryNumber": "INV-E0-1776604587",
+  "manufactureYear": 2021,
+  "status": "active",
+  "comment": "slice-004 equipment E0-1776604587",
+  "measuringInstrumentCount": 0,
+  "createdAt": "2026-04-19T13:16:28Z",
+  "updatedAt": "2026-04-19T13:16:28Z"
+}

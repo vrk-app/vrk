@@ -14,10 +14,12 @@ import (
 
 	_ "backend/docs/swagger"
 	"backend/internal/application/agreement"
+	"backend/internal/auth/bootstrap"
 	"backend/internal/auth/organization"
 	"backend/internal/db/generated"
 	"backend/internal/equipment/equipment"
 	"backend/internal/equipment/measuringinstrument"
+	"backend/internal/equipment/metrologyjournal"
 	"backend/internal/equipment/standard"
 	"backend/internal/infrastructure/config"
 	"backend/internal/infrastructure/db"
@@ -59,23 +61,29 @@ func New(cfg *config.Config) (*App, error) {
 	orgService := organization.NewService(orgRepo)
 	orgHandler := organization.NewHandler(orgService)
 
+	bootstrapRepo := bootstrap.NewRepository(database, queries)
+	bootstrapService := bootstrap.NewService(bootstrapRepo, queries)
+	bootstrapHandler := bootstrap.NewHandler(bootstrapService)
+
 	// Equipment
-	eqRepo := equipment.NewRepository(queries)
-	eqService := equipment.NewService(eqRepo)
+	eqRepo := equipment.NewRepository(database)
+	eqService := equipment.NewService(eqRepo, bootstrapService)
 	eqHandler := equipment.NewHandler(eqService)
 
+	journalRepo := metrologyjournal.NewRepository(database)
+
 	// Standard
-	stdRepo := standard.NewRepository(queries)
-	stdService := standard.NewService(stdRepo)
+	stdRepo := standard.NewRepository(database)
+	stdService := standard.NewService(stdRepo, journalRepo, bootstrapService)
 	stdHandler := standard.NewHandler(stdService)
 
 	// Measuring Instrument
-	miRepo := measuringinstrument.NewRepository(queries)
-	miService := measuringinstrument.NewService(miRepo)
+	miRepo := measuringinstrument.NewRepository(database)
+	miService := measuringinstrument.NewService(miRepo, journalRepo, bootstrapService)
 	miHandler := measuringinstrument.NewHandler(miService)
 
 	agreementRepo := agreement.NewRepository(queries)
-	agreementService := agreement.NewService(agreementRepo)
+	agreementService := agreement.NewService(agreementRepo, bootstrapService)
 	agreementHandler := agreement.NewHandler(agreementService)
 
 	// router
@@ -108,13 +116,14 @@ func New(cfg *config.Config) (*App, error) {
 	}
 
 	// Routes
-	app.registerRoutes(orgHandler, eqHandler, stdHandler, miHandler, agreementHandler)
+	app.registerRoutes(orgHandler, bootstrapHandler, eqHandler, stdHandler, miHandler, agreementHandler)
 
 	return app, nil
 }
 
 func (a *App) registerRoutes(
 	organizationHandler *organization.OrganizationHandler,
+	bootstrapHandler *bootstrap.Handler,
 	eqHandler *equipment.EquipmentHandler,
 	stdHandler *standard.StandardHandler,
 	miHandler *measuringinstrument.MeasuringInstrumentHandler,
@@ -131,7 +140,7 @@ func (a *App) registerRoutes(
 
 	a.router.Route("/api/v1", func(r chi.Router) {
 		// Organizations
-		r.Route("/organizations", func(r chi.Router) {
+		r.With(platformAdminMiddleware(a.cfg.PlatformAdmin.SharedSecret)).Route("/organizations", func(r chi.Router) {
 			r.Get("/", organizationHandler.List)
 			r.Post("/", organizationHandler.Create)
 			r.Get("/{id}", organizationHandler.GetByID)
@@ -139,13 +148,42 @@ func (a *App) registerRoutes(
 			r.Delete("/{id}", organizationHandler.Delete)
 		})
 
+		r.With(platformAdminMiddleware(a.cfg.PlatformAdmin.SharedSecret)).Route("/platform", func(r chi.Router) {
+			r.Post("/organization-shells", bootstrapHandler.CreateOrganizationShell)
+		})
+
+		r.Route("/first-admin-invites", func(r chi.Router) {
+			r.Get("/{token}", bootstrapHandler.InspectInvite)
+			r.Post("/{token}/accept", bootstrapHandler.AcceptInvite)
+		})
+
+		r.Route("/invites", func(r chi.Router) {
+			r.Get("/{token}", bootstrapHandler.InspectPublicInvite)
+			r.Post("/{token}/accept", bootstrapHandler.AcceptPublicInvite)
+		})
+
+		r.Route("/employee-invites", func(r chi.Router) {
+			r.Get("/", bootstrapHandler.ListEmployeeInvites)
+			r.Post("/", bootstrapHandler.CreateEmployeeInvite)
+			r.Post("/{inviteID}/send", bootstrapHandler.SendEmployeeInvite)
+			r.Post("/{inviteID}/revoke", bootstrapHandler.RevokeEmployeeInvite)
+		})
+
+		r.Route("/sessions", func(r chi.Router) {
+			r.Post("/", bootstrapHandler.CreateSession)
+			r.Get("/current", bootstrapHandler.CurrentSession)
+			r.Delete("/current", bootstrapHandler.DeleteCurrentSession)
+		})
+
+		r.Post("/launch-wizard", bootstrapHandler.CompleteLaunchWizard)
+
 		// Equipment
 		r.Route("/equipment", func(r chi.Router) {
 			r.Get("/", eqHandler.List)
 			r.Post("/", eqHandler.Create)
 			r.Get("/{id}", eqHandler.GetByID)
 			r.Patch("/{id}", eqHandler.Update)
-			r.Delete("/{id}", eqHandler.Delete)
+			r.Post("/{id}/archive", eqHandler.Archive)
 		})
 
 		// Standards
@@ -154,7 +192,9 @@ func (a *App) registerRoutes(
 			r.Post("/", stdHandler.Create)
 			r.Get("/{id}", stdHandler.GetByID)
 			r.Patch("/{id}", stdHandler.Update)
-			r.Delete("/{id}", stdHandler.Delete)
+			r.Get("/{id}/journals", stdHandler.ListJournals)
+			r.Post("/{id}/journals", stdHandler.CreateJournal)
+			r.Post("/{id}/archive", stdHandler.Archive)
 		})
 
 		// Measuring Instruments
@@ -163,16 +203,19 @@ func (a *App) registerRoutes(
 			r.Post("/", miHandler.Create)
 			r.Get("/{id}", miHandler.GetByID)
 			r.Patch("/{id}", miHandler.Update)
-			r.Delete("/{id}", miHandler.Delete)
+			r.Get("/{id}/journals", miHandler.ListJournals)
+			r.Post("/{id}/journals", miHandler.CreateJournal)
+			r.Post("/{id}/archive", miHandler.Archive)
 		})
 
 		// Agreements
 		r.Route("/agreements", func(r chi.Router) {
 			r.Get("/", agreementHandler.List)
 			r.Post("/", agreementHandler.Create)
+			r.Get("/contractors", agreementHandler.ListActiveContractors)
+			r.Post("/routing/resolve", agreementHandler.ResolveRouting)
 			r.Get("/{id}", agreementHandler.GetByID)
 			r.Put("/{id}", agreementHandler.Update)
-			r.Delete("/{id}", agreementHandler.Delete)
 		})
 	})
 }

@@ -1,0 +1,61 @@
+{
+  "status": 200,
+  "response": {
+    "success": true,
+    "data": {
+      "sessionToken": "85602d9d-715e-4590-87f5-b8afa21c2fe7",
+      "requiresLaunchWizard": false,
+      "account": {
+        "id": "be8f6f19-9081-4c58-964e-2b33473814c0",
+        "fullName": "Светлана Руководитель 1776553455",
+        "email": "proof-sub-1776553455@vrk.local"
+      },
+      "membershipId": "3633d5e5-2d44-4efd-a741-889769865a64",
+      "membershipStatus": "active",
+      "organization": {
+        "id": "31ba2fbd-7ef7-43d2-b79d-ec48b9322e22",
+        "roleTitle": "customer",
+        "name": "ВРК Scope Proof 1776553455",
+        "shortName": "ВРК Proof",
+        "propertyType": "ООО",
+        "inn": "1234567890",
+        "kpp": "123456789",
+        "legalAddress": "г. Москва, ул. Проверочная, д. 19",
+        "contactEmail": "proof-admin-1776553455@vrk.local",
+        "contactPhone": "+7 (999) 555-00-19",
+        "launchState": "active"
+      },
+      "grant": {
+        "id": "209b4ab2-76a2-4b8f-a4bf-79025cc07f86",
+        "roleTemplate": "subdivision_manager",
+        "scopeType": "subdivision",
+        "scopeId": "d56765e8-ccc4-47be-bd1e-57673eb2e1ad"
+      },
+      "workspace": {
+        "scopeType": "subdivision",
+        "scopeId": "d56765e8-ccc4-47be-bd1e-57673eb2e1ad",
+        "scopeName": "Подразделение 1776553455",
+        "landingTitle": "Подразделение 1776553455",
+        "landingSubtitle": "Доступ ограничен выбранным подразделением и его дочерними юнитами.",
+        "canManageEmployeeInvites": false
+      },
+      "subdivisions": [
+        {
+          "id": "d56765e8-ccc4-47be-bd1e-57673eb2e1ad",
+          "type": "Филиал",
+          "name": "Подразделение 1776553455",
+          "code": "SUB-01"
+        }
+      ],
+      "units": [
+        {
+          "id": "246b98d8-de5f-4a30-9e67-893b597facd0",
+          "type": "Лаборатория",
+          "name": "Юнит 1776553455",
+          "code": "UNIT-01",
+          "subdivisionId": "d56765e8-ccc4-47be-bd1e-57673eb2e1ad"
+        }
+      ]
+    }
+  }
+}

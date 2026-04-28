@@ -1,0 +1,31 @@
+{
+  "status": 200,
+  "response": {
+    "success": true,
+    "data": {
+      "sessionToken": "ae0ec559-92ae-4a83-8468-91100efd8d11",
+      "requiresLaunchWizard": true,
+      "account": {
+        "id": "fc802298-e357-4a66-9aef-70756434b1fa",
+        "fullName": "Ирина Орлова 1776543472",
+        "email": "unit-admin-1776543472@vrk.local"
+      },
+      "membershipId": "4f1ed410-bcf0-402b-b8f2-fba4e463a594",
+      "membershipStatus": "active",
+      "organization": {
+        "id": "ddff7ca5-7813-4fd3-b74b-f4374b6d539d",
+        "roleTitle": "customer",
+        "name": "ВРК Юнит 1776543472",
+        "launchState": "shell"
+      },
+      "grant": {
+        "id": "74ca913f-f66c-4757-b937-080e3dd5100c",
+        "roleTemplate": "organization_admin",
+        "scopeType": "organization",
+        "scopeId": "ddff7ca5-7813-4fd3-b74b-f4374b6d539d"
+      },
+      "subdivisions": [],
+      "units": []
+    }
+  }
+}

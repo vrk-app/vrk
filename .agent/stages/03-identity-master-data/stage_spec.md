@@ -24,8 +24,8 @@
 - equipment registry;
 - measuring instruments registry;
 - standards registry;
-- metrology operation journals, attachments и status derivation from latest valid record;
-- organization-scoped dictionaries с local draft entries;
+- metrology operation journals, URL/reference attachment baseline и status derivation from latest valid record;
+- bounded ownership-scope labels for standards; broader org-scoped dictionary/local-draft CRUD deferred;
 - archive baseline для ключевых master-data сущностей;
 - canonical doc sync для product, architecture и stage boundaries.
 
@@ -75,6 +75,10 @@
 3. `slice-003-contracts-routing-and-workspace-access`
 4. `slice-004-equipment-mi-standard-registries`
 5. `slice-005-metrology-journals-archiving-and-proof`
+6. `slice-006-stage03-review-hardening`
+7. `slice-007-stage03-admin-surface-auth-hardening`
+8. `slice-008-stage03-multi-org-session-contract`
+9. `slice-009-stage03-equipment-truthfulness`
 
 ```mermaid
 flowchart LR
@@ -82,11 +86,15 @@ flowchart LR
     B --> C["Slice 002<br/>employee invites + scoped access"]
     C --> D["Slice 003<br/>contracts + workspace routing"]
     D --> E["Slice 004<br/>equipment + MI + standards registries"]
-    E --> F["Slice 005<br/>journals + archiving + final proof"]
-    F --> G["Stage 03 PASS"]
+    E --> F["Slice 005<br/>journals + archiving"]
+    F --> G["Slice 006<br/>review hardening"]
+    G --> H["Slice 007<br/>admin auth hardening"]
+    H --> I["Slice 008<br/>explicit session contract"]
+    I --> J["Slice 009<br/>equipment truthfulness"]
+    J --> K["Stage 03 PASS"]
 ```
 
-The diagram fixes the execution order after Stage 02 closure: Stage 03 now starts from a stable runtime/platform floor instead of carrying an open cross-stage blocker.
+The diagram fixes the execution order after Stage 02 closure and after the later post-proof remediation wave: Stage 03 still starts from a stable runtime/platform floor, and the reopened slices remain bounded to truthfulness fixes instead of widening into new product scope.
 
 ## Acceptance criteria
 
@@ -101,10 +109,13 @@ The diagram fixes the execution order after Stage 02 closure: Stage 03 now start
 - user account, membership и scoped grant разделены и доказаны сценариями доступа;
 - organization-scope права наследуются вниз, subdivision-scope права наследуются на дочерние unit, deny-layer отсутствует;
 - invitation statuses `draft`, `sent`, `opened`, `accepted`, `expired`, `revoked` видимы и воспроизводимы;
+- login/session restore возвращает contour, привязанный к explicit active membership/grant: customer contour на `/company`, active contractor contour на `/contracts`;
+- direct login с несколькими eligible memberships/grants truthfully возвращает `409`, а не silently выбирает один workspace;
+- `/platform/organization-shells` и Stage 03 `organizations` admin surface не доступны анонимно и не раскрывают deployment-scoped admin credential в browser;
 - contracts registry ограничивает допустимого подрядчика для следующего request stage;
 - equipment, measuring instruments и standards существуют как отдельные реестры, без общей mega-form;
 - текущий метрологический статус вычисляется из последней действующей записи журнала;
-- archive используется вместо hard delete;
+- archive используется вместо hard delete, а archived rows открываются только через explicit archive visibility;
 - канонические docs и stage artifacts синхронизированы и пригодны для Stage 04 handoff.
 
 ## Technical ownership / paths
@@ -135,8 +146,9 @@ The diagram fixes the execution order after Stage 02 closure: Stage 03 now start
 - before each slice, re-sync the proven Stage 02 runtime/platform floor and check whether local assumptions still hold;
 - verify each slice independently before moving to the next one;
 - прогнать first-admin activation end-to-end;
-- доказать org/subdivision/unit creation и workspace switching;
+- доказать org/subdivision/unit creation и scoped singular-session landing без multi-workspace picker;
 - доказать invitation lifecycle и scoped access inheritance сценариями organization / subdivision / unit;
+- доказать truthful `409` при direct login, если у аккаунта несколько eligible access paths;
 - доказать contracts registry и contractor restriction baseline;
 - доказать separate registries для equipment / measuring instruments / standards;
 - доказать journal-driven status calculation и archive behavior;

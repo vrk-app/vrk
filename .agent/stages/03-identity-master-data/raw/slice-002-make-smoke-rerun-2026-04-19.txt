@@ -1,0 +1,2 @@
+./scripts/platform_smoke.sh
+platform smoke: PASS

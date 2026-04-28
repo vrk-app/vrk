@@ -1,0 +1,27 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": "23fd3f49-cecd-4871-90bb-444a9c0f1366",
+      "operationType": "verification",
+      "operationDate": "2026-03-20",
+      "documentNumber": "MI-LATEST-1776614151",
+      "validUntil": "2026-12-31",
+      "executorOrganization": "ФБУ Ростест-Москва",
+      "attachmentUrl": "https://files.vrk.local/mi-latest.pdf",
+      "comment": "Актуальная поверка",
+      "createdAt": "2026-04-19T15:55:51Z"
+    },
+    {
+      "id": "fad577f1-2c90-422c-9894-6bd1447e6991",
+      "operationType": "verification",
+      "operationDate": "2026-01-10",
+      "documentNumber": "MI-OLD-1776614151",
+      "validUntil": "2026-08-31",
+      "executorOrganization": "ФБУ Ростест-Москва",
+      "attachmentUrl": "https://files.vrk.local/mi-old.pdf",
+      "comment": "Базовая поверка",
+      "createdAt": "2026-04-19T15:55:51Z"
+    }
+  ]
+}

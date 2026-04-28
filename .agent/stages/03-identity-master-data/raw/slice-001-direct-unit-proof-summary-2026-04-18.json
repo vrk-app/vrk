@@ -1,0 +1,26 @@
+{
+  "seed": "1776543472",
+  "email": "unit-admin-1776543472@vrk.local",
+  "organizationName": "ВРК Юнит 1776543472",
+  "inviteToken": "30959e7f-c69a-498c-92db-56be42f68ca9",
+  "statuses": {
+    "createShell": 201,
+    "inspectInvite": 200,
+    "acceptInvite": 200,
+    "completeLaunchUnitMode": 200,
+    "currentSession": 200,
+    "login": 200,
+    "replayAccept": 409
+  },
+  "checks": {
+    "launchRequiresWizardAfterAccept": true,
+    "launchRequiresWizardAfterCompletion": false,
+    "grantScopeType": "organization",
+    "grantRoleTemplate": "organization_admin",
+    "membershipStatus": "active",
+    "subdivisionsCount": 0,
+    "unitsCount": 1,
+    "unitHasSubdivision": false,
+    "replayError": "invite already accepted"
+  }
+}

@@ -1,9 +1,16 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { ICON_SECTIONS } from "@/shared/storybook/fixtures";
+import { ICON_SECTIONS, type IconSection } from "@/shared/storybook/fixtures";
 import { StoryFrame } from "@/shared/storybook/StoryFrame";
 
-function IconGalleryShowcase() {
+type IconGalleryShowcaseProps = {
+  section?: IconSection["title"];
+};
+
+function IconGalleryShowcase({ section }: IconGalleryShowcaseProps) {
   const sizes = [16, 20, 24, 32];
+  const sections = section
+    ? ICON_SECTIONS.filter((item) => item.title === section)
+    : ICON_SECTIONS;
 
   return (
     <StoryFrame
@@ -11,16 +18,16 @@ function IconGalleryShowcase() {
       description="Каталог навигационных, action, file и status icons, которые использует Stage 01 foundation."
     >
       <div className="grid gap-6">
-        {ICON_SECTIONS.map((section) => (
-          <section key={section.title} className="grid gap-3">
+        {sections.map((sectionItem) => (
+          <section key={sectionItem.title} className="grid gap-3">
             <div className="space-y-1">
-              <h2 className="text-xl font-semibold text-foreground">{section.title}</h2>
+              <h2 className="text-xl font-semibold text-foreground">{sectionItem.title}</h2>
               <p className="text-sm text-muted-foreground">
                 Stroke должен оставаться спокойным и консистентным на плотных B2B-поверхностях.
               </p>
             </div>
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              {section.items.map(({ icon: Icon, name }) => (
+              {sectionItem.items.map(({ icon: Icon, name }) => (
                 <div
                   key={name}
                   className="rounded-[var(--radius-xl)] border border-border bg-card p-4 shadow-xs"
@@ -60,10 +67,26 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const NavigationIcons: Story = {};
+export const NavigationIcons: Story = {
+  args: {
+    section: "Навигация",
+  },
+};
 
-export const ActionIcons: Story = {};
+export const ActionIcons: Story = {
+  args: {
+    section: "Действия",
+  },
+};
 
-export const FileTypeIcons: Story = {};
+export const FileTypeIcons: Story = {
+  args: {
+    section: "Документы и файлы",
+  },
+};
 
-export const StatusIcons: Story = {};
+export const StatusIcons: Story = {
+  args: {
+    section: "Статусы и сигналы",
+  },
+};

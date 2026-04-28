@@ -1,0 +1,26 @@
+Storybook registry entries: 19
+Query: "stage 01 auth form top bar icon gallery truthfulness login form backlog token bridge refresh"
+
+1. Auth/LoginForm [LoginForm]
+   story: apps/web/stories/auth/LoginForm.stories.tsx
+   source: apps/web/widgets/Auth/ui/LoginForm.tsx
+   stories: Default, ValidationError, ServerError, Loading
+   tags: autodocs
+2. Foundations/IconGallery [IconGalleryShowcase]
+   story: apps/web/stories/foundations/IconGallery.stories.tsx
+   stories: NavigationIcons, ActionIcons, FileTypeIcons, StatusIcons
+   tags: autodocs
+3. Layout/TopBar [TopBar]
+   story: apps/web/stories/layout/TopBar.stories.tsx
+   source: apps/web/widgets/OperatorShell/ui/TopBar.tsx
+   stories: Default, WithUnreadCount, WithoutNotifications, SearchUnavailable, ActionsUnavailable, LongUserName
+   tags: autodocs
+4. Foundations/TokenDocs [TokenDocsShowcase]
+   story: apps/web/stories/foundations/TokenDocs.stories.tsx
+   stories: All, Colors, Typography, Spacing, Elevation, Radii
+   tags: autodocs
+5. Auth/ConsentRow [ConsentRow]
+   story: apps/web/stories/auth/ConsentRow.stories.tsx
+   source: apps/web/widgets/Auth/ui/ConsentRow.tsx
+   stories: Default, Checked, Error, Disabled
+   tags: autodocs

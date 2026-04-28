@@ -1,7 +1,7 @@
 # Identity, Access, and Master Data
 
 Статус: accepted baseline  
-Обновлено: 2026-04-18
+Обновлено: 2026-04-20
 
 ## Назначение
 
@@ -11,7 +11,7 @@
 - иерархия `организация -> подразделение -> юнит`;
 - сотрудники, приглашения, membership и scoped access;
 - master-data контур для договоров, оборудования, СИ и эталонов;
-- правила архивирования и справочников.
+- правила архивирования и bounded ownership labels.
 
 Это не замена `docs/roadmap.md`, а более узкий source of truth для решений, которые уже не помещаются в короткое stage summary.
 
@@ -65,6 +65,29 @@ flowchart TD
     G --> H["Создает первое подразделение или сразу юнит"]
     H --> I["Приглашает сотрудников"]
     I --> J["Добавляет первое оборудование"]
+```
+
+### 1.1. Реализованный slice-001 contract
+
+В первом живом Stage 03 slice этот сценарий зафиксирован следующим контрактом:
+
+- `POST /platform/organization-shells` создает `organization shell` и first-admin invite, но только за deployment-scoped platform-admin boundary;
+- публичный `/register` не вызывает backend напрямую: Next route handler inject-ит `X-VRK-Platform-Admin-Secret` server-side, а browser не получает secret;
+- `GET /first-admin-invites/{token}` открывает одноразовую ссылку и переводит invite из `sent` в `opened`;
+- `POST /first-admin-invites/{token}/accept` задает пароль, создает `membership`, выдает initial `organization_admin` grant и возвращает session;
+- повторный `accept` по тому же token возвращает конфликт и не может создать вторую активацию;
+- `POST /launch-wizard` сохраняет core organization data и поддерживает оба пути: `organization -> subdivision -> unit` и `organization -> unit`;
+- `POST /sessions` и `GET /sessions/current` позволяют вернуться только в тот contour, который привязан к explicit active `membership_id + grant_id`;
+- direct login с несколькими eligible access paths возвращает `409` и не делает silent selection.
+
+```mermaid
+flowchart LR
+    A["sent"] --> B["opened"]
+    A --> C["accepted"]
+    B --> C
+    A --> D["expired / revoked"]
+    B --> D
+    C --> E["replay rejected"]
 ```
 
 ## 2. Иерархия объектов
@@ -213,6 +236,31 @@ Flow приглашения сотрудника:
 - `expired`
 - `revoked`
 
+### 3.2.1. Реализованный slice-002 contract
+
+Во втором живом Stage 03 slice employee invite flow зафиксирован следующим контрактом:
+
+- organization admin может создавать draft employee invite только после завершенного launch wizard;
+- `POST /employee-invites` создает `draft` с `full_name`, `email`, `role_template`, `scope_type`, `scope_id` и `expires_at`;
+- `POST /employee-invites/{inviteID}/send` выпускает одноразовый token и переводит invite в `sent`;
+- `GET /invites/{token}` используется как общий public invite endpoint для first-admin и employee flow, а employee invite при первом открытии переводится из `sent` в `opened`;
+- `POST /invites/{token}/accept` создает или связывает account, поднимает organization membership, upsert-ит scoped grant и возвращает session;
+- `POST /employee-invites/{inviteID}/revoke` закрывает `draft` / `sent` / `opened` invite со статусом `revoked`;
+- повторный `accept` по уже использованному employee token возвращает конфликт и не создает вторую membership/session side effect.
+
+```mermaid
+flowchart LR
+    A["draft"] --> B["sent"]
+    B --> C["opened"]
+    B --> D["accepted"]
+    C --> D
+    B --> E["expired"]
+    C --> E
+    B --> F["revoked"]
+    C --> F
+    D --> G["replay rejected (409)"]
+```
+
 ## 4. Навигация и рабочие пространства
 
 Навигация строится вокруг выбора контекста:
@@ -226,6 +274,57 @@ Flow приглашения сотрудника:
 - организация: сводка по оборудованию, сотрудникам, договорам и структуре;
 - подразделение: сводка по юнитам и оборудованию внутри подразделения;
 - юнит: рабочее место со списком оборудования, СИ, эталонов и точками входа в CRUD.
+
+### 4.1. Реализованная workspace projection для slice-002
+
+Session summary в slice-002+ больше не возвращает только organization-wide contour, а проецирует singular runtime workspace прямо из explicit active scoped grant:
+
+- `organization` scope открывает весь org graph ниже и позволяет управлять employee invites только при `organization_admin`;
+- `subdivision` scope открывает целевое подразделение и его дочерние юниты, но не wider organization contour;
+- `unit` scope открывает только один целевой юнит и не раскрывает subdivision/organization graph вверх;
+- один и тот же `/company` route используется как scoped landing page после invite acceptance и последующего login;
+- session restore не выбирает новый workspace: он использует сохраненный `grant_id`;
+- если direct login находит несколько eligible memberships/grants, backend возвращает truthful `409`, а не silently выбирает первый доступ.
+
+```mermaid
+flowchart TD
+    A["Direct login"] --> B{"eligible access paths"}
+    B -->|0| C["401 unauthorized"]
+    B -->|1| D["Create session with explicit membership_id + grant_id"]
+    B -->|>1| E["409 access selection required"]
+    D --> F{"grant scope"}
+    F -->|organization| G["/company: full org graph"]
+    F -->|subdivision| H["/company: target subdivision + child units"]
+    F -->|unit| I["/company: target unit only"]
+    G --> J["Employee invite manager only for organization_admin"]
+```
+
+### 4.2. Реализованный contracts + workspace contour для slice-003
+
+Третий живой Stage 03 slice добавляет поверх того же identity baseline реальный contracts/workspace layer:
+
+- customer `organization_admin` на organization scope управляет contracts registry на публичном route `/contracts`;
+- backend resource naming может оставаться `/agreements`, но только как explicit adapter boundary под web route handlers `/api/contracts*`;
+- минимальный contract status baseline зафиксирован как `inactive`, `active`, `expired`;
+- routing eligibility для будущего Stage 04 request flow считается только для `active` contract внутри своего date window;
+- routing resolve использует contract context (`unit`, `work type`, `equipment type`, `region`) и возвращает только допустимого contractor, а не поддерживает свободный manual choice;
+- contractor organization после активного launch получает `workspace.landingPath = "/contracts"` и видит только customer contracts, привязанные к этой contractor organization;
+- unrelated customer contracts остаются скрыты для contractor contour, а customer session не расширяется в contractor workspace.
+
+```mermaid
+flowchart LR
+    A["Customer organization_admin"] --> B["/contracts registry"]
+    B --> C["Create / update contract"]
+    C --> D["customer organization"]
+    C --> E["contractor organization"]
+    C --> F["status + date window"]
+    C --> G["work type + equipment type"]
+    C --> H["region + subdivision / unit scope"]
+    B --> I["Routing preview"]
+    I --> J["eligible contractor only"]
+    K["Contractor login"] --> L["landingPath = /contracts"]
+    L --> M["bound contracts only"]
+```
 
 ## 5. Оборудование, СИ и эталоны
 
@@ -310,22 +409,104 @@ Stage 03 не использует жесткую связь `1:1` между С
 - через таблицу назначений;
 - через журнал операций.
 
-## 6. Справочники и lifecycle rules
+### 5.6. Реализованный slice-004 registry contract
 
-Для MVP используются как системные, так и organization-scoped справочники:
+В четвертом живом Stage 03 slice registry layer зафиксирован следующим контрактом:
 
-- производители;
-- классификации;
-- типы подразделений;
-- типы юнитов;
-- виды метрологических операций;
-- типы эталонов.
+- customer-side public contour остается на одном route `/equipment`;
+- внутри route работают три отдельные registry surfaces:
+  - equipment;
+  - measuring instruments;
+  - standards;
+- анонимный пользователь видит truthful shell без live data;
+- customer `organization_admin` на organization scope может создавать записи во всех трех registries;
+- subdivision-scope и unit-scope пользователи работают на том же route, но только в read-only contour и без broader organization leak;
+- backend protected endpoints для Stage 03 registries остаются отдельными ресурсами, а не одной mega-form:
+  - `GET/POST /equipment`
+  - `GET/POST /measuring-instruments`
+  - `GET/POST /standards`;
+- equipment может существовать без обязательных metrology attachments;
+- measuring instrument может быть `standalone` либо `built_in` к equipment;
+- standard остается самостоятельным reusable record и может быть связан более чем с одним measuring instrument.
 
-Если глобального справочника еще нет, пользователь может создать локальный draft entry:
+```mermaid
+flowchart TD
+    A["/equipment"] --> B["equipment registry"]
+    A --> C["/equipment?tab=mi"]
+    A --> D["/equipment?tab=standards"]
+    B --> E["equipment without MI is valid"]
+    B --> F["equipment with linked MI"]
+    C --> G["standalone MI"]
+    C --> H["built-in MI -> equipment"]
+    D --> I["organization / subdivision / unit-owned standard"]
+    I --> J["reusable links to many MI"]
+```
 
-- запись видна только в своей организации;
-- позже может быть нормализована в системный справочник;
-- это предпочтительнее, чем блокировать ввод или плодить ad-hoc текстовые поля.
+### 5.7. Реализованный slice-005 journal + archive contract
+
+Пятый живой Stage 03 slice не создает новый public route family, а расширяет тот же `/equipment` contour:
+
+- page state остается URL-backed:
+  - `tab=equipment | mi | standards`;
+  - `archived=1` включает explicit archive visibility на том же route;
+- web route handlers остаются под `app/api/equipment*` и проксируют browser к backend journal/archive endpoints без раскрытия internal host;
+- paginated registry list responses сохраняют envelope `meta` на web boundary, чтобы `/equipment` contour мог truthfully видеть `total/limit/offset`, а не только текущий `data` slice;
+- protected backend contract для slice-005 добавляет:
+  - `GET/POST /measuring-instruments/{id}/journals`;
+  - `GET/POST /standards/{id}/journals`;
+  - `POST /equipment/{id}/archive`;
+  - `POST /measuring-instruments/{id}/archive`;
+  - `POST /standards/{id}/archive`;
+- journal entry хранит:
+  - `operationType`;
+  - `operationDate`;
+  - `documentNumber`;
+  - `validUntil`;
+  - `executorOrganization`;
+  - `attachmentUrl`;
+  - `comment`;
+- archived state не подменяет derived status:
+  - запись остается в persistence с `archived_at`;
+  - default active lists и active relation pickers ее не показывают;
+  - explicit archive view показывает ту же запись и ее read-only history;
+  - archived СИ и archived standards отклоняют новые journal mutations.
+
+Current derived-state rule в repo реализован минимально и явно:
+
+- если journal history пустая, API возвращает fallback status из карточки;
+- иначе берется latest journal entry с ordering `operation_date DESC, created_at DESC`;
+- `decommission` делает subject `retired`;
+- `suspension` делает subject `inactive`;
+- `verification`, `calibration`, `maintenance` делают subject `active`;
+- если у latest entry есть `validUntil` и дата уже в прошлом по UTC, derived status понижается до `inactive`;
+- `nextDueDate` для ответа берется из `latest.validUntil`, если оно задано.
+
+```mermaid
+flowchart LR
+    A["Journal history ordered by operation_date DESC, created_at DESC"] --> B["Latest entry"]
+    B --> C{"operationType"}
+    C -->|decommission| D["status = retired"]
+    C -->|suspension| E["status = inactive"]
+    C -->|verification / calibration / maintenance| F["status = active"]
+    B --> G{"validUntil < today UTC?"}
+    G -->|yes| E
+    G -->|no| H["nextDueDate = validUntil"]
+```
+
+Диаграмма фиксирует текущий slice-005 derivation contract: archived state хранится отдельно, а текущий metrology status и ближайшая дата вычисляются по latest applicable journal record.
+
+## 6. Ownership labels and lifecycle rules
+
+Текущий proven Stage 03 contract не вводит отдельный CRUD-модуль для organization-scoped dictionaries с local drafts.
+
+Вместо этого реализовано более узкое и документированное решение:
+
+- стандарт хранит ownership scope как `organization`, `subdivision` или `unit`;
+- вместе со scope хранится `ownerLabel`, который по умолчанию наследуется от видимого organization / subdivision / unit name;
+- UI может явно переопределить label для читаемого представления владельца, но это не отдельная dictionary family;
+- справочники вроде производителей, классификаций и типов пока остаются текстовыми или seeded boundaries и не доказаны как самостоятельный Stage 03 CRUD contour.
+
+Это ограничение намеренное: slice-005 закрывает journal/archive truth и doc-sync, а не расширяет Stage 03 в parallel dictionary module.
 
 ## 7. Архивирование и явные non-goals
 
@@ -348,4 +529,5 @@ Stage 03 не использует жесткую связь `1:1` между С
 - ручная сборка кастомных ролей по чекбоксам;
 - сложные уведомления и напоминания;
 - автосоздание оргструктуры из внешних систем;
+- standalone org-scoped dictionary/local-draft CRUD module поверх Stage 03 master-data contour;
 - отдельный самостоятельный метрологический модуль вне master-data contour.

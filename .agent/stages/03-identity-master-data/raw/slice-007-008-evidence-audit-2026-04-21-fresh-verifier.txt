@@ -1,0 +1,19 @@
+evidence audit: slice-007 + slice-008 continuation bundle
+reviewed_at: 2026-04-21
+
+Fresh verifier facts:
+- live stack is reachable at 127.0.0.1:18080 and 127.0.0.1:3100
+- targeted runtime proof reproduced successfully in raw/slice-007-008-direct-auth-proof-2026-04-21-fresh-verifier.txt
+- fresh runtime summary written to raw/slice-007-008-direct-summary-2026-04-21-fresh-verifier.json
+- fresh harness/build/test/web proof written under raw/*-fresh-verifier.txt
+
+Material truthfulness gaps in the existing bundle:
+- evidence.json still classifies the targeted live auth smoke as BLOCKED by environment and still classifies fresh verification as BLOCKED by agent control-plane handoff
+- evidence.md repeats the same stale blocker narrative
+- verdict.json and problems.md repeat the same stale blocker narrative
+- raw/slice-007-008-runtime-blockers-2026-04-21-orchestrator.txt describes an offline stack, which is no longer true for the current continuation state
+- raw/slice-007-008-verifier-agent-blocked-2026-04-21-orchestrator.txt describes a failed fresh-verifier handoff, but this verifier pass completed and produced usable artifacts
+- evidence.json changed_ui_files is not truthful for the current worktree: it includes apps/web/app/register/page.tsx and omits apps/web/app/register/[token]/page.tsx
+
+Impact:
+- slice functionality is now re-proven live, but the stage evidence/blocker bundle is materially stale and cannot be treated as truthful proof without refresh

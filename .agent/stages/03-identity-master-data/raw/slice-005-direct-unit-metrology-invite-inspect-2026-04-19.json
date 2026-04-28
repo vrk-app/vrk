@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "data": {
+    "inviteKind": "employee",
+    "organizationId": "7d3a8cd5-c7d8-473f-9491-07ad919f8b32",
+    "organizationName": "ВРК customer-metrology 1776614151",
+    "organizationRole": "customer",
+    "inviteStatus": "opened",
+    "inviteeName": "Unit-Metrology Employee 1776614151",
+    "inviteEmail": "unit-metrology-1776614151@vrk.local",
+    "inviteExpiresAt": "2026-04-26T12:00:00Z",
+    "roleTemplate": "unit_operator",
+    "scopeType": "unit",
+    "scopeLabel": "Customer-Metrology Юнит 01 1776614151",
+    "launchState": "active"
+  }
+}

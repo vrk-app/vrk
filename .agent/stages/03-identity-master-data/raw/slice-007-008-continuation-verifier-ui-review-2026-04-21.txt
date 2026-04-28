@@ -1,0 +1,15 @@
+web-design-guidelines source: https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md
+source_artifact: .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-21-continuation-verifier.md
+reviewed_at: 2026-04-21T11:37:00Z
+scope:
+- apps/web/app/login/page.tsx
+- apps/web/app/register/[token]/page.tsx
+- apps/web/features/Stage03Bootstrap/ui/PlatformAdminInviteForm.tsx
+- apps/web/shared/api/bootstrap.ts
+result: PASS
+findings:
+- none
+notes:
+- login continues to route only through resolveSessionLandingPath(session) -> /company/setup or session.workspace.landingPath, with no workspace-picker branch.
+- invite success state in PlatformAdminInviteForm keeps the current aria-live + aria-atomic announcement and does not reintroduce the previous accessibility gap.
+- register invite page remains a single-purpose activation surface and does not widen the session model beyond the returned scoped contour.

@@ -1,0 +1,14 @@
+{
+  "success": true,
+  "data": {
+    "id": "0355ff8d-fa13-4d38-a6a6-5c1f4197a2a4",
+    "fullName": "Subdivision-Registry Employee 1776604587",
+    "email": "subdivision-registry-1776604587@vrk.local",
+    "roleTemplate": "subdivision_manager",
+    "scopeType": "subdivision",
+    "scopeId": "3d351a71-784f-4a2b-953b-704d61d53a5e",
+    "scopeLabel": "Customer-Equipment Подразделение 1776604587",
+    "status": "draft",
+    "expiresAt": "2026-04-26T12:00:00Z"
+  }
+}

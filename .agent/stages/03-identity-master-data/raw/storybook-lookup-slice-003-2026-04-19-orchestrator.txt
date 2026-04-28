@@ -1,0 +1,17 @@
+Storybook registry entries: 19
+Query: "contracts agreement contractor invitation routing workspace access customer contour contractor contour contract status"
+
+1. Requests/RequestStatusBadge [RequestStatusBadge]
+   story: apps/web/stories/requests/RequestStatusBadge.stories.tsx
+   source: apps/web/entities/Request/ui/RequestStatusBadge.tsx
+   stories: Draft, OnApproval, Approved, InWork, OnSigning, AwaitingPayment, Completed, Reclamation
+   tags: autodocs
+2. Foundations/IconGallery [IconGalleryShowcase]
+   story: apps/web/stories/foundations/IconGallery.stories.tsx
+   stories: NavigationIcons, ActionIcons, FileTypeIcons, StatusIcons
+   tags: autodocs
+3. Primitives/Badge [Badge]
+   story: apps/web/stories/primitives/Badge.stories.tsx
+   source: apps/web/shared/ui/Badge.tsx
+   stories: Neutral, Success, Warning, Danger, WithIcon, Small, TrendUp, TrendDown, StatusMatrix
+   tags: autodocs

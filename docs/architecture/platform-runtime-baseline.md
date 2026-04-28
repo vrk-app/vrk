@@ -56,10 +56,11 @@ flowchart LR
 
 ## CI baseline
 
-- `frontend-workspaces` job гоняет `pnpm run web:smoke` и `pnpm run field:smoke`;
-- `pnpm run web:smoke` теперь покрывает не только lint/typecheck/build/storybook, но и headless browser-smoke для client-side submit path `/login` и `/register` -> `/company`;
-- `backend-container-checks` job гоняет container-backed `go test ./...` и `go build ./...`;
-- `platform-stack-smoke` job поднимает тот же compose stack и запускает `make smoke`.
+- workflow `.github/workflows/platform-baseline.yml` wired так, чтобы `frontend-workspaces` запускал `pnpm run web:smoke` и `pnpm run field:smoke`;
+- `pnpm run web:smoke` покрывает не только lint/typecheck/build/storybook, но и headless browser-smoke для client-side submit path `/login` и `/register` -> `/company`;
+- тот же workflow wired так, чтобы `backend-container-checks` запускал container-backed `go test ./...` и `go build ./...`;
+- `platform-stack-smoke` в workflow wired к тому же compose stack и `make smoke`;
+- authoritative Stage 02 PASS bundle доказывает локальное воспроизведение этих команд, но не включает GitHub Actions run artifact.
 
 ## Операционные заметки
 

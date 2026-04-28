@@ -1,51 +1,42 @@
 "use client";
 
-import { useTransition, type FormEventHandler } from "react";
-import { useRouter } from "next/navigation";
-import { AuthAside, registerAsideItems } from "@/app/_components/AuthAside";
-import { RegisterForm } from "@/features/AuthRegister";
-import { AuthSplitLayout, ConsentRow } from "@/widgets/Auth";
+import { Building2, ShieldCheck, UserRound } from "lucide-react";
+import { AuthAside, type AuthAsideProps } from "@/app/_components/AuthAside";
+import { PlatformAdminInviteForm } from "@/features/Stage03Bootstrap";
+import { AuthSplitLayout } from "@/widgets/Auth";
+
+const inviteAsideItems: AuthAsideProps["items"] = [
+  {
+    title: "Organization shell",
+    detail: "Платформенный админ создает только оболочку и не заполняет все реквизиты вместо клиента.",
+    icon: <Building2 aria-hidden="true" className="size-5" />,
+  },
+  {
+    title: "Одноразовый invite",
+    detail: "Первый администратор задает пароль только после перехода по персональной ссылке.",
+    icon: <ShieldCheck aria-hidden="true" className="size-5" />,
+  },
+  {
+    title: "Launch wizard",
+    detail: "После acceptance пользователь попадает не в пустой кабинет, а в мастер запуска организации.",
+    icon: <UserRound aria-hidden="true" className="size-5" />,
+  },
+];
 
 export default function RegisterPage() {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-
-  const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
-    event.preventDefault();
-    startTransition(() => {
-      router.push("/company");
-    });
-  };
-
   return (
     <AuthSplitLayout
-      formSlot={
-        <RegisterForm
-          consent={
-            <ConsentRow
-              defaultChecked
-              label="Я подтверждаю, что регистрация в этом slice создает только shell-профиль без live contractor/company activation."
-              links={[
-                { label: "контуром Stage 02", href: "#stage-02" },
-                { label: "будущим Stage 03", href: "#stage-03" },
-              ]}
-            />
-          }
-          formError="Регистрация сохраняет только route intent: после неё пользователь должен продолжить заполнение company shell."
-          loading={isPending}
-          onSubmit={handleSubmit}
-        />
-      }
+      formSlot={<PlatformAdminInviteForm />}
       illustrationSlot={
         <AuthAside
-          badgeLabel="Stage 02 • Register shell"
-          description="Регистрация делает contour product-shaped: уже видно, как пользователь переходит из входа в company/equipment/contracts, но без преждевременной доменной активации."
-          items={registerAsideItems}
-          title="Первый вход компании теперь зафиксирован как публичный runtime route"
+          badgeLabel="Stage 03 • Invite issuance"
+          description="Маршрут `/register` больше не обещает self-service регистрацию. Он служит управляемым входом для платформенного админа, который выпускает first-admin invite."
+          items={inviteAsideItems}
+          title="Сначала shell и invite, потом активация по ссылке"
         />
       }
-      subtitle="Экран собирает минимальный набор полей, чтобы зафиксировать следующий шаг customer-admin bootstrap flow и не смешать его с живым master data."
-      title="Зарегистрировать компанию в runtime shell"
+      subtitle="Платформенный админ создает организацию-заготовку и отправляет одноразовое приглашение. Полная настройка организации живет уже в launch wizard приглашенного администратора."
+      title="Выдать first-admin приглашение"
     />
   );
 }

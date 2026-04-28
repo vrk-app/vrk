@@ -1,0 +1,54 @@
+{
+  "status": 200,
+  "response": {
+    "success": true,
+    "data": {
+      "sessionToken": "9d69ea7f-e5e9-47e5-a1b5-d4dbde5f5ee6",
+      "requiresLaunchWizard": false,
+      "account": {
+        "id": "fe19c38d-d9aa-4ea7-b7be-393204b9e89e",
+        "fullName": "Павел Оператор 1776553455",
+        "email": "proof-unit-1776553455@vrk.local"
+      },
+      "membershipId": "272c7612-8db8-4ae8-a79f-add5c754eb67",
+      "membershipStatus": "active",
+      "organization": {
+        "id": "31ba2fbd-7ef7-43d2-b79d-ec48b9322e22",
+        "roleTitle": "customer",
+        "name": "ВРК Scope Proof 1776553455",
+        "shortName": "ВРК Proof",
+        "propertyType": "ООО",
+        "inn": "1234567890",
+        "kpp": "123456789",
+        "legalAddress": "г. Москва, ул. Проверочная, д. 19",
+        "contactEmail": "proof-admin-1776553455@vrk.local",
+        "contactPhone": "+7 (999) 555-00-19",
+        "launchState": "active"
+      },
+      "grant": {
+        "id": "8253bbf7-de82-4a30-aace-c5300396f401",
+        "roleTemplate": "unit_operator",
+        "scopeType": "unit",
+        "scopeId": "246b98d8-de5f-4a30-9e67-893b597facd0"
+      },
+      "workspace": {
+        "scopeType": "unit",
+        "scopeId": "246b98d8-de5f-4a30-9e67-893b597facd0",
+        "scopeName": "Юнит 1776553455",
+        "landingTitle": "Юнит 1776553455",
+        "landingSubtitle": "Доступ ограничен выбранным юнитом без расширения вверх по иерархии.",
+        "canManageEmployeeInvites": false
+      },
+      "subdivisions": [],
+      "units": [
+        {
+          "id": "246b98d8-de5f-4a30-9e67-893b597facd0",
+          "type": "Лаборатория",
+          "name": "Юнит 1776553455",
+          "code": "UNIT-01",
+          "subdivisionId": "d56765e8-ccc4-47be-bd1e-57673eb2e1ad"
+        }
+      ]
+    }
+  }
+}

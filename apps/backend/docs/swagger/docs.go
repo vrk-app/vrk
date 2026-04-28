@@ -17,36 +17,17 @@ const docTemplate = `{
     "paths": {
         "/agreements": {
             "get": {
-                "description": "Возвращает список договоров с пагинацией",
+                "description": "Returns contracts visible to the authenticated customer or contractor organization through the agreements adapter boundary.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "agreements"
                 ],
-                "summary": "Получить список договоров",
-                "parameters": [
-                    {
-                        "maximum": 100,
-                        "minimum": 1,
-                        "type": "integer",
-                        "default": 10,
-                        "description": "Количество записей на странице",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "minimum": 0,
-                        "type": "integer",
-                        "default": 0,
-                        "description": "Смещение",
-                        "name": "offset",
-                        "in": "query"
-                    }
-                ],
+                "summary": "List contracts",
                 "responses": {
                     "200": {
-                        "description": "Успешный ответ",
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -60,17 +41,20 @@ const docTemplate = `{
                                             "items": {
                                                 "$ref": "#/definitions/agreement.AgreementResponse"
                                             }
-                                        },
-                                        "meta": {
-                                            "$ref": "#/definitions/agreement.Meta"
                                         }
                                     }
                                 }
                             ]
                         }
                     },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/agreement.Response"
                         }
@@ -78,7 +62,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Создает новый договор между заказчиком и подрядчиком",
+                "description": "Creates a Stage 03 contract bound to a customer organization and contractor organization while preserving the backend agreements adapter boundary.",
                 "consumes": [
                     "application/json"
                 ],
@@ -88,10 +72,10 @@ const docTemplate = `{
                 "tags": [
                     "agreements"
                 ],
-                "summary": "Создать договор",
+                "summary": "Create contract",
                 "parameters": [
                     {
-                        "description": "Данные договора",
+                        "description": "Contract payload",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -102,7 +86,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Договор создан",
+                        "description": "Created",
                         "schema": {
                             "allOf": [
                                 {
@@ -120,13 +104,142 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Неверный запрос",
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/agreement.Response"
                         }
                     },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/agreements/contractors": {
+            "get": {
+                "description": "Returns active contractor organizations that can be bound to a customer contract.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "agreements"
+                ],
+                "summary": "List active contractor organizations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/agreement.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/agreement.ContractorOptionResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/agreements/routing/resolve": {
+            "post": {
+                "description": "Resolves routing-eligible contracts and the allowed contractor from customer contract context without enabling live Stage 04 request creation.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "agreements"
+                ],
+                "summary": "Resolve contract routing",
+                "parameters": [
+                    {
+                        "description": "Routing resolve payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/agreement.RoutingResolveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/agreement.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/agreement.RoutingResolveResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/agreement.Response"
                         }
@@ -136,18 +249,18 @@ const docTemplate = `{
         },
         "/agreements/{id}": {
             "get": {
-                "description": "Возвращает информацию о договоре",
+                "description": "Returns one contract visible to the authenticated customer or contractor organization.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "agreements"
                 ],
-                "summary": "Получить договор по ID",
+                "summary": "Get contract by ID",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID договора",
+                        "description": "Contract ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -155,7 +268,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Успешный ответ",
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -172,14 +285,20 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "404": {
-                        "description": "Договор не найден",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/agreement.Response"
                         }
                     },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/agreement.Response"
                         }
@@ -187,7 +306,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Обновляет данные существующего договора",
+                "description": "Updates one customer-owned contract through the legacy agreements path while keeping the public web contour named contracts.",
                 "consumes": [
                     "application/json"
                 ],
@@ -197,17 +316,17 @@ const docTemplate = `{
                 "tags": [
                     "agreements"
                 ],
-                "summary": "Обновить договор",
+                "summary": "Update contract",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID договора",
+                        "description": "Contract ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Данные для обновления",
+                        "description": "Contract update payload",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -218,7 +337,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Успешное обновление",
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -236,52 +355,31 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Неверный запрос",
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/agreement.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/agreement.Response"
                         }
                     },
                     "404": {
-                        "description": "Договор не найден",
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/agreement.Response"
                         }
                     },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
-                        "schema": {
-                            "$ref": "#/definitions/agreement.Response"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Удаляет договор по ID",
-                "tags": [
-                    "agreements"
-                ],
-                "summary": "Удалить договор",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID договора",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "Успешное удаление"
-                    },
-                    "404": {
-                        "description": "Договор не найден",
-                        "schema": {
-                            "$ref": "#/definitions/agreement.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/agreement.Response"
                         }
@@ -289,23 +387,268 @@ const docTemplate = `{
                 }
             }
         },
+        "/employee-invites": {
+            "get": {
+                "description": "Returns the employee invite lifecycle visible to the active organization admin.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "employee-invites"
+                ],
+                "summary": "List employee invites",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/bootstrap.EmployeeInviteResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a draft employee invite for the active organization admin with role template, scope, and expiry policy.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "employee-invites"
+                ],
+                "summary": "Create employee invite draft",
+                "parameters": [
+                    {
+                        "description": "Employee invite payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.CreateEmployeeInviteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.EmployeeInviteResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/employee-invites/{inviteID}/revoke": {
+            "post": {
+                "description": "Revokes a draft, sent, or opened employee invite.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "employee-invites"
+                ],
+                "summary": "Revoke employee invite",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Employee invite ID",
+                        "name": "inviteID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.EmployeeInviteResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/employee-invites/{inviteID}/send": {
+            "post": {
+                "description": "Transitions a draft employee invite to sent and issues a one-time token.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "employee-invites"
+                ],
+                "summary": "Send employee invite",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Employee invite ID",
+                        "name": "inviteID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.EmployeeInviteResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/equipment": {
             "get": {
-                "description": "Возвращает список оборудования с пагинацией",
+                "description": "Returns equipment records visible inside the authenticated customer organization/session scope.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "equipment"
                 ],
-                "summary": "Получить список оборудования",
+                "summary": "List equipment registry",
                 "parameters": [
                     {
                         "maximum": 100,
                         "minimum": 1,
                         "type": "integer",
-                        "default": 10,
-                        "description": "Количество записей на странице",
+                        "default": 20,
+                        "description": "Page size",
                         "name": "limit",
                         "in": "query"
                     },
@@ -313,14 +656,14 @@ const docTemplate = `{
                         "minimum": 0,
                         "type": "integer",
                         "default": 0,
-                        "description": "Смещение",
+                        "description": "Offset",
                         "name": "offset",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Успешный ответ",
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -343,8 +686,14 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/equipment.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/equipment.Response"
                         }
@@ -352,7 +701,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Создает новую единицу оборудования",
+                "description": "Creates one equipment registry record inside the authenticated customer organization and visible unit contour.",
                 "consumes": [
                     "application/json"
                 ],
@@ -362,10 +711,10 @@ const docTemplate = `{
                 "tags": [
                     "equipment"
                 ],
-                "summary": "Создать оборудование",
+                "summary": "Create equipment registry record",
                 "parameters": [
                     {
-                        "description": "Данные оборудования",
+                        "description": "Equipment payload",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -376,7 +725,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Оборудование создано",
+                        "description": "Created",
                         "schema": {
                             "allOf": [
                                 {
@@ -394,13 +743,19 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Неверный запрос",
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/equipment.Response"
                         }
                     },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/equipment.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/equipment.Response"
                         }
@@ -410,18 +765,18 @@ const docTemplate = `{
         },
         "/equipment/{id}": {
             "get": {
-                "description": "Возвращает информацию об оборудовании",
+                "description": "Returns one equipment record visible inside the authenticated customer organization/session scope.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "equipment"
                 ],
-                "summary": "Получить оборудование по ID",
+                "summary": "Get equipment registry record",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID оборудования",
+                        "description": "Equipment ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -429,7 +784,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Успешный ответ",
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -446,22 +801,28 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "404": {
-                        "description": "Оборудование не найдено",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/equipment.Response"
                         }
                     },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/equipment.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/equipment.Response"
                         }
                     }
                 }
             },
-            "put": {
-                "description": "Обновляет данные оборудования",
+            "patch": {
+                "description": "Updates one equipment record inside the authenticated customer organization/session scope.",
                 "consumes": [
                     "application/json"
                 ],
@@ -471,17 +832,17 @@ const docTemplate = `{
                 "tags": [
                     "equipment"
                 ],
-                "summary": "Обновить оборудование",
+                "summary": "Update equipment registry record",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID оборудования",
+                        "description": "Equipment ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Данные для обновления",
+                        "description": "Equipment patch payload",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -492,7 +853,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Успешное обновление",
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -510,52 +871,25 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Неверный запрос",
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/equipment.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/equipment.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/equipment.Response"
                         }
                     },
                     "404": {
-                        "description": "Оборудование не найдено",
-                        "schema": {
-                            "$ref": "#/definitions/equipment.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
-                        "schema": {
-                            "$ref": "#/definitions/equipment.Response"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Удаляет оборудование по ID",
-                "tags": [
-                    "equipment"
-                ],
-                "summary": "Удалить оборудование",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID оборудования",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "Успешное удаление"
-                    },
-                    "404": {
-                        "description": "Оборудование не найдено",
-                        "schema": {
-                            "$ref": "#/definitions/equipment.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/equipment.Response"
                         }
@@ -563,23 +897,394 @@ const docTemplate = `{
                 }
             }
         },
-        "/measuring-instruments": {
-            "get": {
-                "description": "Возвращает список средств измерения с пагинацией",
+        "/equipment/{id}/archive": {
+            "post": {
+                "description": "Archives one equipment record inside the authenticated customer organization/session scope.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "equipment"
                 ],
-                "summary": "Получить список средств измерения",
+                "summary": "Archive equipment registry record",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Equipment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/equipment.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/equipment.EquipmentResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/equipment.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/equipment.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/equipment.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/first-admin-invites/{token}": {
+            "get": {
+                "description": "Opens the first-admin invite link before password setup.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "bootstrap"
+                ],
+                "summary": "Inspect first-admin invite",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Invite token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.InviteInspectionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/first-admin-invites/{token}/accept": {
+            "post": {
+                "description": "Sets the invited admin password, creates membership and organization-admin grant, and starts a session.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "bootstrap"
+                ],
+                "summary": "Accept first-admin invite",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Invite token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Password payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.AcceptInviteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.SessionSummaryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/invites/{token}": {
+            "get": {
+                "description": "Opens a public invite link and returns the current invite state for first-admin and employee activation flows.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "bootstrap"
+                ],
+                "summary": "Inspect public invite",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Invite token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.PublicInviteInspectionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/invites/{token}/accept": {
+            "post": {
+                "description": "Sets the invited user's password, creates or links identity, provisions membership and scoped grant, and starts a session.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "bootstrap"
+                ],
+                "summary": "Accept public invite",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Invite token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Password payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.AcceptInviteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.SessionSummaryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/launch-wizard": {
+            "post": {
+                "description": "Saves the core organization data and creates the first subdivision or direct unit.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "bootstrap"
+                ],
+                "summary": "Complete launch wizard",
+                "parameters": [
+                    {
+                        "description": "Launch wizard payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.CompleteLaunchRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.SessionSummaryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/measuring-instruments": {
+            "get": {
+                "description": "Returns measuring instrument records visible inside the authenticated customer session scope.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "equipment"
+                ],
+                "summary": "List measuring instruments registry",
                 "parameters": [
                     {
                         "maximum": 100,
                         "minimum": 1,
                         "type": "integer",
-                        "default": 10,
-                        "description": "Количество записей на странице",
+                        "default": 20,
+                        "description": "Page size",
                         "name": "limit",
                         "in": "query"
                     },
@@ -587,14 +1292,14 @@ const docTemplate = `{
                         "minimum": 0,
                         "type": "integer",
                         "default": 0,
-                        "description": "Смещение",
+                        "description": "Offset",
                         "name": "offset",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Успешный ответ",
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -617,8 +1322,14 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/measuringinstrument.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/measuringinstrument.Response"
                         }
@@ -626,7 +1337,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Создает новое средство измерения (СИ)",
+                "description": "Creates one measuring instrument registry record inside the authenticated customer organization.",
                 "consumes": [
                     "application/json"
                 ],
@@ -636,10 +1347,10 @@ const docTemplate = `{
                 "tags": [
                     "equipment"
                 ],
-                "summary": "Создать средство измерения",
+                "summary": "Create measuring instrument registry record",
                 "parameters": [
                     {
-                        "description": "Данные средства измерения",
+                        "description": "Measuring instrument payload",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -650,7 +1361,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Средство измерения создано",
+                        "description": "Created",
                         "schema": {
                             "allOf": [
                                 {
@@ -668,13 +1379,19 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Неверный запрос",
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/measuringinstrument.Response"
                         }
                     },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/measuringinstrument.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/measuringinstrument.Response"
                         }
@@ -684,18 +1401,18 @@ const docTemplate = `{
         },
         "/measuring-instruments/{id}": {
             "get": {
-                "description": "Возвращает информацию о средстве измерения",
+                "description": "Returns one measuring instrument record visible inside the authenticated customer session scope.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "equipment"
                 ],
-                "summary": "Получить средство измерения по ID",
+                "summary": "Get measuring instrument registry record",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID средства измерения",
+                        "description": "Measuring instrument ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -703,7 +1420,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Успешный ответ",
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -720,22 +1437,28 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "404": {
-                        "description": "Средство измерения не найдено",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/measuringinstrument.Response"
                         }
                     },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/measuringinstrument.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/measuringinstrument.Response"
                         }
                     }
                 }
             },
-            "put": {
-                "description": "Обновляет данные средства измерения",
+            "patch": {
+                "description": "Updates one measuring instrument record inside the authenticated customer organization.",
                 "consumes": [
                     "application/json"
                 ],
@@ -745,17 +1468,17 @@ const docTemplate = `{
                 "tags": [
                     "equipment"
                 ],
-                "summary": "Обновить средство измерения",
+                "summary": "Update measuring instrument registry record",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID средства измерения",
+                        "description": "Measuring instrument ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Данные для обновления",
+                        "description": "Measuring instrument patch payload",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -766,7 +1489,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Успешное обновление",
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -784,19 +1507,221 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Неверный запрос",
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/measuringinstrument.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/measuringinstrument.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/measuringinstrument.Response"
                         }
                     },
                     "404": {
-                        "description": "Средство измерения не найдено",
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/measuringinstrument.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/measuring-instruments/{id}/archive": {
+            "post": {
+                "description": "Archives one measuring instrument record inside the authenticated customer organization/session scope.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "equipment"
+                ],
+                "summary": "Archive measuring instrument registry record",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Measuring instrument ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/measuringinstrument.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/measuringinstrument.MeasuringInstrumentResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/measuringinstrument.Response"
                         }
                     },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/measuringinstrument.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/measuringinstrument.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/measuring-instruments/{id}/journals": {
+            "get": {
+                "description": "Returns metrology journal entries for one measuring instrument visible inside the authenticated customer session scope.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "equipment"
+                ],
+                "summary": "List measuring instrument journal",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Measuring instrument ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/measuringinstrument.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/measuringinstrument.JournalResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/measuringinstrument.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/measuringinstrument.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/measuringinstrument.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Appends one metrology journal entry to the measuring instrument visible inside the authenticated customer organization.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "equipment"
+                ],
+                "summary": "Create measuring instrument journal entry",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Measuring instrument ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Journal payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/measuringinstrument.CreateJournalRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/measuringinstrument.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/measuringinstrument.JournalResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/measuringinstrument.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/measuringinstrument.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/measuringinstrument.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/measuringinstrument.Response"
                         }
@@ -815,6 +1740,13 @@ const docTemplate = `{
                 ],
                 "summary": "Получить список организаций",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deployment-scoped platform admin secret",
+                        "name": "X-VRK-Platform-Admin-Secret",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "maximum": 100,
                         "minimum": 1,
@@ -858,6 +1790,12 @@ const docTemplate = `{
                             ]
                         }
                     },
+                    "401": {
+                        "description": "Неавторизованный admin surface вызов",
+                        "schema": {
+                            "$ref": "#/definitions/organization.Response"
+                        }
+                    },
                     "500": {
                         "description": "Внутренняя ошибка сервера",
                         "schema": {
@@ -879,6 +1817,13 @@ const docTemplate = `{
                 ],
                 "summary": "Создать организацию",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deployment-scoped platform admin secret",
+                        "name": "X-VRK-Platform-Admin-Secret",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "description": "Данные организации",
                         "name": "request",
@@ -914,6 +1859,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/organization.Response"
                         }
                     },
+                    "401": {
+                        "description": "Неавторизованный admin surface вызов",
+                        "schema": {
+                            "$ref": "#/definitions/organization.Response"
+                        }
+                    },
                     "500": {
                         "description": "Внутренняя ошибка сервера",
                         "schema": {
@@ -934,6 +1885,13 @@ const docTemplate = `{
                 ],
                 "summary": "Получить организацию по ID",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deployment-scoped platform admin secret",
+                        "name": "X-VRK-Platform-Admin-Secret",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "description": "ID организации",
@@ -961,6 +1919,18 @@ const docTemplate = `{
                             ]
                         }
                     },
+                    "400": {
+                        "description": "Неверный ID",
+                        "schema": {
+                            "$ref": "#/definitions/organization.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Неавторизованный admin surface вызов",
+                        "schema": {
+                            "$ref": "#/definitions/organization.Response"
+                        }
+                    },
                     "404": {
                         "description": "Организация не найдена",
                         "schema": {
@@ -975,7 +1945,59 @@ const docTemplate = `{
                     }
                 }
             },
-            "put": {
+            "delete": {
+                "description": "Удаляет организацию по ID",
+                "tags": [
+                    "organizations"
+                ],
+                "summary": "Удалить организацию",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deployment-scoped platform admin secret",
+                        "name": "X-VRK-Platform-Admin-Secret",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID организации",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Успешное удаление"
+                    },
+                    "400": {
+                        "description": "Неверный ID",
+                        "schema": {
+                            "$ref": "#/definitions/organization.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Неавторизованный admin surface вызов",
+                        "schema": {
+                            "$ref": "#/definitions/organization.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Организация не найдена",
+                        "schema": {
+                            "$ref": "#/definitions/organization.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/organization.Response"
+                        }
+                    }
+                }
+            },
+            "patch": {
                 "description": "Обновляет данные организации",
                 "consumes": [
                     "application/json"
@@ -988,6 +2010,13 @@ const docTemplate = `{
                 ],
                 "summary": "Обновить организацию",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deployment-scoped platform admin secret",
+                        "name": "X-VRK-Platform-Admin-Secret",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "description": "ID организации",
@@ -1030,41 +2059,20 @@ const docTemplate = `{
                             "$ref": "#/definitions/organization.Response"
                         }
                     },
+                    "401": {
+                        "description": "Неавторизованный admin surface вызов",
+                        "schema": {
+                            "$ref": "#/definitions/organization.Response"
+                        }
+                    },
                     "404": {
                         "description": "Организация не найдена",
                         "schema": {
                             "$ref": "#/definitions/organization.Response"
                         }
                     },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
-                        "schema": {
-                            "$ref": "#/definitions/organization.Response"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Удаляет организацию по ID",
-                "tags": [
-                    "organizations"
-                ],
-                "summary": "Удалить организацию",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID организации",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "Успешное удаление"
-                    },
-                    "404": {
-                        "description": "Организация не найдена",
+                    "409": {
+                        "description": "Конкурирующее обновление",
                         "schema": {
                             "$ref": "#/definitions/organization.Response"
                         }
@@ -1078,23 +2086,217 @@ const docTemplate = `{
                 }
             }
         },
+        "/platform/organization-shells": {
+            "post": {
+                "description": "Platform admin creates an organization shell and issues the first-admin invite.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "bootstrap"
+                ],
+                "summary": "Create organization shell",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deployment-scoped platform admin secret",
+                        "name": "X-VRK-Platform-Admin-Secret",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Organization shell data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.CreateOrganizationShellRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.OrganizationShellResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/sessions": {
+            "post": {
+                "description": "Logs the user in when exactly one eligible membership/grant path exists and returns the current session snapshot.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Create auth session",
+                "parameters": [
+                    {
+                        "description": "Session credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.CreateSessionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.SessionSummaryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/sessions/current": {
+            "get": {
+                "description": "Returns the authenticated admin session and launch-wizard state.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Get current session",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.SessionSummaryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes the authenticated session token.",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Delete current session",
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/standards": {
             "get": {
-                "description": "Возвращает список эталонов с пагинацией",
+                "description": "Returns standard records visible inside the authenticated customer session scope.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "equipment"
                 ],
-                "summary": "Получить список эталонов",
+                "summary": "List standards registry",
                 "parameters": [
                     {
                         "maximum": 100,
                         "minimum": 1,
                         "type": "integer",
-                        "default": 10,
-                        "description": "Количество записей на странице",
+                        "default": 20,
+                        "description": "Page size",
                         "name": "limit",
                         "in": "query"
                     },
@@ -1102,14 +2304,14 @@ const docTemplate = `{
                         "minimum": 0,
                         "type": "integer",
                         "default": 0,
-                        "description": "Смещение",
+                        "description": "Offset",
                         "name": "offset",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Успешный ответ",
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -1132,8 +2334,14 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/standard.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/standard.Response"
                         }
@@ -1141,7 +2349,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Создает новый эталон для метрологической поверки",
+                "description": "Creates one standard registry record inside the authenticated customer organization.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1151,10 +2359,10 @@ const docTemplate = `{
                 "tags": [
                     "equipment"
                 ],
-                "summary": "Создать эталон",
+                "summary": "Create standard registry record",
                 "parameters": [
                     {
-                        "description": "Данные эталона",
+                        "description": "Standard payload",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -1165,7 +2373,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Эталон создан",
+                        "description": "Created",
                         "schema": {
                             "allOf": [
                                 {
@@ -1183,13 +2391,19 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Неверный запрос",
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/standard.Response"
                         }
                     },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/standard.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/standard.Response"
                         }
@@ -1199,18 +2413,18 @@ const docTemplate = `{
         },
         "/standards/{id}": {
             "get": {
-                "description": "Возвращает информацию об эталоне",
+                "description": "Returns one standard record visible inside the authenticated customer session scope.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "equipment"
                 ],
-                "summary": "Получить эталон по ID",
+                "summary": "Get standard registry record",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID эталона",
+                        "description": "Standard ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1218,7 +2432,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Успешный ответ",
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -1235,22 +2449,28 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "404": {
-                        "description": "Эталон не найден",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/standard.Response"
                         }
                     },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/standard.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/standard.Response"
                         }
                     }
                 }
             },
-            "put": {
-                "description": "Обновляет данные эталона",
+            "patch": {
+                "description": "Updates one standard record inside the authenticated customer organization.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1260,17 +2480,17 @@ const docTemplate = `{
                 "tags": [
                     "equipment"
                 ],
-                "summary": "Обновить эталон",
+                "summary": "Update standard registry record",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID эталона",
+                        "description": "Standard ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Данные для обновления",
+                        "description": "Standard patch payload",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -1281,7 +2501,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Успешное обновление",
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -1299,52 +2519,221 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Неверный запрос",
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/standard.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/standard.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/standard.Response"
                         }
                     },
                     "404": {
-                        "description": "Эталон не найден",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/standard.Response"
                         }
                     }
                 }
-            },
-            "delete": {
-                "description": "Удаляет эталон по ID",
+            }
+        },
+        "/standards/{id}/archive": {
+            "post": {
+                "description": "Archives one standard record inside the authenticated customer organization/session scope.",
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "equipment"
                 ],
-                "summary": "Удалить эталон",
+                "summary": "Archive standard registry record",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "ID эталона",
+                        "description": "Standard ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "Успешное удаление"
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/standard.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/standard.StandardResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     },
-                    "404": {
-                        "description": "Эталон не найден",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/standard.Response"
                         }
                     },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/standard.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/standard.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/standards/{id}/journals": {
+            "get": {
+                "description": "Returns metrology journal entries for one standard visible inside the authenticated customer session scope.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "equipment"
+                ],
+                "summary": "List standard journal",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Standard ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/standard.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/standard.JournalResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/standard.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/standard.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/standard.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Appends one metrology journal entry to the standard visible inside the authenticated customer organization.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "equipment"
+                ],
+                "summary": "Create standard journal entry",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Standard ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Journal payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/standard.CreateJournalRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/standard.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/standard.JournalResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/standard.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/standard.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/standard.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/standard.Response"
                         }
@@ -1354,26 +2743,58 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "agreement.AgreementLocationScopeResponse": {
+            "type": "object",
+            "properties": {
+                "label": {
+                    "type": "string"
+                },
+                "scopeId": {
+                    "type": "string"
+                },
+                "scopeType": {
+                    "type": "string"
+                }
+            }
+        },
         "agreement.AgreementResponse": {
             "type": "object",
             "properties": {
+                "contractNumber": {
+                    "type": "string"
+                },
+                "contractStatus": {
+                    "type": "string"
+                },
+                "contractorOrganizationId": {
+                    "type": "string"
+                },
+                "contractorOrganizationName": {
+                    "type": "string"
+                },
+                "customerOrganizationId": {
+                    "type": "string"
+                },
+                "customerOrganizationName": {
+                    "type": "string"
+                },
                 "endDate": {
                     "type": "string"
                 },
-                "factoryId": {
+                "equipmentType": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
-                "number": {
-                    "type": "integer"
+                "locationScope": {
+                    "$ref": "#/definitions/agreement.AgreementLocationScopeResponse"
                 },
-                "organizationId": {
+                "region": {
                     "type": "string"
                 },
-                "scheduleId": {
-                    "type": "string"
+                "routingEligible": {
+                    "type": "boolean"
                 },
                 "source": {
                     "type": "string"
@@ -1382,62 +2803,68 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "subjectOfAgreement": {
+                    "type": "string"
+                },
+                "workType": {
+                    "type": "string"
+                }
+            }
+        },
+        "agreement.ContractorOptionResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "shortName": {
                     "type": "string"
                 }
             }
         },
         "agreement.CreateRequest": {
             "type": "object",
-            "required": [
-                "endDate",
-                "factoryId",
-                "number",
-                "organizationId",
-                "scheduleId",
-                "source",
-                "startDate",
-                "subjectOfAgreement"
-            ],
             "properties": {
+                "contractNumber": {
+                    "type": "string"
+                },
+                "contractStatus": {
+                    "type": "string"
+                },
+                "contractorOrganizationId": {
+                    "type": "string"
+                },
                 "endDate": {
-                    "description": "формат \"2006-01-02\"",
                     "type": "string"
                 },
-                "factoryId": {
+                "equipmentType": {
                     "type": "string"
                 },
-                "number": {
-                    "type": "integer"
-                },
-                "organizationId": {
+                "locationScopeLabel": {
                     "type": "string"
                 },
-                "scheduleId": {
+                "region": {
                     "type": "string"
                 },
                 "source": {
                     "type": "string"
                 },
                 "startDate": {
-                    "description": "формат \"2006-01-02\"",
+                    "type": "string"
+                },
+                "subdivisionId": {
                     "type": "string"
                 },
                 "subjectOfAgreement": {
                     "type": "string"
-                }
-            }
-        },
-        "agreement.Meta": {
-            "type": "object",
-            "properties": {
-                "limit": {
-                    "type": "integer"
                 },
-                "offset": {
-                    "type": "integer"
+                "unitId": {
+                    "type": "string"
                 },
-                "total": {
-                    "type": "integer"
+                "workType": {
+                    "type": "string"
                 }
             }
         },
@@ -1448,30 +2875,84 @@ const docTemplate = `{
                 "error": {
                     "type": "string"
                 },
-                "meta": {
-                    "$ref": "#/definitions/agreement.Meta"
-                },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "agreement.RoutingResolutionItem": {
+            "type": "object",
+            "properties": {
+                "contract": {
+                    "$ref": "#/definitions/agreement.AgreementResponse"
+                },
+                "contractor": {
+                    "$ref": "#/definitions/agreement.ContractorOptionResponse"
+                }
+            }
+        },
+        "agreement.RoutingResolveRequest": {
+            "type": "object",
+            "properties": {
+                "equipmentType": {
+                    "type": "string"
+                },
+                "region": {
+                    "type": "string"
+                },
+                "unitId": {
+                    "type": "string"
+                },
+                "workType": {
+                    "type": "string"
+                }
+            }
+        },
+        "agreement.RoutingResolveResponse": {
+            "type": "object",
+            "properties": {
+                "equipmentType": {
+                    "type": "string"
+                },
+                "matches": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/agreement.RoutingResolutionItem"
+                    }
+                },
+                "region": {
+                    "type": "string"
+                },
+                "unitId": {
+                    "type": "string"
+                },
+                "workType": {
+                    "type": "string"
                 }
             }
         },
         "agreement.UpdateRequest": {
             "type": "object",
             "properties": {
+                "contractNumber": {
+                    "type": "string"
+                },
+                "contractStatus": {
+                    "type": "string"
+                },
+                "contractorOrganizationId": {
+                    "type": "string"
+                },
                 "endDate": {
                     "type": "string"
                 },
-                "factoryId": {
+                "equipmentType": {
                     "type": "string"
                 },
-                "number": {
-                    "type": "integer"
-                },
-                "organizationId": {
+                "locationScopeLabel": {
                     "type": "string"
                 },
-                "scheduleId": {
+                "region": {
                     "type": "string"
                 },
                 "source": {
@@ -1480,54 +2961,560 @@ const docTemplate = `{
                 "startDate": {
                     "type": "string"
                 },
+                "subdivisionId": {
+                    "type": "string"
+                },
                 "subjectOfAgreement": {
+                    "type": "string"
+                },
+                "unitId": {
+                    "type": "string"
+                },
+                "workType": {
+                    "type": "string"
+                }
+            }
+        },
+        "bootstrap.AcceptInviteRequest": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "bootstrap.CompleteLaunchRequest": {
+            "type": "object",
+            "properties": {
+                "contactEmail": {
+                    "type": "string"
+                },
+                "contactPhone": {
+                    "type": "string"
+                },
+                "inn": {
+                    "type": "string"
+                },
+                "kpp": {
+                    "type": "string"
+                },
+                "legalAddress": {
+                    "type": "string"
+                },
+                "organizationName": {
+                    "type": "string"
+                },
+                "propertyType": {
+                    "type": "string"
+                },
+                "shortName": {
+                    "type": "string"
+                },
+                "structureMode": {
+                    "type": "string"
+                },
+                "subdivision": {
+                    "$ref": "#/definitions/bootstrap.LaunchSubdivisionInput"
+                },
+                "unit": {
+                    "$ref": "#/definitions/bootstrap.LaunchUnitInput"
+                }
+            }
+        },
+        "bootstrap.CreateEmployeeInviteRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "expiresAt": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "roleTemplate": {
+                    "type": "string"
+                },
+                "scopeId": {
+                    "type": "string"
+                },
+                "scopeType": {
+                    "type": "string"
+                }
+            }
+        },
+        "bootstrap.CreateOrganizationShellRequest": {
+            "type": "object",
+            "properties": {
+                "firstAdminEmail": {
+                    "type": "string"
+                },
+                "firstAdminName": {
+                    "type": "string"
+                },
+                "organizationName": {
+                    "type": "string"
+                },
+                "organizationRole": {
+                    "type": "string"
+                }
+            }
+        },
+        "bootstrap.CreateSessionRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "bootstrap.EmployeeInviteResponse": {
+            "type": "object",
+            "properties": {
+                "acceptPath": {
+                    "type": "string"
+                },
+                "acceptedAt": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "expiresAt": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inviteToken": {
+                    "type": "string"
+                },
+                "openedAt": {
+                    "type": "string"
+                },
+                "revokedAt": {
+                    "type": "string"
+                },
+                "roleTemplate": {
+                    "type": "string"
+                },
+                "scopeId": {
+                    "type": "string"
+                },
+                "scopeLabel": {
+                    "type": "string"
+                },
+                "scopeType": {
+                    "type": "string"
+                },
+                "sentAt": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "bootstrap.InviteInspectionResponse": {
+            "type": "object",
+            "properties": {
+                "firstAdminName": {
+                    "type": "string"
+                },
+                "inviteEmail": {
+                    "type": "string"
+                },
+                "inviteExpiresAt": {
+                    "type": "string"
+                },
+                "inviteStatus": {
+                    "type": "string"
+                },
+                "launchState": {
+                    "type": "string"
+                },
+                "organizationId": {
+                    "type": "string"
+                },
+                "organizationName": {
+                    "type": "string"
+                },
+                "organizationRole": {
+                    "type": "string"
+                }
+            }
+        },
+        "bootstrap.LaunchSubdivisionInput": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "contacts": {
+                    "type": "string"
+                },
+                "managerName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "region": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "bootstrap.LaunchUnitInput": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "contacts": {
+                    "type": "string"
+                },
+                "managerName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "bootstrap.OrganizationShellResponse": {
+            "type": "object",
+            "properties": {
+                "inviteEmail": {
+                    "type": "string"
+                },
+                "inviteExpiresAt": {
+                    "type": "string"
+                },
+                "inviteId": {
+                    "type": "string"
+                },
+                "inviteStatus": {
+                    "type": "string"
+                },
+                "inviteToken": {
+                    "type": "string"
+                },
+                "organizationId": {
+                    "type": "string"
+                },
+                "organizationName": {
+                    "type": "string"
+                },
+                "organizationRole": {
+                    "type": "string"
+                }
+            }
+        },
+        "bootstrap.PublicInviteInspectionResponse": {
+            "type": "object",
+            "properties": {
+                "inviteEmail": {
+                    "type": "string"
+                },
+                "inviteExpiresAt": {
+                    "type": "string"
+                },
+                "inviteKind": {
+                    "type": "string"
+                },
+                "inviteStatus": {
+                    "type": "string"
+                },
+                "inviteeName": {
+                    "type": "string"
+                },
+                "launchState": {
+                    "type": "string"
+                },
+                "organizationId": {
+                    "type": "string"
+                },
+                "organizationName": {
+                    "type": "string"
+                },
+                "organizationRole": {
+                    "type": "string"
+                },
+                "roleTemplate": {
+                    "type": "string"
+                },
+                "scopeLabel": {
+                    "type": "string"
+                },
+                "scopeType": {
+                    "type": "string"
+                }
+            }
+        },
+        "bootstrap.Response": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "bootstrap.SessionAccountResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "bootstrap.SessionGrantResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "roleTemplate": {
+                    "type": "string"
+                },
+                "scopeId": {
+                    "type": "string"
+                },
+                "scopeType": {
+                    "type": "string"
+                }
+            }
+        },
+        "bootstrap.SessionOrganizationResponse": {
+            "type": "object",
+            "properties": {
+                "contactEmail": {
+                    "type": "string"
+                },
+                "contactPhone": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "inn": {
+                    "type": "string"
+                },
+                "kpp": {
+                    "type": "string"
+                },
+                "launchState": {
+                    "type": "string"
+                },
+                "legalAddress": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "propertyType": {
+                    "type": "string"
+                },
+                "roleTitle": {
+                    "type": "string"
+                },
+                "shortName": {
+                    "type": "string"
+                }
+            }
+        },
+        "bootstrap.SessionSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "$ref": "#/definitions/bootstrap.SessionAccountResponse"
+                },
+                "grant": {
+                    "$ref": "#/definitions/bootstrap.SessionGrantResponse"
+                },
+                "membershipId": {
+                    "type": "string"
+                },
+                "membershipStatus": {
+                    "type": "string"
+                },
+                "organization": {
+                    "$ref": "#/definitions/bootstrap.SessionOrganizationResponse"
+                },
+                "requiresLaunchWizard": {
+                    "type": "boolean"
+                },
+                "sessionToken": {
+                    "type": "string"
+                },
+                "subdivisions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/bootstrap.SubdivisionResponse"
+                    }
+                },
+                "units": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/bootstrap.UnitResponse"
+                    }
+                },
+                "workspace": {
+                    "$ref": "#/definitions/bootstrap.SessionWorkspaceResponse"
+                }
+            }
+        },
+        "bootstrap.SessionWorkspaceResponse": {
+            "type": "object",
+            "properties": {
+                "canManageEmployeeInvites": {
+                    "type": "boolean"
+                },
+                "landingPath": {
+                    "type": "string"
+                },
+                "landingSubtitle": {
+                    "type": "string"
+                },
+                "landingTitle": {
+                    "type": "string"
+                },
+                "scopeId": {
+                    "type": "string"
+                },
+                "scopeName": {
+                    "type": "string"
+                },
+                "scopeType": {
+                    "type": "string"
+                }
+            }
+        },
+        "bootstrap.SubdivisionResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "bootstrap.UnitResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "subdivisionId": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }
         },
         "equipment.CreateRequest": {
             "type": "object",
-            "required": [
-                "equipmentDictionaryId",
-                "factoryNumber",
-                "manufactureYear",
-                "organizationId",
-                "statusId"
-            ],
             "properties": {
-                "equipmentDictionaryId": {
+                "classification": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "documentUrl": {
                     "type": "string"
                 },
                 "factoryNumber": {
-                    "type": "string",
-                    "maxLength": 50
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
                 },
                 "inventoryNumber": {
                     "type": "string"
                 },
                 "manufactureYear": {
+                    "type": "integer"
+                },
+                "manufacturer": {
                     "type": "string"
                 },
-                "organizationId": {
+                "model": {
                     "type": "string"
                 },
-                "registrationYear": {
+                "status": {
                     "type": "string"
                 },
-                "statusId": {
-                    "type": "integer",
-                    "maximum": 5,
-                    "minimum": 1
+                "unitId": {
+                    "type": "string"
                 }
             }
         },
         "equipment.EquipmentResponse": {
             "type": "object",
             "properties": {
-                "equipmentName": {
+                "archivedAt": {
+                    "type": "string"
+                },
+                "classification": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "documentUrl": {
                     "type": "string"
                 },
                 "factoryNumber": {
+                    "type": "string"
+                },
+                "fullName": {
                     "type": "string"
                 },
                 "id": {
@@ -1537,27 +3524,27 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "manufactureYear": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "manufacturer": {
                     "type": "string"
                 },
+                "measuringInstrumentCount": {
+                    "type": "integer"
+                },
                 "model": {
                     "type": "string"
                 },
-                "organizationName": {
+                "organizationId": {
                     "type": "string"
                 },
-                "registrationYear": {
+                "status": {
                     "type": "string"
                 },
-                "statusId": {
-                    "type": "integer"
+                "unit": {
+                    "$ref": "#/definitions/equipment.UnitSummary"
                 },
-                "statusName": {
-                    "type": "string"
-                },
-                "usageClassification": {
+                "updatedAt": {
                     "type": "string"
                 }
             }
@@ -1591,72 +3578,193 @@ const docTemplate = `{
                 }
             }
         },
+        "equipment.UnitSummary": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "subdivisionId": {
+                    "type": "string"
+                },
+                "subdivisionName": {
+                    "type": "string"
+                }
+            }
+        },
         "equipment.UpdateRequest": {
             "type": "object",
             "properties": {
-                "equipmentDictionaryId": {
+                "classification": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "documentUrl": {
                     "type": "string"
                 },
                 "factoryNumber": {
+                    "type": "string"
+                },
+                "fullName": {
                     "type": "string"
                 },
                 "inventoryNumber": {
                     "type": "string"
                 },
                 "manufactureYear": {
-                    "type": "string"
-                },
-                "organizationId": {
-                    "type": "string"
-                },
-                "registrationYear": {
-                    "type": "string"
-                },
-                "statusId": {
                     "type": "integer"
+                },
+                "manufacturer": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "unitId": {
+                    "type": "string"
+                }
+            }
+        },
+        "measuringinstrument.CreateJournalRequest": {
+            "type": "object",
+            "properties": {
+                "attachmentUrl": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "documentNumber": {
+                    "type": "string"
+                },
+                "executorOrganization": {
+                    "type": "string"
+                },
+                "operationDate": {
+                    "type": "string"
+                },
+                "operationType": {
+                    "type": "string"
+                },
+                "validUntil": {
+                    "type": "string"
                 }
             }
         },
         "measuringinstrument.CreateRequest": {
             "type": "object",
-            "required": [
-                "certificateNumber",
-                "documentProviderOrganization",
-                "documentUrl",
-                "metrologicalOperationTypeId",
-                "organizationId",
-                "registryNumber"
-            ],
             "properties": {
-                "certificateNumber": {
-                    "type": "string",
-                    "maxLength": 100
-                },
-                "documentProviderOrganization": {
-                    "type": "string",
-                    "maxLength": 100
+                "comment": {
+                    "type": "string"
                 },
                 "documentUrl": {
-                    "type": "string",
-                    "maxLength": 255
-                },
-                "lastOperationDate": {
                     "type": "string"
                 },
-                "metrologicalOperationTypeId": {
+                "equipmentId": {
                     "type": "string"
                 },
-                "nextOperationDate": {
+                "instrumentType": {
                     "type": "string"
                 },
-                "organizationId": {
+                "model": {
                     "type": "string"
                 },
-                "registryNumber": {
-                    "type": "string",
-                    "maxLength": 50
+                "name": {
+                    "type": "string"
                 },
-                "standardId": {
+                "placementKind": {
+                    "type": "string"
+                },
+                "registrationNumber": {
+                    "type": "string"
+                },
+                "serialNumber": {
+                    "type": "string"
+                },
+                "standardIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "unitId": {
+                    "type": "string"
+                }
+            }
+        },
+        "measuringinstrument.EquipmentSummary": {
+            "type": "object",
+            "properties": {
+                "fullName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "measuringinstrument.JournalResponse": {
+            "type": "object",
+            "properties": {
+                "attachmentUrl": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "documentNumber": {
+                    "type": "string"
+                },
+                "executorOrganization": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "operationDate": {
+                    "type": "string"
+                },
+                "operationType": {
+                    "type": "string"
+                },
+                "validUntil": {
+                    "type": "string"
+                }
+            }
+        },
+        "measuringinstrument.LinkedStandard": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "identifier": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "scopeLabel": {
+                    "type": "string"
+                },
+                "serialNumber": {
+                    "type": "string"
+                },
+                "standardType": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 }
             }
@@ -1664,38 +3772,65 @@ const docTemplate = `{
         "measuringinstrument.MeasuringInstrumentResponse": {
             "type": "object",
             "properties": {
-                "certificateNumber": {
+                "archivedAt": {
+                    "type": "string"
+                },
+                "comment": {
                     "type": "string"
                 },
                 "createdAt": {
                     "type": "string"
                 },
-                "documentProviderOrganization": {
-                    "type": "string"
-                },
                 "documentUrl": {
                     "type": "string"
+                },
+                "equipment": {
+                    "$ref": "#/definitions/measuringinstrument.EquipmentSummary"
                 },
                 "id": {
                     "type": "string"
                 },
-                "lastOperationDate": {
+                "instrumentType": {
                     "type": "string"
                 },
-                "metrologicalOperationTypeId": {
+                "journalCount": {
+                    "type": "integer"
+                },
+                "latestJournal": {
+                    "$ref": "#/definitions/measuringinstrument.JournalResponse"
+                },
+                "model": {
                     "type": "string"
                 },
-                "nextOperationDate": {
+                "name": {
+                    "type": "string"
+                },
+                "nextDueDate": {
                     "type": "string"
                 },
                 "organizationId": {
                     "type": "string"
                 },
-                "registryNumber": {
+                "placementKind": {
                     "type": "string"
                 },
-                "standardId": {
+                "registrationNumber": {
                     "type": "string"
+                },
+                "serialNumber": {
+                    "type": "string"
+                },
+                "standards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/measuringinstrument.LinkedStandard"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "unit": {
+                    "$ref": "#/definitions/measuringinstrument.UnitSummary"
                 },
                 "updatedAt": {
                     "type": "string"
@@ -1731,34 +3866,60 @@ const docTemplate = `{
                 }
             }
         },
+        "measuringinstrument.UnitSummary": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "subdivisionId": {
+                    "type": "string"
+                },
+                "subdivisionName": {
+                    "type": "string"
+                }
+            }
+        },
         "measuringinstrument.UpdateRequest": {
             "type": "object",
             "properties": {
-                "certificateNumber": {
-                    "type": "string"
-                },
-                "documentProviderOrganization": {
+                "comment": {
                     "type": "string"
                 },
                 "documentUrl": {
                     "type": "string"
                 },
-                "lastOperationDate": {
+                "equipmentId": {
                     "type": "string"
                 },
-                "metrologicalOperationTypeId": {
+                "instrumentType": {
                     "type": "string"
                 },
-                "nextOperationDate": {
+                "model": {
                     "type": "string"
                 },
-                "organizationId": {
+                "name": {
                     "type": "string"
                 },
-                "registryNumber": {
+                "placementKind": {
                     "type": "string"
                 },
-                "standardId": {
+                "registrationNumber": {
+                    "type": "string"
+                },
+                "serialNumber": {
+                    "type": "string"
+                },
+                "standardIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "unitId": {
                     "type": "string"
                 }
             }
@@ -1801,7 +3962,7 @@ const docTemplate = `{
                 "poaExpirationDate": {
                     "type": "string"
                 },
-                "poaissueDate": {
+                "poaIssueDate": {
                     "type": "string"
                 },
                 "powerOfAttorneyNumber": {
@@ -1938,39 +4099,95 @@ const docTemplate = `{
                 }
             }
         },
+        "standard.CreateJournalRequest": {
+            "type": "object",
+            "properties": {
+                "attachmentUrl": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "documentNumber": {
+                    "type": "string"
+                },
+                "executorOrganization": {
+                    "type": "string"
+                },
+                "operationDate": {
+                    "type": "string"
+                },
+                "operationType": {
+                    "type": "string"
+                },
+                "validUntil": {
+                    "type": "string"
+                }
+            }
+        },
         "standard.CreateRequest": {
             "type": "object",
-            "required": [
-                "certificateNumber",
-                "documentProviderOrganization",
-                "documentUrl",
-                "metrologicalCharacteristics",
-                "model"
-            ],
             "properties": {
-                "certificateNumber": {
-                    "type": "string",
-                    "maxLength": 100
-                },
-                "documentProviderOrganization": {
-                    "type": "string",
-                    "maxLength": 100
+                "comment": {
+                    "type": "string"
                 },
                 "documentUrl": {
-                    "type": "string",
-                    "maxLength": 255
+                    "type": "string"
                 },
-                "lastOperationDate": {
+                "identifier": {
                     "type": "string"
                 },
                 "metrologicalCharacteristics": {
                     "type": "string"
                 },
                 "model": {
-                    "type": "string",
-                    "maxLength": 50
+                    "type": "string"
                 },
-                "nextOperationDate": {
+                "ownerLabel": {
+                    "type": "string"
+                },
+                "serialNumber": {
+                    "type": "string"
+                },
+                "standardType": {
+                    "type": "string"
+                },
+                "subdivisionId": {
+                    "type": "string"
+                },
+                "unitId": {
+                    "type": "string"
+                }
+            }
+        },
+        "standard.JournalResponse": {
+            "type": "object",
+            "properties": {
+                "attachmentUrl": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "documentNumber": {
+                    "type": "string"
+                },
+                "executorOrganization": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "operationDate": {
+                    "type": "string"
+                },
+                "operationType": {
+                    "type": "string"
+                },
+                "validUntil": {
                     "type": "string"
                 }
             }
@@ -1986,6 +4203,20 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "standard.OwnershipScopeResponse": {
+            "type": "object",
+            "properties": {
+                "label": {
+                    "type": "string"
+                },
+                "scopeId": {
+                    "type": "string"
+                },
+                "scopeType": {
+                    "type": "string"
                 }
             }
         },
@@ -2007,13 +4238,13 @@ const docTemplate = `{
         "standard.StandardResponse": {
             "type": "object",
             "properties": {
-                "certificateNumber": {
+                "archivedAt": {
+                    "type": "string"
+                },
+                "comment": {
                     "type": "string"
                 },
                 "createdAt": {
-                    "type": "string"
-                },
-                "documentProviderOrganization": {
                     "type": "string"
                 },
                 "documentUrl": {
@@ -2022,8 +4253,17 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "lastOperationDate": {
+                "identifier": {
                     "type": "string"
+                },
+                "journalCount": {
+                    "type": "integer"
+                },
+                "latestJournal": {
+                    "$ref": "#/definitions/standard.JournalResponse"
+                },
+                "linkedMeasuringInstruments": {
+                    "type": "integer"
                 },
                 "metrologicalCharacteristics": {
                     "type": "string"
@@ -2031,7 +4271,22 @@ const docTemplate = `{
                 "model": {
                     "type": "string"
                 },
-                "nextOperationDate": {
+                "nextDueDate": {
+                    "type": "string"
+                },
+                "organizationId": {
+                    "type": "string"
+                },
+                "ownershipScope": {
+                    "$ref": "#/definitions/standard.OwnershipScopeResponse"
+                },
+                "serialNumber": {
+                    "type": "string"
+                },
+                "standardType": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 },
                 "updatedAt": {
@@ -2042,16 +4297,13 @@ const docTemplate = `{
         "standard.UpdateRequest": {
             "type": "object",
             "properties": {
-                "certificateNumber": {
-                    "type": "string"
-                },
-                "documentProviderOrganization": {
+                "comment": {
                     "type": "string"
                 },
                 "documentUrl": {
                     "type": "string"
                 },
-                "lastOperationDate": {
+                "identifier": {
                     "type": "string"
                 },
                 "metrologicalCharacteristics": {
@@ -2060,7 +4312,19 @@ const docTemplate = `{
                 "model": {
                     "type": "string"
                 },
-                "nextOperationDate": {
+                "ownerLabel": {
+                    "type": "string"
+                },
+                "serialNumber": {
+                    "type": "string"
+                },
+                "standardType": {
+                    "type": "string"
+                },
+                "subdivisionId": {
+                    "type": "string"
+                },
+                "unitId": {
                     "type": "string"
                 }
             }

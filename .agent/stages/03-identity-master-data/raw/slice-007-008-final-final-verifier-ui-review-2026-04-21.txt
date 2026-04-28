@@ -1,0 +1,9 @@
+web-design-guidelines source: https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md
+reviewed_at: 2026-04-21
+scope:
+- apps/web/app/login/page.tsx
+- apps/web/app/register/[token]/page.tsx
+- apps/web/features/Stage03Bootstrap/ui/PlatformAdminInviteForm.tsx
+result: FAIL
+findings:
+- apps/web/features/Stage03Bootstrap/ui/PlatformAdminInviteForm.tsx:148 The invite-issued success panel is inserted only after the async POST resolves, but the new region is not announced with `aria-live=\"polite\"`, so screen-reader users are not notified that the invite link is now available.

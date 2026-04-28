@@ -1,0 +1,17 @@
+slice-006 web-design-guidelines review
+date: 2026-04-20
+source: .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-19.md
+scope:
+- apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+- apps/web/features/Stage03Contracts/ui/ContractsRegistry.tsx
+- apps/web/shared/api/backend.ts
+- apps/web/shared/api/route-proxy.ts
+
+result: PASS
+
+notes:
+- The slice patches invalid-state handling inside existing forms and shared proxy helpers instead of introducing a parallel reusable UI family.
+- The built-in measuring-instrument flow now clears stale equipment selections and blocks submit until the selection is valid for the chosen unit.
+- Archived/unavailable standard selections are removed from hidden form state after reload/archive-driven data changes.
+- The contracts form no longer allows an empty required scope after switching from organization scope to subdivision/unit scope.
+- Shared proxy helpers preserve backend pagination meta without changing the visible information hierarchy of the current routes.

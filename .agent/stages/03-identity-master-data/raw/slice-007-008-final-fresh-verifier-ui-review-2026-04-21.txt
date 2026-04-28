@@ -1,0 +1,11 @@
+web-design-guidelines source: https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md
+reviewed_at: 2026-04-21
+scope:
+- apps/web/app/login/page.tsx
+- apps/web/app/register/[token]/page.tsx
+- apps/web/features/Stage03Bootstrap/ui/PlatformAdminInviteForm.tsx
+notes:
+- reviewed the actual changed UI files in the current worktree; server route handlers and API helpers were excluded from the UI-only scope
+- the slice continues to reuse existing auth primitives (AuthSplitLayout, LoginForm, ConsentRow) and does not introduce a workspace-picker/switcher surface
+- no guideline findings were identified in the changed UI files for this verifier pass
+result: PASS

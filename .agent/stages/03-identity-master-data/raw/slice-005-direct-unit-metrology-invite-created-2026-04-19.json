@@ -1,0 +1,14 @@
+{
+  "success": true,
+  "data": {
+    "id": "d90e45f4-4c35-472a-9273-def7a05e07d4",
+    "fullName": "Unit-Metrology Employee 1776614151",
+    "email": "unit-metrology-1776614151@vrk.local",
+    "roleTemplate": "unit_operator",
+    "scopeType": "unit",
+    "scopeId": "f8aa33ec-009d-4a36-89d9-a98d0692fb9d",
+    "scopeLabel": "Customer-Metrology Юнит 01 1776614151",
+    "status": "draft",
+    "expiresAt": "2026-04-26T12:00:00Z"
+  }
+}

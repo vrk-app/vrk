@@ -1,0 +1,64 @@
+{
+  "success": true,
+  "data": {
+    "sessionToken": "077df76c-3c70-473f-94ec-8371d21c2a17",
+    "requiresLaunchWizard": false,
+    "account": {
+      "id": "698357a9-aca0-47b6-93e0-1119a451d055",
+      "fullName": "Subdivision-Registry Employee 1776604587",
+      "email": "subdivision-registry-1776604587@vrk.local"
+    },
+    "membershipId": "3d925e5e-42a0-4b73-9d5e-bd590b9c0d84",
+    "membershipStatus": "active",
+    "organization": {
+      "id": "8eaaec80-abde-4d56-b6ba-54b953e72c1d",
+      "roleTitle": "customer",
+      "name": "ВРК customer-equipment 1776604587",
+      "shortName": "CUS-1776604587",
+      "propertyType": "ООО",
+      "inn": "1776604587",
+      "kpp": "177660458",
+      "legalAddress": "г. Москва, ул. customer-equipment, д. 1",
+      "contactEmail": "customer-equipment-1776604587@vrk.local",
+      "contactPhone": "+7 (999) 123-45-67",
+      "launchState": "active"
+    },
+    "grant": {
+      "id": "b86ac434-9699-4610-8118-fb2b39fb10ef",
+      "roleTemplate": "subdivision_manager",
+      "scopeType": "subdivision",
+      "scopeId": "3d351a71-784f-4a2b-953b-704d61d53a5e"
+    },
+    "workspace": {
+      "scopeType": "subdivision",
+      "scopeId": "3d351a71-784f-4a2b-953b-704d61d53a5e",
+      "scopeName": "Customer-Equipment Подразделение 1776604587",
+      "landingTitle": "Customer-Equipment Подразделение 1776604587",
+      "landingSubtitle": "Доступ ограничен выбранным подразделением и его дочерними юнитами.",
+      "landingPath": "/company",
+      "canManageEmployeeInvites": false
+    },
+    "subdivisions": [
+      {
+        "id": "3d351a71-784f-4a2b-953b-704d61d53a5e",
+        "type": "Филиал",
+        "name": "Customer-Equipment Подразделение 1776604587"
+      }
+    ],
+    "units": [
+      {
+        "id": "94c09426-1b9f-48b4-96b6-c6dd339df480",
+        "type": "Юнит",
+        "name": "Customer-Equipment Юнит 01 1776604587",
+        "subdivisionId": "3d351a71-784f-4a2b-953b-704d61d53a5e"
+      },
+      {
+        "id": "2d609225-35a3-46be-92c4-ddceb5107c04",
+        "type": "Юнит",
+        "name": "Второй юнит 1776604587",
+        "code": "U2-1776604587",
+        "subdivisionId": "3d351a71-784f-4a2b-953b-704d61d53a5e"
+      }
+    ]
+  }
+}

@@ -58,7 +58,9 @@ SELECT
     o.power_of_attorney_number,
     o.poa_issue_date, 
     o.poa_expiration_date, 
-    o.logo
+    o.logo,
+    o.created_at,
+    o.updated_at
 FROM organization_units o
 LEFT JOIN property_types pt ON o.property_type_id = pt.id
 LEFT JOIN organization_roles r ON o.role_id = r.id
@@ -82,11 +84,12 @@ UPDATE organization_units SET
     logo = $14,
     updated_at = NOW()
 WHERE id = $1
+  AND updated_at = $15
 RETURNING id, property_type_id, name, short_name, inn, kpp, address,
     parent_id, role_id, director_id, power_of_attorney_number,
     poa_issue_date, poa_expiration_date, logo, created_at, updated_at;
 
--- name: DeleteOrganization :exec
+-- name: DeleteOrganization :execrows
 DELETE FROM organization_units WHERE id = $1;
 
 -- name: OrganizationExists :one

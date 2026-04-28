@@ -1,16 +1,19 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	Server   ServerConfig
-	Database DatabaseConfig
+	Server        ServerConfig
+	Database      DatabaseConfig
+	PlatformAdmin PlatformAdminConfig
 }
 
 type ServerConfig struct {
@@ -27,6 +30,9 @@ type DatabaseConfig struct {
 	SSLMode  string
 }
 
+type PlatformAdminConfig struct {
+	SharedSecret string
+}
 
 func Load() (*Config, error) {
 	if err := godotenv.Load(); err != nil {
@@ -46,6 +52,13 @@ func Load() (*Config, error) {
 			DBName:   getEnv("DB_NAME", "equipment_db"),
 			SSLMode:  getEnv("DB_SSL_MODE", "disable"),
 		},
+		PlatformAdmin: PlatformAdminConfig{
+			SharedSecret: strings.TrimSpace(os.Getenv("PLATFORM_ADMIN_SHARED_SECRET")),
+		},
+	}
+
+	if cfg.PlatformAdmin.SharedSecret == "" {
+		return nil, fmt.Errorf("PLATFORM_ADMIN_SHARED_SECRET is required")
 	}
 
 	return cfg, nil
