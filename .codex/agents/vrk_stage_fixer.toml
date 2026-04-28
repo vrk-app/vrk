@@ -1,6 +1,6 @@
 name = "vrk_stage_fixer"
 description = "Minimal safe fixer for concrete verifier-reported VRK stage proof gaps."
-model = "gpt-5.4"
+model = "gpt-5.5"
 model_reasoning_effort = "xhigh"
 sandbox_mode = "workspace-write"
 developer_instructions = """

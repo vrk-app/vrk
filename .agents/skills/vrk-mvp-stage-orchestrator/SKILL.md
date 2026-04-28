@@ -64,7 +64,7 @@ If no command is supplied, infer the next step from repo state:
 
 For this workflow, use the same model for the top-level stage run and every custom subagent:
 
-- `model = "gpt-5.4"`
+- `model = "gpt-5.5"`
 - `model_reasoning_effort = "xhigh"`
 
 Do **not** optimize for token savings. Optimize for correctness, durability, and autonomy.
@@ -258,7 +258,7 @@ The active project-scoped agents live in `.codex/agents/`:
 - `vrk_stage_verifier`
 - `vrk_stage_fixer`
 
-All of them should use `gpt-5.4` with `xhigh` reasoning.
+All of them should use `gpt-5.5` with `xhigh` reasoning.
 
 Role details live in:
 

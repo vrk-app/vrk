@@ -23,7 +23,7 @@ Critical requirements
 2. The top-level stage agent is the only orchestrator.
 3. All subagents are leaf roles. Do not let subagents recursively orchestrate other subagents.
 4. Use the same model for the main stage run and every custom subagent:
-   - model = gpt-5.4
+   - model = gpt-5.5
    - model_reasoning_effort = xhigh
 5. Do not optimize for token savings. Optimize for correctness, durable handoff, and autonomous completion.
 6. Still keep orchestration disciplined:
@@ -99,7 +99,7 @@ Create project-scoped custom subagents for these roles:
 - vrk_stage_fixer
 
 All of them must use:
-- gpt-5.4
+- gpt-5.5
 - xhigh reasoning
 
 Role rules

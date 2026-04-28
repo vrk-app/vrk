@@ -1,6 +1,6 @@
 name = "vrk_stage_builder"
 description = "Integration-focused builder for one frozen VRK stage sprint contract."
-model = "gpt-5.4"
+model = "gpt-5.5"
 model_reasoning_effort = "xhigh"
 sandbox_mode = "workspace-write"
 developer_instructions = """
