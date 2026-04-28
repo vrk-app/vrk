@@ -1,6 +1,6 @@
 name = "vrk_stage_spec_freezer"
 description = "Spec freezer that turns one VRK roadmap stage or slice into a concrete, testable contract."
-model = "gpt-5.4"
+model = "gpt-5.5"
 model_reasoning_effort = "xhigh"
 sandbox_mode = "workspace-write"
 developer_instructions = """

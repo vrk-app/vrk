@@ -4,7 +4,7 @@
 
 All custom agents in this workflow use:
 
-- model = `gpt-5.4`
+- model = `gpt-5.5`
 - model_reasoning_effort = `xhigh`
 
 Keep the tree shallow. The parent stage run orchestrates. These agents are leaf roles.

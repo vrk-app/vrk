@@ -697,7 +697,7 @@ Use $vrk-mvp-stage-orchestrator to execute stage <stage-id> from docs/roadmap.md
 
 Rules:
 - You are the top-level stage orchestrator.
-- Use gpt-5.4 with xhigh reasoning for the main run and every custom subagent.
+- Use gpt-5.5 with xhigh reasoning for the main run and every custom subagent.
 - Keep the tree shallow: only the top-level stage orchestrator may spawn leaf subagents.
 - Before coding, re-sync with AGENTS.md, docs/roadmap.md, .agent/stages/<stage-id>/progress.md, feature_list.json, git log, and smoke tests.
 - Read docs/architecture/documentation-workflow.md before freezing or changing product/architecture/workflow decisions.

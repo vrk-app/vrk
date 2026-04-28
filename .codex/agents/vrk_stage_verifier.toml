@@ -1,6 +1,6 @@
 name = "vrk_stage_verifier"
 description = "Fresh verifier for one VRK stage sprint contract. May write only verification artifacts."
-model = "gpt-5.4"
+model = "gpt-5.5"
 model_reasoning_effort = "xhigh"
 sandbox_mode = "workspace-write"
 developer_instructions = """

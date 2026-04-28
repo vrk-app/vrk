@@ -1,6 +1,6 @@
 name = "vrk_stage_explorer"
 description = "Read-only explorer for one narrow VRK stage question or subsystem."
-model = "gpt-5.4"
+model = "gpt-5.5"
 model_reasoning_effort = "xhigh"
 sandbox_mode = "read-only"
 developer_instructions = """
