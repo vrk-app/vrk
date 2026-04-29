@@ -22,6 +22,6 @@ ENV NEXT_PUBLIC_RUNTIME_DATA_MODE=${NEXT_PUBLIC_RUNTIME_DATA_MODE}
 
 RUN pnpm --filter @vrk/web build
 
-EXPOSE 3000
+EXPOSE 8080
 
-CMD ["pnpm", "--filter", "@vrk/web", "start", "--hostname", "0.0.0.0", "--port", "3000"]
+CMD ["sh", "-c", "pnpm --filter @vrk/web start --hostname 0.0.0.0 --port ${PORT:-8080}"]
