@@ -23,6 +23,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   YC_REGISTRY: cr.yandex/${{ vars.YC_REGISTRY_ID }}
   BACKEND_IMAGE: vrk-backend
   WEB_IMAGE: vrk-web

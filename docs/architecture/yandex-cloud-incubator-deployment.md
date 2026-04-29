@@ -102,6 +102,8 @@ Do not set `PORT` in Serverless Container revision env. Yandex Cloud reserves th
 - `.github/workflows/incubator-deploy.yml` runs checks, migrations, image builds, Serverless Container deploys, and health checks on every push to `Incubator`.
 - `.github/workflows/registry-retention.yml` runs daily image retention and can be launched manually in dry-run mode.
 
+All GitHub Actions workflows set top-level `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` so JavaScript actions run on the GitHub Actions Node.js 24 runtime ahead of the Node 20 deprecation path. This is separate from project runtime selection: `actions/setup-node` still installs Node.js `24.14.1` for the workspace, and runtime secrets stay in Yandex Lockbox.
+
 ## Operational Notes
 
 - Direct public invocation is enabled for both incubator containers. This keeps the first incubator pipeline simple and cheap, but backend URL access should move behind API Gateway/custom domains before production hardening.
