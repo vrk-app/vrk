@@ -94,6 +94,8 @@ flowchart LR
 
 The workflow is intentionally ordered so migrations complete before the backend revision is deployed, and the web revision is deployed only after the backend revision succeeds. The web container receives `INTERNAL_API_BASE_URL` and `NEXT_PUBLIC_API_BASE_URL` from `VRK_BACKEND_URL`.
 
+Do not set `PORT` in Serverless Container revision env. Yandex Cloud reserves this environment variable and rejects web revision deployment with `INVALID_ARGUMENT: Environment variable PORT is forbidden`. The incubator web image starts Next.js on port `3000` through `apps/web/Dockerfile`, so the runtime revision env only carries application settings.
+
 ## Workflows
 
 - `.github/workflows/platform-baseline.yml` runs repo-level CI on `main`, `Incubator`, and pull requests.

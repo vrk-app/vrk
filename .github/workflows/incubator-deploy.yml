@@ -298,7 +298,6 @@ jobs:
             PLATFORM_ADMIN_SHARED_SECRET=${{ vars.YC_LOCKBOX_SECRET_ID }}/${{ vars.YC_LOCKBOX_VERSION_ID }}/PLATFORM_ADMIN_SHARED_SECRET
           revision-env: |
             NODE_ENV=production
-            PORT=3000
             INTERNAL_API_BASE_URL=${{ vars.VRK_BACKEND_URL }}
             NEXT_PUBLIC_API_BASE_URL=${{ vars.VRK_BACKEND_URL }}
             NEXT_PUBLIC_RUNTIME_DATA_MODE=seed-read
