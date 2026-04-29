@@ -67,8 +67,15 @@ jobs:
       - name: Install Playwright Chromium
         run: pnpm --filter @vrk/web exec playwright install --with-deps chromium
 
+      - name: Build and start platform stack
+        run: make dev
+
       - name: Run web smoke
         run: pnpm run web:smoke
+
+      - name: Stop platform stack
+        if: always()
+        run: make down
 
   migrate:
     name: Apply database migrations
