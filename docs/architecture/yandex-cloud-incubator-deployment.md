@@ -23,10 +23,13 @@
 | CI deployer SA | `vrk-deployer` |
 | Runtime container SA | `vrk-container-sa` |
 
-Required IAM roles:
+Current IAM roles:
 
-- `vrk-deployer`: `container-registry.images.pusher`, `container-registry.images.puller`, `lockbox.payloadViewer`, `iam.serviceAccounts.user`, `serverless.containers.admin`.
+- `vrk-deployer`: `container-registry.images.pusher`, `container-registry.images.puller`, `lockbox.payloadViewer`, `lockbox.viewer`, `lockbox.editor`, `iam.serviceAccounts.user`, `serverless.containers.admin`, temporary folder-level `editor`.
+- `vrk-deployer` also has explicit `iam.serviceAccounts.user` on `vrk-container-sa`, because `DeployRevision` uses that runtime identity.
 - `vrk-container-sa`: `container-registry.images.puller`, `lockbox.payloadViewer`, `logging.writer`.
+
+The broad `editor` role mirrors the working NCFG deployer pattern and is kept as a temporary incubator unblocker. Tighten this after the exact Yandex Cloud `DeployRevision` permission dependency is isolated.
 
 Cost guardrails:
 
