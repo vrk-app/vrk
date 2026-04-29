@@ -1,4 +1,6 @@
-import type { HTMLAttributes } from "react";
+"use client";
+
+import { useEffect, useRef, type HTMLAttributes } from "react";
 import { Bell, ChevronDown, Menu, Search, X } from "lucide-react";
 import { cn } from "@/shared/lib/cn";
 import { Breadcrumbs, type BreadcrumbItem } from "./Breadcrumbs";
@@ -9,7 +11,7 @@ export type TopBarUser = {
   initials: string;
 };
 
-export interface TopBarProps extends HTMLAttributes<HTMLDivElement> {
+export interface TopBarProps extends HTMLAttributes<HTMLElement> {
   searchValue: string;
   notificationsCount: number;
   user: TopBarUser;
@@ -40,9 +42,42 @@ export function TopBar({
   user,
   ...props
 }: TopBarProps) {
+  const headerRef = useRef<HTMLElement | null>(null);
   const isSearchInteractive = typeof onSearch === "function";
   const isNotificationsInteractive = typeof onNotificationsClick === "function";
   const isUserMenuInteractive = typeof onUserMenu === "function";
+
+  useEffect(() => {
+    const header = headerRef.current;
+
+    if (!header) {
+      return;
+    }
+
+    const variableName = "--vrk-sticky-header-height";
+    const updateHeaderHeight = () => {
+      document.documentElement.style.setProperty(variableName, `${header.getBoundingClientRect().height}px`);
+    };
+
+    updateHeaderHeight();
+
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", updateHeaderHeight);
+
+      return () => {
+        window.removeEventListener("resize", updateHeaderHeight);
+        document.documentElement.style.removeProperty(variableName);
+      };
+    }
+
+    const resizeObserver = new ResizeObserver(updateHeaderHeight);
+    resizeObserver.observe(header);
+
+    return () => {
+      resizeObserver.disconnect();
+      document.documentElement.style.removeProperty(variableName);
+    };
+  }, []);
 
   const handleMobileMenuToggle = () => {
     onMobileMenuOpenChange?.(!mobileMenuOpen);
@@ -54,6 +89,7 @@ export function TopBar({
         "sticky top-0 z-20 border-b border-border bg-card/95 px-4 py-4 backdrop-blur md:px-6",
         className,
       )}
+      ref={headerRef}
       {...props}
     >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">

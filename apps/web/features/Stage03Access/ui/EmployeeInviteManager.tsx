@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { ArrowUpRight, Mail, ShieldCheck, UserRound } from "lucide-react";
-import { Badge, Button, Card, InputField, SelectField } from "@/shared/ui";
+import { Badge, Button, Card, CopyableText, InputField, SelectField } from "@/shared/ui";
 import {
   isRoleScopeCompatible,
   parseApiResponse,
@@ -73,6 +73,18 @@ function formatTimestamp(value?: string) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function toAbsoluteInviteUrl(path?: string) {
+  if (!path || typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    return new URL(path, window.location.origin).toString();
+  } catch {
+    return null;
+  }
 }
 
 function defaultScopeForRole(roleTemplate: RoleTemplate, scopeOptions: Record<ScopeType, ScopeOption[]>): ScopeType {
@@ -348,86 +360,85 @@ export function EmployeeInviteManager({ session }: Props) {
           </div>
         ) : invites.length ? (
           <div className="grid gap-3">
-            {invites.map((invite) => (
-              <div className="rounded-[var(--radius-xl)] border border-border bg-card p-4 shadow-xs" key={invite.id}>
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-semibold text-foreground">{invite.fullName}</p>
-                      <Badge tone={statusToneMap[invite.status]}>{statusLabelMap[invite.status]}</Badge>
+            {invites.map((invite) => {
+              const inviteUrl = toAbsoluteInviteUrl(invite.acceptPath);
+
+              return (
+                <div className="rounded-[var(--radius-xl)] border border-border bg-card p-4 shadow-xs" key={invite.id}>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0 space-y-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="break-words text-sm font-semibold text-foreground">{invite.fullName}</p>
+                        <Badge tone={statusToneMap[invite.status]}>{statusLabelMap[invite.status]}</Badge>
+                      </div>
+                      <p className="break-all text-sm text-muted-foreground">{invite.email}</p>
+                      <p className="break-words text-sm text-muted-foreground">
+                        {roleTemplateLabel(invite.roleTemplate)} / {scopeTypeLabels[invite.scopeType]} /{" "}
+                        {invite.scopeLabel}
+                      </p>
                     </div>
-                    <p className="text-sm text-muted-foreground">{invite.email}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {roleTemplateLabel(invite.roleTemplate)} / {scopeTypeLabels[invite.scopeType]} /{" "}
-                      {invite.scopeLabel}
-                    </p>
+                    <div className="text-right text-xs text-muted-foreground">
+                      <div>Действует до: {formatTimestamp(invite.expiresAt)}</div>
+                      <div>Открыто: {formatTimestamp(invite.openedAt)}</div>
+                      <div>Принято: {formatTimestamp(invite.acceptedAt)}</div>
+                    </div>
                   </div>
-                  <div className="text-right text-xs text-muted-foreground">
-                    <div>Действует до: {formatTimestamp(invite.expiresAt)}</div>
-                    <div>Открыто: {formatTimestamp(invite.openedAt)}</div>
-                    <div>Принято: {formatTimestamp(invite.acceptedAt)}</div>
+
+                  {inviteUrl ? (
+                    <CopyableText className="mt-3" data-testid="employee-invite-path" value={inviteUrl} />
+                  ) : null}
+
+                  <div className="mt-3 flex flex-wrap gap-3">
+                    {invite.status === "draft" ? (
+                      <Button
+                        onClick={() =>
+                          startTransition(() => {
+                            void mutateInvite(
+                              `/api/auth/employee-invites/${invite.id}/send`,
+                              "Не удалось отправить приглашение.",
+                            );
+                          })
+                        }
+                        type="button"
+                      >
+                        Отправить
+                      </Button>
+                    ) : null}
+                    {(invite.status === "sent" || invite.status === "opened") && inviteUrl ? (
+                      <a
+                        className="inline-flex min-h-10 touch-manipulation items-center gap-2 rounded-[var(--radius-md)] bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                        href={inviteUrl}
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        Открыть приглашение
+                        <ArrowUpRight aria-hidden="true" className="size-4" />
+                      </a>
+                    ) : null}
+                    {invite.status === "draft" || invite.status === "sent" || invite.status === "opened" ? (
+                      <Button
+                        onClick={() =>
+                          startTransition(() => {
+                            if (!window.confirm("Приглашение будет отозвано. Продолжить?")) {
+                              return;
+                            }
+
+                            void mutateInvite(
+                              `/api/auth/employee-invites/${invite.id}/revoke`,
+                              "Не удалось отозвать приглашение.",
+                            );
+                          })
+                        }
+                        type="button"
+                        variant="ghost"
+                      >
+                        Отозвать
+                      </Button>
+                    ) : null}
                   </div>
                 </div>
-
-                {invite.acceptPath ? (
-                  <div
-                    className="mt-3 rounded-[var(--radius-lg)] border border-border bg-muted/50 px-4 py-3 font-mono text-sm text-foreground"
-                    data-testid="employee-invite-path"
-                  >
-                    {invite.acceptPath}
-                  </div>
-                ) : null}
-
-                <div className="mt-3 flex flex-wrap gap-3">
-                  {invite.status === "draft" ? (
-                    <Button
-                      onClick={() =>
-                        startTransition(() => {
-                          void mutateInvite(
-                            `/api/auth/employee-invites/${invite.id}/send`,
-                            "Не удалось отправить приглашение.",
-                          );
-                        })
-                      }
-                      type="button"
-                    >
-                      Отправить
-                    </Button>
-                  ) : null}
-                  {(invite.status === "sent" || invite.status === "opened") && invite.acceptPath ? (
-                    <a
-                      className="inline-flex min-h-10 items-center gap-2 rounded-[var(--radius-md)] bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                      href={invite.acceptPath}
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      Открыть приглашение
-                      <ArrowUpRight aria-hidden="true" className="size-4" />
-                    </a>
-                  ) : null}
-                  {(invite.status === "draft" || invite.status === "sent" || invite.status === "opened") ? (
-                    <Button
-                      onClick={() =>
-                        startTransition(() => {
-                          if (!window.confirm("Приглашение будет отозвано. Продолжить?")) {
-                            return;
-                          }
-
-                          void mutateInvite(
-                            `/api/auth/employee-invites/${invite.id}/revoke`,
-                            "Не удалось отозвать приглашение.",
-                          );
-                        })
-                      }
-                      type="button"
-                      variant="ghost"
-                    >
-                      Отозвать
-                    </Button>
-                  ) : null}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="rounded-[var(--radius-lg)] border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">

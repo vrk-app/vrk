@@ -4,11 +4,8 @@ import { ConsentRow, LoginForm } from "@/widgets/Auth";
 const consent = (
   <ConsentRow
     defaultChecked
-    label="Я подтверждаю вход в сервисный контур и согласие с правилами доступа."
-    links={[
-      { label: "политикой обработки", href: "#policy" },
-      { label: "регламентом входа", href: "#policy" },
-    ]}
+    label="Я принимаю политику доступа VRK."
+    links={[{ label: "политикой доступа", href: "/access-policy" }]}
   />
 );
 
@@ -20,7 +17,7 @@ const meta = {
   },
   tags: ["autodocs"],
   args: {
-    submitLabel: "Войти в систему",
+    submitLabel: "Войти",
     consent,
   },
   render: (args) => (
@@ -55,7 +52,7 @@ export const WithWorkspaceHint: Story = {
     workspaceHint: {
       organizationName: "ВРК Север",
       scopeType: "unit",
-      scopeName: "Юнит 01",
+      scopeName: "Метрологическая лаборатория",
       landingPath: "/company",
     },
   },

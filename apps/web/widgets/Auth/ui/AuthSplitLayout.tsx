@@ -21,10 +21,10 @@ function DefaultIllustration() {
       </div>
       <div className="space-y-3">
         <h3 className="text-balance text-2xl font-bold tracking-tight text-foreground">
-          Спокойный вход в рабочую систему.
+          Безопасный вход в VRK
         </h3>
         <p className="text-sm leading-6 text-muted-foreground">
-          Экран входа сохраняет деловой ритм продукта и не отвлекает от основной формы.
+          Доступ открывается после проверки учетной записи.
         </p>
       </div>
       <div className="grid gap-3 md:grid-cols-3">

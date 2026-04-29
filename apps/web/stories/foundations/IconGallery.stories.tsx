@@ -87,6 +87,6 @@ export const FileTypeIcons: Story = {
 
 export const StatusIcons: Story = {
   args: {
-    section: "Статусы и сигналы",
+    section: "Статусы",
   },
 };

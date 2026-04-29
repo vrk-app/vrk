@@ -24,6 +24,8 @@ VRK Platform - это единая цифровая платформа для у
 
 - текущий baseline репозитория состоит из backend-контура в `apps/backend`, product-shaped web runtime shell в `apps/web` и PWA-first scaffold в `apps/field`;
 - root runtime contract теперь поднимается через `make dev` c compose `--wait`, после чего запускается one-shot `dev-seed`; proof-floor проверяется через `make smoke`, который выдерживает короткое host-port stabilization window сразу после свежего compose startup;
+- production-like web contour остается в `compose.platform.yml`: `apps/web/Dockerfile` делает `pnpm install`, `pnpm --filter @vrk/web build`, затем запускает `pnpm --filter @vrk/web start`;
+- официальный hot reload contour для UI-разработки живет в `compose.dev.yml` и накладывается поверх platform compose: `docker compose -f compose.platform.yml -f compose.dev.yml up web`; он запускает `pnpm --filter @vrk/web dev --hostname 0.0.0.0 --port 3000` внутри compose-сети и сохраняет внешний web runtime на `http://localhost:3100`;
 - локальный dev seed создает customer organization, organization-scope admin, 3 филиала и 9 юнитов через backend API; логин/пароль печатаются в stdout и сохраняются в `.local/dev-seed.json`;
 - `make smoke` использует `python3`, поэтому этот runtime contract не сводится только к `Docker` и `make`;
 - `make down` останавливает stack, но сохраняет volume базы; для clean-room seeded baseline и повторного dev seed используйте `make clean` перед новым `make dev`;
@@ -45,6 +47,26 @@ VRK Platform - это единая цифровая платформа для у
 - [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
 Он описывает текущий runnable baseline: compose-driven platform stack (`backend` + `web` + `field`) и отдельный Storybook harness для Stage 01 reusable UI.
+
+Для hot reload в `apps/web` используйте официальный compose override:
+
+```bash
+docker compose -f compose.platform.yml -f compose.dev.yml up web
+```
+
+То же через Makefile:
+
+```bash
+make web-dev
+```
+
+Обычные изменения исходников подхватываются Next dev без пересборки production-like image. После изменений `package.json`, `pnpm-lock.yaml`, `apps/web/Dockerfile` или перед smoke/prod-like проверкой пересобирайте базовый web image:
+
+```bash
+docker compose -f compose.platform.yml up -d --build web
+```
+
+Если менялся `apps/web/Dockerfile.dev`, пересоберите dev overlay через `make web-dev` или `docker compose -f compose.platform.yml -f compose.dev.yml build web`.
 
 ## Incubator CI/CD
 

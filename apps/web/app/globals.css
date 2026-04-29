@@ -52,6 +52,7 @@
   --radius-2xl: 1.25rem;
   --radius-3xl: 1.75rem;
   --radius-full: 9999px;
+  --vrk-sticky-header-height: 0px;
 }
 
 @theme inline {
@@ -158,6 +159,91 @@ body {
   @apply rounded-[var(--radius-xl)] border border-border bg-card shadow-xs;
 }
 
+@layer components {
+  .vrk-toast-motion {
+    --vrk-toast-enter-x: 0px;
+    --vrk-toast-enter-y: 10px;
+    --vrk-toast-exit-x: 0px;
+    --vrk-toast-exit-y: 6px;
+  }
+
+  .vrk-toast-motion[data-state="open"] {
+    animation: vrk-toast-enter 180ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+
+  .vrk-toast-motion[data-state="closed"] {
+    animation: vrk-toast-exit 180ms cubic-bezier(0.4, 0, 1, 1) both;
+  }
+
+  .vrk-toast-motion[data-swipe="move"] {
+    animation: none;
+    transform: translate3d(var(--radix-toast-swipe-move-x, 0), var(--radix-toast-swipe-move-y, 0), 0);
+    transition: none;
+  }
+
+  .vrk-toast-motion[data-swipe="cancel"] {
+    transform: translate3d(0, 0, 0);
+    transition: transform 180ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .vrk-toast-motion[data-swipe="end"] {
+    animation: vrk-toast-exit 160ms cubic-bezier(0.4, 0, 1, 1) both;
+  }
+
+  .vrk-toast-timer {
+    animation-name: vrk-toast-timer;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+  }
+
+  .vrk-toast-timer-paused {
+    animation-play-state: paused;
+  }
+}
+
+@media (min-width: 768px) {
+  .vrk-toast-motion {
+    --vrk-toast-enter-x: 12px;
+    --vrk-toast-enter-y: 0px;
+    --vrk-toast-exit-x: 10px;
+    --vrk-toast-exit-y: 0px;
+  }
+}
+
+@keyframes vrk-toast-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(var(--vrk-toast-enter-x), var(--vrk-toast-enter-y), 0) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes vrk-toast-exit {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translate3d(var(--vrk-toast-exit-x), var(--vrk-toast-exit-y), 0) scale(0.985);
+  }
+}
+
+@keyframes vrk-toast-timer {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -166,5 +252,20 @@ body {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .vrk-toast-motion[data-state="open"],
+  .vrk-toast-motion[data-state="closed"],
+  .vrk-toast-motion[data-swipe="end"] {
+    animation: none !important;
+  }
+
+  .vrk-toast-motion[data-state="closed"] {
+    opacity: 0;
+  }
+
+  .vrk-toast-timer {
+    animation: none !important;
+    transform: scaleX(1);
   }
 }

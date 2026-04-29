@@ -50,14 +50,21 @@ export const Success: Story = {
   },
 };
 
+export const TitleOnlySuccess: Story = {
+  args: {
+    tone: "success",
+    title: "Профиль организации сохранён.",
+  },
+};
+
 export const WithAction: Story = {
   args: {
     action: (
-      <Button rightIcon={<ArrowUpRight className="size-4" />} size="sm" variant="secondary">
-        Открыть задачу
+      <Button rightIcon={<ArrowUpRight aria-hidden="true" className="size-4" />} size="sm" variant="secondary">
+        Открыть список
       </Button>
     ),
-    title: "Нужна доработка backend boundary",
-    description: "Alert может содержать одно компактное действие.",
+    title: "Есть новые приглашения",
+    description: "Проверьте список сотрудников и отправьте подготовленные ссылки.",
   },
 };

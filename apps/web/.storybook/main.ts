@@ -35,6 +35,9 @@ const config: StorybookConfig = {
       alias: {
         ...(config.resolve?.alias ?? {}),
         "@": path.resolve(currentDir, "../"),
+        "next/image": path.resolve(currentDir, "../shared/storybook/next-image-mock.tsx"),
+        "next/link": path.resolve(currentDir, "../shared/storybook/next-link-mock.tsx"),
+        "next/navigation": path.resolve(currentDir, "../shared/storybook/next-navigation-mock.ts"),
       },
     },
   }),

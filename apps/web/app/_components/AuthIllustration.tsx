@@ -11,7 +11,7 @@ export function AuthIllustration() {
         unoptimized
         alt=""
         aria-hidden="true"
-        className="object-cover"
+        className="pointer-events-none object-cover"
         sizes="(min-width: 1024px) 46vw, 100vw"
         src="/auth/register-illustration.png"
       />

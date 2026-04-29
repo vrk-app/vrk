@@ -48,6 +48,7 @@
 - Для data-компонентов обязательны stories: `Loading`, `Empty`, `Error`.
 - Для адаптивных компонентов обязательны `Desktop` и `Mobile`.
 - Интерфейс в Storybook должен быть на русском языке.
+- UI examples в stories используют пользовательский текст продукта. Не выносить в интерфейсные stories stage/proof/backend/slice-пояснения, roadmap-комментарии и маркетинговую прозу, которая не является частью реального UI.
 - Визуально нужно держаться спокойной CRM-стилистики, близкой к Material/Ant.
 - Не плодить дубликаты: `SearchInput` и `PasswordInput` являются вариантами `InputField`; статусные плашки являются обертками над `Badge`; круг процентов является оберткой над `CircularProgress`; доменные таблицы строятся на базе одного `DataTable`.
 - Если lookup заканчивается решением `create`, новый reusable component должен появиться вместе со stories, а backlog нужно обновить, когда в нем еще нет соответствующей component family или agreed slice.
@@ -64,7 +65,7 @@
 ### FND-02 IconGallery [P0]
 
 - Назначение: каталог системных и доменных иконок: навигация, файлы, статусы, действия.
-- Proof contract: story showcase читает `ICON_SECTIONS` из shared fixtures и доказывает системный size ladder `16 / 20 / 24 / 32` без отдельного runtime component API.
+- Story expectation: story showcase читает `ICON_SECTIONS` из shared fixtures и показывает системный size ladder `16 / 20 / 24 / 32` без отдельного runtime component API.
 - Состояния: `default`.
 - Stories: `NavigationIcons`, `ActionIcons`, `FileTypeIcons`, `StatusIcons`.
 
@@ -517,7 +518,49 @@
 - Stories: `Default`, `ValidationErrors`, `Loading`.
 - Примечание: в ТЗ регистрация есть, хотя в макетах упор на вход.
 
-## 9. P1: шаблоны реестров и отчетов
+### AUTH-06 PlatformAdminInviteForm [P1]
+
+- Назначение: выпуск приглашения первому администратору организации.
+- Состояния: `default`, `error`.
+- Stories: `Default`, `Error`.
+- Story support: использует Storybook-only mock для `/api/platform/organization-shells`.
+
+### AUTH-07 FirstAdminActivationForm [P1]
+
+- Назначение: установка пароля по приглашению первого администратора или сотрудника.
+- Состояния: `first admin`, `employee`.
+- Stories: `FirstAdmin`, `Employee`.
+- Story support: использует Storybook-only mock для accept route и router handoff.
+
+## 9. Runtime-поверхности текущего web contour
+
+Эти stories покрывают уже реализованные runtime UI без создания новых reusable component families. Они используют Storybook-only fixtures и mock API, чтобы не зависеть от backend при просмотре.
+
+### RUN-01 CompanyStructureWorkspace [P1]
+
+- Назначение: управление профилем организации, подразделениями, юнитами и доступным scope.
+- Состояния: `organization admin`, `empty structure`, `scoped read-only`.
+- Stories: `OrganizationAdmin`, `EmptyStructure`, `ScopedReadonly`.
+
+### RUN-02 EmployeeInviteManager [P1]
+
+- Назначение: создание, отправка, отзыв и просмотр статусов приглашений сотрудников.
+- Состояния: `with invites`, `empty`, `loading`, `error`.
+- Stories: `WithInvites`, `Empty`, `Loading`, `Error`.
+
+### RUN-03 ContractsRegistry [P1]
+
+- Назначение: реестр договоров заказчика, read-only договоры подрядчика и проверка маршрутизации.
+- Состояния: `customer admin`, `customer empty`, `customer restricted`, `contractor read-only`.
+- Stories: `CustomerAdmin`, `CustomerEmpty`, `CustomerRestricted`, `ContractorReadonly`.
+
+### RUN-04 EquipmentRegistryWorkspace [P1]
+
+- Назначение: единый workspace реестров оборудования, СИ, эталонов, журналов и архива.
+- Состояния: `equipment tab`, `measuring instruments tab`, `standards tab`, `archive visible`, `scoped read-only`, `load error`.
+- Stories: `EquipmentTab`, `MeasuringInstrumentsTab`, `StandardsTab`, `WithArchiveVisible`, `ScopedReadonly`, `LoadError`.
+
+## 10. P1: шаблоны реестров и отчетов
 
 ТЗ отдельно требует страницы оборудования, договоров и отчетов, плюс фильтрацию и экспорт. В макетах их детально нет, но для Storybook это разумный второй слой.
 
@@ -558,7 +601,7 @@
 - Stories: `ExcelPdf`, `Loading`, `Disabled`.
 - Примечание: экспорт в `Excel / PDF` зафиксирован в ТЗ.
 
-## 10. Дополнительные доменные и платформенные компоненты
+## 11. Дополнительные доменные и платформенные компоненты
 
 Ниже — дополнение к исходному backlog. Оно не повторяет уже описанные базовые primitives, layout, dashboard, список заявок, карточку заявки, документы, auth, мессенджер и уведомления, а закрывает те компоненты, которые с высокой вероятностью понадобятся из-за специфики продукта: создание и маршрутизация заявок, выполненные работы и материалы, версии документов, ЭП, метрологический учет, графики обслуживания, предустановленные отчеты, PWA-сценарии и интеграции.
 
@@ -684,8 +727,9 @@
 
 - Назначение: краткая обратная связь по операциям: сохранено, файл загружен, ЭП проверена, экспорт готов, ошибка сервера.
 - Обязательные props: `items`, `duration`, `placement`, `action`, `dismissible`.
-- Состояния: `success`, `info`, `warning`, `error`, `stacked toasts`.
-- Stories: `Success`, `Warning`, `Error`, `WithAction`, `Stacked`.
+- Состояния: `success`, `info`, `warning`, `error`, `timer progress`, `stacked toasts`.
+- Stories: `Success`, `Warning`, `Error`, `WithAction`, `TimerProgress`, `Stacked`, `WithStickyHeaderOffset`.
+- Реализация: `apps/web/shared/ui/Toast.tsx`, stories в `apps/web/stories/primitives/Toast.stories.tsx`.
 
 #### STATE-04 `InlineAlert` / `FormAlert` [P0]
 
@@ -913,7 +957,7 @@
 - Состояния: `default`, `filtered`, `empty`, `loading`.
 - Stories: `Default`, `FilteredByAction`, `Empty`, `Loading`.
 
-## 11. Showcase stories
+## 12. Showcase stories
 
 Это уже не атомы, а сборочные истории, чтобы агент мог показать цельную страницу из готовых компонентов.
 
@@ -957,7 +1001,7 @@
 
 Собирает: `RegistryPageTemplate`, `ReportFiltersPanel`, `ExportActions`, `DashboardLineChartCard`.
 
-## 12. Что не делать отдельными компонентами
+## 13. Что не делать отдельными компонентами
 
 Чтобы агент не раздул библиотеку:
 
@@ -975,7 +1019,7 @@
 - `AuditDiffViewer` не должен становиться новым JSON-редактором; это human-readable viewer поверх audit log.
 - `RequestCreationWizard` не должен вшивать уникальные визуальные стили; шаги собираются из тех же field-компонентов и карточек.
 
-## 13. Очередность реализации
+## 14. Очередность реализации
 
 ### Волна 1
 
@@ -988,6 +1032,10 @@
 ### Волна 3
 
 Весь мессенджер, уведомления, `RegisterForm`, `TwoFactorForm`, шаблоны реестров/отчетов, `SignatureStamp`.
+
+### Runtime sync 2026-04-29
+
+`PlatformAdminInviteForm`, `FirstAdminActivationForm`, `CompanyStructureWorkspace`, `EmployeeInviteManager`, `ContractsRegistry`, `EquipmentRegistryWorkspace`, Storybook-only runtime fixtures и mock API.
 
 ### Дополнение: Волна 1
 

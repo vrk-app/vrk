@@ -123,7 +123,7 @@ const meta = {
   argTypes: {
     mobileSidebarOpen: {
       control: "boolean",
-      description: "Story-only control for the mobile navigation drawer state.",
+      description: "Открывает мобильное меню в примере.",
       table: {
         category: "Story",
       },
