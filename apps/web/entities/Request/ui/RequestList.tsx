@@ -1,6 +1,6 @@
 import { useEffect, type HTMLAttributes } from "react";
 import { Inbox, LoaderCircle } from "lucide-react";
-import { Button, Card, InlineAlert } from "@/shared/ui";
+import { Button, Card, useToast } from "@/shared/ui";
 import { cn } from "@/shared/lib/cn";
 import type { RequestListRecord } from "../model";
 import { RequestListItem } from "./RequestListItem";
@@ -30,6 +30,7 @@ export function RequestList({
   total,
   ...props
 }: RequestListProps) {
+  const { showToast } = useToast();
   const safeTotal = Math.max(0, total);
   const safePageSize = Math.max(1, pageSize);
   const totalPages = Math.max(1, Math.ceil(safeTotal / safePageSize));
@@ -53,6 +54,19 @@ export function RequestList({
 
     onPageChange(currentPage);
   }, [currentPage, onPageChange, page]);
+
+  useEffect(() => {
+    if (!showErrorState) {
+      return;
+    }
+
+    showToast({
+      dedupeKey: `request-list-error:${error}`,
+      description: error,
+      title: "Не удалось загрузить заявки",
+      tone: "error",
+    });
+  }, [error, showErrorState, showToast]);
 
   const handlePageChange = (nextPage: number) => {
     if (!onPageChange) {
@@ -116,14 +130,7 @@ export function RequestList({
             </Card>
           ))}
         </div>
-      ) : showErrorState ? (
-        <InlineAlert
-          description={error}
-          role="alert"
-          tone="error"
-          title="Не удалось загрузить заявки"
-        />
-      ) : showEmptyState ? (
+      ) : showErrorState ? null : showEmptyState ? (
         <Card className="items-center gap-4 py-10 text-center" padding="lg">
           <div className="flex size-14 items-center justify-center rounded-full bg-accent-soft text-accent">
             <Inbox aria-hidden="true" className="size-6" />

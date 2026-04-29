@@ -33,11 +33,8 @@ const meta = {
   tags: ["autodocs"],
   args: {
     checked: false,
-    label: "Я подтверждаю использование корпоративных данных и согласен(на) с правилами доступа.",
-    links: [
-      { label: "политикой обработки", href: "#policy" },
-      { label: "регламентом входа", href: "#policy" },
-    ],
+    label: "Я принимаю политику доступа VRK.",
+    links: [{ label: "политикой доступа", href: "/access-policy" }],
   },
   render: (args) => (
     <div className="w-[420px] rounded-[var(--radius-xl)] border border-border bg-card p-5 shadow-xs">

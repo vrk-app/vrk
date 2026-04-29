@@ -51,10 +51,20 @@ export function InlineAlert({
   ...props
 }: InlineAlertProps) {
   const Icon = defaultIcons[tone ?? "info"];
+  const hasStackedContent = Boolean(description || action);
 
   return (
-    <div className={cn(inlineAlertVariants({ className, tone }))} role={role} {...props}>
-      <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-lg)] bg-card/80">
+    <div
+      className={cn(inlineAlertVariants({ tone }), !hasStackedContent && "items-center", className)}
+      role={role}
+      {...props}
+    >
+      <div
+        className={cn(
+          "flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-lg)] bg-card/80",
+          hasStackedContent && "mt-0.5",
+        )}
+      >
         {icon ?? <Icon aria-hidden="true" className="size-5" />}
       </div>
 

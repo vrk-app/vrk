@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import { ToastProvider } from "@/shared/ui";
 import "./globals.css";
 
 const inter = Inter({
@@ -27,7 +28,9 @@ export default function RootLayout({
       lang="ru"
       className={`${inter.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <ToastProvider>{children}</ToastProvider>
+      </body>
     </html>
   );
 }

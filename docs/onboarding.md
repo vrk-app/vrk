@@ -109,6 +109,41 @@ Storybook по-прежнему запускается отдельно:
 pnpm storybook
 ```
 
+### Hot reload для `apps/web` в compose-backed контуре
+
+Для UI-разработки, где изменения должны появляться на `http://localhost:3100` без production-like rebuild, используйте официальный dev override:
+
+```bash
+docker compose -f compose.platform.yml -f compose.dev.yml up web
+```
+
+Этот контур наследует `db`, `migrate`, `backend` и порт `3100` из `compose.platform.yml`, но заменяет только `web`:
+
+- `compose.platform.yml` остается source of truth для smoke/prod-like проверки: `docker compose -f compose.platform.yml up -d --build web`;
+- `compose.dev.yml` монтирует репозиторий в `/workspace` и запускает `pnpm --filter @vrk/web dev --hostname 0.0.0.0 --port 3000`;
+- container `node_modules`, package `node_modules`, pnpm store и `apps/web/.next` живут в named volumes, чтобы Docker Desktop не смешивал host и container artifacts;
+- включены polling flags `CHOKIDAR_USEPOLLING=true` и `WATCHPACK_POLLING=true`, чтобы file watch надежнее работал на macOS.
+
+Короткий Makefile alias:
+
+```bash
+make web-dev
+```
+
+`make web-dev` запускает тот же overlay с `--build`, поэтому подходит для первого старта и после изменений dev Dockerfile. Если нужен demo login после чистой базы, сначала выполните `make dev` или отдельно `make dev-seed` на поднятом backend.
+
+Hot reload покрывает изменения исходников. Пересборка production-like контейнера все равно нужна после изменений `package.json`, `pnpm-lock.yaml`, `apps/web/Dockerfile`, а также перед проверкой production build/start contract:
+
+```bash
+docker compose -f compose.platform.yml up -d --build web
+```
+
+Если менялся `apps/web/Dockerfile.dev`, пересоберите dev overlay:
+
+```bash
+docker compose -f compose.platform.yml -f compose.dev.yml build web
+```
+
 ## 4. Что важно знать про текущий baseline
 
 Сейчас в репозитории реально можно локально поднять:

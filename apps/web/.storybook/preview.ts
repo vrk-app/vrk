@@ -5,6 +5,7 @@ import {
   storybookFontImportCss,
   storybookFontStyleElementId,
 } from "@/shared/config/typography";
+import { ToastProvider } from "@/shared/ui";
 
 function ensureStorybookTypographyBaseline() {
   if (typeof document === "undefined") {
@@ -24,7 +25,11 @@ function ensureStorybookTypographyBaseline() {
 ensureStorybookTypographyBaseline();
 
 const withTypographyBaseline: Decorator = (Story) =>
-  createElement("div", { className: "min-h-full antialiased" }, Story());
+  createElement(
+    ToastProvider,
+    null,
+    createElement("div", { className: "min-h-full antialiased" }, Story()),
+  );
 
 const preview: Preview = {
   decorators: [withTypographyBaseline],

@@ -1,0 +1,44 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile.dev
+    image: vrk-web-dev
+    command:
+      - sh
+      - -lc
+      - |
+        set -e
+        CI=true pnpm install --frozen-lockfile --store-dir /pnpm/store
+        exec pnpm --filter @vrk/web dev --hostname 0.0.0.0 --port 3000
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      INTERNAL_API_BASE_URL: http://backend:8080
+      NPM_CONFIG_STORE_DIR: /pnpm/store
+      NEXT_PUBLIC_API_BASE_URL: http://backend:8080
+      NEXT_PUBLIC_RUNTIME_DATA_MODE: seed-read
+      PLATFORM_ADMIN_SHARED_SECRET: stage03-platform-admin-secret
+      PORT: "3000"
+      WATCHPACK_POLLING: "true"
+      WATCHPACK_POLLING_INTERVAL: "1000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:3000/login >/dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    volumes:
+      - .:/workspace:cached
+      - vrk-web-dev-node-modules:/workspace/node_modules
+      - vrk-web-dev-app-node-modules:/workspace/apps/web/node_modules
+      - vrk-field-dev-app-node-modules:/workspace/apps/field/node_modules
+      - vrk-web-dev-next:/workspace/apps/web/.next
+      - vrk-web-dev-pnpm-store:/pnpm/store
+    working_dir: /workspace
+
+volumes:
+  vrk-web-dev-node-modules:
+  vrk-web-dev-app-node-modules:
+  vrk-field-dev-app-node-modules:
+  vrk-web-dev-next:
+  vrk-web-dev-pnpm-store:

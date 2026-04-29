@@ -10,7 +10,7 @@ import {
   type SessionSummaryResponse,
   type StructureNodePayload,
 } from "@/shared/api";
-import { Badge, Button, Card, InlineAlert, InputField, SelectField, Tabs, TextareaField } from "@/shared/ui";
+import { Badge, Button, Card, InlineAlert, InputField, SelectField, Tabs, TextareaField, useToast } from "@/shared/ui";
 
 type Props = {
   initialSession: SessionSummaryResponse;
@@ -191,6 +191,7 @@ function canManageCompany(session: SessionSummaryResponse) {
 }
 
 export function CompanyStructureWorkspace({ initialSession }: Props) {
+  const { showToast } = useToast();
   const [session, setSession] = useState(initialSession);
   const [activeTab, setActiveTab] = useState<TabKey>("profile");
   const [profile, setProfile] = useState<CompanyProfilePayload>(() => profileFromSession(initialSession));
@@ -198,8 +199,6 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
   const [unitForm, setUnitForm] = useState<StructureForm>(() => emptyStructureForm());
   const [editingDivisionId, setEditingDivisionId] = useState<string | null>(null);
   const [editingUnitId, setEditingUnitId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const canManage = canManageCompany(session);
@@ -214,8 +213,6 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
   );
 
   async function mutateSession(path: string, init: RequestInit, fallbackMessage: string) {
-    setError(null);
-    setNotice(null);
     const response = await fetch(path, {
       ...init,
       headers: {
@@ -239,8 +236,21 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
         },
         "Не удалось сохранить профиль организации.",
       )
-        .then(() => setNotice("Профиль организации сохранен."))
-        .catch((error) => setError(error instanceof Error ? error.message : "Не удалось сохранить профиль."));
+        .then(() =>
+          showToast({
+            dedupeKey: "company-profile-success",
+            title: "Профиль организации сохранен.",
+            tone: "success",
+          }),
+        )
+        .catch((error) =>
+          showToast({
+            dedupeKey: "company-profile-error",
+            description: error instanceof Error ? error.message : undefined,
+            title: "Не удалось сохранить профиль.",
+            tone: "error",
+          }),
+        );
     });
   }
 
@@ -260,9 +270,20 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
         .then(() => {
           setDivisionForm(emptyStructureForm());
           setEditingDivisionId(null);
-          setNotice("Подразделение сохранено.");
+          showToast({
+            dedupeKey: "company-division-success",
+            title: "Подразделение сохранено.",
+            tone: "success",
+          });
         })
-        .catch((error) => setError(error instanceof Error ? error.message : "Не удалось сохранить подразделение."));
+        .catch((error) =>
+          showToast({
+            dedupeKey: "company-division-error",
+            description: error instanceof Error ? error.message : undefined,
+            title: "Не удалось сохранить подразделение.",
+            tone: "error",
+          }),
+        );
     });
   }
 
@@ -280,9 +301,20 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
         .then(() => {
           setUnitForm(emptyStructureForm());
           setEditingUnitId(null);
-          setNotice("Юнит сохранен.");
+          showToast({
+            dedupeKey: "company-unit-success",
+            title: "Юнит сохранен.",
+            tone: "success",
+          });
         })
-        .catch((error) => setError(error instanceof Error ? error.message : "Не удалось сохранить юнит."));
+        .catch((error) =>
+          showToast({
+            dedupeKey: "company-unit-error",
+            description: error instanceof Error ? error.message : undefined,
+            title: "Не удалось сохранить юнит.",
+            tone: "error",
+          }),
+        );
     });
   }
 
@@ -293,8 +325,21 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
 
     startTransition(() => {
       void mutateSession(path, { method: "POST" }, `Не удалось архивировать ${label}.`)
-        .then(() => setNotice(`${label} архивирован.`))
-        .catch((error) => setError(error instanceof Error ? error.message : `Не удалось архивировать ${label}.`));
+        .then(() =>
+          showToast({
+            dedupeKey: `company-archive-success:${path}`,
+            title: `${label} архивирован.`,
+            tone: "success",
+          }),
+        )
+        .catch((error) =>
+          showToast({
+            dedupeKey: `company-archive-error:${path}`,
+            description: error instanceof Error ? error.message : undefined,
+            title: `Не удалось архивировать ${label}.`,
+            tone: "error",
+          }),
+        );
     });
   }
 
@@ -315,9 +360,6 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
           tone="warning"
         />
       ) : null}
-
-      {notice ? <InlineAlert title={notice} tone="success" /> : null}
-      {error ? <InlineAlert role="alert" title={error} tone="error" /> : null}
 
       <Tabs<TabKey>
         activeKey={activeTab}

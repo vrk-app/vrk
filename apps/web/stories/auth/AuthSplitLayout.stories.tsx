@@ -4,11 +4,8 @@ import { ConsentRow, LoginForm, AuthSplitLayout } from "@/widgets/Auth";
 const defaultConsent = (
   <ConsentRow
     defaultChecked
-    label="Я работаю под своей корпоративной учетной записью и подтверждаю правила доступа."
-    links={[
-      { label: "политикой обработки", href: "#policy" },
-      { label: "регламентом входа", href: "#policy" },
-    ]}
+    label="Я принимаю политику доступа VRK."
+    links={[{ label: "политикой доступа", href: "/access-policy" }]}
   />
 );
 
@@ -20,10 +17,9 @@ const meta = {
   },
   tags: ["autodocs"],
   args: {
-    title: "Вход в сервисный контур VRK",
-    subtitle:
-      "Экран входа остаётся более выразительным, но всё ещё выглядит как корпоративный инструмент с понятной и спокойной иерархией.",
-    formSlot: <LoginForm consent={defaultConsent} submitLabel="Войти в систему" />,
+    title: "Вход в VRK",
+    subtitle: "Используйте корпоративную почту и пароль, выданные для работы в VRK.",
+    formSlot: <LoginForm consent={defaultConsent} submitLabel="Войти" />,
   },
 } satisfies Meta<typeof AuthSplitLayout>;
 
@@ -44,24 +40,10 @@ export const FullBleedIllustration: Story = {
     fullBleedIllustration: true,
     showAuthBadge: false,
   },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          "Доказывает auth layout без внешних section padding/gap: форма сохраняет внутренний отступ, а правая колонка может быть залита до краев viewport.",
-      },
-    },
-  },
 };
 
 export const Mobile: Story = {
   parameters: {
-    docs: {
-      description: {
-        story:
-          "Доказывает mobile stacked contract: форма остаётся первым блоком, а иллюстрация переносится под неё вместо скрытия.",
-      },
-    },
     viewport: {
       defaultViewport: "mobile1",
     },

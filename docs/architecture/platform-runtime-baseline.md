@@ -28,6 +28,8 @@
 - `make smoke` требует доступный `python3` в локальном shell;
 - `make down` сохраняет named Postgres volume и marker успешного dev seed, а `make clean` пересоздает clean-room baseline для повторного seeded proof;
 - backend build/test path доступен через контейнерные scripts и не требует локального `go`.
+- `compose.dev.yml` является официальным dev overlay для hot reload `apps/web`: он переиспользует `db`, `migrate`, `backend` и published port `3100` из `compose.platform.yml`, но запускает `web` через `pnpm --filter @vrk/web dev --hostname 0.0.0.0 --port 3000`;
+- root `make web-dev` поднимает тот же overlay для локальной UI-разработки, не заменяя production-like `make dev` / `make smoke` contract.
 
 ## Чего baseline не обещает
 
@@ -61,6 +63,41 @@ flowchart LR
 
 Диаграмма фиксирует platform floor после локального dev seed: compose-сеть поднимает БД, миграции и backend до web/field surfaces, затем one-shot seed идет через backend API и сохраняет локальные credentials. Smoke по-прежнему проверяет host-facing runtime contract без расширения в Stage 04/06 поведение.
 
+## Web hot reload contour
+
+`compose.platform.yml` остается production-like source of truth для проверки контейнерного web image:
+
+```bash
+docker compose -f compose.platform.yml up -d --build web
+```
+
+Для разработки UI без rebuild на каждое изменение используется overlay:
+
+```bash
+docker compose -f compose.platform.yml -f compose.dev.yml up web
+```
+
+Он сохраняет тот же внешний URL `http://localhost:3100`, потому что port mapping наследуется из базового `web` service. Отличается только способ запуска контейнера:
+
+- production-like: `apps/web/Dockerfile` устанавливает зависимости, выполняет `pnpm --filter @vrk/web build`, затем запускает `pnpm --filter @vrk/web start`;
+- dev hot reload: `compose.dev.yml` монтирует repo в `/workspace`, держит `node_modules`, pnpm store и `apps/web/.next` в named volumes, затем запускает `pnpm --filter @vrk/web dev --hostname 0.0.0.0 --port 3000`;
+- polling flags `CHOKIDAR_USEPOLLING=true` и `WATCHPACK_POLLING=true` включены для Docker Desktop на macOS.
+
+```mermaid
+flowchart LR
+    A["compose.platform.yml"] --> B["db + migrate + backend"]
+    A --> C["production-like web<br/>next build + next start"]
+    A --> D["published port<br/>localhost:3100"]
+    E["compose.dev.yml overlay"] --> F["web dev<br/>repo bind mount + named volumes"]
+    F --> D
+    B --> C
+    B --> F
+```
+
+Диаграмма фиксирует только runtime choice для `web`: оба контура используют один backend/db baseline и один host-facing порт, но production-like image проверяет build/start contract, а dev overlay оптимизирован под source hot reload.
+
+Пересборка production-like контейнера остается обязательной после изменений `package.json`, `pnpm-lock.yaml`, `apps/web/Dockerfile`, а также перед smoke/prod-like verification. Если менялся `apps/web/Dockerfile.dev`, пересоберите dev overlay отдельно через `docker compose -f compose.platform.yml -f compose.dev.yml build web`. Для обычных изменений исходников в `apps/web` достаточно dev overlay; если изменились зависимости во время запущенного dev-сервера, перезапустите overlay, чтобы startup `pnpm install --frozen-lockfile` обновил container volumes.
+
 ## CI baseline
 
 - workflow `.github/workflows/platform-baseline.yml` wired так, чтобы `frontend-workspaces` запускал `pnpm run web:smoke` и `pnpm run field:smoke`;
@@ -77,6 +114,7 @@ flowchart LR
 - Agent-driven feature work must use the existing compose-backed runtime on `localhost:3100` for web verification. Do not start ad-hoc `next dev`, `pnpm dev`, `storybook dev`, static preview servers, or separate feature instances unless the user explicitly requests a dev server / separate instance in the prompt.
 - Для локального `pnpm run web:smoke` нужен установленный Playwright Chromium; первый прогон на новой машине делайте через `pnpm run web:browser-install`.
 - `make down` подходит для обычной остановки stack; если нужно заново доказать исходный seeded floor без влияния предыдущих записей или failed seed marker, сначала запускайте `make clean`.
+- `make web-dev` подходит для foreground hot reload работы с `apps/web`. После проверки не оставляйте его запущенным в agent-сессии без явной необходимости; остановите `Ctrl+C`, а для detached-запуска используйте `docker compose -f compose.platform.yml -f compose.dev.yml stop web`.
 - Внешний порт PostgreSQL не пробрасывается, потому что Stage 02 smoke не требует прямого host-доступа к контейнерной БД.
 - `docker compose up --wait` фиксирует container health, но Stage 02 proof опирается на host-facing contract; поэтому `make smoke` сам коротко дожидается доступности `localhost:18080`, `localhost:3100` и `localhost:3102`, а затем выполняет обычные строгие assertions.
 - `apps/field` пока intentionally narrow: manifest-backed shell + sync boundaries. Offline storage, retry queue state machine и conflict flows остаются позднее.
