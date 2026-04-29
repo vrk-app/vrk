@@ -226,5 +226,38 @@
       ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-harness-2026-04-29.txt",
       ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-harness-post-evidence-2026-04-29.txt"
     ]
+  },
+  {
+    "id": "stage03-local-dev-seed",
+    "category": "developer-experience",
+    "description": "Local make dev runs an idempotent API-driven dev seed that prints credentials and writes .local/dev-seed.json without storing the password in dev_seed_runs.",
+    "steps": [
+      "Run make dev from a clean compose volume and create the demo customer organization through backend API",
+      "Persist the dev seed marker in dev_seed_runs with advisory-lock protected idempotency",
+      "Write .local/dev-seed.json with 0600 permissions and print URL, email, password, organization, 3 divisions, and 9 units",
+      "Rerun make dev-seed and prove it reports seed already applied without creating duplicates",
+      "Login with the printed credentials and prove the organization workspace returns 3 divisions and 9 units"
+    ],
+    "passes": true,
+    "evidence_refs": [
+      "README.md",
+      "docs/onboarding.md",
+      "docs/architecture/platform-runtime-baseline.md",
+      ".agent/stages/03-identity-master-data/evidence.md",
+      ".agent/stages/03-identity-master-data/verdict.json",
+      ".agent/stages/03-identity-master-data/raw/local-dev-seed-py-compile-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/local-dev-seed-compose-config-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/local-dev-seed-backend-build-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/local-dev-seed-make-clean-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/local-dev-seed-make-dev-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/local-dev-seed-rerun-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/local-dev-seed-make-smoke-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/local-dev-seed-login-proof-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/local-dev-seed-db-marker-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/local-dev-seed-file-mode-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/local-dev-seed-json-audit-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/local-dev-seed-harness-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/local-dev-seed-diff-check-2026-04-29.txt"
+    ]
   }
 ]

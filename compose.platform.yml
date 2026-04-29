@@ -57,6 +57,29 @@ services:
     ports:
       - "${BACKEND_HOST_PORT:-18080}:8080"
 
+  dev-seed:
+    build:
+      context: .
+      dockerfile: scripts/Dockerfile.dev-seed
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_NAME: db
+      DB_PASSWORD: postgres
+      DB_PORT: "5432"
+      DB_USER: postgres
+      DEV_SEED_API_BASE_URL: http://backend:8080/api/v1
+      DEV_SEED_DISPLAY_OUTPUT_PATH: .local/dev-seed.json
+      DEV_SEED_OUTPUT_PATH: /workspace/.local/dev-seed.json
+      DEV_SEED_WEB_URL: "http://localhost:${WEB_HOST_PORT:-3100}"
+      PLATFORM_ADMIN_SHARED_SECRET: stage03-platform-admin-secret
+    restart: "no"
+    volumes:
+      - ./scripts:/workspace/scripts:ro
+      - ./.local:/workspace/.local
+
   web:
     build:
       context: .

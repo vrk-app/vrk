@@ -85,7 +85,11 @@ make smoke
 - web runtime: `http://localhost:3100`
 - field scaffold: `http://localhost:3102`
 
-`make dev` возвращается после compose `--wait`, когда container health уже достигнут. `make smoke` можно запускать сразу после него: smoke сам подождет короткое bounded окно, пока host-порты backend/web/field начнут принимать подключения, и только потом перейдет к строгим runtime assertions.
+`make dev` возвращается после compose `--wait`, когда container health уже достигнут, а затем запускает one-shot `dev-seed`. Seed создает demo customer organization, organization-scope администратора, 3 филиала и 9 юнитов через backend API. Credentials печатаются в stdout и сохраняются локально в `.local/dev-seed.json` с правами `0600`.
+
+Если вывод потерялся, открой `.local/dev-seed.json`. Повторный запуск `make dev-seed` не создает дубли для уже успешной версии seed, а печатает `seed already applied`, версию и путь к локальному файлу.
+
+`make smoke` можно запускать сразу после `make dev`: smoke сам подождет короткое bounded окно, пока host-порты backend/web/field начнут принимать подключения, и только потом перейдет к строгим runtime assertions.
 
 Если порты заняты, их можно переопределить через `BACKEND_HOST_PORT`, `WEB_HOST_PORT`, `FIELD_HOST_PORT`.
 
@@ -97,7 +101,7 @@ make dev
 make smoke
 ```
 
-`make down` останавливает stack, но сохраняет named Postgres volume.
+`make down` останавливает stack, но сохраняет named Postgres volume и marker успешного dev seed. Для полного повторного применения миграций и dev seed используйте `make clean`.
 
 Storybook по-прежнему запускается отдельно:
 

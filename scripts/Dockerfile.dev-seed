@@ -1,0 +1,10 @@
+FROM python:3.13-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+RUN pip install --no-cache-dir "psycopg[binary]==3.2.13"
+
+WORKDIR /workspace
+
+ENTRYPOINT ["python", "/workspace/scripts/dev_seed.py"]
