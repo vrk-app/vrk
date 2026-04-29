@@ -891,3 +891,36 @@
   - `WEB_SMOKE_BACKEND_URL=http://127.0.0.1:18180 pnpm --dir apps/web run browser-smoke`;
   - Stage harness self-check.
 - Raw proof was saved under `raw/slice-010-division-role-model-*`.
+
+### 2026-04-29T09:22:00+03:00
+
+- Implemented the local dev seed workflow requested by the user.
+- Added schema-only marker table `dev_seed_runs` with idempotency keyed by `(seed_key, version)` and no business seed data in migrations.
+- Added `scripts/dev_seed.py` and compose one-shot service `dev-seed`.
+- Updated `make dev` to:
+  - create `.local`;
+  - run `docker compose up --build -d --wait db migrate backend web field`;
+  - run `docker compose run --rm --build dev-seed`.
+- Added `make dev-seed` for explicit reruns after the stack is already up.
+- Seed behavior:
+  - uses backend API only: first-admin invite, accept, `/company/profile`, `/company/divisions`, `/company/units`;
+  - does not call `/launch-wizard`;
+  - uses versioned admin email `admin+2026-04-29-1@vrk.local`;
+  - creates one customer organization, 3 филиала, and 9 юнитов;
+  - prints credentials to stdout and writes `.local/dev-seed.json` with mode `0600`;
+  - stores no password in `dev_seed_runs.result_json`.
+- Synced canonical developer/runtime docs:
+  - `README.md`;
+  - `docs/onboarding.md`;
+  - `docs/architecture/platform-runtime-baseline.md`.
+- Proof passed:
+  - `python3 -m py_compile scripts/dev_seed.py`;
+  - `docker compose -f compose.platform.yml config --quiet`;
+  - `make backend-build`;
+  - `make clean && make dev`;
+  - `.local/dev-seed.json` mode check;
+  - `make dev-seed` rerun prints `seed already applied`;
+  - `make smoke`;
+  - backend login with printed admin email/password returns organization workspace with 3 divisions and 9 units;
+  - DB marker audit confirms `contains_password = f`.
+- Raw proof saved under `raw/local-dev-seed-*`.

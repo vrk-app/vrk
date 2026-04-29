@@ -2,14 +2,44 @@
 
 - Stage ID: `03-identity-master-data`
 - Current correction slice: `slice-010-stage03-org-structure-management`
+- Current local-dev slice: `stage03-local-dev-seed`
 - Builder state: `COMPLETE`
-- Verifier state: `PASS_AFTER_DIVISION_ROLE_MODEL_V1`
+- Verifier state: `PASS_AFTER_DIVISION_ROLE_MODEL_V1`; local-dev seed proof collected by parent on 2026-04-29
 
 This bundle records builder-collected proof, the minimal fixer doc-sync, and the historical post-fixer fresh verifier `PASS` for the 2026-04-29 Stage 03 correction that moves the product target from the historical launch wizard to persistent `/company` organization profile and structure management.
 
 Newton later failed the legal-type correction only for documentation drift, and that doc-only gap was fixed. The latest user clarification confirms `division` is the intended API/domain term replacing `subdivision`; a fresh verifier reproduced the division-aligned proof and returned `PASS`. The follow-up Role Model v1 checkpoint verified the canonical role catalog, scope compatibility, v1 capability behavior, active terminology hard cutover, and full backend/web smoke gates.
 
+The 2026-04-29 local-dev seed slice adds an operational developer workflow on top of the proven Stage 03 identity/org-structure APIs: `make dev` now runs a one-shot `dev-seed` service after compose health, creates a demo customer organization through backend API only, prints credentials, and writes `.local/dev-seed.json`.
+
 ## Commands Run
+
+- Local dev seed workflow:
+  - Added schema-only migration `000013_dev_seed_runs` for seed idempotency markers.
+  - Added `scripts/dev_seed.py`, `scripts/Dockerfile.dev-seed`, compose `dev-seed`, `make dev-seed`, and `make dev` post-health seed execution.
+  - Seed path uses backend API only: first-admin invite, invite accept, `/company/profile`, `/company/divisions`, `/company/units`; `/launch-wizard` is not used.
+  - Seed output prints `http://localhost:3100`, versioned admin email `admin+2026-04-29-1@vrk.local`, password, organization id, 3 divisions, 9 units, and `.local/dev-seed.json`.
+  - `.local/dev-seed.json` is gitignored, written with `0600`, and includes no session token.
+  - `dev_seed_runs.result_json` stores marker metadata and IDs only; DB audit confirms it does not contain `password`.
+  - Synced canonical docs:
+    - `README.md`
+    - `docs/onboarding.md`
+    - `docs/architecture/platform-runtime-baseline.md`
+  - Verification status: `PASS`.
+  - Raw:
+    - `.agent/stages/03-identity-master-data/raw/local-dev-seed-py-compile-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/local-dev-seed-compose-config-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/local-dev-seed-backend-build-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/local-dev-seed-make-clean-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/local-dev-seed-make-dev-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/local-dev-seed-rerun-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/local-dev-seed-make-smoke-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/local-dev-seed-login-proof-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/local-dev-seed-db-marker-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/local-dev-seed-file-mode-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/local-dev-seed-json-audit-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/local-dev-seed-harness-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/local-dev-seed-diff-check-2026-04-29.txt`
 
 - Division terminology correction after user clarification:
   - Realigned `proof_slice010_org_structure.py`, canonical docs, and stage artifacts to the implemented `/company/divisions`, `divisionId`, scope `division`, and role templates `division_head` / `division_operator`.

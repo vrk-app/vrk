@@ -1,0 +1,16 @@
+dev seed login proof: PASS
+{
+  "email": "admin+2026-04-29-1@vrk.local",
+  "organizationId": "42b7c5cc-eda2-4dac-a824-db09ee7850ab",
+  "workspace": {
+    "scopeType": "organization",
+    "scopeId": "42b7c5cc-eda2-4dac-a824-db09ee7850ab",
+    "scopeName": "ООО \"ВРК Демо\"",
+    "landingTitle": "ООО \"ВРК Демо\"",
+    "landingSubtitle": "Администратор организации видит полный org graph и может управлять приглашениями сотрудников.",
+    "landingPath": "/company",
+    "canManageEmployeeInvites": true
+  },
+  "divisionCount": 3,
+  "unitCount": 9
+}

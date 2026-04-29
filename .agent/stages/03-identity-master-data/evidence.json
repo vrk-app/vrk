@@ -2,8 +2,8 @@
   "stage_id": "03-identity-master-data",
   "sprint_contract_id": "slice-010-stage03-org-structure-management",
   "builder_state": "COMPLETE",
-  "verifier_state": "PASS_AFTER_DIVISION_ROLE_MODEL_V1",
-  "updated_at": "2026-04-29T04:43:36Z",
+  "verifier_state": "PASS_AFTER_DIVISION_ROLE_MODEL_V1_PLUS_LOCAL_DEV_SEED_PROOF",
+  "updated_at": "2026-04-29T06:22:00Z",
   "commands": [
     "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data",
     "PATH=/Users/yura-posledov/cursor/vrk/.agent/tmp-tools/go/bin:$PATH /Users/yura-posledov/cursor/vrk/.agent/tmp-tools/sqlc generate -f apps/backend/sqlc.yaml",
@@ -46,7 +46,16 @@
     "PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run typecheck",
     "PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run build",
     "PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run build-storybook",
-    "WEB_SMOKE_BACKEND_URL=http://127.0.0.1:18180 pnpm --dir apps/web run browser-smoke"
+    "WEB_SMOKE_BACKEND_URL=http://127.0.0.1:18180 pnpm --dir apps/web run browser-smoke",
+    "python3 -m py_compile scripts/dev_seed.py",
+    "docker compose -f compose.platform.yml config --quiet",
+    "make clean && make dev",
+    "make dev-seed",
+    "make smoke",
+    "backend login proof for dev seed admin returns organization workspace with 3 divisions and 9 units",
+    "docker compose -f compose.platform.yml exec -T db psql -U postgres -d db -c \"SELECT seed_key, version, status, result_json::text LIKE '%password%' AS contains_password FROM dev_seed_runs ORDER BY started_at;\"",
+    "stat -f '%Lp %N' .local/dev-seed.json",
+    "git diff --check"
   ],
   "tests": [
     "verify_harness: PASS",
@@ -109,7 +118,19 @@
     "division role model Storybook build: PASS with existing Vite use-client/chunk warnings only",
     "division role model browser-smoke: PASS (3 tests)",
     "division role model harness: PASS",
-    "division role model post-evidence harness: PASS"
+    "division role model post-evidence harness: PASS",
+    "local dev seed py_compile: PASS",
+    "compose config with dev-seed service: PASS",
+    "local dev seed backend-build: PASS",
+    "make clean && make dev with first seed: PASS",
+    "make dev-seed rerun idempotency: PASS; printed seed already applied",
+    "make smoke after dev seed: PASS",
+    "local dev seed admin login proof: PASS; organization workspace returned 3 divisions and 9 units",
+    "local dev seed DB marker audit: PASS; contains_password = false",
+    "local dev seed file mode audit: PASS; .local/dev-seed.json mode is 600",
+    "local dev seed stage JSON audit: PASS",
+    "local dev seed stage harness self-check: PASS",
+    "local dev seed git diff --check: PASS"
   ],
   "artifacts": [
     ".agent/stages/03-identity-master-data/evidence.md",
@@ -225,7 +246,30 @@
     ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-storybook-build-2026-04-29.txt",
     ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-browser-smoke-2026-04-29.txt",
     ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-harness-2026-04-29.txt",
-    ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-harness-post-evidence-2026-04-29.txt"
+    ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-harness-post-evidence-2026-04-29.txt",
+    "apps/backend/migrations/000013_dev_seed_runs.up.sql",
+    "apps/backend/migrations/000013_dev_seed_runs.down.sql",
+    "scripts/dev_seed.py",
+    "scripts/Dockerfile.dev-seed",
+    "compose.platform.yml",
+    "Makefile",
+    ".gitignore",
+    "README.md",
+    "docs/onboarding.md",
+    "docs/architecture/platform-runtime-baseline.md",
+    ".agent/stages/03-identity-master-data/raw/local-dev-seed-py-compile-2026-04-29.txt",
+    ".agent/stages/03-identity-master-data/raw/local-dev-seed-compose-config-2026-04-29.txt",
+    ".agent/stages/03-identity-master-data/raw/local-dev-seed-backend-build-2026-04-29.txt",
+    ".agent/stages/03-identity-master-data/raw/local-dev-seed-make-clean-2026-04-29.txt",
+    ".agent/stages/03-identity-master-data/raw/local-dev-seed-make-dev-2026-04-29.txt",
+    ".agent/stages/03-identity-master-data/raw/local-dev-seed-rerun-2026-04-29.txt",
+    ".agent/stages/03-identity-master-data/raw/local-dev-seed-make-smoke-2026-04-29.txt",
+    ".agent/stages/03-identity-master-data/raw/local-dev-seed-login-proof-2026-04-29.txt",
+    ".agent/stages/03-identity-master-data/raw/local-dev-seed-db-marker-2026-04-29.txt",
+    ".agent/stages/03-identity-master-data/raw/local-dev-seed-file-mode-2026-04-29.txt",
+    ".agent/stages/03-identity-master-data/raw/local-dev-seed-json-audit-2026-04-29.txt",
+    ".agent/stages/03-identity-master-data/raw/local-dev-seed-harness-2026-04-29.txt",
+    ".agent/stages/03-identity-master-data/raw/local-dev-seed-diff-check-2026-04-29.txt"
   ],
   "docs_synced": [
     "docs/roadmap.md",
@@ -238,7 +282,10 @@
     "apps/backend/docs/swagger/swagger.json",
     "apps/backend/docs/swagger/swagger.yaml",
     ".agent/stages/03-identity-master-data/stage_spec.md",
-    ".agent/stages/03-identity-master-data/sprint_contract.md"
+    ".agent/stages/03-identity-master-data/sprint_contract.md",
+    "README.md",
+    "docs/onboarding.md",
+    "docs/architecture/platform-runtime-baseline.md"
   ],
   "doc_sync_fix": {
     "status": "FIXED_VERIFIED",
@@ -514,5 +561,25 @@
       ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-harness-2026-04-29.txt",
       ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-harness-post-evidence-2026-04-29.txt"
     ]
+  },
+  "local_dev_seed": {
+    "status": "PASS",
+    "seedKey": "vrk-local-dev-seed",
+    "version": "2026-04-29.1",
+    "adminEmail": "admin+2026-04-29-1@vrk.local",
+    "outputFile": ".local/dev-seed.json",
+    "outputFileMode": "0600",
+    "apiFlow": [
+      "POST /api/v1/platform/organization-shells",
+      "GET /api/v1/first-admin-invites/{token}",
+      "POST /api/v1/first-admin-invites/{token}/accept",
+      "PATCH /api/v1/company/profile",
+      "POST /api/v1/company/divisions",
+      "POST /api/v1/company/units"
+    ],
+    "launchWizardUsed": false,
+    "divisions": 3,
+    "units": 9,
+    "passwordStoredInDatabase": false
   }
 }

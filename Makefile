@@ -1,10 +1,16 @@
 COMPOSE_FILE := compose.platform.yml
 COMPOSE := docker compose -f $(COMPOSE_FILE)
 
-.PHONY: dev down clean logs smoke backend-test backend-build
+.PHONY: dev dev-seed down clean logs smoke backend-test backend-build
 
 dev:
-	$(COMPOSE) up --build -d --wait
+	mkdir -p .local
+	$(COMPOSE) up --build -d --wait db migrate backend web field
+	$(COMPOSE) run --rm --build dev-seed
+
+dev-seed:
+	mkdir -p .local
+	$(COMPOSE) run --rm --build dev-seed
 
 down:
 	$(COMPOSE) down --remove-orphans

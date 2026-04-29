@@ -1,0 +1,682 @@
+mkdir -p .local
+docker compose -f compose.platform.yml up --build -d --wait db migrate backend web field
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.38kB done
+#1 DONE 0.0s
+
+#2 [web internal] load build definition from Dockerfile
+#2 transferring dockerfile: 750B done
+#2 DONE 0.0s
+
+#3 [backend internal] load build definition from Dockerfile
+#3 transferring dockerfile: 1.49kB done
+#3 DONE 0.0s
+
+#4 [field internal] load build definition from Dockerfile
+#4 transferring dockerfile: 533B done
+#4 DONE 0.0s
+
+#5 [field internal] load metadata for docker.io/library/node:24.14.1-alpine
+#5 DONE 0.1s
+
+#6 [backend internal] load metadata for docker.io/library/golang:1.26-alpine
+#6 DONE 0.1s
+
+#7 [field internal] load .dockerignore
+#7 transferring context: 190B done
+#7 DONE 0.0s
+
+#8 [field 1/9] FROM docker.io/library/node:24.14.1-alpine@sha256:8510330d3eb72c804231a834b1a8ebb55cb3796c3e4431297a24d246b8add4d5
+#8 resolve docker.io/library/node:24.14.1-alpine@sha256:8510330d3eb72c804231a834b1a8ebb55cb3796c3e4431297a24d246b8add4d5 0.0s done
+#8 DONE 0.0s
+
+#9 [field internal] load build context
+#9 transferring context: 1.59MB 0.0s done
+#9 DONE 0.0s
+
+#10 [web 2/9] WORKDIR /workspace
+#10 CACHED
+
+#11 [field 3/9] RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
+#11 CACHED
+
+#12 [field 4/9] COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+#12 DONE 0.1s
+
+#13 [web 5/9] COPY apps/web/package.json apps/web/package.json
+#13 DONE 0.0s
+
+#14 [web 6/9] COPY apps/field/package.json apps/field/package.json
+#14 DONE 0.0s
+
+#15 [web 7/9] RUN pnpm install --frozen-lockfile
+#15 0.360 Scope: all 3 workspace projects
+#15 0.422 Lockfile is up to date, resolution step is skipped
+#15 0.470 Progress: resolved 1, reused 0, downloaded 0, added 0
+#15 0.561 Packages: +536
+#15 0.561 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#15 ...
+
+#16 [backend internal] load metadata for docker.io/library/alpine:3.19
+#16 DONE 1.1s
+
+#17 [backend internal] load .dockerignore
+#17 transferring context: 44B done
+#17 DONE 0.0s
+
+#18 [backend builder  1/12] FROM docker.io/library/golang:1.26-alpine@sha256:f85330846cde1e57ca9ec309382da3b8e6ae3ab943d2739500e08c86393a21b1
+#18 resolve docker.io/library/golang:1.26-alpine@sha256:f85330846cde1e57ca9ec309382da3b8e6ae3ab943d2739500e08c86393a21b1 0.0s done
+#18 DONE 0.0s
+
+#19 [backend stage-1 1/7] FROM docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1
+#19 resolve docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1 0.0s done
+#19 DONE 0.0s
+
+#20 [backend internal] load build context
+#20 transferring context: 670.37kB 0.0s done
+#20 DONE 0.0s
+
+#21 [backend builder  6/12] RUN go mod download
+#21 CACHED
+
+#22 [backend builder  3/12] RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0
+#22 CACHED
+
+#23 [backend builder  5/12] COPY go.mod go.sum ./
+#23 CACHED
+
+#24 [backend builder  2/12] RUN apk add --no-cache git ca-certificates tzdata
+#24 CACHED
+
+#25 [backend builder  4/12] WORKDIR /app
+#25 CACHED
+
+#26 [backend builder  7/12] COPY sqlc.yaml ./
+#26 CACHED
+
+#27 [backend builder  8/12] COPY internal/db/queries ./internal/db/queries
+#27 CACHED
+
+#28 [backend builder  9/12] COPY migrations ./migrations
+#28 DONE 0.1s
+
+#29 [backend builder 10/12] RUN sqlc generate
+#29 DONE 1.4s
+
+#15 [web 7/9] RUN pnpm install --frozen-lockfile
+#15 0.921
+#15 0.921    ╭───────────────────────────────────────────────╮
+#15 0.921    │                                               │
+#15 0.921    │     Update available! 10.33.0 → 10.33.2.      │
+#15 0.921    │     Changelog: https://pnpm.io/v/10.33.2      │
+#15 0.921    │   To update, run: corepack use pnpm@10.33.2   │
+#15 0.921    │                                               │
+#15 0.921    ╰───────────────────────────────────────────────╯
+#15 0.921
+#15 1.471 Progress: resolved 536, reused 0, downloaded 136, added 136
+#15 ...
+
+#30 [backend builder 11/12] COPY . .
+#30 DONE 0.1s
+
+#15 [web 7/9] RUN pnpm install --frozen-lockfile
+#15 2.470 Progress: resolved 536, reused 0, downloaded 268, added 268
+#15 3.472 Progress: resolved 536, reused 0, downloaded 488, added 488
+#15 4.472 Progress: resolved 536, reused 0, downloaded 532, added 532
+#15 5.473 Progress: resolved 536, reused 0, downloaded 534, added 534
+#15 6.472 Progress: resolved 536, reused 0, downloaded 535, added 535
+#15 8.586 Progress: resolved 536, reused 0, downloaded 536, added 535
+#15 8.590 Progress: resolved 536, reused 0, downloaded 536, added 536, done
+#15 9.165 .../esbuild@0.25.12/node_modules/esbuild postinstall$ node install.js
+#15 9.263 .../esbuild@0.25.12/node_modules/esbuild postinstall: Done
+#15 9.353
+#15 9.389 Done in 9.2s using pnpm v10.33.0
+#15 DONE 9.7s
+
+#31 [field 8/9] COPY . .
+#31 DONE 0.4s
+
+#32 [web 9/9] RUN pnpm --filter @vrk/web build
+#32 0.374
+#32 0.374 > @vrk/web@0.1.0 build /workspace/apps/web
+#32 0.374 > next build
+#32 0.374
+#32 ...
+
+#33 [backend builder 12/12] RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build     -ldflags="-w -s"     -o /app/bin/api     ./cmd/api
+#33 DONE 8.3s
+
+#34 [backend stage-1 3/7] RUN addgroup -g 1001 -S appgroup &&     adduser -u 1001 -S appuser -G appgroup
+#34 CACHED
+
+#35 [backend stage-1 2/7] RUN apk add --no-cache ca-certificates tzdata wget
+#35 CACHED
+
+#36 [backend stage-1 4/7] COPY --from=builder --chown=appuser:appgroup /app/bin/api /app/api
+#36 CACHED
+
+#37 [backend stage-1 5/7] COPY --chown=appuser:appgroup migrations /app/migrations
+#37 DONE 0.0s
+
+#38 [backend stage-1 6/7] RUN chown -R appuser:appgroup /app
+#38 DONE 0.1s
+
+#39 [field 9/9] RUN pnpm --filter @vrk/field build
+#39 0.377
+#39 0.377 > @vrk/field@0.1.0 build /workspace/apps/field
+#39 0.377 > next build
+#39 0.377
+#39 ...
+
+#40 [backend stage-1 7/7] WORKDIR /app
+#40 DONE 0.0s
+
+#39 [field 9/9] RUN pnpm --filter @vrk/field build
+#39 0.902    ▲ Next.js 15.5.15
+#39 0.902
+#39 0.921    Creating an optimized production build ...
+#39 ...
+
+#41 [backend] exporting to image
+#41 exporting layers 0.0s done
+#41 exporting manifest sha256:8858938b5f8a4503bfe9236ae1879b7c2e18f4dbcea6753ce7a807be97cedc24 done
+#41 exporting config sha256:b7b19b0b3d1e9b31a5e12668df7be1ac4674a241249f4c47d30c4c3d750f6ea6 done
+#41 exporting attestation manifest sha256:6aa4aedcf9d9a2434e80f7ac4fc14fcae89a818bf2df6edd63e67e8e4b8b6f37 done
+#41 exporting manifest list sha256:3accd0ce62a182f076affaa5cc5dc088e21b37f61aebd7f24bf7f87b86450f65 done
+#41 naming to docker.io/library/vrk-backend:latest done
+#41 unpacking to docker.io/library/vrk-backend:latest 0.0s done
+#41 DONE 0.1s
+
+#42 [backend] resolving provenance for metadata file
+#42 DONE 0.0s
+
+#32 [web 9/9] RUN pnpm --filter @vrk/web build
+#32 0.902    ▲ Next.js 15.5.15
+#32 0.902
+#32 0.929    Creating an optimized production build ...
+#32 ...
+
+#39 [field 9/9] RUN pnpm --filter @vrk/field build
+#39 6.073  ✓ Compiled successfully in 3.7s
+#39 6.074    Linting and checking validity of types ...
+#39 7.314    Collecting page data ...
+#39 7.994    Generating static pages (0/4) ...
+#39 8.345    Generating static pages (1/4)
+#39 8.345    Generating static pages (2/4)
+#39 8.345    Generating static pages (3/4)
+#39 8.345  ✓ Generating static pages (4/4)
+#39 8.767    Finalizing page optimization ...
+#39 8.767    Collecting build traces ...
+#39 13.32
+#39 13.33 Route (app)                                 Size  First Load JS
+#39 13.33 ┌ ƒ /                                      126 B         102 kB
+#39 13.33 ├ ○ /_not-found                            995 B         103 kB
+#39 13.33 └ ○ /manifest.webmanifest                  126 B         102 kB
+#39 13.33 + First Load JS shared by all             102 kB
+#39 13.33   ├ chunks/554-47be74451b2d875f.js       45.5 kB
+#39 13.33   ├ chunks/a97b86c7-9ac234f379ec86d3.js  54.2 kB
+#39 13.33   └ other shared chunks (total)          1.84 kB
+#39 13.33
+#39 13.33
+#39 13.33 ○  (Static)   prerendered as static content
+#39 13.33 ƒ  (Dynamic)  server-rendered on demand
+#39 13.33
+#39 DONE 13.5s
+
+#32 [web 9/9] RUN pnpm --filter @vrk/web build
+#32 9.792  ✓ Compiled successfully in 7.3s
+#32 9.793    Linting and checking validity of types ...
+#32 13.55    Collecting page data ...
+#32 14.73    Generating static pages (0/25) ...
+#32 15.06    Generating static pages (6/25)
+#32 15.06    Generating static pages (12/25)
+#32 15.10    Generating static pages (18/25)
+#32 15.18  ✓ Generating static pages (25/25)
+#32 15.56    Finalizing page optimization ...
+#32 15.56    Collecting build traces ...
+#32 20.09
+#32 20.09 Route (app)                                                                   Size  First Load JS
+#32 20.09 ┌ ○ /                                                                        208 B         102 kB
+#32 20.09 ├ ○ /_not-found                                                               1 kB         103 kB
+#32 20.09 ├ ○ /access-policy                                                           200 B         147 kB
+#32 20.09 ├ ƒ /api/auth/employee-invites                                               208 B         102 kB
+#32 20.09 ├ ƒ /api/auth/employee-invites/[inviteId]/revoke                             208 B         102 kB
+#32 20.09 ├ ƒ /api/auth/employee-invites/[inviteId]/send                               208 B         102 kB
+#32 20.09 ├ ƒ /api/auth/invites/[token]                                                208 B         102 kB
+#32 20.09 ├ ƒ /api/auth/invites/[token]/accept                                         208 B         102 kB
+#32 20.09 ├ ƒ /api/auth/session                                                        208 B         102 kB
+#32 20.09 ├ ƒ /api/auth/session/current                                                208 B         102 kB
+#32 20.09 ├ ƒ /api/bootstrap                                                           208 B         102 kB
+#32 20.09 ├ ƒ /api/company/divisions                                                   208 B         102 kB
+#32 20.09 ├ ƒ /api/company/divisions/[divisionId]                                      208 B         102 kB
+#32 20.09 ├ ƒ /api/company/divisions/[divisionId]/archive                              208 B         102 kB
+#32 20.09 ├ ƒ /api/company/profile                                                     208 B         102 kB
+#32 20.09 ├ ƒ /api/company/units                                                       208 B         102 kB
+#32 20.09 ├ ƒ /api/company/units/[unitId]                                              208 B         102 kB
+#32 20.09 ├ ƒ /api/company/units/[unitId]/archive                                      208 B         102 kB
+#32 20.09 ├ ƒ /api/contracts                                                           208 B         102 kB
+#32 20.09 ├ ƒ /api/contracts/[contractId]                                              208 B         102 kB
+#32 20.09 ├ ƒ /api/contracts/contractors                                               208 B         102 kB
+#32 20.09 ├ ƒ /api/contracts/routing/resolve                                           208 B         102 kB
+#32 20.09 ├ ƒ /api/equipment                                                           208 B         102 kB
+#32 20.09 ├ ƒ /api/equipment/[equipmentId]/archive                                     208 B         102 kB
+#32 20.09 ├ ƒ /api/equipment/measuring-instruments                                     208 B         102 kB
+#32 20.09 ├ ƒ /api/equipment/measuring-instruments/[measuringInstrumentId]/archive     208 B         102 kB
+#32 20.09 ├ ƒ /api/equipment/measuring-instruments/[measuringInstrumentId]/journals    208 B         102 kB
+#32 20.09 ├ ƒ /api/equipment/standards                                                 208 B         102 kB
+#32 20.09 ├ ƒ /api/equipment/standards/[standardId]/archive                            208 B         102 kB
+#32 20.09 ├ ƒ /api/equipment/standards/[standardId]/journals                           208 B         102 kB
+#32 20.09 ├ ƒ /api/platform/organization-shells                                        208 B         102 kB
+#32 20.09 ├ ƒ /company                                                               8.47 kB         158 kB
+#32 20.09 ├ ƒ /company/setup                                                           208 B         102 kB
+#32 20.09 ├ ƒ /contracts                                                             4.66 kB         154 kB
+#32 20.09 ├ ƒ /equipment                                                             12.5 kB         162 kB
+#32 20.09 ├ ○ /login                                                                 2.67 kB         161 kB
+#32 20.09 ├ ○ /password-reset                                                          200 B         147 kB
+#32 20.09 ├ ○ /register                                                                541 B         168 kB
+#32 20.09 ├ ƒ /register/[token]                                                        235 B         164 kB
+#32 20.09 └ ƒ /requests                                                                200 B         147 kB
+#32 20.09 + First Load JS shared by all                                               102 kB
+#32 20.09   ├ chunks/3554-c19825f276ec337d.js                                        45.5 kB
+#32 20.09   ├ chunks/a97b86c7-6ed9a45f307045da.js                                    54.2 kB
+#32 20.09   └ other shared chunks (total)                                            1.87 kB
+#32 20.09
+#32 20.09
+#32 20.09 ○  (Static)   prerendered as static content
+#32 20.09 ƒ  (Dynamic)  server-rendered on demand
+#32 20.09
+#32 DONE 20.2s
+
+#43 [web] exporting to image
+#43 exporting layers
+#43 ...
+
+#44 [field] exporting to image
+#44 exporting layers 11.8s done
+#44 exporting manifest sha256:42ee6ecaa146e9e9ca00acebf10a5b0eb2467aa6551801a1878d688c9dfc618a
+#44 exporting manifest sha256:42ee6ecaa146e9e9ca00acebf10a5b0eb2467aa6551801a1878d688c9dfc618a done
+#44 exporting config sha256:5bbc30b3a33e28f7dad48517a0c115db7fa84bd5e49d78d9134b66f511bb1dc2 done
+#44 exporting attestation manifest sha256:bc61f26d160f45dda260454a809dcc0d9e946da44f49d48122bddff1eb800139 0.0s done
+#44 exporting manifest list sha256:3f1dd1f85d6b6020007e7815355e28d596544f943bec85bf35dc7f53c7b3d1ea done
+#44 naming to docker.io/library/vrk-field:latest done
+#44 unpacking to docker.io/library/vrk-field:latest
+#44 ...
+
+#43 [web] exporting to image
+#43 exporting layers 5.2s done
+#43 exporting manifest sha256:b56116d049212e64a2b39db8e1ab798b342cd7580a0bf0c0f2a74fb57819f58e done
+#43 exporting config sha256:94482cccd43dfb9eb15db10954da7f37bd39c64114b992354ff3a17e3b0bee89 done
+#43 exporting attestation manifest sha256:948170d1bd686fb1b8e4e9f190e88cb4f0b13ce81285b0d15f1d41098446a142 0.0s done
+#43 exporting manifest list sha256:4fac8cc0818aaccfb91c0fb5316bd5fd3e8f794ff5413aa9480aef3d16f7f5ed done
+#43 naming to docker.io/library/vrk-web:latest done
+#43 unpacking to docker.io/library/vrk-web:latest
+#43 ...
+
+#44 [field] exporting to image
+#44 unpacking to docker.io/library/vrk-field:latest 5.1s done
+#44 DONE 17.0s
+
+#43 [web] exporting to image
+#43 unpacking to docker.io/library/vrk-web:latest 5.2s done
+#43 DONE 10.5s
+
+#45 [field] resolving provenance for metadata file
+#45 DONE 0.0s
+
+#46 [web] resolving provenance for metadata file
+#46 DONE 0.0s
+ vrk-backend  Built
+ vrk-field  Built
+ vrk-web  Built
+ Network vrk_default  Creating
+ Network vrk_default  Created
+ Volume vrk_vrk-platform-db  Creating
+ Volume vrk_vrk-platform-db  Created
+ Container vrk-db-1  Creating
+ Container vrk-db-1  Created
+ Container vrk-migrate-1  Creating
+ Container vrk-migrate-1  Created
+ Container vrk-backend-1  Creating
+ Container vrk-backend-1  Created
+ Container vrk-web-1  Creating
+ Container vrk-field-1  Creating
+ Container vrk-field-1  Created
+ Container vrk-web-1  Created
+ Container vrk-db-1  Starting
+ Container vrk-db-1  Started
+ Container vrk-db-1  Waiting
+ Container vrk-db-1  Healthy
+ Container vrk-migrate-1  Starting
+ Container vrk-migrate-1  Started
+ Container vrk-migrate-1  Waiting
+ Container vrk-db-1  Waiting
+ Container vrk-db-1  Healthy
+ Container vrk-migrate-1  Exited
+ Container vrk-backend-1  Starting
+ Container vrk-backend-1  Started
+ Container vrk-backend-1  Waiting
+ Container vrk-backend-1  Waiting
+ Container vrk-backend-1  Healthy
+ Container vrk-field-1  Starting
+ Container vrk-backend-1  Healthy
+ Container vrk-web-1  Starting
+ Container vrk-field-1  Started
+ Container vrk-web-1  Started
+ Container vrk-migrate-1  Waiting
+ Container vrk-backend-1  Waiting
+ Container vrk-web-1  Waiting
+ Container vrk-field-1  Waiting
+ Container vrk-db-1  Waiting
+ Container vrk-backend-1  Healthy
+ Container vrk-migrate-1  Exited
+ Container vrk-db-1  Healthy
+ Container vrk-web-1  Healthy
+ Container vrk-field-1  Healthy
+docker compose -f compose.platform.yml run --rm --build dev-seed
+#1 [internal] load local bake definitions
+#1 reading from stdin 537B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.49kB done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/golang:1.26-alpine
+#3 DONE 0.0s
+
+#4 [internal] load metadata for docker.io/library/alpine:3.19
+#4 DONE 0.6s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 44B done
+#5 DONE 0.0s
+
+#6 [stage-1 1/7] FROM docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1
+#6 resolve docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1 0.0s done
+#6 DONE 0.0s
+
+#7 [builder  1/12] FROM docker.io/library/golang:1.26-alpine@sha256:f85330846cde1e57ca9ec309382da3b8e6ae3ab943d2739500e08c86393a21b1
+#7 resolve docker.io/library/golang:1.26-alpine@sha256:f85330846cde1e57ca9ec309382da3b8e6ae3ab943d2739500e08c86393a21b1 0.0s done
+#7 DONE 0.0s
+
+#8 [internal] load build context
+#8 transferring context: 7.41kB done
+#8 DONE 0.0s
+
+#9 [stage-1 6/7] RUN chown -R appuser:appgroup /app
+#9 CACHED
+
+#10 [builder  6/12] RUN go mod download
+#10 CACHED
+
+#11 [stage-1 5/7] COPY --chown=appuser:appgroup migrations /app/migrations
+#11 CACHED
+
+#12 [builder  7/12] COPY sqlc.yaml ./
+#12 CACHED
+
+#13 [builder  5/12] COPY go.mod go.sum ./
+#13 CACHED
+
+#14 [builder 12/12] RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build     -ldflags="-w -s"     -o /app/bin/api     ./cmd/api
+#14 CACHED
+
+#15 [builder  3/12] RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0
+#15 CACHED
+
+#16 [builder 10/12] RUN sqlc generate
+#16 CACHED
+
+#17 [builder  2/12] RUN apk add --no-cache git ca-certificates tzdata
+#17 CACHED
+
+#18 [stage-1 2/7] RUN apk add --no-cache ca-certificates tzdata wget
+#18 CACHED
+
+#19 [stage-1 4/7] COPY --from=builder --chown=appuser:appgroup /app/bin/api /app/api
+#19 CACHED
+
+#20 [builder  9/12] COPY migrations ./migrations
+#20 CACHED
+
+#21 [builder  8/12] COPY internal/db/queries ./internal/db/queries
+#21 CACHED
+
+#22 [builder 11/12] COPY . .
+#22 CACHED
+
+#23 [stage-1 3/7] RUN addgroup -g 1001 -S appgroup &&     adduser -u 1001 -S appuser -G appgroup
+#23 CACHED
+
+#24 [builder  4/12] WORKDIR /app
+#24 CACHED
+
+#25 [stage-1 7/7] WORKDIR /app
+#25 CACHED
+
+#26 exporting to image
+#26 exporting layers done
+#26 exporting manifest sha256:fbf56b5c05d29bd512e2dadaf31a78d287269bc1119a06a9ef83e51a086fe0ac done
+#26 exporting config sha256:869bae565850820a347cd52166a8bd175e30e5f67e7d82df26066e22a584d8f3 done
+#26 exporting attestation manifest sha256:b8dcd59d694fee01b3591fbcd24b29c9d6c345d392de3f00111573f924cacf86 done
+#26 exporting manifest list sha256:88850abc38fee29287c9b43e59ebe3f5bfd94e5f95164a00d8f8bba0ec1bd9c9 done
+#26 naming to docker.io/library/vrk-backend:latest done
+#26 unpacking to docker.io/library/vrk-backend:latest done
+#26 DONE 0.0s
+
+#27 resolving provenance for metadata file
+#27 DONE 0.0s
+ vrk-backend  Built
+ Container vrk-db-1  Running
+ Container vrk-backend-1  Recreate
+ Container vrk-backend-1  Recreated
+ Container vrk-db-1  Waiting
+ Container vrk-db-1  Healthy
+ Container vrk-migrate-1  Starting
+ Container vrk-migrate-1  Started
+ Container vrk-db-1  Waiting
+ Container vrk-migrate-1  Waiting
+ Container vrk-migrate-1  Exited
+ Container vrk-db-1  Healthy
+ Container vrk-backend-1  Starting
+ Container vrk-backend-1  Started
+#1 [internal] load local bake definitions
+#1 reading from stdin 982B done
+#1 DONE 0.0s
+
+#2 [dev-seed internal] load build definition from Dockerfile.dev-seed
+#2 transferring dockerfile: 261B done
+#2 DONE 0.0s
+
+#3 [backend internal] load build definition from Dockerfile
+#3 transferring dockerfile: 1.49kB done
+#3 DONE 0.0s
+
+#4 [backend internal] load metadata for docker.io/library/golang:1.26-alpine
+#4 DONE 0.0s
+
+#5 [backend internal] load metadata for docker.io/library/alpine:3.19
+#5 DONE 0.2s
+
+#6 [dev-seed internal] load metadata for docker.io/library/python:3.13-slim
+#6 ...
+
+#7 [backend internal] load .dockerignore
+#7 transferring context: 44B done
+#7 DONE 0.0s
+
+#8 [backend builder  1/12] FROM docker.io/library/golang:1.26-alpine@sha256:f85330846cde1e57ca9ec309382da3b8e6ae3ab943d2739500e08c86393a21b1
+#8 resolve docker.io/library/golang:1.26-alpine@sha256:f85330846cde1e57ca9ec309382da3b8e6ae3ab943d2739500e08c86393a21b1 0.0s done
+#8 DONE 0.0s
+
+#9 [backend stage-1 1/7] FROM docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1
+#9 resolve docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1 0.0s done
+#9 DONE 0.0s
+
+#10 [backend internal] load build context
+#10 transferring context: 7.41kB done
+#10 DONE 0.0s
+
+#11 [backend builder  9/12] COPY migrations ./migrations
+#11 CACHED
+
+#12 [backend builder 12/12] RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build     -ldflags="-w -s"     -o /app/bin/api     ./cmd/api
+#12 CACHED
+
+#13 [backend builder  3/12] RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0
+#13 CACHED
+
+#14 [backend builder 11/12] COPY . .
+#14 CACHED
+
+#15 [backend builder  7/12] COPY sqlc.yaml ./
+#15 CACHED
+
+#16 [backend stage-1 6/7] RUN chown -R appuser:appgroup /app
+#16 CACHED
+
+#17 [backend stage-1 2/7] RUN apk add --no-cache ca-certificates tzdata wget
+#17 CACHED
+
+#18 [backend stage-1 4/7] COPY --from=builder --chown=appuser:appgroup /app/bin/api /app/api
+#18 CACHED
+
+#19 [backend stage-1 3/7] RUN addgroup -g 1001 -S appgroup &&     adduser -u 1001 -S appuser -G appgroup
+#19 CACHED
+
+#20 [backend builder  2/12] RUN apk add --no-cache git ca-certificates tzdata
+#20 CACHED
+
+#21 [backend builder  8/12] COPY internal/db/queries ./internal/db/queries
+#21 CACHED
+
+#22 [backend builder  6/12] RUN go mod download
+#22 CACHED
+
+#23 [backend stage-1 5/7] COPY --chown=appuser:appgroup migrations /app/migrations
+#23 CACHED
+
+#24 [backend builder  4/12] WORKDIR /app
+#24 CACHED
+
+#25 [backend builder  5/12] COPY go.mod go.sum ./
+#25 CACHED
+
+#26 [backend builder 10/12] RUN sqlc generate
+#26 CACHED
+
+#27 [backend stage-1 7/7] WORKDIR /app
+#27 CACHED
+
+#28 [backend] exporting to image
+#28 exporting layers done
+#28 exporting manifest sha256:da227eb713f3948cff277d849b5ea6bfdd45d19cf2c5a80c7090247deee2004d done
+#28 exporting config sha256:3d5e5955764f88716a56c2e3a313a856680215377eeaa43dc75c9833db9658b1 done
+#28 exporting attestation manifest sha256:70160ec54d7ae2f9d24c15f574a6de9abbf4e08602025bb9405367b7e9d87903 done
+#28 exporting manifest list sha256:d3d89dcf3658bb41aef3d81e99a222b9b4ebb56740c73ba4a60a43572e4bfabb done
+#28 naming to docker.io/library/vrk-backend:latest done
+#28 unpacking to docker.io/library/vrk-backend:latest done
+#28 DONE 0.1s
+
+#29 [backend] resolving provenance for metadata file
+#29 DONE 0.0s
+
+#6 [dev-seed internal] load metadata for docker.io/library/python:3.13-slim
+#6 DONE 1.7s
+
+#30 [dev-seed internal] load .dockerignore
+#30 transferring context: 190B done
+#30 DONE 0.0s
+
+#31 [dev-seed 1/3] FROM docker.io/library/python:3.13-slim@sha256:a0779d7c12fc20be6ec6b4ddc901a4fd7657b8a6bc9def9d3fde89ed5efe0a3d
+#31 resolve docker.io/library/python:3.13-slim@sha256:a0779d7c12fc20be6ec6b4ddc901a4fd7657b8a6bc9def9d3fde89ed5efe0a3d done
+#31 sha256:85ca06eb999e8052f7ab3c5287687e23c305af5ad0853bb3077bc150bc6aebd5 0B / 11.75MB 0.2s
+#31 sha256:d066deb7ef19cbd348c908bb61bcf4a99a51cb31944437929250556989ad1ae4 0B / 249B 0.2s
+#31 sha256:77147f59c0641698b2116ad59ac51b9f80aa3606c3440e2a02833b3df966383f 0B / 1.27MB 0.3s
+#31 sha256:e4fb5f1cd4d4ee56da574ef5ed88a5c74f100ba98caacf6c5ef26cee66525179 0B / 30.14MB 0.3s
+#31 sha256:d066deb7ef19cbd348c908bb61bcf4a99a51cb31944437929250556989ad1ae4 249B / 249B 0.3s done
+#31 sha256:85ca06eb999e8052f7ab3c5287687e23c305af5ad0853bb3077bc150bc6aebd5 1.05MB / 11.75MB 0.6s
+#31 sha256:85ca06eb999e8052f7ab3c5287687e23c305af5ad0853bb3077bc150bc6aebd5 5.24MB / 11.75MB 0.8s
+#31 sha256:85ca06eb999e8052f7ab3c5287687e23c305af5ad0853bb3077bc150bc6aebd5 10.49MB / 11.75MB 0.9s
+#31 sha256:85ca06eb999e8052f7ab3c5287687e23c305af5ad0853bb3077bc150bc6aebd5 11.75MB / 11.75MB 0.9s done
+#31 sha256:77147f59c0641698b2116ad59ac51b9f80aa3606c3440e2a02833b3df966383f 1.27MB / 1.27MB 0.9s done
+#31 sha256:e4fb5f1cd4d4ee56da574ef5ed88a5c74f100ba98caacf6c5ef26cee66525179 3.15MB / 30.14MB 1.1s
+#31 sha256:e4fb5f1cd4d4ee56da574ef5ed88a5c74f100ba98caacf6c5ef26cee66525179 5.24MB / 30.14MB 1.2s
+#31 sha256:e4fb5f1cd4d4ee56da574ef5ed88a5c74f100ba98caacf6c5ef26cee66525179 8.39MB / 30.14MB 1.4s
+#31 sha256:e4fb5f1cd4d4ee56da574ef5ed88a5c74f100ba98caacf6c5ef26cee66525179 11.53MB / 30.14MB 1.5s
+#31 sha256:e4fb5f1cd4d4ee56da574ef5ed88a5c74f100ba98caacf6c5ef26cee66525179 16.78MB / 30.14MB 1.7s
+#31 sha256:e4fb5f1cd4d4ee56da574ef5ed88a5c74f100ba98caacf6c5ef26cee66525179 22.02MB / 30.14MB 1.8s
+#31 sha256:e4fb5f1cd4d4ee56da574ef5ed88a5c74f100ba98caacf6c5ef26cee66525179 25.17MB / 30.14MB 2.0s
+#31 sha256:e4fb5f1cd4d4ee56da574ef5ed88a5c74f100ba98caacf6c5ef26cee66525179 30.14MB / 30.14MB 2.1s done
+#31 extracting sha256:e4fb5f1cd4d4ee56da574ef5ed88a5c74f100ba98caacf6c5ef26cee66525179
+#31 extracting sha256:e4fb5f1cd4d4ee56da574ef5ed88a5c74f100ba98caacf6c5ef26cee66525179 0.4s done
+#31 DONE 2.5s
+
+#31 [dev-seed 1/3] FROM docker.io/library/python:3.13-slim@sha256:a0779d7c12fc20be6ec6b4ddc901a4fd7657b8a6bc9def9d3fde89ed5efe0a3d
+#31 extracting sha256:77147f59c0641698b2116ad59ac51b9f80aa3606c3440e2a02833b3df966383f 0.0s done
+#31 extracting sha256:85ca06eb999e8052f7ab3c5287687e23c305af5ad0853bb3077bc150bc6aebd5
+#31 extracting sha256:85ca06eb999e8052f7ab3c5287687e23c305af5ad0853bb3077bc150bc6aebd5 0.2s done
+#31 DONE 2.7s
+
+#31 [dev-seed 1/3] FROM docker.io/library/python:3.13-slim@sha256:a0779d7c12fc20be6ec6b4ddc901a4fd7657b8a6bc9def9d3fde89ed5efe0a3d
+#31 extracting sha256:d066deb7ef19cbd348c908bb61bcf4a99a51cb31944437929250556989ad1ae4 done
+#31 DONE 2.7s
+
+#32 [dev-seed 2/3] RUN pip install --no-cache-dir "psycopg[binary]==3.2.13"
+#32 0.881 Collecting psycopg==3.2.13 (from psycopg[binary]==3.2.13)
+#32 1.142   Downloading psycopg-3.2.13-py3-none-any.whl.metadata (4.5 kB)
+#32 1.427 Collecting psycopg-binary==3.2.13 (from psycopg[binary]==3.2.13)
+#32 1.475   Downloading psycopg_binary-3.2.13-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.whl.metadata (2.9 kB)
+#32 1.524 Downloading psycopg-3.2.13-py3-none-any.whl (206 kB)
+#32 1.688 Downloading psycopg_binary-3.2.13-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.whl (4.6 MB)
+#32 1.980    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.6/4.6 MB 17.7 MB/s  0:00:00
+#32 1.990 Installing collected packages: psycopg-binary, psycopg
+#32 2.124
+#32 2.125 Successfully installed psycopg-3.2.13 psycopg-binary-3.2.13
+#32 2.125 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+#32 2.324
+#32 2.324 [notice] A new release of pip is available: 26.0.1 -> 26.1
+#32 2.324 [notice] To update, run: pip install --upgrade pip
+#32 DONE 2.5s
+
+#33 [dev-seed 3/3] WORKDIR /workspace
+#33 DONE 0.0s
+
+#34 [dev-seed] exporting to image
+#34 exporting layers
+#34 exporting layers 0.3s done
+#34 exporting manifest sha256:34d776cd452734a18b1954a046252b4d2c131b30957d04731eae4d9621e6c3ad
+#34 exporting manifest sha256:34d776cd452734a18b1954a046252b4d2c131b30957d04731eae4d9621e6c3ad done
+#34 exporting config sha256:a4a9fc3b2eb2683203f3f85887a3d0f6701b17a69d5ab2a205d84e5ec3875572 done
+#34 exporting attestation manifest sha256:37c59e747ea5dcbf58e5c80a7a006353ff1812f464e0e6dfcf59dd5acd2856d5 done
+#34 exporting manifest list sha256:adfd7501fbcb0a94c09f249496d84638dd25642016e00cfc589232e776f03ea9 done
+#34 naming to docker.io/library/vrk-dev-seed:latest done
+#34 unpacking to docker.io/library/vrk-dev-seed:latest 0.1s done
+#34 DONE 0.4s
+
+#35 [dev-seed] resolving provenance for metadata file
+#35 DONE 0.0s
+
+VRK dev seed
+status: seed applied
+seed: vrk-local-dev-seed 2026-04-29.1
+url: http://localhost:3100
+email: admin+2026-04-29-1@vrk.local
+password: vrk-dev-admin-secret
+organizationId: 42b7c5cc-eda2-4dac-a824-db09ee7850ab
+credentialsFile: .local/dev-seed.json
+
+divisions:
+  - Северный филиал (VRK-NORTH): 95f4da61-0949-436d-bfb6-d916ac30fe5f
+  - Уральский филиал (VRK-URAL): 41d241e4-4100-4e39-a4e6-81608bb4b326
+  - Южный филиал (VRK-SOUTH): 1e022672-f695-4b3f-80ab-436fd0b362ba
+units:
+  - Северный ВРД-1 (VRK-NORTH-VRD-1, ВРД): d0a5fdde-86d6-42e6-811b-98b7391f789e
+  - Северный ВРЗ-2 (VRK-NORTH-VRZ-2, ВРЗ): 34dfe26e-498f-4bae-8259-74967c62193c
+  - Северный ВУ-3 (VRK-NORTH-VU-3, ВУ): be0fcbd0-9e8e-44f3-ace2-07e9af9a6b9b
+  - Уральский ВРД-1 (VRK-URAL-VRD-1, ВРД): c56201b8-61df-490c-9bc4-d1ca58fd5f59
+  - Уральский ВРП-2 (VRK-URAL-VRP-2, ВРП): ba065fd4-236b-42e7-a2cd-3c03e92d8702
+  - Уральский ВУ-3 (VRK-URAL-VU-3, ВУ): 8cd8e644-6fd1-48ed-a899-685f1f104218
+  - Южный ВРД-1 (VRK-SOUTH-VRD-1, ВРД): 2e45388e-427c-4784-8d8c-c5a119f995bd
+  - Южный ВРЗ-2 (VRK-SOUTH-VRZ-2, ВРЗ): b43987bc-8fe4-46a3-b674-462d1afabaa5
+  - Южный ВРП-3 (VRK-SOUTH-VRP-3, ВРП): 7711fd87-3c6c-49ce-bd62-71bbe3d4867b

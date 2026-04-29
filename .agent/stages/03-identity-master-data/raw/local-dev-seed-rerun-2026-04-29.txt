@@ -1,0 +1,264 @@
+mkdir -p .local
+docker compose -f compose.platform.yml run --rm --build dev-seed
+#1 [internal] load local bake definitions
+#1 reading from stdin 537B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.49kB done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/golang:1.26-alpine
+#3 DONE 0.0s
+
+#4 [internal] load metadata for docker.io/library/alpine:3.19
+#4 DONE 0.2s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 44B done
+#5 DONE 0.0s
+
+#6 [stage-1 1/7] FROM docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1
+#6 resolve docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1 0.0s done
+#6 DONE 0.0s
+
+#7 [builder  1/12] FROM docker.io/library/golang:1.26-alpine@sha256:f85330846cde1e57ca9ec309382da3b8e6ae3ab943d2739500e08c86393a21b1
+#7 resolve docker.io/library/golang:1.26-alpine@sha256:f85330846cde1e57ca9ec309382da3b8e6ae3ab943d2739500e08c86393a21b1 0.0s done
+#7 DONE 0.0s
+
+#8 [internal] load build context
+#8 transferring context: 7.41kB done
+#8 DONE 0.0s
+
+#9 [builder  4/12] WORKDIR /app
+#9 CACHED
+
+#10 [builder  8/12] COPY internal/db/queries ./internal/db/queries
+#10 CACHED
+
+#11 [stage-1 4/7] COPY --from=builder --chown=appuser:appgroup /app/bin/api /app/api
+#11 CACHED
+
+#12 [stage-1 6/7] RUN chown -R appuser:appgroup /app
+#12 CACHED
+
+#13 [builder  3/12] RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0
+#13 CACHED
+
+#14 [builder  5/12] COPY go.mod go.sum ./
+#14 CACHED
+
+#15 [stage-1 3/7] RUN addgroup -g 1001 -S appgroup &&     adduser -u 1001 -S appuser -G appgroup
+#15 CACHED
+
+#16 [builder  9/12] COPY migrations ./migrations
+#16 CACHED
+
+#17 [builder 10/12] RUN sqlc generate
+#17 CACHED
+
+#18 [builder 11/12] COPY . .
+#18 CACHED
+
+#19 [builder  7/12] COPY sqlc.yaml ./
+#19 CACHED
+
+#20 [stage-1 5/7] COPY --chown=appuser:appgroup migrations /app/migrations
+#20 CACHED
+
+#21 [stage-1 2/7] RUN apk add --no-cache ca-certificates tzdata wget
+#21 CACHED
+
+#22 [builder  6/12] RUN go mod download
+#22 CACHED
+
+#23 [builder 12/12] RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build     -ldflags="-w -s"     -o /app/bin/api     ./cmd/api
+#23 CACHED
+
+#24 [builder  2/12] RUN apk add --no-cache git ca-certificates tzdata
+#24 CACHED
+
+#25 [stage-1 7/7] WORKDIR /app
+#25 CACHED
+
+#26 exporting to image
+#26 exporting layers done
+#26 exporting manifest sha256:62d8a3b73daf5f78a03b138967155f769e09fb272074e6e9fedd66c77d0b930f done
+#26 exporting config sha256:2de955339e6d28ec209d319f04f903305250a81e4936d8019101f49278ac9709 done
+#26 exporting attestation manifest sha256:299cd0bdc980a3ece06580f84122c8c906640c7d96913c276e9c8b209ae3047e done
+#26 exporting manifest list sha256:cf0588ea209999627d580ca26020a72f6ad7cf089494bbcf97784ff92f311ac9 done
+#26 naming to docker.io/library/vrk-backend:latest done
+#26 unpacking to docker.io/library/vrk-backend:latest done
+#26 DONE 0.0s
+
+#27 resolving provenance for metadata file
+#27 DONE 0.0s
+ vrk-backend  Built
+ Container vrk-db-1  Running
+ Container vrk-backend-1  Recreate
+ Container vrk-backend-1  Recreated
+ Container vrk-db-1  Waiting
+ Container vrk-db-1  Healthy
+ Container vrk-migrate-1  Starting
+ Container vrk-migrate-1  Started
+ Container vrk-migrate-1  Waiting
+ Container vrk-db-1  Waiting
+ Container vrk-migrate-1  Exited
+ Container vrk-db-1  Healthy
+ Container vrk-backend-1  Starting
+ Container vrk-backend-1  Started
+#1 [internal] load local bake definitions
+#1 reading from stdin 982B done
+#1 DONE 0.0s
+
+#2 [backend internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.49kB done
+#2 DONE 0.0s
+
+#3 [dev-seed internal] load build definition from Dockerfile.dev-seed
+#3 transferring dockerfile: 261B done
+#3 DONE 0.0s
+
+#4 [backend internal] load metadata for docker.io/library/golang:1.26-alpine
+#4 DONE 0.0s
+
+#5 [dev-seed internal] load metadata for docker.io/library/python:3.13-slim
+#5 ...
+
+#6 [backend internal] load metadata for docker.io/library/alpine:3.19
+#6 DONE 0.2s
+
+#5 [dev-seed internal] load metadata for docker.io/library/python:3.13-slim
+#5 DONE 0.2s
+
+#7 [backend internal] load .dockerignore
+#7 transferring context: 44B done
+#7 DONE 0.0s
+
+#8 [dev-seed internal] load .dockerignore
+#8 transferring context: 190B done
+#8 DONE 0.0s
+
+#9 [backend stage-1 1/7] FROM docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1
+#9 resolve docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1 0.0s done
+#9 DONE 0.0s
+
+#10 [dev-seed 1/3] FROM docker.io/library/python:3.13-slim@sha256:a0779d7c12fc20be6ec6b4ddc901a4fd7657b8a6bc9def9d3fde89ed5efe0a3d
+#10 resolve docker.io/library/python:3.13-slim@sha256:a0779d7c12fc20be6ec6b4ddc901a4fd7657b8a6bc9def9d3fde89ed5efe0a3d 0.0s done
+#10 DONE 0.0s
+
+#11 [dev-seed 2/3] RUN pip install --no-cache-dir "psycopg[binary]==3.2.13"
+#11 CACHED
+
+#12 [dev-seed 3/3] WORKDIR /workspace
+#12 CACHED
+
+#13 [backend builder  1/12] FROM docker.io/library/golang:1.26-alpine@sha256:f85330846cde1e57ca9ec309382da3b8e6ae3ab943d2739500e08c86393a21b1
+#13 resolve docker.io/library/golang:1.26-alpine@sha256:f85330846cde1e57ca9ec309382da3b8e6ae3ab943d2739500e08c86393a21b1 0.0s done
+#13 DONE 0.0s
+
+#14 [backend internal] load build context
+#14 transferring context: 7.41kB done
+#14 DONE 0.0s
+
+#15 [backend builder  9/12] COPY migrations ./migrations
+#15 CACHED
+
+#16 [backend builder 10/12] RUN sqlc generate
+#16 CACHED
+
+#17 [backend builder  2/12] RUN apk add --no-cache git ca-certificates tzdata
+#17 CACHED
+
+#18 [backend stage-1 6/7] RUN chown -R appuser:appgroup /app
+#18 CACHED
+
+#19 [backend stage-1 3/7] RUN addgroup -g 1001 -S appgroup &&     adduser -u 1001 -S appuser -G appgroup
+#19 CACHED
+
+#20 [backend builder 11/12] COPY . .
+#20 CACHED
+
+#21 [backend stage-1 5/7] COPY --chown=appuser:appgroup migrations /app/migrations
+#21 CACHED
+
+#22 [backend builder  5/12] COPY go.mod go.sum ./
+#22 CACHED
+
+#23 [backend builder  7/12] COPY sqlc.yaml ./
+#23 CACHED
+
+#24 [backend builder  3/12] RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0
+#24 CACHED
+
+#25 [backend builder  8/12] COPY internal/db/queries ./internal/db/queries
+#25 CACHED
+
+#26 [backend builder  6/12] RUN go mod download
+#26 CACHED
+
+#27 [backend builder  4/12] WORKDIR /app
+#27 CACHED
+
+#28 [backend builder 12/12] RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build     -ldflags="-w -s"     -o /app/bin/api     ./cmd/api
+#28 CACHED
+
+#29 [backend stage-1 4/7] COPY --from=builder --chown=appuser:appgroup /app/bin/api /app/api
+#29 CACHED
+
+#30 [backend stage-1 2/7] RUN apk add --no-cache ca-certificates tzdata wget
+#30 CACHED
+
+#31 [backend stage-1 7/7] WORKDIR /app
+#31 CACHED
+
+#32 [dev-seed] exporting to image
+#32 exporting layers done
+#32 exporting manifest sha256:34d776cd452734a18b1954a046252b4d2c131b30957d04731eae4d9621e6c3ad done
+#32 exporting config sha256:a4a9fc3b2eb2683203f3f85887a3d0f6701b17a69d5ab2a205d84e5ec3875572 done
+#32 exporting attestation manifest sha256:f581458c656ce1ed73656f4e6899af4c232fbae9c25121ac95ea6db549b5bd9f 0.0s done
+#32 exporting manifest list sha256:df7f8e7a28169029c828100fe5527eafcf7ac1a4a8aaaea040c37a1cca34ace8 done
+#32 naming to docker.io/library/vrk-dev-seed:latest done
+#32 unpacking to docker.io/library/vrk-dev-seed:latest done
+#32 DONE 0.0s
+
+#33 [backend] exporting to image
+#33 exporting layers done
+#33 exporting manifest sha256:8bfe80511c6bbd5dae15ad2d31e2eb95bfdbb277b8a19dce7e7fb61f80a80fa2 done
+#33 exporting config sha256:424f8da2a418ce556ee299dd883eecf400247907feae73fbc1df6bdbdc729e6a 0.0s done
+#33 exporting attestation manifest sha256:d92ef8fac9ed2eaf8eef91cf5c7bd348f1ff94ef439ee9fad29f04ca76f16bdf
+#33 exporting attestation manifest sha256:d92ef8fac9ed2eaf8eef91cf5c7bd348f1ff94ef439ee9fad29f04ca76f16bdf 0.0s done
+#33 exporting manifest list sha256:e23c767208333ef77a02baddf7acc0aea8d30f56decc7b155449120350dfe688 done
+#33 naming to docker.io/library/vrk-backend:latest done
+#33 unpacking to docker.io/library/vrk-backend:latest done
+#33 DONE 0.1s
+
+#34 [dev-seed] resolving provenance for metadata file
+#34 DONE 0.0s
+
+#35 [backend] resolving provenance for metadata file
+#35 DONE 0.0s
+
+VRK dev seed
+status: seed already applied
+seed: vrk-local-dev-seed 2026-04-29.1
+url: http://localhost:3100
+email: admin+2026-04-29-1@vrk.local
+password: vrk-dev-admin-secret
+organizationId: 42b7c5cc-eda2-4dac-a824-db09ee7850ab
+credentialsFile: .local/dev-seed.json
+
+divisions:
+  - Северный филиал (VRK-NORTH): 95f4da61-0949-436d-bfb6-d916ac30fe5f
+  - Уральский филиал (VRK-URAL): 41d241e4-4100-4e39-a4e6-81608bb4b326
+  - Южный филиал (VRK-SOUTH): 1e022672-f695-4b3f-80ab-436fd0b362ba
+units:
+  - Северный ВРД-1 (VRK-NORTH-VRD-1, ВРД): d0a5fdde-86d6-42e6-811b-98b7391f789e
+  - Северный ВРЗ-2 (VRK-NORTH-VRZ-2, ВРЗ): 34dfe26e-498f-4bae-8259-74967c62193c
+  - Северный ВУ-3 (VRK-NORTH-VU-3, ВУ): be0fcbd0-9e8e-44f3-ace2-07e9af9a6b9b
+  - Уральский ВРД-1 (VRK-URAL-VRD-1, ВРД): c56201b8-61df-490c-9bc4-d1ca58fd5f59
+  - Уральский ВРП-2 (VRK-URAL-VRP-2, ВРП): ba065fd4-236b-42e7-a2cd-3c03e92d8702
+  - Уральский ВУ-3 (VRK-URAL-VU-3, ВУ): 8cd8e644-6fd1-48ed-a899-685f1f104218
+  - Южный ВРД-1 (VRK-SOUTH-VRD-1, ВРД): 2e45388e-427c-4784-8d8c-c5a119f995bd
+  - Южный ВРЗ-2 (VRK-SOUTH-VRZ-2, ВРЗ): b43987bc-8fe4-46a3-b674-462d1afabaa5
+  - Южный ВРП-3 (VRK-SOUTH-VRP-3, ВРП): 7711fd87-3c6c-49ce-bd62-71bbe3d4867b
