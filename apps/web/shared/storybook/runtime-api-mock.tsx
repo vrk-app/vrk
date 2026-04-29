@@ -4,6 +4,7 @@ import {
   cloneFixture,
   contractRecords,
   contractorOptions,
+  employeeAccessRows,
   employeeInvites,
   equipmentRecords,
   journalRecords,
@@ -15,6 +16,7 @@ import type {
   ApiEnvelope,
   ContractRecord,
   ContractorOption,
+  EmployeeAccessResponse,
   EmployeeInviteResponse,
   EquipmentRecord,
   JournalRecord,
@@ -29,6 +31,7 @@ import type {
 type RuntimeApiOptions = {
   contracts?: ContractRecord[];
   contractorOptions?: ContractorOption[];
+  employees?: EmployeeAccessResponse[];
   equipment?: EquipmentRecord[];
   failurePaths?: string[];
   invites?: EmployeeInviteResponse[];
@@ -42,6 +45,7 @@ type RuntimeApiOptions = {
 type RuntimeApiState = {
   contracts: ContractRecord[];
   contractorOptions: ContractorOption[];
+  employees: EmployeeAccessResponse[];
   equipment: EquipmentRecord[];
   failurePaths: string[];
   invites: EmployeeInviteResponse[];
@@ -90,6 +94,7 @@ function createRuntimeState(options: RuntimeApiOptions): RuntimeApiState {
   return {
     contracts: cloneFixture(options.contracts ?? contractRecords),
     contractorOptions: cloneFixture(options.contractorOptions ?? contractorOptions),
+    employees: cloneFixture(options.employees ?? employeeAccessRows),
     equipment: cloneFixture(options.equipment ?? equipmentRecords),
     failurePaths: options.failurePaths ?? [],
     invites: cloneFixture(options.invites ?? employeeInvites),
@@ -177,6 +182,45 @@ async function handleRuntimeFetch(
     };
     state.invites = [invite, ...state.invites];
     return jsonResponse({ success: true, data: invite });
+  }
+
+  if (pathname === "/api/auth/employees" && method === "GET") {
+    return jsonResponse({ success: true, data: visibleEmployees(state.session, state.employees) });
+  }
+
+  const employeeAccessMatch = pathname.match(/^\/api\/auth\/employees\/([^/]+)$/);
+  if (employeeAccessMatch && method === "PATCH") {
+    const accessId = employeeAccessMatch[1];
+    state.employees = state.employees.map((employee) =>
+      employee.accessId === accessId
+        ? {
+            ...employee,
+            roleTemplate: stringValue(payload, "roleTemplate", employee.roleTemplate),
+            scopeType: scopeValue(payload, "scopeType", employee.scopeType),
+            scopeId: stringValue(payload, "scopeId", employee.scopeId),
+          }
+        : employee,
+    );
+    state.employees = state.employees.map((employee) =>
+      employee.accessId === accessId
+        ? {
+            ...employee,
+            scopeLabel: resolveScopeLabel(state.session, employee.scopeType, employee.scopeId),
+          }
+        : employee,
+    );
+    return jsonResponse({
+      success: true,
+      data: state.employees.find((employee) => employee.accessId === accessId) ?? state.employees[0],
+    });
+  }
+
+  const employeeDeactivateMatch = pathname.match(/^\/api\/auth\/employees\/([^/]+)\/deactivate$/);
+  if (employeeDeactivateMatch && method === "POST") {
+    const accessId = employeeDeactivateMatch[1];
+    const employee = state.employees.find((item) => item.accessId === accessId) ?? state.employees[0];
+    state.employees = state.employees.filter((item) => item.membershipId !== employee.membershipId);
+    return jsonResponse({ success: true, data: { ...employee, membershipStatus: "archived" } });
   }
 
   if (pathname === "/api/company/profile" && method === "PATCH") {
@@ -398,6 +442,36 @@ async function handleRuntimeFetch(
     return jsonResponse({ success: true, data: equipment });
   }
 
+  const equipmentMatch = pathname.match(/^\/api\/equipment\/([^/]+)$/);
+  if (equipmentMatch && method === "PATCH") {
+    const unit = state.session.units.find((item) => item.id === stringValue(payload, "unitId", "")) ?? state.session.units[0];
+    state.equipment = state.equipment.map((item) =>
+      item.id === equipmentMatch[1]
+        ? {
+            ...item,
+            unit: {
+              id: unit?.id ?? item.unit.id,
+              name: unit?.name ?? item.unit.name,
+              divisionId: unit?.divisionId,
+              divisionName: state.session.divisions.find((division) => division.id === unit?.divisionId)?.name,
+            },
+            manufacturer: stringValue(payload, "manufacturer", item.manufacturer),
+            classification: stringValue(payload, "classification", item.classification),
+            model: stringValue(payload, "model", item.model),
+            fullName: stringValue(payload, "fullName", item.fullName),
+            factoryNumber: stringValue(payload, "factoryNumber", item.factoryNumber),
+            inventoryNumber: stringValue(payload, "inventoryNumber", item.inventoryNumber ?? ""),
+            manufactureYear: numberValue(payload, "manufactureYear", item.manufactureYear),
+            status: registryStatusValue(payload, "status"),
+            comment: stringValue(payload, "comment", item.comment ?? ""),
+            documentUrl: stringValue(payload, "documentUrl", item.documentUrl ?? ""),
+            updatedAt: new Date().toISOString(),
+          }
+        : item,
+    );
+    return jsonResponse({ success: true, data: state.equipment.find((item) => item.id === equipmentMatch[1]) });
+  }
+
   if (pathname === "/api/equipment/measuring-instruments" && method === "POST") {
     const unit = state.session.units.find((item) => item.id === stringValue(payload, "unitId", "")) ?? state.session.units[0];
     const instrument: MeasuringInstrumentRecord = {
@@ -425,6 +499,57 @@ async function handleRuntimeFetch(
     return jsonResponse({ success: true, data: instrument });
   }
 
+  const measuringInstrumentMatch = pathname.match(/^\/api\/equipment\/measuring-instruments\/([^/]+)$/);
+  if (measuringInstrumentMatch && method === "PATCH") {
+    const unit = state.session.units.find((item) => item.id === stringValue(payload, "unitId", "")) ?? state.session.units[0];
+    const placementKind = stringValue(payload, "placementKind", "standalone") === "built_in" ? "built_in" : "standalone";
+    const equipment =
+      placementKind === "built_in"
+        ? state.equipment.find((item) => item.id === stringValue(payload, "equipmentId", ""))
+        : undefined;
+    const standardIds = Array.isArray(payload.standardIds)
+      ? payload.standardIds.filter((id): id is string => typeof id === "string")
+      : [];
+    state.measuringInstruments = state.measuringInstruments.map((item) =>
+      item.id === measuringInstrumentMatch[1]
+        ? {
+            ...item,
+            unit: {
+              id: unit?.id ?? item.unit.id,
+              name: unit?.name ?? item.unit.name,
+              divisionId: unit?.divisionId,
+              divisionName: state.session.divisions.find((division) => division.id === unit?.divisionId)?.name,
+            },
+            equipment: equipment ? { id: equipment.id, fullName: equipment.fullName } : undefined,
+            name: stringValue(payload, "name", item.name),
+            instrumentType: stringValue(payload, "instrumentType", item.instrumentType),
+            model: stringValue(payload, "model", item.model),
+            registrationNumber: stringValue(payload, "registrationNumber", item.registrationNumber),
+            serialNumber: stringValue(payload, "serialNumber", item.serialNumber),
+            placementKind,
+            standards: state.standards
+              .filter((standard) => standardIds.includes(standard.id))
+              .map((standard) => ({
+                id: standard.id,
+                standardType: standard.standardType,
+                model: standard.model,
+                identifier: standard.identifier,
+                serialNumber: standard.serialNumber,
+                status: standard.status,
+                scopeLabel: standard.ownershipScope.label,
+              })),
+            comment: stringValue(payload, "comment", item.comment ?? ""),
+            documentUrl: stringValue(payload, "documentUrl", item.documentUrl ?? ""),
+            updatedAt: new Date().toISOString(),
+          }
+        : item,
+    );
+    return jsonResponse({
+      success: true,
+      data: state.measuringInstruments.find((item) => item.id === measuringInstrumentMatch[1]),
+    });
+  }
+
   if (pathname === "/api/equipment/standards" && method === "POST") {
     const standard: StandardRecord = {
       id: `standard-${state.standards.length + 1}`,
@@ -446,6 +571,39 @@ async function handleRuntimeFetch(
     };
     state.standards = [standard, ...state.standards];
     return jsonResponse({ success: true, data: standard });
+  }
+
+  const standardMatch = pathname.match(/^\/api\/equipment\/standards\/([^/]+)$/);
+  if (standardMatch && method === "PATCH") {
+    const divisionId = stringValue(payload, "divisionId", "");
+    const unitId = stringValue(payload, "unitId", "");
+    const scopeType = unitId ? "unit" : divisionId ? "division" : "organization";
+    const scopeId = unitId || divisionId;
+    state.standards = state.standards.map((item) =>
+      item.id === standardMatch[1]
+        ? {
+            ...item,
+            ownershipScope: {
+              scopeType,
+              ...(scopeId ? { scopeId } : {}),
+              label: stringValue(payload, "ownerLabel", resolveScopeLabel(state.session, scopeType, scopeId)),
+            },
+            standardType: stringValue(payload, "standardType", item.standardType),
+            model: stringValue(payload, "model", item.model),
+            identifier: stringValue(payload, "identifier", item.identifier),
+            serialNumber: stringValue(payload, "serialNumber", item.serialNumber ?? ""),
+            metrologicalCharacteristics: stringValue(
+              payload,
+              "metrologicalCharacteristics",
+              item.metrologicalCharacteristics,
+            ),
+            comment: stringValue(payload, "comment", item.comment ?? ""),
+            documentUrl: stringValue(payload, "documentUrl", item.documentUrl ?? ""),
+            updatedAt: new Date().toISOString(),
+          }
+        : item,
+    );
+    return jsonResponse({ success: true, data: state.standards.find((item) => item.id === standardMatch[1]) });
   }
 
   const archiveEquipmentMatch = pathname.match(/^\/api\/equipment\/([^/]+)\/archive$/);
@@ -544,6 +702,25 @@ function updateInvite(
 ) {
   state.invites = state.invites.map((invite) => (invite.id === inviteId ? { ...invite, ...patch } : invite));
   return state.invites.find((invite) => invite.id === inviteId) ?? state.invites[0];
+}
+
+function visibleEmployees(session: SessionSummaryResponse, employees: EmployeeAccessResponse[]) {
+  if (session.workspace.scopeType === "organization") {
+    return employees;
+  }
+
+  if (session.workspace.scopeType === "division") {
+    const childUnitIds = new Set(session.units.map((unit) => unit.id));
+    return employees.filter(
+      (employee) =>
+        (employee.scopeType === "division" && employee.scopeId === session.workspace.scopeId) ||
+        (employee.scopeType === "unit" && childUnitIds.has(employee.scopeId)),
+    );
+  }
+
+  return employees.filter(
+    (employee) => employee.scopeType === "unit" && employee.scopeId === session.workspace.scopeId,
+  );
 }
 
 function archiveById<T extends { archivedAt?: string; id: string; updatedAt: string }>(items: T[], id: string) {

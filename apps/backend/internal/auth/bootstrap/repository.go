@@ -38,6 +38,10 @@ type Repository interface {
 	GetEmployeeInviteByID(ctx context.Context, inviteID uuid.UUID) (*generated.AuthEmployeeInvite, error)
 	SendEmployeeInvite(ctx context.Context, inviteID uuid.UUID, inviteToken string) (*generated.AuthEmployeeInvite, error)
 	RevokeEmployeeInvite(ctx context.Context, inviteID uuid.UUID) (*generated.AuthEmployeeInvite, error)
+	ListEmployeeAccessRows(ctx context.Context, snapshot *sessionSnapshot) ([]employeeAccessRecord, error)
+	GetEmployeeAccessByID(ctx context.Context, snapshot *sessionSnapshot, accessID uuid.UUID) (*employeeAccessRecord, error)
+	UpdateEmployeeAccess(ctx context.Context, snapshot *sessionSnapshot, accessID uuid.UUID, req UpdateEmployeeAccessRequest) (*employeeAccessRecord, error)
+	DeactivateEmployeeAccess(ctx context.Context, snapshot *sessionSnapshot, accessID uuid.UUID) (*employeeAccessRecord, error)
 	GetEmployeeInviteByToken(ctx context.Context, token string) (*generated.GetEmployeeInviteByTokenRow, error)
 	MarkEmployeeInviteOpened(ctx context.Context, inviteID uuid.UUID) error
 	MarkEmployeeInviteExpired(ctx context.Context, inviteID uuid.UUID) error
@@ -53,6 +57,18 @@ type sessionSnapshot struct {
 	SessionRow generated.GetCurrentSessionRow
 	Divisions  []generated.AuthDivision
 	Units      []generated.AuthUnit
+}
+
+type employeeAccessRecord struct {
+	AccessID         pgtype.UUID
+	MembershipID     pgtype.UUID
+	AccountID        pgtype.UUID
+	FullName         string
+	Email            string
+	RoleTemplate     string
+	ScopeType        string
+	ScopeID          pgtype.UUID
+	MembershipStatus string
 }
 
 type repository struct {
@@ -595,6 +611,114 @@ func (r *repository) RevokeEmployeeInvite(ctx context.Context, inviteID uuid.UUI
 	}
 
 	return &invite, nil
+}
+
+func (r *repository) ListEmployeeAccessRows(ctx context.Context, snapshot *sessionSnapshot) ([]employeeAccessRecord, error) {
+	rows, err := r.q.ListEmployeeAccessRows(ctx, generated.ListEmployeeAccessRowsParams{
+		OrganizationID: snapshot.SessionRow.OrganizationID,
+		ViewScopeType:  snapshot.SessionRow.GrantScopeType,
+		ViewScopeID:    snapshot.SessionRow.GrantScopeID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	records := make([]employeeAccessRecord, 0, len(rows))
+	for _, row := range rows {
+		records = append(records, employeeAccessRecord{
+			AccessID:         row.AccessID,
+			MembershipID:     row.MembershipID,
+			AccountID:        row.AccountID,
+			FullName:         row.FullName,
+			Email:            row.Email,
+			RoleTemplate:     row.RoleTemplate,
+			ScopeType:        row.ScopeType,
+			ScopeID:          row.ScopeID,
+			MembershipStatus: row.MembershipStatus,
+		})
+	}
+	return records, nil
+}
+
+func (r *repository) GetEmployeeAccessByID(ctx context.Context, snapshot *sessionSnapshot, accessID uuid.UUID) (*employeeAccessRecord, error) {
+	row, err := r.q.GetEmployeeAccessByID(ctx, generated.GetEmployeeAccessByIDParams{
+		AccessID:       toPGUUID(accessID),
+		OrganizationID: snapshot.SessionRow.OrganizationID,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrEmployeeAccessNotFound
+		}
+		return nil, err
+	}
+
+	return &employeeAccessRecord{
+		AccessID:         row.AccessID,
+		MembershipID:     row.MembershipID,
+		AccountID:        row.AccountID,
+		FullName:         row.FullName,
+		Email:            row.Email,
+		RoleTemplate:     row.RoleTemplate,
+		ScopeType:        row.ScopeType,
+		ScopeID:          row.ScopeID,
+		MembershipStatus: row.MembershipStatus,
+	}, nil
+}
+
+func (r *repository) UpdateEmployeeAccess(ctx context.Context, snapshot *sessionSnapshot, accessID uuid.UUID, req UpdateEmployeeAccessRequest) (*employeeAccessRecord, error) {
+	row, err := r.q.UpdateEmployeeAccess(ctx, generated.UpdateEmployeeAccessParams{
+		RoleTemplate:   req.RoleTemplate,
+		ScopeType:      req.ScopeType,
+		ScopeID:        toPGUUID(uuid.MustParse(req.ScopeID)),
+		AccessID:       toPGUUID(accessID),
+		OrganizationID: snapshot.SessionRow.OrganizationID,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrEmployeeAccessNotFound
+		}
+		if isUniqueViolation(err) {
+			return nil, fmt.Errorf("%w: %v", ErrEmployeeAccessConflict, err)
+		}
+		return nil, err
+	}
+
+	return &employeeAccessRecord{
+		AccessID:         row.AccessID,
+		MembershipID:     row.MembershipID,
+		AccountID:        row.AccountID,
+		FullName:         row.FullName,
+		Email:            row.Email,
+		RoleTemplate:     row.RoleTemplate,
+		ScopeType:        row.ScopeType,
+		ScopeID:          row.ScopeID,
+		MembershipStatus: row.MembershipStatus,
+	}, nil
+}
+
+func (r *repository) DeactivateEmployeeAccess(ctx context.Context, snapshot *sessionSnapshot, accessID uuid.UUID) (*employeeAccessRecord, error) {
+	row, err := r.q.DeactivateEmployeeAccess(ctx, generated.DeactivateEmployeeAccessParams{
+		AccessID:       toPGUUID(accessID),
+		OrganizationID: snapshot.SessionRow.OrganizationID,
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrEmployeeAccessNotFound
+		}
+		return nil, err
+	}
+
+	return &employeeAccessRecord{
+		AccessID:         row.AccessID,
+		MembershipID:     row.MembershipID,
+		AccountID:        row.AccountID,
+		FullName:         row.FullName,
+		Email:            row.Email,
+		RoleTemplate:     row.RoleTemplate,
+		ScopeType:        row.ScopeType,
+		ScopeID:          row.ScopeID,
+		MembershipStatus: row.MembershipStatus,
+	}, nil
 }
 
 func (r *repository) GetEmployeeInviteByToken(ctx context.Context, token string) (*generated.GetEmployeeInviteByTokenRow, error) {

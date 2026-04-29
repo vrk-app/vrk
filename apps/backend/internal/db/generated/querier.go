@@ -26,6 +26,7 @@ type Querier interface {
 	CreateEmployeeInviteDraft(ctx context.Context, arg CreateEmployeeInviteDraftParams) (AuthEmployeeInvite, error)
 	CreateFirstAdminInvite(ctx context.Context, arg CreateFirstAdminInviteParams) (AuthFirstAdminInvite, error)
 	CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (CreateOrganizationRow, error)
+	DeactivateEmployeeAccess(ctx context.Context, arg DeactivateEmployeeAccessParams) (DeactivateEmployeeAccessRow, error)
 	DeleteAuthSessionByToken(ctx context.Context, sessionToken string) error
 	DeleteOrganization(ctx context.Context, id pgtype.UUID) (int64, error)
 	GetAuthAccountByEmail(ctx context.Context, lower string) (AuthAccount, error)
@@ -33,6 +34,7 @@ type Querier interface {
 	GetAuthDivisionByID(ctx context.Context, id pgtype.UUID) (AuthDivision, error)
 	GetAuthUnitByID(ctx context.Context, id pgtype.UUID) (AuthUnit, error)
 	GetCurrentSession(ctx context.Context, sessionToken string) (GetCurrentSessionRow, error)
+	GetEmployeeAccessByID(ctx context.Context, arg GetEmployeeAccessByIDParams) (GetEmployeeAccessByIDRow, error)
 	GetEmployeeInviteByID(ctx context.Context, id pgtype.UUID) (AuthEmployeeInvite, error)
 	GetEmployeeInviteByToken(ctx context.Context, inviteToken *string) (GetEmployeeInviteByTokenRow, error)
 	GetFirstAdminInviteByToken(ctx context.Context, inviteToken string) (GetFirstAdminInviteByTokenRow, error)
@@ -40,6 +42,7 @@ type Querier interface {
 	ListAccountAccessPathsByAccountID(ctx context.Context, accountID pgtype.UUID) ([]ListAccountAccessPathsByAccountIDRow, error)
 	ListAuthDivisionsByOrganization(ctx context.Context, organizationID pgtype.UUID) ([]AuthDivision, error)
 	ListAuthUnitsByOrganization(ctx context.Context, organizationID pgtype.UUID) ([]AuthUnit, error)
+	ListEmployeeAccessRows(ctx context.Context, arg ListEmployeeAccessRowsParams) ([]ListEmployeeAccessRowsRow, error)
 	ListEmployeeInvitesByOrganization(ctx context.Context, organizationID pgtype.UUID) ([]AuthEmployeeInvite, error)
 	ListOrganizations(ctx context.Context, arg ListOrganizationsParams) ([]ListOrganizationsRow, error)
 	MarkBootstrapOrganizationLaunched(ctx context.Context, id pgtype.UUID) (AuthBootstrapOrganization, error)
@@ -57,6 +60,7 @@ type Querier interface {
 	UpdateAuthUnit(ctx context.Context, arg UpdateAuthUnitParams) (AuthUnit, error)
 	UpdateBootstrapOrganizationCore(ctx context.Context, arg UpdateBootstrapOrganizationCoreParams) (AuthBootstrapOrganization, error)
 	UpdateBootstrapOrganizationFirstAdmin(ctx context.Context, arg UpdateBootstrapOrganizationFirstAdminParams) error
+	UpdateEmployeeAccess(ctx context.Context, arg UpdateEmployeeAccessParams) (UpdateEmployeeAccessRow, error)
 	UpdateFirstAdminInviteOpened(ctx context.Context, id pgtype.UUID) (AuthFirstAdminInvite, error)
 	UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (UpdateOrganizationRow, error)
 	UpsertAuthMembership(ctx context.Context, arg UpsertAuthMembershipParams) (AuthMembership, error)

@@ -7,17 +7,20 @@ import {
   Building2,
   Cable,
   FileSpreadsheet,
-  Layers3,
+  Pencil,
   RefreshCw,
   Ruler,
+  Save,
   ShieldCheck,
   Wrench,
+  X,
 } from "lucide-react";
 import type {
   ApiEnvelope,
   ApiMeta,
   EquipmentRecord,
   JournalRecord,
+  LinkedStandardRecord,
   MeasuringInstrumentPlacement,
   MeasuringInstrumentRecord,
   RegistryStatus,
@@ -25,7 +28,7 @@ import type {
   StandardRecord,
 } from "@/shared/api";
 import { sessionHasCapability } from "@/shared/api";
-import { Badge, Button, Card, InputField, SelectField, Tabs, TextareaField } from "@/shared/ui";
+import { Badge, Button, Card, InputField, SelectField, Tabs, TextareaField, useToast } from "@/shared/ui";
 
 type RegistryTab = "equipment" | "mi" | "standards";
 
@@ -87,10 +90,33 @@ type JournalFormState = {
 };
 
 type ArchiveConfirmation = {
+  dedupeKey: string;
   fallbackMessage: string;
   recordLabel: string;
   task: () => Promise<void>;
 };
+
+type EditDialogState =
+  | {
+      kind: "equipment";
+      recordId: string;
+      recordLabel: string;
+      form: EquipmentFormState;
+    }
+  | {
+      kind: "measuringInstrument";
+      currentEquipment?: MeasuringInstrumentRecord["equipment"];
+      linkedStandards: LinkedStandardRecord[];
+      recordId: string;
+      recordLabel: string;
+      form: MeasuringInstrumentFormState;
+    }
+  | {
+      kind: "standard";
+      recordId: string;
+      recordLabel: string;
+      form: StandardFormState;
+    };
 
 const tabMeta: Array<{
   key: RegistryTab;
@@ -208,6 +234,53 @@ function defaultJournalForm(): JournalFormState {
   };
 }
 
+function equipmentFormFromRecord(record: EquipmentRecord): EquipmentFormState {
+  return {
+    unitId: record.unit.id,
+    manufacturer: record.manufacturer,
+    classification: record.classification,
+    model: record.model,
+    fullName: record.fullName,
+    factoryNumber: record.factoryNumber,
+    inventoryNumber: record.inventoryNumber ?? "",
+    manufactureYear: String(record.manufactureYear),
+    status: record.status,
+    comment: record.comment ?? "",
+    documentUrl: record.documentUrl ?? "",
+  };
+}
+
+function measuringInstrumentFormFromRecord(record: MeasuringInstrumentRecord): MeasuringInstrumentFormState {
+  return {
+    unitId: record.unit.id,
+    placementKind: record.placementKind,
+    equipmentId: record.equipment?.id ?? "",
+    name: record.name,
+    instrumentType: record.instrumentType,
+    model: record.model,
+    registrationNumber: record.registrationNumber,
+    serialNumber: record.serialNumber,
+    standardIds: record.standards.map((standard) => standard.id),
+    comment: record.comment ?? "",
+    documentUrl: record.documentUrl ?? "",
+  };
+}
+
+function standardFormFromRecord(record: StandardRecord): StandardFormState {
+  return {
+    ownershipScopeType: record.ownershipScope.scopeType,
+    scopeId: record.ownershipScope.scopeId ?? "",
+    ownerLabel: record.ownershipScope.label,
+    standardType: record.standardType,
+    model: record.model,
+    identifier: record.identifier,
+    serialNumber: record.serialNumber ?? "",
+    metrologicalCharacteristics: record.metrologicalCharacteristics,
+    comment: record.comment ?? "",
+    documentUrl: record.documentUrl ?? "",
+  };
+}
+
 async function parseEnvelope<T>(response: Response, fallbackMessage: string) {
   const body = (await response.json()) as ApiEnvelope<T>;
   if (!response.ok || !body.success || body.data === undefined) {
@@ -263,6 +336,91 @@ function optionalString(value: string) {
   return trimmed ? trimmed : undefined;
 }
 
+function equipmentPayload(form: EquipmentFormState) {
+  return {
+    unitId: form.unitId,
+    manufacturer: form.manufacturer,
+    classification: form.classification,
+    model: form.model,
+    fullName: form.fullName,
+    factoryNumber: form.factoryNumber,
+    inventoryNumber: optionalString(form.inventoryNumber),
+    manufactureYear: Number(form.manufactureYear),
+    status: form.status,
+    comment: optionalString(form.comment),
+    documentUrl: optionalString(form.documentUrl),
+  };
+}
+
+function measuringInstrumentPayload(form: MeasuringInstrumentFormState) {
+  return {
+    unitId: form.unitId,
+    equipmentId: form.placementKind === "built_in" ? optionalString(form.equipmentId) : undefined,
+    name: form.name,
+    instrumentType: form.instrumentType,
+    model: form.model,
+    registrationNumber: form.registrationNumber,
+    serialNumber: form.serialNumber,
+    placementKind: form.placementKind,
+    standardIds: form.standardIds,
+    comment: optionalString(form.comment),
+    documentUrl: optionalString(form.documentUrl),
+  };
+}
+
+function standardPayload(form: StandardFormState, session: SessionSummaryResponse) {
+  return {
+    divisionId: form.ownershipScopeType === "division" ? optionalString(form.scopeId) : undefined,
+    unitId: form.ownershipScopeType === "unit" ? optionalString(form.scopeId) : undefined,
+    ownerLabel:
+      form.ownershipScopeType === "organization"
+        ? optionalString(form.ownerLabel) ?? session.organization.name
+        : optionalString(form.ownerLabel),
+    standardType: form.standardType,
+    model: form.model,
+    identifier: form.identifier,
+    serialNumber: optionalString(form.serialNumber),
+    metrologicalCharacteristics: form.metrologicalCharacteristics,
+    comment: optionalString(form.comment),
+    documentUrl: optionalString(form.documentUrl),
+  };
+}
+
+function isEquipmentFormReady(form: EquipmentFormState) {
+  const year = Number(form.manufactureYear);
+  return Boolean(
+    form.unitId &&
+      form.manufacturer.trim() &&
+      form.classification.trim() &&
+      form.model.trim() &&
+      form.fullName.trim() &&
+      form.factoryNumber.trim() &&
+      Number.isFinite(year),
+  );
+}
+
+function isMeasuringInstrumentFormReady(form: MeasuringInstrumentFormState) {
+  return Boolean(
+    form.unitId &&
+      form.name.trim() &&
+      form.instrumentType.trim() &&
+      form.model.trim() &&
+      form.registrationNumber.trim() &&
+      form.serialNumber.trim() &&
+      (form.placementKind !== "built_in" || form.equipmentId),
+  );
+}
+
+function isStandardFormReady(form: StandardFormState) {
+  return Boolean(
+    (form.ownershipScopeType === "organization" || form.scopeId) &&
+      form.standardType.trim() &&
+      form.model.trim() &&
+      form.identifier.trim() &&
+      form.metrologicalCharacteristics.trim(),
+  );
+}
+
 function defaultAutoComplete(type: string | undefined) {
   switch (type) {
     case "url":
@@ -315,6 +473,46 @@ function normalizeMeasuringInstrument(item: MeasuringInstrumentRecord): Measurin
     ...item,
     standards: Array.isArray(item.standards) ? item.standards : [],
   };
+}
+
+function standardLinkOptions(standards: StandardRecord[], linkedStandards: LinkedStandardRecord[] = []) {
+  const seen = new Set<string>();
+  const options = standards.map((standard) => {
+    seen.add(standard.id);
+    return {
+      id: standard.id,
+      label: `${standard.standardType} • ${standard.identifier}`,
+      detail: `${standard.model} • ${standard.ownershipScope.label}`,
+    };
+  });
+
+  for (const standard of linkedStandards) {
+    if (!seen.has(standard.id)) {
+      options.push({
+        id: standard.id,
+        label: `${standard.standardType} • ${standard.identifier}`,
+        detail: `${standard.model} • ${standard.scopeLabel}`,
+      });
+    }
+  }
+
+  return options;
+}
+
+function equipmentLinkOptions(
+  equipmentRecords: EquipmentRecord[],
+  unitId: string,
+  currentEquipment?: MeasuringInstrumentRecord["equipment"],
+) {
+  const options = equipmentRecords
+    .filter((item) => item.unit.id === unitId)
+    .map((item) => ({ label: item.fullName, value: item.id }));
+
+  if (currentEquipment && !options.some((item) => item.value === currentEquipment.id)) {
+    options.push({ label: currentEquipment.fullName, value: currentEquipment.id });
+  }
+
+  return options;
 }
 
 function buildEquipmentRoute(tab: RegistryTab, showArchived: boolean) {
@@ -388,7 +586,7 @@ function ArchiveConfirmDialog({
 
     return () => {
       document.body.style.overflow = previousBodyOverflow;
-      previousFocus?.focus();
+      previousFocus?.focus({ preventScroll: true });
     };
   }, [confirmation]);
 
@@ -465,7 +663,7 @@ function ArchiveConfirmDialog({
           </div>
         </div>
         <div className="mt-5 flex flex-wrap justify-end gap-3">
-          <Button autoFocus disabled={loading} onClick={onCancel} type="button" variant="secondary">
+          <Button disabled={loading} onClick={onCancel} type="button" variant="secondary">
             Отмена
           </Button>
           <Button
@@ -477,6 +675,541 @@ function ArchiveConfirmDialog({
           >
             Архивировать
           </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EditRegistryDialog({
+  activeEquipmentRecords,
+  activeStandards,
+  editor,
+  loading,
+  onCancel,
+  onChange,
+  onSubmit,
+  session,
+}: {
+  activeEquipmentRecords: EquipmentRecord[];
+  activeStandards: StandardRecord[];
+  editor: EditDialogState | null;
+  loading: boolean;
+  onCancel: () => void;
+  onChange: (next: EditDialogState) => void;
+  onSubmit: () => void;
+  session: SessionSummaryResponse;
+}) {
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!editor) {
+      return undefined;
+    }
+
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    window.requestAnimationFrame(() => {
+      const firstFocusable = dialogRef.current?.querySelector<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      firstFocusable?.focus();
+    });
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      previousFocus?.focus({ preventScroll: true });
+    };
+  }, [editor]);
+
+  if (!editor) {
+    return null;
+  }
+
+  const title =
+    editor.kind === "equipment"
+      ? "Редактировать оборудование"
+      : editor.kind === "measuringInstrument"
+        ? "Редактировать средство измерения"
+        : "Редактировать эталон";
+  const canSubmit =
+    editor.kind === "equipment"
+      ? isEquipmentFormReady(editor.form)
+      : editor.kind === "measuringInstrument"
+        ? isMeasuringInstrumentFormReady(editor.form)
+        : isStandardFormReady(editor.form);
+
+  const updateEquipmentForm = (patch: Partial<EquipmentFormState>) => {
+    if (editor.kind !== "equipment") {
+      return;
+    }
+    onChange({ ...editor, form: { ...editor.form, ...patch } });
+  };
+
+  const updateMeasuringInstrumentForm = (patch: Partial<MeasuringInstrumentFormState>) => {
+    if (editor.kind !== "measuringInstrument") {
+      return;
+    }
+    onChange({ ...editor, form: { ...editor.form, ...patch } });
+  };
+
+  const updateStandardForm = (patch: Partial<StandardFormState>) => {
+    if (editor.kind !== "standard") {
+      return;
+    }
+    onChange({ ...editor, form: { ...editor.form, ...patch } });
+  };
+
+  const trapDialogFocus = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onCancel();
+      return;
+    }
+
+    if (event.key !== "Tab") {
+      return;
+    }
+
+    const focusableElements = Array.from(
+      dialogRef.current?.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ) ?? [],
+    );
+
+    if (!focusableElements.length) {
+      event.preventDefault();
+      return;
+    }
+
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    if (event.shiftKey && document.activeElement === firstElement) {
+      event.preventDefault();
+      lastElement.focus();
+    }
+
+    if (!event.shiftKey && document.activeElement === lastElement) {
+      event.preventDefault();
+      firstElement.focus();
+    }
+  };
+
+  const renderEquipmentForm = (state: Extract<EditDialogState, { kind: "equipment" }>) => (
+    <div className="grid gap-4">
+      <div className="grid gap-4 md:grid-cols-2">
+        <SelectField
+          label="Юнит владения"
+          name="edit-equipment-unit-id"
+          onChange={(event) => updateEquipmentForm({ unitId: event.target.value })}
+          options={session.units.map((unit) => ({ label: unit.name, value: unit.id }))}
+          value={state.form.unitId}
+        />
+        <SelectField
+          label="Статус оборудования"
+          name="edit-equipment-status"
+          onChange={(event) => updateEquipmentForm({ status: event.target.value as RegistryStatus })}
+          options={registryStatusOptions}
+          value={state.form.status}
+        />
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <InputField
+          autoComplete={defaultAutoComplete("text")}
+          label="Производитель"
+          name="edit-equipment-manufacturer"
+          onChange={(event) => updateEquipmentForm({ manufacturer: event.target.value })}
+          value={state.form.manufacturer}
+        />
+        <InputField
+          autoComplete={defaultAutoComplete("text")}
+          label="Класс / тип"
+          name="edit-equipment-classification"
+          onChange={(event) => updateEquipmentForm({ classification: event.target.value })}
+          value={state.form.classification}
+        />
+        <InputField
+          autoComplete={defaultAutoComplete("text")}
+          label="Модель"
+          name="edit-equipment-model"
+          onChange={(event) => updateEquipmentForm({ model: event.target.value })}
+          value={state.form.model}
+        />
+        <InputField
+          autoComplete={defaultAutoComplete("number")}
+          inputMode="numeric"
+          label="Год выпуска"
+          name="edit-equipment-manufacture-year"
+          onChange={(event) => updateEquipmentForm({ manufactureYear: event.target.value })}
+          type="number"
+          value={state.form.manufactureYear}
+        />
+        <InputField
+          autoComplete={defaultAutoComplete("text")}
+          label="Полное наименование"
+          name="edit-equipment-full-name"
+          onChange={(event) => updateEquipmentForm({ fullName: event.target.value })}
+          value={state.form.fullName}
+        />
+        <InputField
+          autoComplete={defaultAutoComplete("text")}
+          label="Заводской номер"
+          name="edit-equipment-factory-number"
+          onChange={(event) => updateEquipmentForm({ factoryNumber: event.target.value })}
+          spellCheck={false}
+          translate="no"
+          value={state.form.factoryNumber}
+        />
+        <InputField
+          autoComplete={defaultAutoComplete("text")}
+          label="Инвентарный номер"
+          name="edit-equipment-inventory-number"
+          onChange={(event) => updateEquipmentForm({ inventoryNumber: event.target.value })}
+          spellCheck={false}
+          translate="no"
+          value={state.form.inventoryNumber}
+        />
+        <InputField
+          autoComplete={defaultAutoComplete("url")}
+          label="Документ / ссылка"
+          name="edit-equipment-document-url"
+          onChange={(event) => updateEquipmentForm({ documentUrl: event.target.value })}
+          type="url"
+          value={state.form.documentUrl}
+        />
+      </div>
+      <TextareaField
+        label="Комментарий"
+        name="edit-equipment-comment"
+        onChange={(event) => updateEquipmentForm({ comment: event.target.value })}
+        value={state.form.comment}
+      />
+    </div>
+  );
+
+  const renderMeasuringInstrumentForm = (
+    state: Extract<EditDialogState, { kind: "measuringInstrument" }>,
+  ) => {
+    const equipmentOptions = equipmentLinkOptions(activeEquipmentRecords, state.form.unitId, state.currentEquipment);
+    const linkedStandardOptions = standardLinkOptions(activeStandards, state.linkedStandards);
+
+    return (
+      <div className="grid gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
+          <SelectField
+            label="Юнит"
+            name="edit-measuring-instrument-unit-id"
+            onChange={(event) =>
+              updateMeasuringInstrumentForm({
+                equipmentId: "",
+                unitId: event.target.value,
+              })
+            }
+            options={session.units.map((unit) => ({ label: unit.name, value: unit.id }))}
+            value={state.form.unitId}
+          />
+          <SelectField
+            label="Размещение"
+            name="edit-measuring-instrument-placement-kind"
+            onChange={(event) =>
+              updateMeasuringInstrumentForm({
+                placementKind: event.target.value as MeasuringInstrumentPlacement,
+                equipmentId: event.target.value === "built_in" ? state.form.equipmentId : "",
+              })
+            }
+            options={placementKindOptions}
+            value={state.form.placementKind}
+          />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <InputField
+            autoComplete={defaultAutoComplete("text")}
+            label="Наименование"
+            name="edit-measuring-instrument-name"
+            onChange={(event) => updateMeasuringInstrumentForm({ name: event.target.value })}
+            value={state.form.name}
+          />
+          <InputField
+            autoComplete={defaultAutoComplete("text")}
+            label="Тип / класс"
+            name="edit-measuring-instrument-type"
+            onChange={(event) => updateMeasuringInstrumentForm({ instrumentType: event.target.value })}
+            value={state.form.instrumentType}
+          />
+          <InputField
+            autoComplete={defaultAutoComplete("text")}
+            label="Модель"
+            name="edit-measuring-instrument-model"
+            onChange={(event) => updateMeasuringInstrumentForm({ model: event.target.value })}
+            value={state.form.model}
+          />
+          <InputField
+            autoComplete={defaultAutoComplete("text")}
+            label="Регистрационный номер"
+            name="edit-measuring-instrument-registration-number"
+            onChange={(event) => updateMeasuringInstrumentForm({ registrationNumber: event.target.value })}
+            spellCheck={false}
+            translate="no"
+            value={state.form.registrationNumber}
+          />
+          <InputField
+            autoComplete={defaultAutoComplete("text")}
+            label="Серийный номер"
+            name="edit-measuring-instrument-serial-number"
+            onChange={(event) => updateMeasuringInstrumentForm({ serialNumber: event.target.value })}
+            spellCheck={false}
+            translate="no"
+            value={state.form.serialNumber}
+          />
+          <div className="rounded-[var(--radius-lg)] border border-border bg-muted/60 px-4 py-3 text-sm leading-6 text-muted-foreground">
+            Метрологический статус и срок действия не редактируются вручную, они пересчитываются через журнал.
+          </div>
+        </div>
+        <SelectField
+          disabled={state.form.placementKind !== "built_in" || !equipmentOptions.length}
+          label="Привязка к оборудованию"
+          name="edit-measuring-instrument-equipment-id"
+          onChange={(event) => updateMeasuringInstrumentForm({ equipmentId: event.target.value })}
+          options={equipmentOptions}
+          placeholder={equipmentOptions.length ? "Выберите оборудование" : "Нет активного оборудования в выбранном юните"}
+          value={state.form.equipmentId}
+        />
+        <label className="grid gap-2.5">
+          <span className="text-sm font-medium text-foreground">Связанные эталоны</span>
+          <div className="grid gap-2 rounded-[var(--radius-lg)] border border-border bg-muted/40 p-3">
+            {linkedStandardOptions.length ? (
+              linkedStandardOptions.map((option) => (
+                <label
+                  className="flex items-start gap-3 rounded-[var(--radius-md)] border border-transparent px-2 py-2 hover:border-border"
+                  key={option.id}
+                >
+                  <input
+                    aria-label={option.label}
+                    checked={state.form.standardIds.includes(option.id)}
+                    className="mt-0.5"
+                    name={`edit-measuring-instrument-standard-${option.id}`}
+                    onChange={() =>
+                      updateMeasuringInstrumentForm({
+                        standardIds: state.form.standardIds.includes(option.id)
+                          ? state.form.standardIds.filter((id) => id !== option.id)
+                          : [...state.form.standardIds, option.id],
+                      })
+                    }
+                    translate="no"
+                    type="checkbox"
+                  />
+                  <span className="space-y-1 text-sm">
+                    <span className="block font-medium text-foreground" translate="no">
+                      {option.label}
+                    </span>
+                    <span className="block text-muted-foreground">{option.detail}</span>
+                  </span>
+                </label>
+              ))
+            ) : (
+              <EmptyState detail="Активные эталоны отсутствуют. Связи можно оставить пустыми." title="Связи недоступны" />
+            )}
+          </div>
+        </label>
+        <div className="grid gap-4 md:grid-cols-2">
+          <InputField
+            autoComplete={defaultAutoComplete("url")}
+            label="Документ / ссылка"
+            name="edit-measuring-instrument-document-url"
+            onChange={(event) => updateMeasuringInstrumentForm({ documentUrl: event.target.value })}
+            type="url"
+            value={state.form.documentUrl}
+          />
+          <div className="rounded-[var(--radius-lg)] border border-border bg-muted/60 px-4 py-3 text-sm leading-6 text-muted-foreground">
+            Встроенное СИ требует оборудование из того же юнита. Отдельное СИ сохраняется без привязки.
+          </div>
+        </div>
+        <TextareaField
+          label="Комментарий"
+          name="edit-measuring-instrument-comment"
+          onChange={(event) => updateMeasuringInstrumentForm({ comment: event.target.value })}
+          value={state.form.comment}
+        />
+      </div>
+    );
+  };
+
+  const renderStandardForm = (state: Extract<EditDialogState, { kind: "standard" }>) => {
+    const scopeOptions = state.form.ownershipScopeType === "division" ? session.divisions : session.units;
+
+    return (
+      <div className="grid gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
+          <SelectField
+            label="Уровень владения"
+            name="edit-standard-ownership-scope"
+            onChange={(event) => {
+              const ownershipScopeType = event.target.value as StandardFormState["ownershipScopeType"];
+              const nextScopeId =
+                ownershipScopeType === "organization"
+                  ? ""
+                  : ownershipScopeType === "division"
+                    ? session.divisions[0]?.id ?? ""
+                    : session.units[0]?.id ?? "";
+              const nextOwnerLabel =
+                ownershipScopeType === "organization"
+                  ? session.organization.name
+                  : ownershipScopeType === "division"
+                    ? session.divisions.find((division) => division.id === nextScopeId)?.name ?? ""
+                    : session.units.find((unit) => unit.id === nextScopeId)?.name ?? "";
+              updateStandardForm({
+                ownershipScopeType,
+                ownerLabel: nextOwnerLabel,
+                scopeId: nextScopeId,
+              });
+            }}
+            options={[
+              { label: "Организация", value: "organization" },
+              { disabled: !session.divisions.length, label: "Подразделение", value: "division" },
+              { disabled: !session.units.length, label: "Юнит", value: "unit" },
+            ]}
+            value={state.form.ownershipScopeType}
+          />
+          <SelectField
+            disabled={state.form.ownershipScopeType === "organization"}
+            label="Точка владения"
+            name="edit-standard-scope-id"
+            onChange={(event) => updateStandardForm({ scopeId: event.target.value })}
+            options={scopeOptions.map((item) => ({ label: item.name, value: item.id }))}
+            placeholder={
+              state.form.ownershipScopeType === "organization" ? "Организация в целом" : "Выберите точку владения"
+            }
+            value={state.form.scopeId}
+          />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <InputField
+            autoComplete={defaultAutoComplete("text")}
+            label="Тип эталона"
+            name="edit-standard-type"
+            onChange={(event) => updateStandardForm({ standardType: event.target.value })}
+            value={state.form.standardType}
+          />
+          <InputField
+            autoComplete={defaultAutoComplete("text")}
+            label="Модель"
+            name="edit-standard-model"
+            onChange={(event) => updateStandardForm({ model: event.target.value })}
+            value={state.form.model}
+          />
+          <InputField
+            autoComplete={defaultAutoComplete("text")}
+            label="Идентификатор"
+            name="edit-standard-identifier"
+            onChange={(event) => updateStandardForm({ identifier: event.target.value })}
+            spellCheck={false}
+            translate="no"
+            value={state.form.identifier}
+          />
+          <InputField
+            autoComplete={defaultAutoComplete("text")}
+            label="Серийный номер"
+            name="edit-standard-serial-number"
+            onChange={(event) => updateStandardForm({ serialNumber: event.target.value })}
+            spellCheck={false}
+            translate="no"
+            value={state.form.serialNumber}
+          />
+          <InputField
+            autoComplete={defaultAutoComplete("text")}
+            label="Владелец / ответственная сторона"
+            name="edit-standard-owner-label"
+            onChange={(event) => updateStandardForm({ ownerLabel: event.target.value })}
+            value={state.form.ownerLabel}
+          />
+          <div className="rounded-[var(--radius-lg)] border border-border bg-muted/60 px-4 py-3 text-sm leading-6 text-muted-foreground">
+            Статус эталона и срок действия не редактируются вручную, они пересчитываются через журнал.
+          </div>
+          <InputField
+            autoComplete={defaultAutoComplete("url")}
+            label="Документ / ссылка"
+            name="edit-standard-document-url"
+            onChange={(event) => updateStandardForm({ documentUrl: event.target.value })}
+            type="url"
+            value={state.form.documentUrl}
+          />
+        </div>
+        <TextareaField
+          label="Метрологические характеристики"
+          name="edit-standard-metrological-characteristics"
+          onChange={(event) => updateStandardForm({ metrologicalCharacteristics: event.target.value })}
+          value={state.form.metrologicalCharacteristics}
+        />
+        <TextareaField
+          label="Комментарий"
+          name="edit-standard-comment"
+          onChange={(event) => updateStandardForm({ comment: event.target.value })}
+          value={state.form.comment}
+        />
+      </div>
+    );
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 grid place-items-center overscroll-contain bg-foreground/30 px-3 py-4 backdrop-blur-[2px] sm:px-4 sm:py-6"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onCancel();
+        }
+      }}
+    >
+      <div
+        ref={dialogRef}
+        aria-describedby="registry-edit-description"
+        aria-labelledby="registry-edit-title"
+        aria-modal="true"
+        className="flex max-h-[calc(100vh-2rem)] w-full max-w-4xl flex-col overflow-hidden rounded-[var(--radius-xl)] border border-border bg-card text-card-foreground shadow-lg"
+        onKeyDown={trapDialogFocus}
+        role="dialog"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-4">
+          <div className="min-w-0 space-y-1">
+            <Badge icon={<Pencil className="size-4" />} tone="interactive">
+              Редактирование
+            </Badge>
+            <h2 className="break-words text-xl font-semibold text-foreground" id="registry-edit-title">
+              {title}
+            </h2>
+            <p className="break-words text-sm leading-6 text-muted-foreground" id="registry-edit-description">
+              {editor.recordLabel}
+            </p>
+          </div>
+          <Button disabled={loading} leftIcon={<X className="size-4" />} onClick={onCancel} type="button" variant="ghost">
+            Закрыть
+          </Button>
+        </div>
+        <div className="overflow-y-auto px-5 py-5">
+          {editor.kind === "equipment" ? renderEquipmentForm(editor) : null}
+          {editor.kind === "measuringInstrument" ? renderMeasuringInstrumentForm(editor) : null}
+          {editor.kind === "standard" ? renderStandardForm(editor) : null}
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-muted/40 px-5 py-4">
+          <p className="text-sm text-muted-foreground">
+            {!canSubmit ? "Заполните обязательные поля перед сохранением." : "Изменения попадут в текущий реестр после сохранения."}
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Button disabled={loading} onClick={onCancel} type="button" variant="secondary">
+              Отмена
+            </Button>
+            <Button
+              disabled={!canSubmit}
+              leftIcon={<Save className="size-4" />}
+              loading={loading}
+              onClick={onSubmit}
+              type="button"
+            >
+              Сохранить изменения
+            </Button>
+          </div>
         </div>
       </div>
     </div>
@@ -537,6 +1270,7 @@ function JournalTimeline({
 
 export function EquipmentRegistryWorkspace({ session, initialShowArchived, initialTab }: Props) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<RegistryTab>(initialTab);
   const [showArchived, setShowArchived] = useState(initialShowArchived);
   const [equipmentRecords, setEquipmentRecords] = useState<EquipmentRecord[]>([]);
@@ -554,10 +1288,11 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
   const [loadingMeasuringInstrumentJournals, setLoadingMeasuringInstrumentJournals] = useState(false);
   const [loadingStandardJournals, setLoadingStandardJournals] = useState(false);
   const [loading, setLoading] = useState(true);
+  const hasLoadedRegistriesRef = useRef(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [mutationError, setMutationError] = useState<string | null>(null);
-  const [mutationSuccess, setMutationSuccess] = useState<string | null>(null);
   const [archiveConfirmation, setArchiveConfirmation] = useState<ArchiveConfirmation | null>(null);
+  const [editDialog, setEditDialog] = useState<EditDialogState | null>(null);
+  const [mutationInFlight, setMutationInFlight] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const canManageRegistry = sessionHasCapability(session, "manage_equipment");
@@ -572,9 +1307,29 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
   const selectedStandard = standards.find((item) => item.id === selectedStandardId) ?? null;
   const canSubmitMeasuringInstrument =
     measuringInstrumentForm.placementKind !== "built_in" || measuringInstrumentForm.equipmentId !== "";
+  const isMutating = isPending || mutationInFlight;
+
+  const showSuccessToast = useCallback((title: string, dedupeKey: string) => {
+    showToast({
+      dedupeKey,
+      title,
+      tone: "success",
+    });
+  }, [showToast]);
+
+  const showErrorToast = useCallback((title: string, error: unknown, dedupeKey: string) => {
+    showToast({
+      dedupeKey,
+      description: error instanceof Error ? error.message : undefined,
+      title,
+      tone: "error",
+    });
+  }, [showToast]);
 
   const loadRegistries = useCallback(async () => {
-    setLoading(true);
+    if (!hasLoadedRegistriesRef.current) {
+      setLoading(true);
+    }
     setLoadError(null);
 
     try {
@@ -591,12 +1346,43 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
       setEquipmentRecords(equipmentData);
       setMeasuringInstruments(measuringInstrumentData.map(normalizeMeasuringInstrument));
       setStandards(standardData);
+      hasLoadedRegistriesRef.current = true;
     } catch (error) {
       setLoadError(error instanceof Error ? error.message : "Не удалось загрузить данные реестров.");
     } finally {
       setLoading(false);
     }
   }, [showArchived]);
+
+  const loadMeasuringInstrumentJournals = useCallback(async (id: string) => {
+    setLoadingMeasuringInstrumentJournals(true);
+    try {
+      const journals = await fetch(`/api/equipment/measuring-instruments/${id}/journals`, {
+        cache: "no-store",
+      }).then((response) =>
+        parseEnvelope<JournalRecord[]>(response, "Не удалось загрузить журнал средства измерения."),
+      );
+      setMeasuringInstrumentJournals(journals);
+    } catch (error) {
+      showErrorToast("Не удалось загрузить журнал средства измерения.", error, "equipment-mi-journals-load-error");
+    } finally {
+      setLoadingMeasuringInstrumentJournals(false);
+    }
+  }, [showErrorToast]);
+
+  const loadStandardJournals = useCallback(async (id: string) => {
+    setLoadingStandardJournals(true);
+    try {
+      const journals = await fetch(`/api/equipment/standards/${id}/journals`, {
+        cache: "no-store",
+      }).then((response) => parseEnvelope<JournalRecord[]>(response, "Не удалось загрузить журнал эталона."));
+      setStandardJournals(journals);
+    } catch (error) {
+      showErrorToast("Не удалось загрузить журнал эталона.", error, "equipment-standard-journals-load-error");
+    } finally {
+      setLoadingStandardJournals(false);
+    }
+  }, [showErrorToast]);
 
   useEffect(() => {
     setActiveTab(initialTab);
@@ -707,7 +1493,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
     } else {
       setMeasuringInstrumentJournals([]);
     }
-  }, [selectedMeasuringInstrumentId]);
+  }, [loadMeasuringInstrumentJournals, selectedMeasuringInstrumentId]);
 
   useEffect(() => {
     if (selectedStandardId) {
@@ -715,37 +1501,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
     } else {
       setStandardJournals([]);
     }
-  }, [selectedStandardId]);
-
-  async function loadMeasuringInstrumentJournals(id: string) {
-    setLoadingMeasuringInstrumentJournals(true);
-    try {
-      const journals = await fetch(`/api/equipment/measuring-instruments/${id}/journals`, {
-        cache: "no-store",
-      }).then((response) =>
-        parseEnvelope<JournalRecord[]>(response, "Не удалось загрузить журнал средства измерения."),
-      );
-      setMeasuringInstrumentJournals(journals);
-    } catch (error) {
-      setMutationError(error instanceof Error ? error.message : "Не удалось загрузить журнал средства измерения.");
-    } finally {
-      setLoadingMeasuringInstrumentJournals(false);
-    }
-  }
-
-  async function loadStandardJournals(id: string) {
-    setLoadingStandardJournals(true);
-    try {
-      const journals = await fetch(`/api/equipment/standards/${id}/journals`, {
-        cache: "no-store",
-      }).then((response) => parseEnvelope<JournalRecord[]>(response, "Не удалось загрузить журнал эталона."));
-      setStandardJournals(journals);
-    } catch (error) {
-      setMutationError(error instanceof Error ? error.message : "Не удалось загрузить журнал эталона.");
-    } finally {
-      setLoadingStandardJournals(false);
-    }
-  }
+  }, [loadStandardJournals, selectedStandardId]);
 
   function handleTabChange(nextTab: RegistryTab) {
     setActiveTab(nextTab);
@@ -766,47 +1522,20 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
     const response = await fetch("/api/equipment", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        unitId: equipmentForm.unitId,
-        manufacturer: equipmentForm.manufacturer,
-        classification: equipmentForm.classification,
-        model: equipmentForm.model,
-        fullName: equipmentForm.fullName,
-        factoryNumber: equipmentForm.factoryNumber,
-        inventoryNumber: optionalString(equipmentForm.inventoryNumber),
-        manufactureYear: Number(equipmentForm.manufactureYear),
-        status: equipmentForm.status,
-        comment: optionalString(equipmentForm.comment),
-        documentUrl: optionalString(equipmentForm.documentUrl),
-      }),
+      body: JSON.stringify(equipmentPayload(equipmentForm)),
     });
 
     await parseEnvelope<EquipmentRecord>(response, "Не удалось создать карточку оборудования.");
     setEquipmentForm(defaultEquipmentForm(session));
     await loadRegistries();
-    setMutationSuccess("Карточка оборудования создана и появилась в реестре.");
+    showSuccessToast("Оборудование создано и появилось в учете.", "equipment-create-success");
   }
 
   async function createMeasuringInstrument() {
     const response = await fetch("/api/equipment/measuring-instruments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        unitId: measuringInstrumentForm.unitId,
-        equipmentId:
-          measuringInstrumentForm.placementKind === "built_in"
-            ? optionalString(measuringInstrumentForm.equipmentId)
-            : undefined,
-        name: measuringInstrumentForm.name,
-        instrumentType: measuringInstrumentForm.instrumentType,
-        model: measuringInstrumentForm.model,
-        registrationNumber: measuringInstrumentForm.registrationNumber,
-        serialNumber: measuringInstrumentForm.serialNumber,
-        placementKind: measuringInstrumentForm.placementKind,
-        standardIds: measuringInstrumentForm.standardIds,
-        comment: optionalString(measuringInstrumentForm.comment),
-        documentUrl: optionalString(measuringInstrumentForm.documentUrl),
-      }),
+      body: JSON.stringify(measuringInstrumentPayload(measuringInstrumentForm)),
     });
 
     const created = await parseEnvelope<MeasuringInstrumentRecord>(
@@ -816,33 +1545,103 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
     setMeasuringInstrumentForm(defaultMeasuringInstrumentForm(session));
     await loadRegistries();
     setSelectedMeasuringInstrumentId(created.id);
-    setMutationSuccess("Средство измерения создано. Метрологический статус рассчитывается по журналу.");
+    showSuccessToast(
+      "Средство измерения создано. Метрологический статус рассчитывается по журналу.",
+      "equipment-mi-create-success",
+    );
   }
 
   async function createStandard() {
     const response = await fetch("/api/equipment/standards", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        divisionId:
-          standardForm.ownershipScopeType === "division" ? optionalString(standardForm.scopeId) : undefined,
-        unitId: standardForm.ownershipScopeType === "unit" ? optionalString(standardForm.scopeId) : undefined,
-        ownerLabel: optionalString(standardForm.ownerLabel),
-        standardType: standardForm.standardType,
-        model: standardForm.model,
-        identifier: standardForm.identifier,
-        serialNumber: optionalString(standardForm.serialNumber),
-        metrologicalCharacteristics: standardForm.metrologicalCharacteristics,
-        comment: optionalString(standardForm.comment),
-        documentUrl: optionalString(standardForm.documentUrl),
-      }),
+      body: JSON.stringify(standardPayload(standardForm, session)),
     });
 
     const created = await parseEnvelope<StandardRecord>(response, "Не удалось создать эталон.");
     setStandardForm(defaultStandardForm(session));
     await loadRegistries();
     setSelectedStandardId(created.id);
-    setMutationSuccess("Эталон создан. Действующий статус и срок поверки станут производными после записи в журнал.");
+    showSuccessToast(
+      "Эталон создан. Действующий статус и срок поверки станут производными после записи в журнал.",
+      "equipment-standard-create-success",
+    );
+  }
+
+  function openEquipmentEditor(record: EquipmentRecord) {
+    setEditDialog({
+      kind: "equipment",
+      recordId: record.id,
+      recordLabel: record.fullName,
+      form: equipmentFormFromRecord(record),
+    });
+  }
+
+  function openMeasuringInstrumentEditor(record: MeasuringInstrumentRecord) {
+    setEditDialog({
+      kind: "measuringInstrument",
+      currentEquipment: record.equipment,
+      linkedStandards: record.standards,
+      recordId: record.id,
+      recordLabel: record.name,
+      form: measuringInstrumentFormFromRecord(record),
+    });
+  }
+
+  function openStandardEditor(record: StandardRecord) {
+    setEditDialog({
+      kind: "standard",
+      recordId: record.id,
+      recordLabel: `${record.standardType} • ${record.identifier}`,
+      form: standardFormFromRecord(record),
+    });
+  }
+
+  async function updateEditedRecord() {
+    if (!editDialog) {
+      return;
+    }
+
+    if (editDialog.kind === "equipment") {
+      const response = await fetch(`/api/equipment/${editDialog.recordId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(equipmentPayload(editDialog.form)),
+      });
+      await parseEnvelope<EquipmentRecord>(response, "Не удалось обновить оборудование.");
+      await loadRegistries();
+      setEditDialog(null);
+      showSuccessToast("Оборудование обновлено.", "equipment-update-success");
+      return;
+    }
+
+    if (editDialog.kind === "measuringInstrument") {
+      const response = await fetch(`/api/equipment/measuring-instruments/${editDialog.recordId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(measuringInstrumentPayload(editDialog.form)),
+      });
+      const updated = await parseEnvelope<MeasuringInstrumentRecord>(
+        response,
+        "Не удалось обновить средство измерения.",
+      );
+      await loadRegistries();
+      setSelectedMeasuringInstrumentId(updated.id);
+      setEditDialog(null);
+      showSuccessToast("Средство измерения обновлено.", "equipment-mi-update-success");
+      return;
+    }
+
+    const response = await fetch(`/api/equipment/standards/${editDialog.recordId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(standardPayload(editDialog.form, session)),
+    });
+    const updated = await parseEnvelope<StandardRecord>(response, "Не удалось обновить эталон.");
+    await loadRegistries();
+    setSelectedStandardId(updated.id);
+    setEditDialog(null);
+    showSuccessToast("Эталон обновлен.", "equipment-standard-update-success");
   }
 
   async function archiveEquipment(id: string) {
@@ -851,7 +1650,10 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
     });
     await parseEnvelope<EquipmentRecord>(response, "Не удалось архивировать оборудование.");
     await loadRegistries();
-    setMutationSuccess("Оборудование переведено в архив и исключено из активного реестра.");
+    showSuccessToast(
+      "Оборудование переведено в архив и исключено из активного реестра.",
+      "equipment-archive-success",
+    );
   }
 
   async function archiveMeasuringInstrument(id: string) {
@@ -863,7 +1665,10 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
     if (selectedMeasuringInstrumentId === id) {
       await loadMeasuringInstrumentJournals(id);
     }
-    setMutationSuccess("Средство измерения переведено в архив и убрано из активных списков выбора.");
+    showSuccessToast(
+      "Средство измерения переведено в архив и убрано из активных списков выбора.",
+      "equipment-mi-archive-success",
+    );
   }
 
   async function archiveStandard(id: string) {
@@ -875,7 +1680,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
     if (selectedStandardId === id) {
       await loadStandardJournals(id);
     }
-    setMutationSuccess("Эталон переведен в архив и исключен из активных связей.");
+    showSuccessToast("Эталон переведен в архив и исключен из активных связей.", "equipment-standard-archive-success");
   }
 
   async function createMeasuringInstrumentJournal() {
@@ -901,7 +1706,10 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
     setMeasuringInstrumentJournalForm(defaultJournalForm());
     await loadRegistries();
     await loadMeasuringInstrumentJournals(selectedMeasuringInstrumentId);
-    setMutationSuccess("Запись журнала СИ сохранена. Производный статус и ближайшая дата пересчитаны.");
+    showSuccessToast(
+      "Запись журнала СИ сохранена. Производный статус и ближайшая дата пересчитаны.",
+      "equipment-mi-journal-create-success",
+    );
   }
 
   async function createStandardJournal() {
@@ -927,7 +1735,10 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
     setStandardJournalForm(defaultJournalForm());
     await loadRegistries();
     await loadStandardJournals(selectedStandardId);
-    setMutationSuccess("Запись журнала эталона сохранена. Производный статус и срок действия пересчитаны.");
+    showSuccessToast(
+      "Запись журнала эталона сохранена. Производный статус и срок действия пересчитаны.",
+      "equipment-standard-journal-create-success",
+    );
   }
 
   function toggleStandard(id: string) {
@@ -939,18 +1750,21 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
     }));
   }
 
-  function runMutation(task: () => Promise<void>, fallbackMessage: string) {
+  function runMutation(task: () => Promise<void>, fallbackMessage: string, dedupeKey: string) {
+    setMutationInFlight(true);
     startTransition(() => {
-      setMutationError(null);
-      setMutationSuccess(null);
-      void task().catch((error) => {
-        setMutationError(error instanceof Error ? error.message : fallbackMessage);
-      });
+      void task()
+        .catch((error) => {
+          showErrorToast(fallbackMessage, error, dedupeKey);
+        })
+        .finally(() => {
+          setMutationInFlight(false);
+        });
     });
   }
 
-  function requestArchive(task: () => Promise<void>, fallbackMessage: string, recordLabel: string) {
-    setArchiveConfirmation({ fallbackMessage, recordLabel, task });
+  function requestArchive(task: () => Promise<void>, fallbackMessage: string, recordLabel: string, dedupeKey: string) {
+    setArchiveConfirmation({ dedupeKey, fallbackMessage, recordLabel, task });
   }
 
   function confirmArchive() {
@@ -960,7 +1774,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
 
     const confirmation = archiveConfirmation;
     setArchiveConfirmation(null);
-    runMutation(confirmation.task, confirmation.fallbackMessage);
+    runMutation(confirmation.task, confirmation.fallbackMessage, confirmation.dedupeKey);
   }
 
   function renderManageabilityNote() {
@@ -985,9 +1799,9 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
       <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
         <Card className="gap-5" padding="lg">
           <div className="space-y-2">
-            <Badge tone="interactive">Реестр оборудования</Badge>
+            <Badge tone="interactive">Оборудование</Badge>
             <div className="space-y-1">
-              <h2 className="text-xl font-semibold text-foreground">Карточка оборудования</h2>
+              <h2 className="text-xl font-semibold text-foreground">Новое оборудование</h2>
               <p className="text-sm leading-6 text-muted-foreground">
                 Добавьте оборудование, владельца, статус и основные идентификаторы.
               </p>
@@ -1109,9 +1923,12 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                 value={equipmentForm.comment}
               />
               <Button
+                disabled={!isEquipmentFormReady(equipmentForm)}
                 fullWidth
-                loading={isPending}
-                onClick={() => runMutation(createEquipment, "Не удалось создать карточку оборудования.")}
+                loading={isMutating}
+                onClick={() =>
+                  runMutation(createEquipment, "Не удалось создать карточку оборудования.", "equipment-create-error")
+                }
                 type="button"
               >
                 Создать оборудование
@@ -1129,7 +1946,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="space-y-1">
               <Badge tone="info">{showArchived ? "Активные и архив" : "Только активные"}</Badge>
-              <h2 className="text-xl font-semibold text-foreground">Список оборудования</h2>
+              <h2 className="text-xl font-semibold text-foreground">Оборудование в учете</h2>
             </div>
             <Button onClick={() => void loadRegistries()} rightIcon={<RefreshCw className="size-4" />} variant="secondary">
               Обновить
@@ -1139,7 +1956,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
           {!equipmentRecords.length && !loading ? (
             <EmptyState
               detail="Оборудование еще не зарегистрировано. Средства измерения можно вести отдельно."
-              title="Реестр оборудования пока пуст"
+              title="Оборудование пока не добавлено"
             />
           ) : null}
 
@@ -1152,9 +1969,9 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                 tone="muted"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="space-y-1">
-                    <h3 className="text-lg font-semibold text-foreground">{item.fullName}</h3>
-                    <p className="text-sm text-muted-foreground">
+                  <div className="min-w-0 space-y-1">
+                    <h3 className="break-words text-lg font-semibold text-foreground">{item.fullName}</h3>
+                    <p className="break-words text-sm text-muted-foreground">
                       {item.manufacturer} • {item.classification} • {item.model}
                     </p>
                   </div>
@@ -1181,22 +1998,34 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                   </div>
                 ) : null}
                 {canManageRegistry && !item.archivedAt ? (
-                  <Button
-                    fullWidth
-                    leftIcon={<Archive className="size-4" />}
-                    loading={isPending}
-                    onClick={() =>
-                      requestArchive(
-                        () => archiveEquipment(item.id),
-                        "Не удалось архивировать оборудование.",
-                        `оборудование «${item.fullName}»`,
-                      )
-                    }
-                    type="button"
-                    variant="secondary"
-                  >
-                    Архивировать оборудование
-                  </Button>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Button
+                      aria-label={`Редактировать оборудование ${item.fullName}`}
+                      leftIcon={<Pencil className="size-4" />}
+                      onClick={() => openEquipmentEditor(item)}
+                      type="button"
+                      variant="secondary"
+                    >
+                      Редактировать
+                    </Button>
+                    <Button
+                      aria-label={`Архивировать оборудование ${item.fullName}`}
+                      leftIcon={<Archive className="size-4" />}
+                      loading={isMutating}
+                      onClick={() =>
+                        requestArchive(
+                          () => archiveEquipment(item.id),
+                          "Не удалось архивировать оборудование.",
+                          `оборудование «${item.fullName}»`,
+                          "equipment-archive-error",
+                        )
+                      }
+                      type="button"
+                      variant="secondary"
+                    >
+                      Архивировать
+                    </Button>
+                  </div>
                 ) : null}
               </Card>
             ))}
@@ -1214,7 +2043,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
             <div className="space-y-2">
               <Badge tone="interactive">Средства измерения</Badge>
               <div className="space-y-1">
-                <h2 className="text-xl font-semibold text-foreground">Карточка средства измерения</h2>
+                <h2 className="text-xl font-semibold text-foreground">Новое средство измерения</h2>
                 <p className="text-sm leading-6 text-muted-foreground">
                   Средство измерения создается отдельно. Метрологический статус считается по последним записям журнала.
                 </p>
@@ -1391,11 +2220,15 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                   value={measuringInstrumentForm.comment}
                 />
                 <Button
-                  disabled={!canSubmitMeasuringInstrument}
+                  disabled={!canSubmitMeasuringInstrument || !isMeasuringInstrumentFormReady(measuringInstrumentForm)}
                   fullWidth
-                  loading={isPending}
+                  loading={isMutating}
                   onClick={() =>
-                    runMutation(createMeasuringInstrument, "Не удалось создать средство измерения.")
+                    runMutation(
+                      createMeasuringInstrument,
+                      "Не удалось создать средство измерения.",
+                      "equipment-mi-create-error",
+                    )
                   }
                   type="button"
                 >
@@ -1414,7 +2247,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="space-y-1">
                 <Badge tone="info">{showArchived ? "Активные и архив" : "Только активные"}</Badge>
-                <h2 className="text-xl font-semibold text-foreground">Список средств измерения</h2>
+                <h2 className="text-xl font-semibold text-foreground">Средства измерения в учете</h2>
               </div>
               <Button onClick={() => void loadRegistries()} rightIcon={<RefreshCw className="size-4" />} variant="secondary">
                 Обновить
@@ -1424,7 +2257,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
             {!measuringInstruments.length && !loading ? (
               <EmptyState
                 detail="Здесь появятся отдельные СИ и встроенные СИ, привязанные к оборудованию."
-                title="Реестр средств измерения пока пуст"
+                title="Средства измерения пока не добавлены"
               />
             ) : null}
 
@@ -1437,9 +2270,9 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                   tone="muted"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="space-y-1">
-                      <h3 className="text-lg font-semibold text-foreground">{item.name}</h3>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="min-w-0 space-y-1">
+                      <h3 className="break-words text-lg font-semibold text-foreground">{item.name}</h3>
+                      <p className="break-words text-sm text-muted-foreground">
                         {item.instrumentType} • {item.model}
                       </p>
                     </div>
@@ -1502,21 +2335,32 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                     </div>
                   ) : null}
                   {canManageRegistry && !item.archivedAt ? (
-                    <div className="flex justify-end">
+                    <div className="flex flex-wrap justify-end gap-3">
                       <Button
+                        aria-label={`Редактировать средство измерения ${item.name}`}
+                        leftIcon={<Pencil className="size-4" />}
+                        onClick={() => openMeasuringInstrumentEditor(item)}
+                        type="button"
+                        variant="secondary"
+                      >
+                        Редактировать
+                      </Button>
+                      <Button
+                        aria-label={`Архивировать средство измерения ${item.name}`}
                         leftIcon={<Archive className="size-4" />}
-                        loading={isPending}
+                        loading={isMutating}
                         onClick={() =>
                           requestArchive(
                             () => archiveMeasuringInstrument(item.id),
                             "Не удалось архивировать средство измерения.",
                             `средство измерения «${item.name}»`,
+                            "equipment-mi-archive-error",
                           )
                         }
                         type="button"
                         variant="secondary"
                       >
-                        Архивировать СИ
+                        Архивировать
                       </Button>
                     </div>
                   ) : null}
@@ -1653,11 +2497,12 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                     />
                     <div className="flex flex-wrap gap-3">
                       <Button
-                        loading={isPending}
+                        loading={isMutating}
                         onClick={() =>
                           runMutation(
                             createMeasuringInstrumentJournal,
                             "Не удалось добавить запись в журнал средства измерения.",
+                            "equipment-mi-journal-create-error",
                           )
                         }
                         type="button"
@@ -1666,12 +2511,13 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                       </Button>
                       <Button
                         leftIcon={<Archive className="size-4" />}
-                        loading={isPending}
+                        loading={isMutating}
                         onClick={() =>
                           requestArchive(
                             () => archiveMeasuringInstrument(selectedMeasuringInstrument.id),
                             "Не удалось архивировать средство измерения.",
                             `средство измерения «${selectedMeasuringInstrument.name}»`,
+                            "equipment-mi-selected-archive-error",
                           )
                         }
                         type="button"
@@ -1740,7 +2586,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
             <div className="space-y-2">
               <Badge tone="interactive">Эталоны</Badge>
               <div className="space-y-1">
-                <h2 className="text-xl font-semibold text-foreground">Карточка эталона</h2>
+                <h2 className="text-xl font-semibold text-foreground">Новый эталон</h2>
                 <p className="text-sm leading-6 text-muted-foreground">
                   Эталон остается отдельной записью. Текущий статус и срок действия выводятся из журнала операций.
                 </p>
@@ -1867,9 +2713,12 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                   value={standardForm.comment}
                 />
                 <Button
+                  disabled={!isStandardFormReady(standardForm)}
                   fullWidth
-                  loading={isPending}
-                  onClick={() => runMutation(createStandard, "Не удалось создать эталон.")}
+                  loading={isMutating}
+                  onClick={() =>
+                    runMutation(createStandard, "Не удалось создать эталон.", "equipment-standard-create-error")
+                  }
                   type="button"
                 >
                   Создать эталон
@@ -1887,7 +2736,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="space-y-1">
                 <Badge tone="info">{showArchived ? "Активные и архив" : "Только активные"}</Badge>
-                <h2 className="text-xl font-semibold text-foreground">Список эталонов</h2>
+                <h2 className="text-xl font-semibold text-foreground">Эталоны в учете</h2>
               </div>
               <Button onClick={() => void loadRegistries()} rightIcon={<RefreshCw className="size-4" />} variant="secondary">
                 Обновить
@@ -1896,8 +2745,8 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
 
             {!standards.length && !loading ? (
               <EmptyState
-                detail="После создания эталоны остаются отдельным реестром и могут использоваться повторно в нескольких СИ."
-                title="Реестр эталонов пока пуст"
+                detail="После создания эталоны остаются отдельными записями и могут использоваться повторно в нескольких СИ."
+                title="Эталоны пока не добавлены"
               />
             ) : null}
 
@@ -1910,13 +2759,13 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                   tone="muted"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="space-y-1">
-                      <h3 className="text-lg font-semibold text-foreground">
+                    <div className="min-w-0 space-y-1">
+                      <h3 className="break-words text-lg font-semibold text-foreground">
                         <span translate="no">
                           {item.standardType} • {item.identifier}
                         </span>
                       </h3>
-                      <p className="text-sm text-muted-foreground">{item.model}</p>
+                      <p className="break-words text-sm text-muted-foreground">{item.model}</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <Badge tone={statusToneMap[item.status]}>{statusLabelMap[item.status]}</Badge>
@@ -1962,21 +2811,32 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                     </div>
                   ) : null}
                   {canManageRegistry && !item.archivedAt ? (
-                    <div className="flex justify-end">
+                    <div className="flex flex-wrap justify-end gap-3">
                       <Button
+                        aria-label={`Редактировать эталон ${item.identifier}`}
+                        leftIcon={<Pencil className="size-4" />}
+                        onClick={() => openStandardEditor(item)}
+                        type="button"
+                        variant="secondary"
+                      >
+                        Редактировать
+                      </Button>
+                      <Button
+                        aria-label={`Архивировать эталон ${item.identifier}`}
                         leftIcon={<Archive className="size-4" />}
-                        loading={isPending}
+                        loading={isMutating}
                         onClick={() =>
                           requestArchive(
                             () => archiveStandard(item.id),
                             "Не удалось архивировать эталон.",
                             `эталон «${item.identifier}»`,
+                            "equipment-standard-archive-error",
                           )
                         }
                         type="button"
                         variant="secondary"
                       >
-                        Архивировать эталон
+                        Архивировать
                       </Button>
                     </div>
                   ) : null}
@@ -2117,9 +2977,13 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                     />
                     <div className="flex flex-wrap gap-3">
                       <Button
-                        loading={isPending}
+                        loading={isMutating}
                         onClick={() =>
-                          runMutation(createStandardJournal, "Не удалось добавить запись в журнал эталона.")
+                          runMutation(
+                            createStandardJournal,
+                            "Не удалось добавить запись в журнал эталона.",
+                            "equipment-standard-journal-create-error",
+                          )
                         }
                         type="button"
                       >
@@ -2127,12 +2991,13 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                       </Button>
                       <Button
                         leftIcon={<Archive className="size-4" />}
-                        loading={isPending}
+                        loading={isMutating}
                         onClick={() =>
                           requestArchive(
                             () => archiveStandard(selectedStandard.id),
                             "Не удалось архивировать эталон.",
                             `эталон «${selectedStandard.identifier}»`,
+                            "equipment-standard-selected-archive-error",
                           )
                         }
                         type="button"
@@ -2191,140 +3056,118 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
   }
 
   const activeTabDetails = tabMeta.find((tab) => tab.key === activeTab) ?? tabMeta[0];
+  const archiveVisibilityText = showArchived
+    ? "Архивные записи включены в текущий список."
+    : "Архив скрыт из активных списков до отдельного включения.";
 
   return (
     <>
+      <EditRegistryDialog
+        activeEquipmentRecords={activeEquipmentRecords}
+        activeStandards={activeStandards}
+        editor={editDialog}
+        loading={isMutating}
+        onCancel={() => setEditDialog(null)}
+        onChange={setEditDialog}
+        onSubmit={() => runMutation(updateEditedRecord, "Не удалось сохранить изменения.", "equipment-edit-error")}
+        session={session}
+      />
       <ArchiveConfirmDialog
         confirmation={archiveConfirmation}
-        loading={isPending}
+        loading={isMutating}
         onCancel={() => setArchiveConfirmation(null)}
         onConfirm={confirmArchive}
       />
 
       <div
-        aria-hidden={archiveConfirmation ? true : undefined}
+        aria-hidden={archiveConfirmation || editDialog ? true : undefined}
         className="grid gap-4"
-        inert={archiveConfirmation ? true : undefined}
+        inert={archiveConfirmation || editDialog ? true : undefined}
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card className="gap-3" padding="md">
-          <Badge icon={<Wrench className="size-4" />} tone="interactive">
-            Оборудование
-          </Badge>
-          <div className="text-3xl font-semibold text-foreground">{equipmentRecords.length}</div>
-          <p className="text-sm text-muted-foreground">Карточки оборудования в текущей области.</p>
-        </Card>
-        <Card className="gap-3" padding="md">
-          <Badge icon={<Cable className="size-4" />} tone="interactive">
-            Средства измерения
-          </Badge>
-          <div className="text-3xl font-semibold text-foreground">{measuringInstruments.length}</div>
-          <p className="text-sm text-muted-foreground">Статус рассчитывается по журналам операций.</p>
-        </Card>
-        <Card className="gap-3" padding="md">
-          <Badge icon={<Ruler className="size-4" />} tone="interactive">
-            Эталоны
-          </Badge>
-          <div className="text-3xl font-semibold text-foreground">{standards.length}</div>
-          <p className="text-sm text-muted-foreground">Эталоны и связи со средствами измерения.</p>
-        </Card>
-        <Card className="gap-3" padding="md">
-          <Badge icon={<Building2 className="size-4" />} tone={canManageRegistry ? "success" : "warning"}>
-            {canManageRegistry ? "Управление организацией" : "Только просмотр"}
-          </Badge>
-          <div className="text-lg font-semibold text-foreground">{session.workspace.scopeName}</div>
-          <p className="text-sm text-muted-foreground">Данные показаны для текущей области доступа.</p>
-        </Card>
-      </div>
-
-      {renderManageabilityNote()}
-
-      {loadError ? (
-        <div
-          aria-live="polite"
-          className="rounded-[var(--radius-xl)] border border-destructive/20 bg-destructive-soft px-4 py-3 text-sm text-destructive"
-        >
-          {loadError}
+          <Card className="gap-3" padding="md">
+            <Badge icon={<Wrench className="size-4" />} tone="interactive">
+              Оборудование
+            </Badge>
+            <div className="text-3xl font-semibold text-foreground">{equipmentRecords.length}</div>
+            <p className="text-sm text-muted-foreground">Карточки оборудования в текущей области.</p>
+          </Card>
+          <Card className="gap-3" padding="md">
+            <Badge icon={<Cable className="size-4" />} tone="interactive">
+              Средства измерения
+            </Badge>
+            <div className="text-3xl font-semibold text-foreground">{measuringInstruments.length}</div>
+            <p className="text-sm text-muted-foreground">Статус рассчитывается по журналам операций.</p>
+          </Card>
+          <Card className="gap-3" padding="md">
+            <Badge icon={<Ruler className="size-4" />} tone="interactive">
+              Эталоны
+            </Badge>
+            <div className="text-3xl font-semibold text-foreground">{standards.length}</div>
+            <p className="text-sm text-muted-foreground">Эталоны и связи со средствами измерения.</p>
+          </Card>
+          <Card className="gap-3" padding="md">
+            <Badge icon={<Building2 className="size-4" />} tone={canManageRegistry ? "success" : "warning"}>
+              {canManageRegistry ? "Управление организацией" : "Только просмотр"}
+            </Badge>
+            <div className="text-lg font-semibold text-foreground">{session.workspace.scopeName}</div>
+            <p className="text-sm text-muted-foreground">Данные показаны для текущей области доступа.</p>
+          </Card>
         </div>
-      ) : null}
 
-      {mutationError ? (
-        <div
-          aria-live="polite"
-          className="rounded-[var(--radius-xl)] border border-destructive/20 bg-destructive-soft px-4 py-3 text-sm text-destructive"
-        >
-          {mutationError}
-        </div>
-      ) : null}
+        {renderManageabilityNote()}
 
-      {mutationSuccess ? (
-        <div
-          aria-live="polite"
-          className="rounded-[var(--radius-xl)] border border-success-soft bg-success-soft/50 px-4 py-3 text-sm text-success-strong"
-        >
-          {mutationSuccess}
-        </div>
-      ) : null}
-
-      <div className="grid gap-4 xl:grid-cols-[0.82fr_1.18fr]">
-        <Card className="gap-4" padding="lg">
-          <div className="space-y-1">
-            <Badge tone="info">Реестры</Badge>
-            <h2 className="text-lg font-semibold text-foreground">Выберите нужный реестр</h2>
-            <p className="text-sm leading-6 text-muted-foreground">Оборудование, средства измерения и эталоны доступны на вкладках.</p>
+        {loadError ? (
+          <div
+            aria-live="polite"
+            className="rounded-[var(--radius-xl)] border border-destructive/20 bg-destructive-soft px-4 py-3 text-sm text-destructive"
+          >
+            {loadError}
           </div>
-          <Tabs
-            activeKey={activeTab}
-            ariaLabel="Реестры оборудования"
-            fullWidth
-            getPanelId={(key) => `equipment-panel-${key}`}
-            idPrefix="equipment-registry"
-            items={tabMeta}
-            onChange={handleTabChange}
-          />
-          <div className="rounded-[var(--radius-lg)] border border-border bg-muted/60 px-4 py-3 text-sm leading-6 text-muted-foreground">
-            {activeTabDetails.description}
-          </div>
-        </Card>
+        ) : null}
 
-        <Card className="gap-4" padding="lg">
-          <div className="flex items-start gap-3 rounded-[var(--radius-lg)] border border-border bg-muted/60 px-4 py-3 text-sm text-muted-foreground">
-            <Layers3 aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-accent" />
-            <p>
-              Журналы операций помогают отслеживать поверку, документы и актуальный статус.
+        <Tabs
+          activeKey={activeTab}
+          ariaLabel="Реестры оборудования"
+          fullWidth
+          getPanelId={(key) => `equipment-panel-${key}`}
+          idPrefix="equipment-registry"
+          items={tabMeta}
+          onChange={handleTabChange}
+        />
+
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-border bg-card px-4 py-3">
+          <div className="min-w-0 space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge icon={<FileSpreadsheet className="size-4" />} tone={showArchived ? "warning" : "interactive"}>
+                {showArchived ? "Архив показан" : "Только активные"}
+              </Badge>
+              <Badge tone="info">{activeTabDetails.label}</Badge>
+            </div>
+            <p className="text-sm leading-6 text-muted-foreground">
+              {activeTabDetails.description} {archiveVisibilityText}
             </p>
           </div>
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-border bg-card px-4 py-3">
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge icon={<FileSpreadsheet className="size-4" />} tone={showArchived ? "warning" : "interactive"}>
-                  {showArchived ? "Архив показан" : "Только активные записи"}
-                </Badge>
-              </div>
-              <p className="text-sm leading-6 text-muted-foreground">
-                Архив скрыт из активных списков. Включите его, чтобы посмотреть неактуальные записи.
-              </p>
-            </div>
-            <Button onClick={handleArchiveVisibilityChange} type="button" variant="secondary">
-              {showArchived ? "Скрыть архив" : "Показать архив"}
-            </Button>
-          </div>
-          {loading ? (
-            <EmptyState
-              detail="Загружаем записи для выбранного режима."
-              title="Загружаем реестр"
-            />
-          ) : null}
-          <div
-            aria-labelledby={`equipment-registry-${activeTab}`}
-            id={`equipment-panel-${activeTab}`}
-            role="tabpanel"
-          >
-            {!loading && activeTab === "equipment" ? renderEquipmentTab() : null}
-            {!loading && activeTab === "mi" ? renderMeasuringInstrumentTab() : null}
-            {!loading && activeTab === "standards" ? renderStandardsTab() : null}
-          </div>
-        </Card>
+          <Button onClick={handleArchiveVisibilityChange} type="button" variant="secondary">
+            {showArchived ? "Скрыть архив" : "Показать архив"}
+          </Button>
+        </div>
+
+        {loading ? (
+          <EmptyState
+            detail="Загружаем записи для выбранного режима."
+            title="Загружаем учет…"
+          />
+        ) : null}
+
+        <div
+          aria-labelledby={`equipment-registry-${activeTab}`}
+          id={`equipment-panel-${activeTab}`}
+          role="tabpanel"
+        >
+          {!loading && activeTab === "equipment" ? renderEquipmentTab() : null}
+          {!loading && activeTab === "mi" ? renderMeasuringInstrumentTab() : null}
+          {!loading && activeTab === "standards" ? renderStandardsTab() : null}
         </div>
       </div>
     </>

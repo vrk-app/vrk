@@ -256,13 +256,13 @@ MVP-модель прав:
 
 | Role template | Пользовательский смысл | Допустимый scope | Stage 03 mutate capability |
 | --- | --- | --- | --- |
-| `organization_admin` | Администратор организации | `organization` | Да: `manage_structure`, `manage_access`, `manage_contracts`, `manage_equipment` |
-| `organization_head` | Руководитель организации | `organization` | Нет, read-only |
-| `division_head` | Руководитель подразделения | `division` | Нет, read-only |
+| `organization_admin` | Администратор организации | `organization` | Да: `manage_structure`, `manage_access`, `manage_contracts`, `manage_equipment`, `manage_employees`; также `view_employees` |
+| `organization_head` | Руководитель организации | `organization` | Нет, read-only; `view_employees` на всю организацию |
+| `division_head` | Руководитель подразделения | `division` | Нет, read-only; `view_employees` по подразделению и дочерним юнитам |
 | `division_operator` | Сотрудник подразделения | `division` | Нет, read-only |
-| `unit_head` | Руководитель юнита | `unit` | Нет, read-only |
+| `unit_head` | Руководитель юнита | `unit` | Нет, read-only; `view_employees` по своему юниту |
 | `unit_operator` | Сотрудник юнита | `unit` | Нет, read-only |
-| `auditor` | Аудитор | `organization`, `division` или `unit` | Нет, read-only |
+| `auditor` | Аудитор | `organization`, `division` или `unit` | Нет, read-only; `view_employees` в пределах своего scope |
 
 Legacy aliases are handled only by the DB cutover migration and are not a public API of the current contract:
 
@@ -272,6 +272,20 @@ Legacy aliases are handled only by the DB cutover migration and are not a public
 - current `unit_operator` means a unit employee, not a unit administrator.
 
 В v1 фактические Stage 03 mutation-права остаются только у `organization_admin` на `organization` scope. Остальные роли уже участвуют в совместимости scope, session projection и read-only visibility, а операционные права для следующих stage-ов должны включаться через capability-map, без scattered string checks.
+
+### 3.1.1. Просмотр и управление сотрудниками
+
+Активный сотрудник в registry — это `auth_membership` со статусом `active` и связанный `auth_scoped_grant`. Pending invites остаются отдельным lifecycle и не считаются активными сотрудниками до acceptance.
+
+Visibility для `GET /employees` строится от текущего explicit grant:
+
+- `organization` scope видит все active employee access rows организации;
+- `division` scope видит сотрудников, назначенных напрямую на подразделение, и сотрудников дочерних юнитов;
+- `unit` scope видит только сотрудников своего юнита;
+- organization-scope сотрудники не раскрываются в division/unit scoped списках;
+- `division_operator` и `unit_operator` не получают вкладку сотрудников.
+
+`organization_admin` может менять role/scope активного сотрудника через `PATCH /employees/{accessID}` и отключать сотрудника через `POST /employees/{accessID}/deactivate`. Update проходит ту же role/scope compatibility и active visible target validation, что invite creation. Self-edit и self-deactivate текущего session grant запрещены. Deactivation архивирует membership и инвалидирует active sessions этого membership; restore UI в текущем slice отсутствует.
 
 ### 3.2. Приглашения сотрудников
 
@@ -336,9 +350,11 @@ flowchart LR
 
 Session summary в slice-002+ больше не возвращает только organization-wide contour, а проецирует singular runtime workspace прямо из explicit active scoped grant:
 
-- `organization` scope открывает весь org graph ниже и позволяет управлять employee invites только при `organization_admin`;
+- `organization` scope открывает весь org graph ниже, показывает вкладку `Сотрудники` для `organization_admin`, `organization_head` и organization-scope `auditor`, а employee invites / edit / deactivate доступны только `organization_admin`;
 - `division` scope открывает целевое подразделение и его дочерние юниты, но не wider organization contour;
+- `division_head` и division-scope `auditor` получают read-only вкладку `Сотрудники` только по своему подразделению и дочерним юнитам;
 - `unit` scope открывает только один целевой юнит и не раскрывает division/organization graph вверх;
+- `unit_head` и unit-scope `auditor` получают read-only вкладку `Сотрудники` только по своему юниту;
 - один и тот же `/company` route используется как scoped landing page после invite acceptance и последующего login;
 - session restore не выбирает новый workspace: он использует сохраненный `grant_id`;
 - если direct login находит несколько eligible memberships/grants, backend возвращает truthful `409`, а не silently выбирает первый доступ.
@@ -353,7 +369,7 @@ flowchart TD
     F -->|organization| G["/company: full org graph"]
     F -->|division| H["/company: target division + child units"]
     F -->|unit| I["/company: target unit only"]
-    G --> J["Employee invite manager only for organization_admin"]
+    G --> J["Employees tab<br/>view/manage by capability"]
 ```
 
 ### 4.2. Реализованный contracts + workspace contour для slice-003

@@ -19,6 +19,8 @@ const (
 	CapabilityManageAccess    = Capability("manage_access")
 	CapabilityManageContracts = Capability("manage_contracts")
 	CapabilityManageEquipment = Capability("manage_equipment")
+	CapabilityViewEmployees   = Capability("view_employees")
+	CapabilityManageEmployees = Capability("manage_employees")
 )
 
 type RoleDefinition struct {
@@ -39,17 +41,21 @@ var roleCatalog = map[string]RoleDefinition{
 			CapabilityManageAccess,
 			CapabilityManageContracts,
 			CapabilityManageEquipment,
+			CapabilityViewEmployees,
+			CapabilityManageEmployees,
 		},
 	},
 	RoleOrganizationHead: {
 		Template:      RoleOrganizationHead,
 		Label:         "Руководитель организации",
 		AllowedScopes: []string{ScopeOrganization},
+		Capabilities:  []Capability{CapabilityViewEmployees},
 	},
 	RoleDivisionHead: {
 		Template:      RoleDivisionHead,
 		Label:         "Руководитель подразделения",
 		AllowedScopes: []string{ScopeDivision},
+		Capabilities:  []Capability{CapabilityViewEmployees},
 	},
 	RoleDivisionOperator: {
 		Template:      RoleDivisionOperator,
@@ -60,6 +66,7 @@ var roleCatalog = map[string]RoleDefinition{
 		Template:      RoleUnitHead,
 		Label:         "Руководитель юнита",
 		AllowedScopes: []string{ScopeUnit},
+		Capabilities:  []Capability{CapabilityViewEmployees},
 	},
 	RoleUnitOperator: {
 		Template:      RoleUnitOperator,
@@ -70,6 +77,7 @@ var roleCatalog = map[string]RoleDefinition{
 		Template:        RoleAuditor,
 		Label:           "Аудитор",
 		AllowedScopes:   []string{ScopeOrganization, ScopeDivision, ScopeUnit},
+		Capabilities:    []Capability{CapabilityViewEmployees},
 		AuditorAnyScope: true,
 	},
 }

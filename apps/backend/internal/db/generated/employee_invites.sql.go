@@ -80,6 +80,139 @@ func (q *Queries) CreateEmployeeInviteDraft(ctx context.Context, arg CreateEmplo
 	return i, err
 }
 
+const deactivateEmployeeAccess = `-- name: DeactivateEmployeeAccess :one
+WITH target AS (
+    SELECT
+        g.id AS access_id,
+        m.id AS membership_id,
+        a.id AS account_id,
+        a.full_name,
+        a.email,
+        g.role_template,
+        g.scope_type,
+        g.scope_id
+    FROM auth_scoped_grants g
+    JOIN auth_memberships m ON m.id = g.membership_id
+    JOIN auth_accounts a ON a.id = m.account_id
+    WHERE g.id = $1
+      AND m.organization_id = $2
+      AND m.membership_status = 'active'
+      AND a.status = 'active'
+),
+archived AS (
+    UPDATE auth_memberships m
+    SET membership_status = 'archived'
+    FROM target
+    WHERE m.id = target.membership_id
+    RETURNING m.id
+),
+deleted_sessions AS (
+    DELETE FROM auth_sessions s
+    USING archived
+    WHERE s.membership_id = archived.id
+    RETURNING s.id
+)
+SELECT
+    target.access_id,
+    target.membership_id,
+    target.account_id,
+    target.full_name,
+    target.email,
+    target.role_template,
+    target.scope_type,
+    target.scope_id,
+    'archived'::text AS membership_status
+FROM target
+`
+
+type DeactivateEmployeeAccessParams struct {
+	AccessID       pgtype.UUID `json:"accessId"`
+	OrganizationID pgtype.UUID `json:"organizationId"`
+}
+
+type DeactivateEmployeeAccessRow struct {
+	AccessID         pgtype.UUID `json:"accessId"`
+	MembershipID     pgtype.UUID `json:"membershipId"`
+	AccountID        pgtype.UUID `json:"accountId"`
+	FullName         string      `json:"fullName"`
+	Email            string      `json:"email"`
+	RoleTemplate     string      `json:"roleTemplate"`
+	ScopeType        string      `json:"scopeType"`
+	ScopeID          pgtype.UUID `json:"scopeId"`
+	MembershipStatus string      `json:"membershipStatus"`
+}
+
+func (q *Queries) DeactivateEmployeeAccess(ctx context.Context, arg DeactivateEmployeeAccessParams) (DeactivateEmployeeAccessRow, error) {
+	row := q.db.QueryRow(ctx, deactivateEmployeeAccess, arg.AccessID, arg.OrganizationID)
+	var i DeactivateEmployeeAccessRow
+	err := row.Scan(
+		&i.AccessID,
+		&i.MembershipID,
+		&i.AccountID,
+		&i.FullName,
+		&i.Email,
+		&i.RoleTemplate,
+		&i.ScopeType,
+		&i.ScopeID,
+		&i.MembershipStatus,
+	)
+	return i, err
+}
+
+const getEmployeeAccessByID = `-- name: GetEmployeeAccessByID :one
+SELECT
+    g.id AS access_id,
+    m.id AS membership_id,
+    a.id AS account_id,
+    a.full_name,
+    a.email,
+    g.role_template,
+    g.scope_type,
+    g.scope_id,
+    m.membership_status
+FROM auth_scoped_grants g
+JOIN auth_memberships m ON m.id = g.membership_id
+JOIN auth_accounts a ON a.id = m.account_id
+WHERE g.id = $1
+  AND m.organization_id = $2
+  AND m.membership_status = 'active'
+  AND a.status = 'active'
+`
+
+type GetEmployeeAccessByIDParams struct {
+	AccessID       pgtype.UUID `json:"accessId"`
+	OrganizationID pgtype.UUID `json:"organizationId"`
+}
+
+type GetEmployeeAccessByIDRow struct {
+	AccessID         pgtype.UUID `json:"accessId"`
+	MembershipID     pgtype.UUID `json:"membershipId"`
+	AccountID        pgtype.UUID `json:"accountId"`
+	FullName         string      `json:"fullName"`
+	Email            string      `json:"email"`
+	RoleTemplate     string      `json:"roleTemplate"`
+	ScopeType        string      `json:"scopeType"`
+	ScopeID          pgtype.UUID `json:"scopeId"`
+	MembershipStatus string      `json:"membershipStatus"`
+}
+
+func (q *Queries) GetEmployeeAccessByID(ctx context.Context, arg GetEmployeeAccessByIDParams) (GetEmployeeAccessByIDRow, error) {
+	row := q.db.QueryRow(ctx, getEmployeeAccessByID, arg.AccessID, arg.OrganizationID)
+	var i GetEmployeeAccessByIDRow
+	err := row.Scan(
+		&i.AccessID,
+		&i.MembershipID,
+		&i.AccountID,
+		&i.FullName,
+		&i.Email,
+		&i.RoleTemplate,
+		&i.ScopeType,
+		&i.ScopeID,
+		&i.MembershipStatus,
+	)
+	return i, err
+}
+
 const getEmployeeInviteByID = `-- name: GetEmployeeInviteByID :one
 SELECT id, organization_id, full_name, email, role_template, scope_type, scope_id, status, invite_token, expires_at, sent_at, opened_at, accepted_at, revoked_at, account_id, created_by_account_id, created_at, updated_at
 FROM auth_employee_invites
@@ -191,6 +324,99 @@ func (q *Queries) GetEmployeeInviteByToken(ctx context.Context, inviteToken *str
 		&i.OrganizationLaunchState,
 	)
 	return i, err
+}
+
+const listEmployeeAccessRows = `-- name: ListEmployeeAccessRows :many
+SELECT
+    g.id AS access_id,
+    m.id AS membership_id,
+    a.id AS account_id,
+    a.full_name,
+    a.email,
+    g.role_template,
+    g.scope_type,
+    g.scope_id,
+    m.membership_status
+FROM auth_scoped_grants g
+JOIN auth_memberships m ON m.id = g.membership_id
+JOIN auth_accounts a ON a.id = m.account_id
+WHERE m.organization_id = $1
+  AND m.membership_status = 'active'
+  AND a.status = 'active'
+  AND (
+      $2::text = 'organization'
+      OR (
+          $2::text = 'division'
+          AND (
+              (g.scope_type = 'division' AND g.scope_id = $3)
+              OR (
+                  g.scope_type = 'unit'
+                  AND EXISTS (
+                      SELECT 1
+                      FROM auth_units u
+                      WHERE u.id = g.scope_id
+                        AND u.organization_id = m.organization_id
+                        AND u.division_id = $3
+                        AND u.status = 'active'
+                  )
+              )
+          )
+      )
+      OR (
+          $2::text = 'unit'
+          AND g.scope_type = 'unit'
+          AND g.scope_id = $3
+      )
+  )
+ORDER BY a.full_name ASC, a.email ASC, g.created_at ASC
+`
+
+type ListEmployeeAccessRowsParams struct {
+	OrganizationID pgtype.UUID `json:"organizationId"`
+	ViewScopeType  string      `json:"viewScopeType"`
+	ViewScopeID    pgtype.UUID `json:"viewScopeId"`
+}
+
+type ListEmployeeAccessRowsRow struct {
+	AccessID         pgtype.UUID `json:"accessId"`
+	MembershipID     pgtype.UUID `json:"membershipId"`
+	AccountID        pgtype.UUID `json:"accountId"`
+	FullName         string      `json:"fullName"`
+	Email            string      `json:"email"`
+	RoleTemplate     string      `json:"roleTemplate"`
+	ScopeType        string      `json:"scopeType"`
+	ScopeID          pgtype.UUID `json:"scopeId"`
+	MembershipStatus string      `json:"membershipStatus"`
+}
+
+func (q *Queries) ListEmployeeAccessRows(ctx context.Context, arg ListEmployeeAccessRowsParams) ([]ListEmployeeAccessRowsRow, error) {
+	rows, err := q.db.Query(ctx, listEmployeeAccessRows, arg.OrganizationID, arg.ViewScopeType, arg.ViewScopeID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListEmployeeAccessRowsRow{}
+	for rows.Next() {
+		var i ListEmployeeAccessRowsRow
+		if err := rows.Scan(
+			&i.AccessID,
+			&i.MembershipID,
+			&i.AccountID,
+			&i.FullName,
+			&i.Email,
+			&i.RoleTemplate,
+			&i.ScopeType,
+			&i.ScopeID,
+			&i.MembershipStatus,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listEmployeeInvitesByOrganization = `-- name: ListEmployeeInvitesByOrganization :many
@@ -457,6 +683,74 @@ func (q *Queries) UpdateAuthAccountPassword(ctx context.Context, arg UpdateAuthA
 		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateEmployeeAccess = `-- name: UpdateEmployeeAccess :one
+UPDATE auth_scoped_grants g
+SET
+    role_template = $1,
+    scope_type = $2,
+    scope_id = $3
+FROM auth_memberships m
+JOIN auth_accounts a ON a.id = m.account_id
+WHERE g.id = $4
+  AND g.membership_id = m.id
+  AND m.organization_id = $5
+  AND m.membership_status = 'active'
+  AND a.status = 'active'
+RETURNING
+    g.id AS access_id,
+    m.id AS membership_id,
+    a.id AS account_id,
+    a.full_name,
+    a.email,
+    g.role_template,
+    g.scope_type,
+    g.scope_id,
+    m.membership_status
+`
+
+type UpdateEmployeeAccessParams struct {
+	RoleTemplate   string      `json:"roleTemplate"`
+	ScopeType      string      `json:"scopeType"`
+	ScopeID        pgtype.UUID `json:"scopeId"`
+	AccessID       pgtype.UUID `json:"accessId"`
+	OrganizationID pgtype.UUID `json:"organizationId"`
+}
+
+type UpdateEmployeeAccessRow struct {
+	AccessID         pgtype.UUID `json:"accessId"`
+	MembershipID     pgtype.UUID `json:"membershipId"`
+	AccountID        pgtype.UUID `json:"accountId"`
+	FullName         string      `json:"fullName"`
+	Email            string      `json:"email"`
+	RoleTemplate     string      `json:"roleTemplate"`
+	ScopeType        string      `json:"scopeType"`
+	ScopeID          pgtype.UUID `json:"scopeId"`
+	MembershipStatus string      `json:"membershipStatus"`
+}
+
+func (q *Queries) UpdateEmployeeAccess(ctx context.Context, arg UpdateEmployeeAccessParams) (UpdateEmployeeAccessRow, error) {
+	row := q.db.QueryRow(ctx, updateEmployeeAccess,
+		arg.RoleTemplate,
+		arg.ScopeType,
+		arg.ScopeID,
+		arg.AccessID,
+		arg.OrganizationID,
+	)
+	var i UpdateEmployeeAccessRow
+	err := row.Scan(
+		&i.AccessID,
+		&i.MembershipID,
+		&i.AccountID,
+		&i.FullName,
+		&i.Email,
+		&i.RoleTemplate,
+		&i.ScopeType,
+		&i.ScopeID,
+		&i.MembershipStatus,
 	)
 	return i, err
 }

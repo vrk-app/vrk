@@ -115,6 +115,12 @@ type CreateEmployeeInviteRequest struct {
 	ExpiresAt    string `json:"expiresAt"`
 }
 
+type UpdateEmployeeAccessRequest struct {
+	RoleTemplate string `json:"roleTemplate"`
+	ScopeType    string `json:"scopeType"`
+	ScopeID      string `json:"scopeId"`
+}
+
 type EmployeeInviteResponse struct {
 	ID           string  `json:"id"`
 	FullName     string  `json:"fullName"`
@@ -131,6 +137,19 @@ type EmployeeInviteResponse struct {
 	OpenedAt     *string `json:"openedAt,omitempty"`
 	AcceptedAt   *string `json:"acceptedAt,omitempty"`
 	RevokedAt    *string `json:"revokedAt,omitempty"`
+}
+
+type EmployeeAccessResponse struct {
+	AccessID         string `json:"accessId"`
+	MembershipID     string `json:"membershipId"`
+	AccountID        string `json:"accountId"`
+	FullName         string `json:"fullName"`
+	Email            string `json:"email"`
+	RoleTemplate     string `json:"roleTemplate"`
+	ScopeType        string `json:"scopeType"`
+	ScopeID          string `json:"scopeId"`
+	ScopeLabel       string `json:"scopeLabel"`
+	MembershipStatus string `json:"membershipStatus"`
 }
 
 type PublicInviteInspectionResponse struct {
@@ -169,6 +188,8 @@ type SessionWorkspaceResponse struct {
 	LandingSubtitle          string `json:"landingSubtitle"`
 	LandingPath              string `json:"landingPath"`
 	CanManageEmployeeInvites bool   `json:"canManageEmployeeInvites"`
+	CanViewEmployees         bool   `json:"canViewEmployees"`
+	CanManageEmployees       bool   `json:"canManageEmployees"`
 }
 
 type SessionOrganizationResponse struct {

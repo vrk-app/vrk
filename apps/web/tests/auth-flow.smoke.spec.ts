@@ -17,15 +17,29 @@ function uniqueEmployee(seed: string) {
   };
 }
 
+function uniqueUnitHead(seed: string) {
+  return {
+    fullName: `Сергей Лебедев ${seed}`,
+    email: `unit-head-${seed}@vrk.local`,
+    password: `stage03-unit-head-${seed}`,
+  };
+}
+
 async function getSessionCookie(page: Page) {
   const cookies = await page.context().cookies();
   return cookies.find((cookie) => cookie.name === "vrk_session");
 }
 
-async function countWorkspaceHints(page: Page) {
-  return page.evaluate(
-    () => Object.keys(window.localStorage).filter((key) => key.startsWith("vrk:last-workspace:")).length,
-  );
+async function hasWorkspaceHintForEmail(page: Page, email: string) {
+  return page.evaluate(async (value) => {
+    const normalizedEmail = value.trim().toLowerCase();
+    const digest = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(normalizedEmail));
+    const emailHash = Array.from(new Uint8Array(digest))
+      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .join("");
+
+    return window.localStorage.getItem(`vrk:last-workspace:${emailHash}`) !== null;
+  }, email);
 }
 
 async function selectFieldOption(page: Page, fieldLabel: string | RegExp, optionName: string | RegExp) {
@@ -38,6 +52,7 @@ test.describe("stage 03 first-admin bootstrap", () => {
     const seed = Date.now().toString();
     const admin = uniqueAdmin(seed);
     const employee = uniqueEmployee(seed);
+    const unitHead = uniqueUnitHead(seed);
 
     await page.goto("/register");
 
@@ -59,7 +74,7 @@ test.describe("stage 03 first-admin bootstrap", () => {
 
     await expect(page).toHaveURL(/\/company$/);
     await expect(page.getByRole("heading", { level: 1, name: admin.organizationName })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 2, name: "Пригласить сотрудника" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "Сотрудники" })).toBeVisible();
 
     await page.getByLabel("Краткое наименование").fill("ВРК Тест");
     await page.getByLabel("ИНН").fill("1234567890");
@@ -85,6 +100,42 @@ test.describe("stage 03 first-admin bootstrap", () => {
     await expect(page.getByText(admin.adminName, { exact: true })).toBeVisible();
     await expect(page.getByTestId("scope-graph").getByText("Северный филиал")).toBeVisible();
     await expect(page.getByTestId("scope-graph").getByText("Юнит 01")).toBeVisible();
+
+    await page.getByRole("tab", { name: "Сотрудники" }).click();
+    await expect(page.getByRole("heading", { level: 2, name: "Сотрудники и доступ" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Пригласить сотрудника" })).toBeVisible();
+
+    await page.getByLabel("Имя сотрудника").fill(unitHead.fullName);
+    await page.getByLabel("Email приглашения").fill(unitHead.email);
+    await selectFieldOption(page, "Роль доступа", "Руководитель юнита");
+    await selectFieldOption(page, "Уровень доступа", "Юнит");
+    await selectFieldOption(page, "Объект доступа", "Юнит 01");
+    await page.getByRole("button", { name: "Создать черновик приглашения" }).click();
+    await page.getByRole("button", { name: "Отправить" }).first().click();
+
+    const unitHeadInvitePath = await page.getByTestId("employee-invite-path").first().textContent();
+    expect(unitHeadInvitePath).toContain("/register/");
+
+    await page.goto(unitHeadInvitePath!);
+    await page.getByLabel(/^Пароль$/).fill(unitHead.password);
+    await page.getByLabel("Повторите пароль").fill(unitHead.password);
+    await page.getByRole("button", { name: "Подключиться" }).click();
+
+    await expect(page).toHaveURL(/\/company$/);
+    await expect(page.getByRole("heading", { level: 1, name: "Юнит 01" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "Сотрудники" })).toBeVisible();
+    await page.getByRole("tab", { name: "Сотрудники" }).click();
+    await expect(page.getByRole("heading", { level: 2, name: "Сотрудники и доступ" })).toBeVisible();
+    await expect(page.getByText(unitHead.email)).toBeVisible();
+    await expect(page.getByText("Пригласить сотрудника")).toHaveCount(0);
+
+    await page.goto("/login?logout=1");
+    await page.getByLabel("Корпоративная почта").fill(admin.email);
+    await page.getByLabel(/^Пароль$/).fill(admin.password);
+    await page.getByRole("button", { name: "Войти" }).click();
+
+    await expect(page).toHaveURL(/\/company$/);
+    await page.getByRole("tab", { name: "Сотрудники" }).click();
     await expect(page.getByRole("heading", { level: 2, name: "Пригласить сотрудника" })).toBeVisible();
 
     await page.getByLabel("Имя сотрудника").fill(employee.fullName);
@@ -113,6 +164,7 @@ test.describe("stage 03 first-admin bootstrap", () => {
     await expect(page.getByTestId("scope-graph").getByText("Юнит 01")).toBeVisible();
     await expect(page.getByText("Северный филиал")).toHaveCount(0);
     await expect(page.getByText("Пригласить сотрудника")).toHaveCount(0);
+    await expect(page.getByRole("tab", { name: "Сотрудники" })).toHaveCount(0);
 
     await page.goto("/login?logout=1");
     await page.getByLabel("Корпоративная почта").fill(employee.email);
@@ -122,7 +174,8 @@ test.describe("stage 03 first-admin bootstrap", () => {
     await expect(page).toHaveURL(/\/company$/);
     await expect(page.getByRole("heading", { level: 1, name: "Юнит 01" })).toBeVisible();
     await expect(page.getByText("Северный филиал")).toHaveCount(0);
-    await expect.poll(() => countWorkspaceHints(page)).toBe(1);
+    await expect(page.getByRole("tab", { name: "Сотрудники" })).toHaveCount(0);
+    await expect.poll(() => hasWorkspaceHintForEmail(page, employee.email)).toBe(true);
     expect((await getSessionCookie(page))?.expires).toBeGreaterThan(Math.floor(Date.now() / 1000));
 
     await page.goto("/login?logout=1");
@@ -135,7 +188,7 @@ test.describe("stage 03 first-admin bootstrap", () => {
 
     await expect(page).toHaveURL(/\/company$/);
     await expect(page.getByRole("heading", { level: 1, name: "Юнит 01" })).toBeVisible();
-    await expect.poll(() => countWorkspaceHints(page)).toBe(0);
+    await expect.poll(() => hasWorkspaceHintForEmail(page, employee.email)).toBe(false);
     expect((await getSessionCookie(page))?.expires).toBe(-1);
 
     await page.goto("/login?logout=1");
@@ -148,6 +201,7 @@ test.describe("stage 03 first-admin bootstrap", () => {
 
     await expect(page).toHaveURL(/\/company$/);
     await expect(page.getByRole("heading", { level: 1, name: admin.organizationName })).toBeVisible();
+    await page.getByRole("tab", { name: "Сотрудники" }).click();
     await expect(page.getByText("Принято").first()).toBeVisible();
 
     if (employeeInvitePath) {

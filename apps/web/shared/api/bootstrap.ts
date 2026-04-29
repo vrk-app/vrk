@@ -12,7 +12,13 @@ export type RoleTemplate =
   | "unit_operator"
   | "auditor";
 
-export type Capability = "manage_structure" | "manage_access" | "manage_contracts" | "manage_equipment";
+export type Capability =
+  | "manage_structure"
+  | "manage_access"
+  | "manage_contracts"
+  | "manage_equipment"
+  | "view_employees"
+  | "manage_employees";
 
 export const roleTemplateLabels: Record<RoleTemplate, string> = {
   organization_admin: "Администратор организации",
@@ -35,13 +41,20 @@ export const roleScopeOptions: Record<RoleTemplate, ScopeType[]> = {
 };
 
 const roleCapabilities: Record<RoleTemplate, Capability[]> = {
-  organization_admin: ["manage_structure", "manage_access", "manage_contracts", "manage_equipment"],
-  organization_head: [],
-  division_head: [],
+  organization_admin: [
+    "manage_structure",
+    "manage_access",
+    "manage_contracts",
+    "manage_equipment",
+    "view_employees",
+    "manage_employees",
+  ],
+  organization_head: ["view_employees"],
+  division_head: ["view_employees"],
   division_operator: [],
-  unit_head: [],
+  unit_head: ["view_employees"],
   unit_operator: [],
-  auditor: [],
+  auditor: ["view_employees"],
 };
 
 export function isRoleTemplate(value: string): value is RoleTemplate {
@@ -133,6 +146,25 @@ export type EmployeeInviteResponse = {
   openedAt?: string;
   acceptedAt?: string;
   revokedAt?: string;
+};
+
+export type UpdateEmployeeAccessPayload = {
+  roleTemplate: string;
+  scopeType: ScopeType;
+  scopeId: string;
+};
+
+export type EmployeeAccessResponse = {
+  accessId: string;
+  membershipId: string;
+  accountId: string;
+  fullName: string;
+  email: string;
+  roleTemplate: string;
+  scopeType: ScopeType;
+  scopeId: string;
+  scopeLabel: string;
+  membershipStatus: string;
 };
 
 export type CompanyProfilePayload = {
@@ -249,6 +281,8 @@ export type SessionSummaryResponse = {
     landingSubtitle: string;
     landingPath: string;
     canManageEmployeeInvites: boolean;
+    canViewEmployees: boolean;
+    canManageEmployees: boolean;
   };
   divisions: Array<{
     id: string;

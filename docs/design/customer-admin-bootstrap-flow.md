@@ -134,22 +134,27 @@ flowchart LR
 
 Второй живой Stage 03 slice не создает новый invite route family, а расширяет тот же entry path:
 
-- organization admin завершает bootstrap и остается на `/company`, где получает people/access block для employee invite lifecycle;
+- organization admin завершает bootstrap и остается на `/company`, где четвертая вкладка `Сотрудники` объединяет активный employee registry и admin-only employee invite lifecycle;
 - employee invite выдается из `/company`, а одноразовая ссылка снова ведет в `/register/[token]`;
 - после employee acceptance и последующего login тот же `/company` route становится scope-aware landing:
-  - organization scope показывает полный org graph и invite management;
-  - division scope показывает только свое поддерево;
-  - unit scope показывает только один юнит без расширения вверх;
+  - organization scope показывает полный org graph и, при `view_employees`, вкладку `Сотрудники`;
+  - division scope показывает только свое поддерево и read-only employees registry для `division_head` / scoped `auditor`;
+  - unit scope показывает только один юнит без расширения вверх и read-only employees registry для `unit_head` / scoped `auditor`;
+  - `division_operator` и `unit_operator` не получают вкладку `Сотрудники`;
+- edit/deactivate controls и приглашения остаются только у active customer `organization_admin`;
 - replay, expired и revoked employee links возвращают пользователя в состояние `Одноразовая ссылка больше не активна`, а не в ложный success flow.
 
 ```mermaid
 flowchart LR
-    A["/company<br/>organization admin"] --> B["Create draft"]
-    B --> C["Send employee invite"]
-    C --> D["/register/[token]<br/>employee accept"]
-    D --> E["/company<br/>scoped landing"]
-    E --> F["/login<br/>restore same contour"]
-    D --> G["inactive link state<br/>for replay / expired / revoked"]
+    A["/company<br/>tabs: profile / divisions / units / employees"] --> B["Employees tab"]
+    B --> C["Active employee registry<br/>scoped by current grant"]
+    B --> D["EmployeeInviteManager<br/>organization_admin only"]
+    D --> E["Create draft"]
+    E --> F["Send employee invite"]
+    F --> G["/register/[token]<br/>employee accept"]
+    G --> H["/company<br/>scoped landing"]
+    H --> I["/login<br/>restore same contour"]
+    G --> J["inactive link state<br/>for replay / expired / revoked"]
 ```
 
 ### Реализованный route contour для slice-003
