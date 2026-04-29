@@ -924,3 +924,14 @@
   - backend login with printed admin email/password returns organization workspace with 3 divisions and 9 units;
   - DB marker audit confirms `contains_password = f`.
 - Raw proof saved under `raw/local-dev-seed-*`.
+
+### 2026-04-29T11:05:00+03:00
+
+- Found Incubator-specific protected API issue while promoting the dev seed flow: Yandex Serverless Container public endpoints intercept `Authorization: Bearer ...` before the request reaches the backend.
+- Added deployment-safe application session header support:
+  - backend accepts `X-VRK-Session-Token` alongside the existing `Authorization: Bearer` path;
+  - web server proxies and server-side API clients use `X-VRK-Session-Token`;
+  - `scripts/dev_seed.py` uses `X-VRK-Session-Token` for session-authenticated seed API calls.
+- Synced runtime/deployment docs:
+  - `docs/architecture/platform-runtime-baseline.md`;
+  - `docs/architecture/yandex-cloud-incubator-deployment.md`.

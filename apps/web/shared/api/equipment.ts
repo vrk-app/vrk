@@ -1,4 +1,5 @@
 import { fetchBackend } from "./backend";
+import { SESSION_TOKEN_HEADER_NAME } from "./bootstrap";
 
 export type RegistryStatus = "active" | "inactive" | "retired";
 export type MeasuringInstrumentPlacement = "standalone" | "built_in";
@@ -108,7 +109,7 @@ export type StandardRecord = {
 
 function sessionHeaders(sessionToken: string) {
   return {
-    Authorization: `Bearer ${sessionToken}`,
+    [SESSION_TOKEN_HEADER_NAME]: sessionToken,
   };
 }
 

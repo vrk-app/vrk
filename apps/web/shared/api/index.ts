@@ -16,6 +16,7 @@ export {
   resolveSessionLandingPath,
   sessionHasCapability,
   SESSION_COOKIE_NAME,
+  SESSION_TOKEN_HEADER_NAME,
 } from "./bootstrap";
 export { parseApiResponse } from "./client-envelope";
 export type {

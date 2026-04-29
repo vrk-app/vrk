@@ -1,7 +1,11 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { getInternalApiBaseUrl } from "@/shared/api/backend";
-import { SESSION_COOKIE_NAME, type SessionSummaryResponse } from "@/shared/api";
+import {
+  SESSION_COOKIE_NAME,
+  SESSION_TOKEN_HEADER_NAME,
+  type SessionSummaryResponse,
+} from "@/shared/api";
 import { backendErrorResponse, proxySessionBackend } from "@/shared/api/route-proxy";
 
 export async function GET() {
@@ -22,7 +26,7 @@ export async function DELETE() {
       method: "DELETE",
       cache: "no-store",
       headers: {
-        Authorization: `Bearer ${token}`,
+        [SESSION_TOKEN_HEADER_NAME]: token,
       },
     });
 

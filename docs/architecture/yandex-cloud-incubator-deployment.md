@@ -82,6 +82,8 @@ flowchart LR
 
 The workflow is intentionally ordered so migrations complete before the backend revision is deployed, and the web revision is deployed only after the backend revision succeeds. The web container receives `INTERNAL_API_BASE_URL` and `NEXT_PUBLIC_API_BASE_URL` from `VRK_BACKEND_URL`.
 
+For session-authenticated backend calls in this Serverless Container topology, prefer `X-VRK-Session-Token` over the standard `Authorization` header. The public Yandex endpoint can reserve `Authorization` for cloud invocation auth before the request reaches the container. The backend remains backward-compatible with `Authorization: Bearer <token>` for local Compose and direct backend tests, while the web server proxy and dev seed use `X-VRK-Session-Token` for Incubator runtime calls.
+
 ## Workflows
 
 - `.github/workflows/platform-baseline.yml` runs repo-level CI on `main`, `Incubator`, and pull requests.
@@ -91,5 +93,6 @@ The workflow is intentionally ordered so migrations complete before the backend 
 ## Operational Notes
 
 - Direct public invocation is enabled for both incubator containers. This keeps the first incubator pipeline simple and cheap, but backend URL access should move behind API Gateway/custom domains before production hardening.
+- The backend accepts both `Authorization: Bearer <token>` and `X-VRK-Session-Token: <token>` for application sessions. Incubator web-to-backend calls use the latter to avoid cloud-front interception of the standard authorization header.
 - The PostgreSQL host has a public IP so GitHub Actions can run migrations. If the database is later made private, the migration step must move into a Yandex-side runner or a dedicated migration container flow.
 - The VPC network currently lives in the `ncfg` folder only because the cloud-level VPC network quota blocked a new `vrk` network. If quota is increased, create `vrk-network` / `vrk-subnet-a`, move `vrk-db`, and update this document.
