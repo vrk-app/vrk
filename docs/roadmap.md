@@ -343,13 +343,14 @@
 
 ### Цель
 
-Реализовать invite-based identity, scoped access и базовый контур master data, на котором стоит весь MVP: активация первого администратора, организация/подразделение/юнит, сотрудники и приглашения, договоры, оборудование, СИ и эталоны.
+Реализовать invite-based identity, scoped access и базовый контур master data, на котором стоит весь MVP: активация первого администратора, постоянный UI управления организацией/подразделениями/юнитами, сотрудники и приглашения, договоры, оборудование, СИ и эталоны.
 
 ### Основные результаты
 
 - activation flow:
   - платформенный админ создает заготовку организации и отправляет first-admin invite по email
-  - первый администратор принимает одноразовое приглашение, задает пароль и проходит launch wizard
+  - первый администратор принимает одноразовое приглашение, задает пароль и попадает в рабочий `/company` contour организации
+  - первичная пустая или частично заполненная организация не блокируется отдельным wizard: настройка оргструктуры выполняется через тот же постоянный UI, которым администратор пользуется позже
   - повторная активация тем же invite token отклоняется и не создает второй session/membership baseline
   - ручная раздача паролей не используется как основной сценарий
 - auth flow:
@@ -359,13 +360,17 @@
   - role-aware access
 - org model:
   - customer / contractor organizations
-  - organization profile с разделением на launch-critical и optional requisites
-  - subdivisions c типом подразделения
-  - units как primary operational scope для оборудования
+  - organization profile с разделением на launch-critical и optional requisites; поле `Тип` в профиле хранит ОПФ `ООО` / `АО` / `ПАО`, а legacy `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО` принимаются только как compatibility input и нормализуются
+  - divisions без пользовательского selector-а типа; storage compatibility type остается скрытым internal default
+  - units как primary operational scope для оборудования с selector-ом типа `ВРД` / `ВРЗ` / `ВУ` / `ВРП`
+  - persistent organization-structure management UI для создания первого и последующих подразделений/филиалов и юнитов в любое время
+  - division/unit create/edit/archive flows доступны только organization-scope администраторам; narrower scopes остаются read-only в пределах своего subtree
 - people and access model:
   - user account, organization membership и scoped grants разделены
-  - grant scope: organization / subdivision / unit
-  - role templates и additive inheritance без deny-layer в MVP
+  - grant scope: organization / division / unit
+  - canonical role templates: `organization_admin`, `organization_head`, `division_head`, `division_operator`, `unit_head`, `unit_operator`, `auditor`
+  - role/scope compatibility enforced: organization roles only on organization scope, division roles only on division scope, unit roles only on unit scope, `auditor` on any scope
+  - Stage 03 v1 mutate capabilities остаются только у `organization_admin`; остальные роли получают scope-aware read-only visibility и готовую capability-map для следующих stage-ов
   - employee invitation statuses: draft / sent / opened / accepted / expired / revoked
 - contractor/customer relation layer
 - contracts registry
@@ -378,23 +383,24 @@
 - archive baseline для организаций, подразделений, юнитов, пользователей, договоров, оборудования, СИ и эталонов
 - audit baseline для auth + CRUD changes
 - web UI:
-  - route contour `/register -> /register/{token} -> /company/setup -> /company`
-  - launch wizard и company profile screens
-  - subdivision / unit selectors и scoped singular-session landing без multi-workspace picker
+  - route contour `/register -> /register/{token} -> /company`
+  - company profile screens и постоянный organization-structure management surface без обязательного первичного wizard
+  - division / unit selectors и scoped singular-session landing без multi-workspace picker
   - people, memberships, invites и access grant screens
   - contracts lists, cards and routing surfaces на публичном `/contracts` contour
   - equipment / measuring instrument / standard lists and cards на одном публичном `/equipment` contour с query-backed tabs и explicit archive visibility state
 
 ### Что обязательно доказать
 
-- company onboarding shell из Stage 02 backed реальной org/subdivision/unit моделью
+- company onboarding shell из Stage 02 backed реальной org/division/unit моделью и превращен в постоянный management surface
 - анонимный `/company` shell из Stage 02 сохраняется как truthful public contour до появления сессии
 - first-admin activation начинается по invite link, а не с заранее выданного логина/пароля
-- после invite acceptance пользователь получает session и попадает в `/company/setup`, а после завершения wizard — в `/company`
-- launch wizard проводит администратора через организацию, первое подразделение, первый юнит, приглашения и первое оборудование
+- после invite acceptance пользователь получает session и попадает в `/company`, где видит состояние организации и доступные действия по управлению профилем, подразделениями и юнитами
+- администратор может создать первый и последующие подразделения/филиалы и юниты из постоянного `/company` UI, а не только во время первичного запуска
 - юнит может существовать напрямую под организацией без обязательного промежуточного подразделения
+- создание scoped employee invite не зависит от "завершенного wizard"; organization-scope invite доступен active organization admin, а division/unit-scope invite требует существующий visible target scope
 - user account, membership и scoped grants существуют как отдельные сущности
-- права уровня organization наследуются вниз на subdivision и unit; права subdivision наследуются на дочерние unit; deny-layer в MVP отсутствует
+- права уровня organization наследуются вниз на division и unit; права division наследуются на дочерние unit; deny-layer в MVP отсутствует
 - пользователь после принятия приглашения видит только свой контур доступа
 - invitation lifecycle и статусы видны администратору и доказаны end-to-end
 - login/session restore возвращает contour, привязанный к explicit active membership/grant: customer contour на `/company`, active contractor contour на `/contracts`
@@ -425,7 +431,7 @@
 
 ### Exit gate
 
-- customer admin активируется по invite, завершает launch wizard и управляет организацией, подразделениями и юнитами
+- customer admin активируется по invite и управляет организацией, подразделениями и юнитами из постоянного `/company` UI, включая first-empty state и повторное добавление структурных узлов
 - сотрудники приглашаются по email и получают только scoped access своего уровня
 - contracts + equipment + measuring instruments + standards CRUD, journal и archive flows работают end-to-end
 - contractor user видит только свой релевантный контур в рамках договоров и выданных грантов

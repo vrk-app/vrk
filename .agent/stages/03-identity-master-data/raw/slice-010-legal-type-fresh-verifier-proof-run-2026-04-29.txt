@@ -1,0 +1,144 @@
+{
+  "seed": "20260429017",
+  "backendBase": "http://127.0.0.1:18080",
+  "webBase": "http://127.0.0.1:3100",
+  "webActivation": {
+    "organizationId": "21345c4a-0cb6-4e43-90ad-0ad071bf6ec5",
+    "cookieSet": true
+  },
+  "primary": {
+    "organizationId": "1a9e7ce1-8b10-4f00-a3f8-4f2ae4b8566d",
+    "firstSubdivisionId": "64467f7f-421b-424e-a1fa-bd429b9c8b5c",
+    "childUnitId": "ab2fe8e3-cb4b-45dd-9861-407870cfc596",
+    "directUnitId": "2a34d277-06d8-4895-97a1-23dff3b77b6e",
+    "secondSubdivisionId": "2e44df8b-06c5-4e89-91bd-0305d5213987",
+    "archivedUnitId": "fb4d26f7-eb41-4078-935c-d81f7023ffea",
+    "archivedSubdivisionId": "f4c8c8df-3557-4be1-b3d1-80d117965543",
+    "blockingInviteId": "9c978891-02fe-4a15-b2a2-c58f2c3e760c",
+    "blockedSubdivisionArchive": {
+      "success": false,
+      "error": "archive blocked by active references"
+    },
+    "blockedUnitArchive": {
+      "success": false,
+      "error": "archive blocked by active references"
+    },
+    "missingTargetInvite": {
+      "success": false,
+      "error": "invite scope target is invalid"
+    },
+    "archivedUnitInvite": {
+      "success": false,
+      "error": "invite scope target is invalid"
+    },
+    "archivedSubdivisionInvite": {
+      "success": false,
+      "error": "invite scope target is invalid"
+    },
+    "legalFormProof": {
+      "accepted": [
+        "ООО",
+        "АО",
+        "ПАО"
+      ],
+      "legacyAliases": {
+        "ОАО": "ПАО",
+        "ЗАО": "АО",
+        "LLC": "ООО"
+      },
+      "invalidOperationalTypeError": {
+        "success": false,
+        "error": "property type must be ООО, АО, or ПАО"
+      }
+    },
+    "invalidUnitType": {
+      "success": false,
+      "error": "unit type must be ВРД, ВРЗ, ВУ, or ВРП"
+    },
+    "subdivisionScopedSession": {
+      "workspace": {
+        "scopeType": "subdivision",
+        "scopeId": "64467f7f-421b-424e-a1fa-bd429b9c8b5c",
+        "scopeName": "first-edited подразделение 20260429017",
+        "landingTitle": "first-edited подразделение 20260429017",
+        "landingSubtitle": "Доступ ограничен выбранным подразделением и его дочерними юнитами.",
+        "landingPath": "/company",
+        "canManageEmployeeInvites": false
+      },
+      "subdivisionCount": 1,
+      "unitCount": 1,
+      "mutationError": {
+        "success": false,
+        "error": "forbidden"
+      }
+    },
+    "unitScopedSession": {
+      "workspace": {
+        "scopeType": "unit",
+        "scopeId": "ab2fe8e3-cb4b-45dd-9861-407870cfc596",
+        "scopeName": "child-edited юнит 20260429017",
+        "landingTitle": "child-edited юнит 20260429017",
+        "landingSubtitle": "Доступ ограничен выбранным юнитом без расширения вверх по иерархии.",
+        "landingPath": "/company",
+        "canManageEmployeeInvites": false
+      },
+      "subdivisionCount": 0,
+      "unitCount": 1,
+      "mutationError": {
+        "success": false,
+        "error": "forbidden"
+      }
+    }
+  },
+  "emptyOrgInvite": {
+    "organizationId": "537c23a6-8574-46d9-b460-676844b8e4cd",
+    "invite": {
+      "id": "e6479452-8e09-4750-a0b2-68936b5006c3",
+      "fullName": "org-before-structure User",
+      "email": "org-before-structure-20260429017@vrk.local",
+      "roleTemplate": "observer",
+      "scopeType": "organization",
+      "scopeId": "537c23a6-8574-46d9-b460-676844b8e4cd",
+      "scopeLabel": "VRK empty 20260429017",
+      "status": "draft",
+      "expiresAt": "2026-05-06T03:56:56Z"
+    },
+    "currentStructure": {
+      "sessionToken": "93eeafb1-a606-44d2-8476-69926226c2c8",
+      "requiresLaunchWizard": false,
+      "account": {
+        "id": "798ac751-d654-45c7-b672-078811bdb99f",
+        "fullName": "empty Admin",
+        "email": "slice010-empty-admin-20260429017@vrk.local"
+      },
+      "membershipId": "26e2bb2b-59e5-4220-bb88-122e0b98ff3b",
+      "membershipStatus": "active",
+      "organization": {
+        "id": "537c23a6-8574-46d9-b460-676844b8e4cd",
+        "roleTitle": "customer",
+        "name": "VRK empty 20260429017",
+        "launchState": "active"
+      },
+      "grant": {
+        "id": "0e4c3dfb-592a-4995-8b60-09b8df824114",
+        "roleTemplate": "organization_admin",
+        "scopeType": "organization",
+        "scopeId": "537c23a6-8574-46d9-b460-676844b8e4cd"
+      },
+      "workspace": {
+        "scopeType": "organization",
+        "scopeId": "537c23a6-8574-46d9-b460-676844b8e4cd",
+        "scopeName": "VRK empty 20260429017",
+        "landingTitle": "VRK empty 20260429017",
+        "landingSubtitle": "Администратор организации видит полный org graph и может управлять приглашениями сотрудников.",
+        "landingPath": "/company",
+        "canManageEmployeeInvites": true
+      },
+      "subdivisions": [],
+      "units": []
+    }
+  },
+  "status": "PASS"
+}
+
+EXIT_CODE=0

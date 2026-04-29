@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { DatabaseZap, FileSpreadsheet, Wrench } from "lucide-react";
-import { SESSION_COOKIE_NAME, equipmentShell } from "@/shared/api";
+import { SESSION_COOKIE_NAME, equipmentShell, sessionHasCapability } from "@/shared/api";
 import { fetchSessionSummary } from "@/shared/api/session-server";
 import { Badge, Button, Card } from "@/shared/ui";
 import { EquipmentRegistryWorkspace } from "@/features/Stage03Equipment";
@@ -30,8 +30,8 @@ function AnonymousEquipmentShell() {
   return (
     <>
       <PageHeader
-        actions={<Badge tone="interactive">Public route: /equipment</Badge>}
-        subtitle="Публичный contour без сессии остается truthful shell: он показывает раздельные registry entry points, но не раскрывает live scoped records."
+        actions={<Badge tone="interactive">Открытый просмотр</Badge>}
+        subtitle="Войдите, чтобы открыть рабочие записи оборудования, средств измерения и эталонов."
         title="Оборудование, СИ и эталоны"
       />
 
@@ -65,37 +65,30 @@ function AnonymousEquipmentShell() {
             <Wrench aria-hidden="true" className="size-6" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-semibold text-foreground">Анонимный contour не выдает scoped registry access</h2>
+            <h2 className="text-xl font-semibold text-foreground">Рабочие реестры доступны после входа</h2>
             <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-              Live registry surface доступен только после invite/session activation. Без сессии `/equipment` остается
-              честным shell без create/list contracts.
+              Данные показываются только пользователям с выданным доступом.
             </p>
           </div>
           <div className="flex flex-wrap justify-center gap-3">
-            <Button disabled>Открыть equipment registry</Button>
+            <Button disabled>Открыть реестр</Button>
             <Button disabled variant="secondary">
-              Переключить registry tab
+              Переключить раздел
             </Button>
           </div>
         </Card>
 
         <Card className="gap-4" padding="lg">
           <div className="space-y-2">
-            <h2 className="text-lg font-semibold text-foreground">Почему contour разделен на три registry tabs</h2>
+            <h2 className="text-lg font-semibold text-foreground">Доступные реестры</h2>
             <p className="text-sm leading-6 text-muted-foreground">
-              Stage 03 держит оборудование, СИ и эталоны как отдельные сущности, поэтому даже public shell заранее
-              показывает три entry points, а не одну mega-form.
+              В разделе собраны оборудование, средства измерения и эталоны.
             </p>
           </div>
           <div className="grid gap-3">
             {equipmentShell.boundaries.map((boundary) => (
               <div className="rounded-[var(--radius-lg)] border border-border bg-card px-4 py-3" key={boundary.label}>
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-sm font-semibold text-foreground">{boundary.label}</p>
-                  <Badge size="sm" tone={boundary.tone}>
-                    {boundary.tone}
-                  </Badge>
-                </div>
+                <p className="text-sm font-semibold text-foreground">{boundary.label}</p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{boundary.detail}</p>
               </div>
             ))}
@@ -122,17 +115,17 @@ export default async function EquipmentPage({ searchParams }: EquipmentPageProps
     return (
       <>
         <PageHeader
-          actions={<Badge tone="warning">Contractor workspace</Badge>}
-          subtitle="Equipment / MI / standards registry остается customer-side contour Stage 03. Contractor workspace продолжает жить на `/contracts`."
-          title="Оборудование недоступно в текущем workspace"
+          actions={<Badge tone="warning">Доступ подрядчика</Badge>}
+          subtitle="Реестр оборудования ведет заказчик. Для подрядчика рабочим разделом остаются договоры."
+          title="Оборудование недоступно в текущей области"
         />
 
         <Card className="gap-4" padding="lg">
           <div className="space-y-2">
-            <h2 className="text-lg font-semibold text-foreground">Контур не расширяется в contractor workspace</h2>
+            <h2 className="text-lg font-semibold text-foreground">Раздел закрыт для подрядчика</h2>
             <p className="text-sm leading-6 text-muted-foreground">
-              Текущий пользователь авторизован как contractor. Реестр master data не раскрывается за пределами customer
-              contour и не дублирует `/contracts`.
+              Текущий пользователь работает как подрядчик. Данные оборудования заказчика не раскрываются за пределами
+              выданных договоров.
             </p>
           </div>
         </Card>
@@ -142,21 +135,20 @@ export default async function EquipmentPage({ searchParams }: EquipmentPageProps
 
   const activeTab = resolveTab(resolvedSearchParams?.tab);
   const initialShowArchived = resolveArchiveVisibility(resolvedSearchParams?.archived);
-  const canManageRegistry =
-    session.grant?.roleTemplate === "organization_admin" && session.workspace.scopeType === "organization";
+  const canManageRegistry = sessionHasCapability(session, "manage_equipment");
 
   return (
     <>
       <PageHeader
         actions={
           <Badge tone={canManageRegistry ? "interactive" : "warning"}>
-            Stage 03 • {session.workspace.scopeType} scope
+            {canManageRegistry ? "Управление реестрами" : "Только просмотр"}
           </Badge>
         }
-        subtitle={
-          canManageRegistry
-            ? "Под customer session `/equipment` становится live contour с тремя отдельными registry tabs, journal-driven metrology truth и archive-only lifecycle без hard delete."
-            : "Текущий пользователь видит только разрешенный registry contour, journal/archive history в своем scope и не получает broader organization leak или mutate surface."
+          subtitle={
+            canManageRegistry
+            ? "Создавайте записи, ведите журналы операций и переносите неактуальные записи в архив."
+            : "Вам доступны записи, журналы и архив в назначенной области."
         }
         title="Оборудование, средства измерения и эталоны"
       />

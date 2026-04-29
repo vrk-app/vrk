@@ -1,0 +1,58 @@
+Source: .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-29-post-fixer-verifier.md
+Reviewer: post-fixer fresh verifier
+Files reviewed:
+- apps/web/app/(runtime)/company/page.tsx
+- apps/web/app/(runtime)/company/setup/page.tsx
+- apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+- apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx
+- apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx
+- apps/web/app/register/[token]/page.tsx
+- apps/web/shared/ui/InputField.tsx
+- apps/web/shared/ui/SelectField.tsx
+- apps/web/shared/ui/TextareaField.tsx
+- apps/web/shared/ui/Tabs.tsx
+- apps/web/shared/ui/InlineAlert.tsx
+
+## apps/web/app/(runtime)/company/page.tsx
+
+PASS: anonymous and authenticated states use headings, noninteractive disabled controls for unauthenticated preview, and decorative icons are aria-hidden.
+
+## apps/web/app/(runtime)/company/setup/page.tsx
+
+PASS: redirect-only non-canonical route; no UI controls to review.
+
+## apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+PASS: profile/subdivision/unit controls have labels, names, autocomplete/type hints, visible focus through shared fields, empty/read-only/error states, and archive confirmation. Local tabs remain accepted for this bounded slice because they are not filters/pagination and the sprint contract does not require deep-linked subtabs.
+
+## apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx
+
+PASS: invite controls have labels, names, appropriate types, inline async announcements, Intl.DateTimeFormat date rendering, anchor navigation for invite links, decorative icons hidden, and revoke confirmation.
+
+## apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx
+
+PASS: password fields have labels, names, autocomplete, visible focus via InputField, and polite inline error state.
+
+## apps/web/app/register/[token]/page.tsx
+
+PASS: invite page composes semantic copy and activation form; no unlabeled interactive controls found.
+
+## apps/web/shared/ui/InputField.tsx
+
+PASS: htmlFor-bound labels, visible focus-within/focus-visible treatment, password toggle aria-label, decorative icons hidden, and polite errors.
+
+## apps/web/shared/ui/SelectField.tsx
+
+PASS: labelled native and Radix select paths, stable name/value handling, visible focus state, empty/loading options, and decorative icons hidden.
+
+## apps/web/shared/ui/TextareaField.tsx
+
+PASS: htmlFor-bound label, visible focus state, polite error messaging, and counter support.
+
+## apps/web/shared/ui/Tabs.tsx
+
+PASS: tablist/tab roles, keyboard navigation, roving tabIndex, focus-visible state, and decorative tab icons hidden.
+
+## apps/web/shared/ui/InlineAlert.tsx
+
+PASS: status role by default, labelled dismiss button, decorative icons hidden, and break-words handling.

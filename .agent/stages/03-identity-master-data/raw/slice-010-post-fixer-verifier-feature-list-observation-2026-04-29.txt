@@ -1,0 +1,43 @@
+Feature list observation after post-fixer verifier PASS
+Checked at: 2026-04-29T02:53:29Z
+Note: verifier did not intentionally edit feature_list.json; current file now shows slice-010/reopened entries as passed.
+stage03-first-admin-activation: passes=True
+  - docs/roadmap.md
+  - docs/architecture/identity-master-data.md
+  - docs/design/customer-admin-bootstrap-flow.md
+  - docs/architecture/frontend-architecture.md
+  - .agent/stages/03-identity-master-data/stage_spec.md
+  - .agent/stages/03-identity-master-data/sprint_contract.md
+  - .agent/stages/03-identity-master-data/evidence.md
+  - .agent/stages/03-identity-master-data/verdict.json
+  - .agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-proof-run-2026-04-29.txt
+  - .agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-summary-2026-04-29.json
+stage03-org-hierarchy-and-launch-wizard: passes=True
+  - docs/roadmap.md
+  - docs/architecture/identity-master-data.md
+  - docs/design/customer-admin-bootstrap-flow.md
+  - docs/architecture/frontend-architecture.md
+  - .agent/stages/03-identity-master-data/stage_spec.md
+  - .agent/stages/03-identity-master-data/sprint_contract.md
+  - .agent/stages/03-identity-master-data/evidence.md
+  - .agent/stages/03-identity-master-data/verdict.json
+  - .agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-proof-run-2026-04-29.txt
+  - .agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-summary-2026-04-29.json
+  - .agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-doc-alias-audit-2026-04-29.txt
+stage03-slice010-company-org-structure-correction: passes=True
+  - docs/roadmap.md
+  - docs/architecture/identity-master-data.md
+  - docs/design/customer-admin-bootstrap-flow.md
+  - docs/architecture/frontend-architecture.md
+  - .agent/stages/03-identity-master-data/stage_spec.md
+  - .agent/stages/03-identity-master-data/sprint_contract.md
+  - .agent/stages/03-identity-master-data/evidence.md
+  - .agent/stages/03-identity-master-data/verdict.json
+  - .agent/stages/03-identity-master-data/problems.md
+  - .agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-harness-2026-04-29.txt
+  - .agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-proof-run-2026-04-29.txt
+  - .agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-summary-2026-04-29.json
+  - .agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-doc-alias-audit-2026-04-29.txt
+  - .agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-ui-review-2026-04-29.txt
+
+Apr 29 05:50:47 2026 .agent/stages/03-identity-master-data/feature_list.json

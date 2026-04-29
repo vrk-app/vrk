@@ -1,0 +1,44 @@
+Current-target stale subdivision audit (raw historical artifacts intentionally excluded).
+Command scope: canonical docs + current stage/proof files + touched backend/web contracts.
+
+1) Current target docs/stage/proof/code hits for subdivision spellings:
+.agent/stages/03-identity-master-data/evidence.json:36:    "focused stale subdivision terminology audit over current docs/stage/proof artifacts",
+.agent/stages/03-identity-master-data/evidence.json:83:    "division terminology stale subdivision audit: PASS",
+.agent/stages/03-identity-master-data/evidence.json:400:      "stale subdivision terminology audit: PASS",
+.agent/stages/03-identity-master-data/evidence.md:10:Newton later failed the legal-type correction only for documentation drift, and that doc-only gap was fixed. The latest user clarification confirms `division` is the intended API/domain term replacing `subdivision`; the current state is ready for a new fresh verifier after proof/docs/stage artifacts were realigned to `division` without reverting production code.
+.agent/stages/03-identity-master-data/evidence.md:16:  - Kept Russian UI wording `подразделение/филиал` where it is user-facing copy, but removed stale API/contract references to `subdivision`.
+.agent/stages/03-identity-master-data/evidence.md:21:  - focused stale `subdivision` terminology audit over current docs/stage/proof artifacts
+.agent/stages/03-identity-master-data/progress.md:19:  - `organization -> subdivision -> unit`;
+.agent/stages/03-identity-master-data/progress.md:81:  - launch wizard persistence for `organization -> subdivision -> unit` and direct `organization -> unit`;
+.agent/stages/03-identity-master-data/progress.md:92:  - browser smoke covers the subdivision + unit path and replay-safe revisit UX;
+.agent/stages/03-identity-master-data/progress.md:123:  - persisted `organization -> subdivision -> unit` bootstrap path;
+.agent/stages/03-identity-master-data/progress.md:139:  - subdivision scope projects the target subdivision and its child units;
+.agent/stages/03-identity-master-data/progress.md:148:  - direct API proof for organization/subdivision/unit scope, lifecycle coverage, revoke/expire behavior, and replay rejection.
+.agent/stages/03-identity-master-data/progress.md:171:  - fresh direct API proof for pre-launch rejection, lifecycle `draft/sent/opened/accepted/expired/revoked`, organization/subdivision/unit scope enforcement, scoped `/company` landing, login restore, and replay rejection;
+.agent/stages/03-identity-master-data/progress.md:329:  - organization / subdivision / unit scope filtering without broader registry leakage;
+.agent/stages/03-identity-master-data/progress.md:383:  - scoped journal/archive visibility for organization / subdivision / unit contours;
+.agent/stages/03-identity-master-data/progress.md:646:  - organization admin can create first and repeat subdivisions/branches and units;
+.agent/stages/03-identity-master-data/progress.md:647:  - units can live under subdivisions or directly under the organization;
+.agent/stages/03-identity-master-data/progress.md:650:  - scoped subdivision/unit users read only their visible subtree;
+.agent/stages/03-identity-master-data/progress.md:651:  - employee invites no longer depend on completed wizard state, but subdivision/unit target scopes must exist and be visible.
+.agent/stages/03-identity-master-data/progress.md:697:  - `/company` persistent profile/structure APIs create, edit, and archive subdivisions/units;
+.agent/stages/03-identity-master-data/progress.md:698:  - direct org unit and subdivision child unit are both supported;
+.agent/stages/03-identity-master-data/progress.md:701:  - missing/archived subdivision/unit invite targets reject;
+.agent/stages/03-identity-master-data/progress.md:702:  - subdivision/unit scoped users get read-only subtree projections and backend mutations return `403`;
+.agent/stages/03-identity-master-data/progress.md:703:  - organization-scope employee invite works in an active org before any subdivision/unit exists.
+.agent/stages/03-identity-master-data/progress.md:716:  - documented `registeredAddress` as canonical organization address and `address` as subdivision/unit compatibility/display alias;
+.agent/stages/03-identity-master-data/progress.md:752:- Reopened the slice-010 field contract after user correction: the prior PASS still encoded `ВРД` / `ВРЗ` / `ВУ` / `ВРП` as a generic organization/subdivision/unit `type`.
+.agent/stages/03-identity-master-data/progress.md:756:  - subdivision/branch has no user-facing type selector and no longer displays the hidden storage default;
+.agent/stages/03-identity-master-data/progress.md:774:  - targeted proof `PASS` with seed `1777434591`, including legal-form aliases, subdivision without type, unit type validation, scoped read-only projections, and invite target validation;
+.agent/stages/03-identity-master-data/progress.md:789:- Parent cleanup restored `subdivision` terminology in `docs/roadmap.md` and made all three mappings explicit: `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО`.
+.agent/stages/03-identity-master-data/progress.md:813:- Applied the user's clarification that `subdivision` was intentionally renamed to `division`; this is now supported rather than reverted.
+.agent/stages/03-identity-master-data/progress.md:817:  - user-facing Russian copy may still say `подразделение/филиал`, but API/stage contract no longer targets `subdivision`;
+.agent/stages/03-identity-master-data/progress.md:831:- A stale long-running stack on `18080/3100` still returned the old `subdivisions` response shape; proof was rerun successfully against the healthy division-aligned check stack `18180/3110`.
+
+2) Classification:
+- No subdivision hits in current canonical docs docs/roadmap.md, docs/PRD-MVP.md, docs/architecture/identity-master-data.md, docs/architecture/frontend-architecture.md, docs/design/customer-admin-bootstrap-flow.md, or drawio current source.
+- No subdivision hits in proof_slice010_org_structure.py or touched backend/web contract files.
+- Remaining hits are stage evidence/progress text describing the stale-term audit itself or chronological historical session log entries, not current target proof assertions.
+- Latest evidence/progress entries state division is the intentional current API/domain term.
+
+EXIT_CODE=0

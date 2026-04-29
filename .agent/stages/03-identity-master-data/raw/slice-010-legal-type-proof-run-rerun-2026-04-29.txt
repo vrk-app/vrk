@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 763, in <module>
+    main()
+    ~~~~^^
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 726, in main
+    web = accept_first_admin_web("web", email_prefix="slice010-web-admin")
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 259, in accept_first_admin_web
+    ui_field_contract = assert_company_ui_field_contract()
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 183, in assert_company_ui_field_contract
+    assert_true("ОАО" not in workspace_source and "ЗАО" not in workspace_source, "/company source must not expose legacy ОАО/ЗАО options")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 162, in assert_true
+    raise AssertionError(message)
+AssertionError: /company source must not expose legacy ОАО/ЗАО options

@@ -328,8 +328,8 @@ func toResponse(item *Equipment) *EquipmentResponse {
 		Unit: UnitSummary{
 			ID:              item.UnitID,
 			Name:            item.UnitName,
-			SubdivisionID:   item.SubdivisionID,
-			SubdivisionName: item.SubdivisionName,
+			DivisionID:   item.DivisionID,
+			DivisionName: item.DivisionName,
 		},
 		Manufacturer:             item.Manufacturer,
 		Classification:           item.Classification,

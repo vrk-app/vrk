@@ -30,6 +30,16 @@ const LONG_LABEL_FOOTER_ITEMS: SidebarNavProps["footerItems"] = SHELL_FOOTER_ITE
   }),
 );
 
+const MANY_NAV_ITEMS: SidebarNavProps["items"] = Array.from({ length: 4 }).flatMap(
+  (_, groupIndex) =>
+    SHELL_NAV_ITEMS.map((item) => ({
+      ...item,
+      badge: groupIndex === 0 ? item.badge : undefined,
+      key: `${item.key}-${groupIndex + 1}`,
+      label: `${item.label} ${groupIndex + 1}`,
+    })),
+);
+
 function SidebarNavPreview(args: SidebarNavProps) {
   const [collapsed, setCollapsed] = useState(args.collapsed ?? false);
   const [mobileOpen, setMobileOpen] = useState(args.mobileOpen ?? false);
@@ -103,6 +113,13 @@ export const LongLabels: Story = {
     items: LONG_LABEL_ITEMS,
     footerItems: LONG_LABEL_FOOTER_ITEMS,
     activeKey: "requests",
+  },
+};
+
+export const LongNavigation: Story = {
+  args: {
+    items: MANY_NAV_ITEMS,
+    activeKey: "requests-3",
   },
 };
 

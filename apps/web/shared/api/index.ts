@@ -8,12 +8,21 @@ export {
   type BoundaryTone,
   type ShellStep,
 } from "./runtime-shell";
-export { SESSION_COOKIE_NAME } from "./bootstrap";
-export { resolveSessionLandingPath } from "./bootstrap";
+export {
+  isRoleScopeCompatible,
+  roleScopeOptions,
+  roleTemplateLabel,
+  roleTemplateLabels,
+  resolveSessionLandingPath,
+  sessionHasCapability,
+  SESSION_COOKIE_NAME,
+} from "./bootstrap";
 export { parseApiResponse } from "./client-envelope";
 export type {
   ApiEnvelope,
   ApiMeta,
+  Capability,
+  CompanyProfilePayload,
   CreateEmployeeInvitePayload,
   EmployeeInviteResponse,
   InviteInspectionResponse,
@@ -21,7 +30,10 @@ export type {
   OrganizationShellPayload,
   OrganizationShellResponse,
   PublicInviteInspectionResponse,
+  RoleTemplate,
+  ScopeType,
   SessionSummaryResponse,
+  StructureNodePayload,
 } from "./bootstrap";
 export {
   fetchContractRegistry,

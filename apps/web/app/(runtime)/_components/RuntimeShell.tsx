@@ -3,37 +3,34 @@
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { Building2, ClipboardList, LogOut, ShieldCheck, Wrench } from "lucide-react";
+import { Building2, ClipboardList, LogOut, Wrench } from "lucide-react";
 import { AppShell, SidebarNav, TopBar } from "@/widgets/OperatorShell";
 
 const runtimeNavItems = [
   { key: "company", label: "Компания", href: "/company", icon: Building2 },
   { key: "equipment", label: "Оборудование", href: "/equipment", icon: Wrench },
   { key: "contracts", label: "Договоры", href: "/contracts", icon: ClipboardList },
-  { key: "requests", label: "Заявки", href: "/requests", icon: ClipboardList, badge: "Stage 04" },
+  { key: "requests", label: "Заявки", href: "/requests", icon: ClipboardList, badge: "Скоро" },
 ] as const;
 
-const runtimeFooterItems = [
-  { key: "support", label: "Boundary notes", href: "#boundary-notes", icon: ShieldCheck },
-  { key: "logout", label: "Выйти", href: "/login?logout=1", icon: LogOut },
-] as const;
+const runtimeFooterItems = [{ key: "logout", label: "Выйти", href: "/login?logout=1", icon: LogOut }] as const;
 
 const runtimeMetaByPath = {
   "/company": {
     activeKey: "company",
-    breadcrumbs: [{ label: "Runtime shell", href: "/company" }, { label: "Компания" }],
+    breadcrumbs: [{ label: "Рабочая область", href: "/company" }, { label: "Компания" }],
   },
   "/equipment": {
     activeKey: "equipment",
-    breadcrumbs: [{ label: "Runtime shell", href: "/company" }, { label: "Оборудование" }],
+    breadcrumbs: [{ label: "Рабочая область", href: "/company" }, { label: "Оборудование" }],
   },
   "/contracts": {
     activeKey: "contracts",
-    breadcrumbs: [{ label: "Runtime shell", href: "/company" }, { label: "Договоры" }],
+    breadcrumbs: [{ label: "Рабочая область", href: "/company" }, { label: "Договоры" }],
   },
   "/requests": {
     activeKey: "requests",
-    breadcrumbs: [{ label: "Runtime shell", href: "/company" }, { label: "Заявки" }],
+    breadcrumbs: [{ label: "Рабочая область", href: "/company" }, { label: "Заявки" }],
   },
 } as const;
 
@@ -50,7 +47,9 @@ export interface RuntimeShellProps {
   eyebrow?: string;
 }
 
-export function RuntimeShell({ children, eyebrow = "Stage 02 • Runtime shell", viewer }: RuntimeShellProps) {
+const runtimeNavigationId = "runtime-primary-navigation";
+
+export function RuntimeShell({ children, eyebrow = "Рабочая область", viewer }: RuntimeShellProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const currentMeta = resolveRuntimeMeta(pathname);
@@ -61,10 +60,11 @@ export function RuntimeShell({ children, eyebrow = "Stage 02 • Runtime shell",
         <TopBar
           breadcrumbs={currentMeta.breadcrumbs}
           eyebrow={eyebrow}
+          mobileMenuId={runtimeNavigationId}
           mobileMenuOpen={mobileOpen}
           notificationsCount={0}
           onMobileMenuOpenChange={setMobileOpen}
-          searchPlaceholder={viewer ? "Поиск появится в следующих slices Stage 03" : "Поиск и фильтры включатся после Stage 03"}
+          searchPlaceholder={viewer ? "Поиск по разделам" : "Войдите для поиска"}
           searchValue=""
           user={
             viewer
@@ -79,8 +79,8 @@ export function RuntimeShell({ children, eyebrow = "Stage 02 • Runtime shell",
                     .join(""),
                 }
               : {
-                  name: "Пилотный customer-admin",
-                  role: "shell-only bootstrap contour",
+                  name: "Пилотный администратор заказчика",
+                  role: "демо-область без входа",
                   initials: "VR",
                 }
           }
@@ -90,9 +90,10 @@ export function RuntimeShell({ children, eyebrow = "Stage 02 • Runtime shell",
         <SidebarNav
           activeKey={currentMeta.activeKey}
           footerItems={runtimeFooterItems}
+          id={runtimeNavigationId}
           items={runtimeNavItems}
-          metaLabel={viewer ? "Stage 03" : "Stage 02"}
-          metaTitle={viewer ? "Organization launch" : "Runtime shell"}
+          metaLabel={viewer ? "VRK" : "Демо"}
+          metaTitle={viewer ? "Рабочая область" : "Обзор продукта"}
           mobileOpen={mobileOpen}
           onMobileOpenChange={setMobileOpen}
         />

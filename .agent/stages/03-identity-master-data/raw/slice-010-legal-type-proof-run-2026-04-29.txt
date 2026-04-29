@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 741, in <module>
+    main()
+    ~~~~^^
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 704, in main
+    web = accept_first_admin_web("web", email_prefix="slice010-web-admin")
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 237, in accept_first_admin_web
+    assert_true("ООО" in company_html and "АО" in company_html and "ПАО" in company_html, "/company profile legal-form options are missing")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 161, in assert_true
+    raise AssertionError(message)
+AssertionError: /company profile legal-form options are missing

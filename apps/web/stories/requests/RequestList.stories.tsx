@@ -68,6 +68,16 @@ export const Empty: Story = {
   args: {
     empty: true,
     items: [],
+    onResetFilters: () => undefined,
+    total: 0,
+  },
+};
+
+export const Error: Story = {
+  render: (args) => <ControlledRequestListStory {...args} />,
+  args: {
+    error: "Сервис заявок временно недоступен. Повторите попытку позже.",
+    items: [],
     total: 0,
   },
 };

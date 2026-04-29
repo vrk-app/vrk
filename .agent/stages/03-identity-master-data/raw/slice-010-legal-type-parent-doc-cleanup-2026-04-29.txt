@@ -1,0 +1,14 @@
+Parent doc cleanup after Newton doc-drift fixer
+Timestamp: 2026-04-29T04:12:30Z
+
+Adjusted docs/roadmap.md wording to keep subdivision terminology and make all legal-form alias mappings explicit: ОАО -> ПАО, ЗАО -> АО, LLC -> ООО.
+Adjusted docs/design/customer-admin-bootstrap-flow.md to make all legal-form alias mappings explicit: ОАО -> ПАО, ЗАО -> АО, LLC -> ООО.
+
+docs/roadmap.md:363:  - organization profile с разделением на launch-critical и optional requisites; поле `Тип` в профиле хранит ОПФ `ООО` / `АО` / `ПАО`, а legacy `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО` принимаются только как compatibility input и нормализуются
+docs/roadmap.md:364:  - subdivisions без пользовательского selector-а типа; storage compatibility type остается скрытым internal default
+docs/roadmap.md:367:  - subdivision/unit create/edit/archive flows доступны только organization-scope администраторам; narrower scopes остаются read-only в пределах своего subtree
+docs/design/customer-admin-bootstrap-flow.md:120:- профиль организации в `/company` использует selector `Тип` как ОПФ `ООО` / `АО` / `ПАО`; legacy aliases `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО` поддерживаются только как входная совместимость и не показываются в UI;
+
+39:        <mxCell id="Uvl7SCXHovZ_TvcCf32a-13" value="Организационно-правовая ф&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;орма (ООО, АО, ПАО)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="Uvl7SCXHovZ_TvcCf32a-12" vertex="1">
+
+PASS: drawio has no stale visible legacy/current legal-form examples

@@ -169,6 +169,16 @@ func (a *App) registerRoutes(
 			r.Post("/{inviteID}/revoke", bootstrapHandler.RevokeEmployeeInvite)
 		})
 
+		r.Route("/company", func(r chi.Router) {
+			r.Patch("/profile", bootstrapHandler.UpdateCompanyProfile)
+			r.Post("/divisions", bootstrapHandler.CreateDivision)
+			r.Patch("/divisions/{divisionID}", bootstrapHandler.UpdateDivision)
+			r.Post("/divisions/{divisionID}/archive", bootstrapHandler.ArchiveDivision)
+			r.Post("/units", bootstrapHandler.CreateUnit)
+			r.Patch("/units/{unitID}", bootstrapHandler.UpdateUnit)
+			r.Post("/units/{unitID}/archive", bootstrapHandler.ArchiveUnit)
+		})
+
 		r.Route("/sessions", func(r chi.Router) {
 			r.Post("/", bootstrapHandler.CreateSession)
 			r.Get("/current", bootstrapHandler.CurrentSession)

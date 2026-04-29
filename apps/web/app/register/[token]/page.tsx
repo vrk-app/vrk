@@ -1,5 +1,4 @@
-import { ArrowUpRight, LockKeyhole, ShieldCheck } from "lucide-react";
-import { AuthAside } from "@/app/_components/AuthAside";
+import { AuthIllustration } from "@/app/_components/AuthIllustration";
 import { FirstAdminActivationForm } from "@/features/Stage03Bootstrap";
 import { AuthSplitLayout } from "@/widgets/Auth";
 import { BackendError, fetchBackend } from "@/shared/api/backend";
@@ -20,42 +19,11 @@ export default async function RegisterInvitePage({ params }: Props) {
     return (
       <AuthSplitLayout
         formSlot={<FirstAdminActivationForm invite={invite} inviteToken={token} />}
-        illustrationSlot={
-          <AuthAside
-            badgeLabel={isFirstAdmin ? "Stage 03 • Invite activation" : "Stage 03 • Employee activation"}
-            description={
-              isFirstAdmin
-                ? "Ссылка приглашения одноразовая. После успешного acceptance система открывает launch wizard и больше не разрешает вторую активацию тем же токеном."
-                : "Сотрудник подключается по одноразовой ссылке, получает membership и scoped grant, а затем попадает только в свой разрешенный workspace."
-            }
-            items={[
-              {
-                title: "Password setup",
-                detail: "Пароль задается только после открытия персональной ссылки.",
-                icon: <LockKeyhole aria-hidden="true" className="size-5" />,
-              },
-              {
-                title: "Membership + grant",
-                detail: isFirstAdmin
-                  ? "Backend создает membership и organization-admin grant в момент acceptance."
-                  : "Backend создает или связывает account, выдает membership и scoped grant по целевому scope.",
-                icon: <ShieldCheck aria-hidden="true" className="size-5" />,
-              },
-              {
-                title: isFirstAdmin ? "Launch next" : "Scoped landing",
-                detail: isFirstAdmin
-                  ? "Следующий экран после acceptance — wizard запуска организации."
-                  : "После acceptance и login пользователь попадает только в разрешенный contour без расширения вверх.",
-                icon: <ArrowUpRight aria-hidden="true" className="size-5" />,
-              },
-            ]}
-            title={isFirstAdmin ? "Примите приглашение и завершите запуск" : "Примите приглашение и откройте рабочий contour"}
-          />
-        }
+        illustrationSlot={<AuthIllustration />}
         subtitle={
           isFirstAdmin
-            ? "Эта ссылка выдана платформенным администратором. После задания пароля вы сразу продолжите запуск организации."
-            : "Эта ссылка выдана администратором организации. После задания пароля вы увидите только свой разрешенный рабочий контур."
+            ? "Задайте пароль, чтобы открыть профиль компании и управление структурой."
+            : "Задайте пароль, чтобы подключиться к рабочему пространству организации."
         }
         title={isFirstAdmin ? "Активация первого администратора" : "Подключение сотрудника"}
       />
@@ -75,7 +43,7 @@ export default async function RegisterInvitePage({ params }: Props) {
           </div>
         }
         illustrationSlot={null}
-        subtitle="Если приглашение уже было использовано или срок ссылки истек, platform admin должен выдать новое."
+        subtitle="Если приглашение уже было использовано или срок ссылки истек, запросите новую ссылку."
         title="Одноразовая ссылка больше не активна"
       />
     );

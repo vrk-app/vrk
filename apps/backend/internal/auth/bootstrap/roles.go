@@ -1,0 +1,130 @@
+package bootstrap
+
+type Capability string
+
+const (
+	RoleOrganizationAdmin = "organization_admin"
+	RoleOrganizationHead  = "organization_head"
+	RoleDivisionHead      = "division_head"
+	RoleDivisionOperator  = "division_operator"
+	RoleUnitHead          = "unit_head"
+	RoleUnitOperator      = "unit_operator"
+	RoleAuditor           = "auditor"
+
+	ScopeOrganization = "organization"
+	ScopeDivision     = "division"
+	ScopeUnit         = "unit"
+
+	CapabilityManageStructure = Capability("manage_structure")
+	CapabilityManageAccess    = Capability("manage_access")
+	CapabilityManageContracts = Capability("manage_contracts")
+	CapabilityManageEquipment = Capability("manage_equipment")
+)
+
+type RoleDefinition struct {
+	Template        string
+	Label           string
+	AllowedScopes   []string
+	Capabilities    []Capability
+	AuditorAnyScope bool
+}
+
+var roleCatalog = map[string]RoleDefinition{
+	RoleOrganizationAdmin: {
+		Template:      RoleOrganizationAdmin,
+		Label:         "Администратор организации",
+		AllowedScopes: []string{ScopeOrganization},
+		Capabilities: []Capability{
+			CapabilityManageStructure,
+			CapabilityManageAccess,
+			CapabilityManageContracts,
+			CapabilityManageEquipment,
+		},
+	},
+	RoleOrganizationHead: {
+		Template:      RoleOrganizationHead,
+		Label:         "Руководитель организации",
+		AllowedScopes: []string{ScopeOrganization},
+	},
+	RoleDivisionHead: {
+		Template:      RoleDivisionHead,
+		Label:         "Руководитель подразделения",
+		AllowedScopes: []string{ScopeDivision},
+	},
+	RoleDivisionOperator: {
+		Template:      RoleDivisionOperator,
+		Label:         "Сотрудник подразделения",
+		AllowedScopes: []string{ScopeDivision},
+	},
+	RoleUnitHead: {
+		Template:      RoleUnitHead,
+		Label:         "Руководитель юнита",
+		AllowedScopes: []string{ScopeUnit},
+	},
+	RoleUnitOperator: {
+		Template:      RoleUnitOperator,
+		Label:         "Сотрудник юнита",
+		AllowedScopes: []string{ScopeUnit},
+	},
+	RoleAuditor: {
+		Template:        RoleAuditor,
+		Label:           "Аудитор",
+		AllowedScopes:   []string{ScopeOrganization, ScopeDivision, ScopeUnit},
+		AuditorAnyScope: true,
+	},
+}
+
+var allowedRoleTemplates = map[string]string{
+	RoleOrganizationAdmin: roleCatalog[RoleOrganizationAdmin].Label,
+	RoleOrganizationHead:  roleCatalog[RoleOrganizationHead].Label,
+	RoleDivisionHead:      roleCatalog[RoleDivisionHead].Label,
+	RoleDivisionOperator:  roleCatalog[RoleDivisionOperator].Label,
+	RoleUnitHead:          roleCatalog[RoleUnitHead].Label,
+	RoleUnitOperator:      roleCatalog[RoleUnitOperator].Label,
+	RoleAuditor:           roleCatalog[RoleAuditor].Label,
+}
+
+func IsRoleScopeCompatible(roleTemplate string, scopeType string) bool {
+	definition, ok := roleCatalog[roleTemplate]
+	if !ok {
+		return false
+	}
+
+	for _, allowedScope := range definition.AllowedScopes {
+		if allowedScope == scopeType {
+			return true
+		}
+	}
+	return false
+}
+
+func HasCapability(session *SessionSummaryResponse, capability Capability) bool {
+	if session == nil || session.Grant == nil || session.Organization.LaunchState != "active" {
+		return false
+	}
+	return grantHasCapability(session.Grant.RoleTemplate, session.Workspace.ScopeType, capability)
+}
+
+func snapshotHasCapability(snapshot *sessionSnapshot, capability Capability) bool {
+	if snapshot == nil || snapshot.SessionRow.OrganizationLaunchState != "active" {
+		return false
+	}
+	return grantHasCapability(
+		snapshot.SessionRow.GrantRoleTemplate,
+		snapshot.SessionRow.GrantScopeType,
+		capability,
+	)
+}
+
+func grantHasCapability(roleTemplate string, scopeType string, capability Capability) bool {
+	if !IsRoleScopeCompatible(roleTemplate, scopeType) {
+		return false
+	}
+
+	for _, ownedCapability := range roleCatalog[roleTemplate].Capabilities {
+		if ownedCapability == capability {
+			return true
+		}
+	}
+	return false
+}

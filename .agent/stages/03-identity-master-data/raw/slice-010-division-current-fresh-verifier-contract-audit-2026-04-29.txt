@@ -1,0 +1,928 @@
+Division-aligned contract audit for Stage 03 slice-010 correction.
+
+1) Backend constants and validation:
+    15	const (
+    16		defaultOrganizationRole = "customer"
+    17		defaultDivisionType     = "division"
+    18		inviteLifetime          = 7 * 24 * time.Hour
+    19		sessionLifetime         = 24 * time.Hour
+    20	)
+    21	
+    22	var allowedOrganizationPropertyTypes = map[string]struct{}{
+    23		"ООО": {},
+    24		"АО":  {},
+    25		"ПАО": {},
+    26	}
+    27	
+    28	var allowedUnitTypes = map[string]struct{}{
+    29		"ВРД": {},
+    30		"ВРЗ": {},
+    31		"ВУ":  {},
+    32		"ВРП": {},
+    33	}
+   925		propertyType, err := normalizeOrganizationPropertyType(firstNonEmptyStringPointer(req.PropertyType, req.Type))
+   926		if err != nil {
+   927			return err
+   928		}
+   929		req.Type = propertyType
+   930		req.PropertyType = stringPointer(propertyType)
+   931	
+   932		if req.ContractEmail != nil && !looksLikeEmail(*req.ContractEmail) {
+   933			return ErrInvalidEmail
+   934		}
+   935	
+   936		return nil
+   937	}
+   938	
+   939	func normalizeStructureNodeRequest(req *StructureNodeRequest, allowDivision bool, snapshot *sessionSnapshot, nameRequiredErr error) error {
+   940		req.Type = strings.TrimSpace(req.Type)
+   941		req.Name = strings.TrimSpace(req.Name)
+   942		req.Code = trimStringPointer(req.Code)
+   943		req.Region = trimStringPointer(req.Region)
+   944		req.Address = trimStringPointer(req.Address)
+   945		req.RegisteredAddress = trimStringPointer(req.RegisteredAddress)
+   946		req.LeaderFullName = trimStringPointer(req.LeaderFullName)
+   947		req.ManagerName = trimStringPointer(req.ManagerName)
+   948		req.LeaderPosition = trimStringPointer(req.LeaderPosition)
+   949		req.ContractPhone = trimStringPointer(req.ContractPhone)
+   950		req.ContractEmail = trimStringPointer(req.ContractEmail)
+   951		req.ActingBasis = trimStringPointer(req.ActingBasis)
+   952		req.Contacts = trimStringPointer(req.Contacts)
+   953		req.Comment = trimStringPointer(req.Comment)
+   954		req.DivisionID = trimStringPointer(req.DivisionID)
+   955	
+   956		if req.Name == "" {
+   957			return nameRequiredErr
+   958		}
+   959	
+   960		if allowDivision {
+   961			if req.Type == "" {
+   962				return ErrUnitTypeRequired
+   963			}
+   964			if _, ok := allowedUnitTypes[req.Type]; !ok {
+   965				return ErrStructureTypeInvalid
+   966			}
+   967		} else {
+   968			req.Type = defaultDivisionType
+   969		}
+   970	
+   971		if req.ContractEmail != nil && !looksLikeEmail(*req.ContractEmail) {
+   972			return ErrInvalidEmail
+   973		}
+   974		if req.DivisionID != nil {
+   975			if !allowDivision {
+   976				return ErrDivisionTargetInvalid
+   977			}
+   978			if _, err := uuid.Parse(*req.DivisionID); err != nil {
+   979				return ErrDivisionTargetInvalid
+   980			}
+   981			if !scopeExistsInSnapshot(snapshot, "division", *req.DivisionID) {
+   982				return ErrDivisionTargetInvalid
+   983			}
+   984		}
+   985	
+   986		return nil
+   987	}
+   988	
+   989	func normalizeOrganizationPropertyType(value string) (string, error) {
+   990		normalized := strings.ToUpper(strings.TrimSpace(value))
+   991		switch normalized {
+   992		case "":
+   993			return "", ErrPropertyTypeRequired
+   994		case "LLC":
+   995			normalized = "ООО"
+   996		case "ОАО":
+   997			normalized = "ПАО"
+   998		case "ЗАО":
+   999			normalized = "АО"
+  1000		}
+  1001		if _, ok := allowedOrganizationPropertyTypes[normalized]; !ok {
+  1002			return "", ErrPropertyTypeInvalid
+  1003		}
+  1004		return normalized, nil
+  1005	}
+
+2) Backend role/scope constants:
+     5	const (
+     6		RoleOrganizationAdmin = "organization_admin"
+     7		RoleOrganizationHead  = "organization_head"
+     8		RoleDivisionHead      = "division_head"
+     9		RoleDivisionOperator  = "division_operator"
+    10		RoleUnitHead          = "unit_head"
+    11		RoleUnitOperator      = "unit_operator"
+    12		RoleAuditor           = "auditor"
+    13	
+    14		ScopeOrganization = "organization"
+    15		ScopeDivision     = "division"
+    16		ScopeUnit         = "unit"
+    17	
+    18		CapabilityManageStructure = Capability("manage_structure")
+    49		RoleDivisionHead: {
+    50			Template:      RoleDivisionHead,
+    51			Label:         "Руководитель подразделения",
+    52			AllowedScopes: []string{ScopeDivision},
+    53		},
+    54		RoleDivisionOperator: {
+    55			Template:      RoleDivisionOperator,
+    56			Label:         "Сотрудник подразделения",
+    57			AllowedScopes: []string{ScopeDivision},
+    58		},
+    77	var allowedRoleTemplates = map[string]string{
+    78		RoleOrganizationAdmin: roleCatalog[RoleOrganizationAdmin].Label,
+    79		RoleOrganizationHead:  roleCatalog[RoleOrganizationHead].Label,
+    80		RoleDivisionHead:      roleCatalog[RoleDivisionHead].Label,
+    81		RoleDivisionOperator:  roleCatalog[RoleDivisionOperator].Label,
+    82		RoleUnitHead:          roleCatalog[RoleUnitHead].Label,
+    83		RoleUnitOperator:      roleCatalog[RoleUnitOperator].Label,
+    84		RoleAuditor:           roleCatalog[RoleAuditor].Label,
+    85	}
+
+3) Backend model JSON fields for session divisions and unit divisionId:
+    52	type CompanyProfileRequest struct {
+    53		Type              string  `json:"type"`
+    54		PropertyType      *string `json:"propertyType,omitempty"`
+    55		Name              string  `json:"name"`
+    56		ShortName         *string `json:"shortName,omitempty"`
+    57		Inn               *string `json:"inn,omitempty"`
+    58		Kpp               *string `json:"kpp,omitempty"`
+    59		RegisteredAddress *string `json:"registeredAddress,omitempty"`
+    60		Address           *string `json:"address,omitempty"`
+    61		LeaderFullName    *string `json:"leaderFullName,omitempty"`
+    62		ManagerName       *string `json:"managerName,omitempty"`
+    63		LeaderPosition    *string `json:"leaderPosition,omitempty"`
+    64		ContractPhone     *string `json:"contractPhone,omitempty"`
+    65		ContractEmail     *string `json:"contractEmail,omitempty"`
+    66		ActingBasis       *string `json:"actingBasis,omitempty"`
+    67	}
+    68	
+    69	type StructureNodeRequest struct {
+    70		Type              string  `json:"type,omitempty"`
+    71		Name              string  `json:"name"`
+    72		Code              *string `json:"code,omitempty"`
+    73		Region            *string `json:"region,omitempty"`
+    74		Address           *string `json:"address,omitempty"`
+    75		RegisteredAddress *string `json:"registeredAddress,omitempty"`
+    76		LeaderFullName    *string `json:"leaderFullName,omitempty"`
+    77		ManagerName       *string `json:"managerName,omitempty"`
+    78		LeaderPosition    *string `json:"leaderPosition,omitempty"`
+    79		ContractPhone     *string `json:"contractPhone,omitempty"`
+    80		ContractEmail     *string `json:"contractEmail,omitempty"`
+    81		ActingBasis       *string `json:"actingBasis,omitempty"`
+    82		Contacts          *string `json:"contacts,omitempty"`
+    83		Comment           *string `json:"comment,omitempty"`
+    84		DivisionID        *string `json:"divisionId,omitempty"`
+    85	}
+   197	type DivisionResponse struct {
+   198		ID                string  `json:"id"`
+   199		Type              string  `json:"type"`
+   200		Name              string  `json:"name"`
+   201		Code              *string `json:"code,omitempty"`
+   202		Region            *string `json:"region,omitempty"`
+   203		Address           *string `json:"address,omitempty"`
+   204		RegisteredAddress *string `json:"registeredAddress,omitempty"`
+   205		ManagerName       *string `json:"managerName,omitempty"`
+   206		LeaderFullName    *string `json:"leaderFullName,omitempty"`
+   207		Contacts          *string `json:"contacts,omitempty"`
+   208		LeaderPosition    *string `json:"leaderPosition,omitempty"`
+   209		ContractPhone     *string `json:"contractPhone,omitempty"`
+   210		ContractEmail     *string `json:"contractEmail,omitempty"`
+   211		ActingBasis       *string `json:"actingBasis,omitempty"`
+   212		Status            string  `json:"status"`
+   213		Comment           *string `json:"comment,omitempty"`
+   214	}
+   215	
+   216	type UnitResponse struct {
+   217		ID                string  `json:"id"`
+   218		Type              string  `json:"type"`
+   219		Name              string  `json:"name"`
+   220		Code              *string `json:"code,omitempty"`
+   221		Region            *string `json:"region,omitempty"`
+   222		DivisionID        *string `json:"divisionId,omitempty"`
+   223		Address           *string `json:"address,omitempty"`
+   224		RegisteredAddress *string `json:"registeredAddress,omitempty"`
+   225		ManagerName       *string `json:"managerName,omitempty"`
+   226		LeaderFullName    *string `json:"leaderFullName,omitempty"`
+   227		Contacts          *string `json:"contacts,omitempty"`
+   228		LeaderPosition    *string `json:"leaderPosition,omitempty"`
+   229		ContractPhone     *string `json:"contractPhone,omitempty"`
+   230		ContractEmail     *string `json:"contractEmail,omitempty"`
+   231		ActingBasis       *string `json:"actingBasis,omitempty"`
+   232		Status            string  `json:"status"`
+   233		Comment           *string `json:"comment,omitempty"`
+   234	}
+   235	
+   236	type SessionSummaryResponse struct {
+   237		SessionToken         string                      `json:"sessionToken"`
+   238		RequiresLaunchWizard bool                        `json:"requiresLaunchWizard"`
+   239		Account              SessionAccountResponse      `json:"account"`
+   240		MembershipID         string                      `json:"membershipId"`
+   241		MembershipStatus     string                      `json:"membershipStatus"`
+   242		Organization         SessionOrganizationResponse `json:"organization"`
+   243		Grant                *SessionGrantResponse       `json:"grant,omitempty"`
+   244		Workspace            SessionWorkspaceResponse    `json:"workspace"`
+   245		Divisions            []DivisionResponse          `json:"divisions"`
+   246		Units                []UnitResponse              `json:"units"`
+
+4) Backend handlers expose /company/divisions and /company/units with divisionID path params:
+   302	// CreateDivision creates a division or branch at organization scope.
+   303	// @Summary      Create company division
+   304	// @Description  Creates the first or later active division from the persistent company management surface.
+   305	// @Tags         company
+   306	// @Accept       json
+   307	// @Produce      json
+   308	// @Param        request body StructureNodeRequest true "Division payload"
+   309	// @Success      201  {object}  Response{data=SessionSummaryResponse}
+   310	// @Failure      400  {object}  Response
+   311	// @Failure      401  {object}  Response
+   312	// @Failure      403  {object}  Response
+   313	// @Router       /company/divisions [post]
+   314	func (h *Handler) CreateDivision(w http.ResponseWriter, r *http.Request) {
+   315		token, err := readBearerToken(r)
+   316		if err != nil {
+   317			sendError(w, http.StatusUnauthorized, "missing bearer token")
+   318			return
+   319		}
+   320	
+   321		var req StructureNodeRequest
+   322		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+   323			sendError(w, http.StatusBadRequest, "invalid request body")
+   324			return
+   325		}
+   326	
+   327		resp, err := h.service.CreateDivision(r.Context(), token, req)
+   328		if err != nil {
+   329			writeServiceError(w, err)
+   330			return
+   331		}
+   332	
+   333		sendSuccess(w, http.StatusCreated, resp)
+   334	}
+   335	
+   336	// UpdateDivision updates an active division.
+   337	// @Summary      Update company division
+   338	// @Description  Updates an active division visible to the organization-scope admin.
+   339	// @Tags         company
+   340	// @Accept       json
+   341	// @Produce      json
+   342	// @Param        divisionID path string true "Division ID"
+   343	// @Param        request body StructureNodeRequest true "Division payload"
+   344	// @Success      200  {object}  Response{data=SessionSummaryResponse}
+   345	// @Failure      400  {object}  Response
+   346	// @Failure      401  {object}  Response
+   347	// @Failure      403  {object}  Response
+   348	// @Failure      404  {object}  Response
+   349	// @Router       /company/divisions/{divisionID} [patch]
+   350	func (h *Handler) UpdateDivision(w http.ResponseWriter, r *http.Request) {
+   351		token, err := readBearerToken(r)
+   352		if err != nil {
+   353			sendError(w, http.StatusUnauthorized, "missing bearer token")
+   354			return
+   355		}
+   356	
+   357		var req StructureNodeRequest
+   358		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+   359			sendError(w, http.StatusBadRequest, "invalid request body")
+   360			return
+   361		}
+   362	
+   363		resp, err := h.service.UpdateDivision(r.Context(), token, chi.URLParam(r, "divisionID"), req)
+   364		if err != nil {
+   365			writeServiceError(w, err)
+   366			return
+   367		}
+   368	
+   369		sendSuccess(w, http.StatusOK, resp)
+   370	}
+   371	
+   372	// ArchiveDivision archives an active division when no active references block it.
+   373	// @Summary      Archive company division
+   374	// @Description  Archives a division instead of physically deleting it.
+   375	// @Tags         company
+   376	// @Produce      json
+   377	// @Param        divisionID path string true "Division ID"
+   378	// @Success      200  {object}  Response{data=SessionSummaryResponse}
+   379	// @Failure      401  {object}  Response
+   380	// @Failure      403  {object}  Response
+   381	// @Failure      404  {object}  Response
+   382	// @Failure      409  {object}  Response
+   383	// @Router       /company/divisions/{divisionID}/archive [post]
+   384	func (h *Handler) ArchiveDivision(w http.ResponseWriter, r *http.Request) {
+   385		token, err := readBearerToken(r)
+   386		if err != nil {
+   387			sendError(w, http.StatusUnauthorized, "missing bearer token")
+   388			return
+   389		}
+   390	
+   391		resp, err := h.service.ArchiveDivision(r.Context(), token, chi.URLParam(r, "divisionID"))
+   392		if err != nil {
+   393			writeServiceError(w, err)
+   394			return
+   395		}
+   396	
+   397		sendSuccess(w, http.StatusOK, resp)
+   398	}
+   399	
+   400	// CreateUnit creates a unit under organization or under an active division.
+   401	// @Summary      Create company unit
+   402	// @Description  Creates the first or later active unit, with optional division parent.
+   403	// @Tags         company
+   404	// @Accept       json
+   405	// @Produce      json
+   406	// @Param        request body StructureNodeRequest true "Unit payload"
+   407	// @Success      201  {object}  Response{data=SessionSummaryResponse}
+   408	// @Failure      400  {object}  Response
+   409	// @Failure      401  {object}  Response
+   410	// @Failure      403  {object}  Response
+   411	// @Router       /company/units [post]
+   572	// CompleteLaunchWizard saves organization data and the first division/unit.
+   573	// @Summary      Complete launch wizard
+   574	// @Description  Saves the core organization data and creates the first division or direct unit.
+   575	// @Tags         bootstrap
+   576	// @Accept       json
+   577	// @Produce      json
+   578	// @Param        request body CompleteLaunchRequest true "Launch wizard payload"
+   579	// @Success      200  {object}  Response{data=SessionSummaryResponse}
+   580	// @Failure      400  {object}  Response
+   581	// @Failure      401  {object}  Response
+   582	// @Failure      409  {object}  Response
+   583	// @Router       /launch-wizard [post]
+
+5) Swagger paths and schema fields:
+/company/divisions
+/company/divisions/{divisionID}
+/company/divisions/{divisionID}/archive
+/company/units
+/company/units/{unitID}
+/company/units/{unitID}/archive
+
+Swagger field grep:
+3228:                "scopeType": {
+3312:                "divisionId": {
+3419:                "divisionId": {
+3492:                "propertyType": {
+3530:                "propertyType": {
+3556:                "roleTemplate": {
+3562:                "scopeType": {
+3678:                "roleTemplate": {
+3687:                "scopeType": {
+3835:                "roleTemplate": {
+3841:                "scopeType": {
+3878:                "roleTemplate": {
+3884:                "scopeType": {
+3937:                "propertyType": {
+3960:                "divisions": {
+4016:                "scopeType": {
+4045:                "divisionId": {
+4095:                "divisionId": {
+4253:                "divisionId": {
+4256:                "divisionName": {
+4541:                "divisionId": {
+4544:                "divisionName": {
+4701:                "propertyType": {
+4803:                "divisionId": {
+4887:                "scopeType": {
+4972:                "divisionId": {
+
+6) Web shared API role/scope/session contract:
+     1	export const SESSION_COOKIE_NAME = "vrk_session";
+     2	
+     3	export type ScopeType = "organization" | "division" | "unit";
+     4	
+     5	export type RoleTemplate =
+     6	  | "organization_admin"
+     7	  | "organization_head"
+     8	  | "division_head"
+     9	  | "division_operator"
+    10	  | "unit_head"
+    11	  | "unit_operator"
+    12	  | "auditor";
+    13	
+    14	export type Capability = "manage_structure" | "manage_access" | "manage_contracts" | "manage_equipment";
+    15	
+    16	export const roleTemplateLabels: Record<RoleTemplate, string> = {
+    17	  organization_admin: "Администратор организации",
+    18	  organization_head: "Руководитель организации",
+    19	  division_head: "Руководитель подразделения",
+    20	  division_operator: "Сотрудник подразделения",
+    21	  unit_head: "Руководитель юнита",
+    22	  unit_operator: "Сотрудник юнита",
+    23	  auditor: "Аудитор",
+    24	};
+    25	
+    26	export const roleScopeOptions: Record<RoleTemplate, ScopeType[]> = {
+    27	  organization_admin: ["organization"],
+    28	  organization_head: ["organization"],
+    29	  division_head: ["division"],
+    30	  division_operator: ["division"],
+    31	  unit_head: ["unit"],
+    32	  unit_operator: ["unit"],
+    33	  auditor: ["organization", "division", "unit"],
+    34	};
+    35	
+    36	const roleCapabilities: Record<RoleTemplate, Capability[]> = {
+    37	  organization_admin: ["manage_structure", "manage_access", "manage_contracts", "manage_equipment"],
+    38	  organization_head: [],
+    39	  division_head: [],
+    40	  division_operator: [],
+    41	  unit_head: [],
+    42	  unit_operator: [],
+    43	  auditor: [],
+    44	};
+   137	export type CompanyProfilePayload = {
+   138	  propertyType: string;
+   139	  type?: string;
+   140	  name: string;
+   141	  shortName?: string;
+   142	  inn?: string;
+   143	  kpp?: string;
+   144	  registeredAddress?: string;
+   145	  address?: string;
+   146	  leaderFullName?: string;
+   147	  managerName?: string;
+   148	  leaderPosition?: string;
+   149	  contractPhone?: string;
+   150	  contractEmail?: string;
+   151	  actingBasis?: string;
+   152	};
+   153	
+   154	export type StructureNodePayload = {
+   155	  type?: string;
+   156	  name: string;
+   157	  code?: string;
+   158	  region?: string;
+   159	  address?: string;
+   160	  registeredAddress?: string;
+   161	  leaderFullName?: string;
+   162	  managerName?: string;
+   163	  leaderPosition?: string;
+   164	  contractPhone?: string;
+   165	  contractEmail?: string;
+   166	  actingBasis?: string;
+   167	  contacts?: string;
+   168	  comment?: string;
+   169	  divisionId?: string;
+   170	};
+   205	export type SessionSummaryResponse = {
+   206	  sessionToken: string;
+   207	  requiresLaunchWizard: boolean;
+   208	  membershipId: string;
+   209	  membershipStatus: string;
+   210	  account: {
+   211	    id: string;
+   212	    fullName: string;
+   213	    email: string;
+   214	  };
+   215	  organization: {
+   216	    id: string;
+   217	    roleTitle: string;
+   218	    type?: string;
+   219	    name: string;
+   220	    shortName?: string;
+   221	    propertyType?: string;
+   222	    inn?: string;
+   223	    kpp?: string;
+   224	    legalAddress?: string;
+   225	    registeredAddress?: string;
+   226	    address?: string;
+   227	    contactEmail?: string;
+   228	    contactPhone?: string;
+   229	    leaderFullName?: string;
+   230	    managerName?: string;
+   231	    leaderPosition?: string;
+   232	    contractPhone?: string;
+   233	    contractEmail?: string;
+   234	    actingBasis?: string;
+   235	    launchState: string;
+   236	  };
+   237	  grant?: {
+   238	    id: string;
+   239	    roleTemplate: string;
+   240	    scopeType: string;
+   241	    scopeId: string;
+   242	  };
+   243	  workspace: {
+   244	    scopeType: ScopeType;
+   245	    scopeId: string;
+   246	    scopeName: string;
+   247	    landingTitle: string;
+   248	    landingSubtitle: string;
+   249	    landingPath: string;
+   250	    canManageEmployeeInvites: boolean;
+   251	  };
+   252	  divisions: Array<{
+   253	    id: string;
+   254	    type: string;
+   255	    name: string;
+   256	    code?: string;
+   257	    region?: string;
+   258	    address?: string;
+   259	    registeredAddress?: string;
+   260	    managerName?: string;
+   261	    leaderFullName?: string;
+   262	    contacts?: string;
+   263	    leaderPosition?: string;
+   264	    contractPhone?: string;
+   265	    contractEmail?: string;
+   266	    actingBasis?: string;
+   267	    status: string;
+   268	    comment?: string;
+   269	  }>;
+   270	  units: Array<{
+   271	    id: string;
+   272	    type: string;
+   273	    name: string;
+   274	    code?: string;
+   275	    region?: string;
+   276	    divisionId?: string;
+   277	    address?: string;
+   278	    registeredAddress?: string;
+   279	    managerName?: string;
+   280	    leaderFullName?: string;
+   281	    contacts?: string;
+   282	    leaderPosition?: string;
+   283	    contractPhone?: string;
+   284	    contractEmail?: string;
+   285	    actingBasis?: string;
+   286	    status: string;
+   287	    comment?: string;
+   288	  }>;
+   289	};
+
+7) Web route proxies for division endpoints:
+apps/web/app/api/company/units/[unitId]/archive/route.ts
+apps/web/app/api/company/units/[unitId]/route.ts
+apps/web/app/api/company/units/route.ts
+apps/web/app/api/company/divisions/route.ts
+apps/web/app/api/company/divisions/[divisionId]/archive/route.ts
+apps/web/app/api/company/divisions/[divisionId]/route.ts
+apps/web/app/api/company/profile/route.ts
+--- apps/web/app/api/company/units/[unitId]/archive/route.ts
+     1	import { proxySessionBackend } from "@/shared/api/route-proxy";
+     2	import type { SessionSummaryResponse } from "@/shared/api";
+     3	
+     4	type RouteContext = {
+     5	  params: Promise<{ unitId: string }>;
+     6	};
+     7	
+     8	export async function POST(_request: Request, context: RouteContext) {
+     9	  const { unitId } = await context.params;
+    10	
+    11	  return proxySessionBackend<SessionSummaryResponse>(`/api/v1/company/units/${unitId}/archive`, {
+    12	    method: "POST",
+    13	  });
+    14	}
+--- apps/web/app/api/company/units/[unitId]/route.ts
+     1	import { proxySessionBackend } from "@/shared/api/route-proxy";
+     2	import type { SessionSummaryResponse } from "@/shared/api";
+     3	
+     4	type RouteContext = {
+     5	  params: Promise<{ unitId: string }>;
+     6	};
+     7	
+     8	export async function PATCH(request: Request, context: RouteContext) {
+     9	  const { unitId } = await context.params;
+    10	
+    11	  return proxySessionBackend<SessionSummaryResponse>(`/api/v1/company/units/${unitId}`, {
+    12	    method: "PATCH",
+    13	    request,
+    14	  });
+    15	}
+--- apps/web/app/api/company/units/route.ts
+     1	import { proxySessionBackend } from "@/shared/api/route-proxy";
+     2	import type { SessionSummaryResponse } from "@/shared/api";
+     3	
+     4	export async function POST(request: Request) {
+     5	  return proxySessionBackend<SessionSummaryResponse>("/api/v1/company/units", {
+     6	    method: "POST",
+     7	    request,
+     8	    successStatus: 201,
+     9	  });
+    10	}
+--- apps/web/app/api/company/divisions/route.ts
+     1	import { proxySessionBackend } from "@/shared/api/route-proxy";
+     2	import type { SessionSummaryResponse } from "@/shared/api";
+     3	
+     4	export async function POST(request: Request) {
+     5	  return proxySessionBackend<SessionSummaryResponse>("/api/v1/company/divisions", {
+     6	    method: "POST",
+     7	    request,
+     8	    successStatus: 201,
+     9	  });
+    10	}
+--- apps/web/app/api/company/divisions/[divisionId]/archive/route.ts
+     1	import { proxySessionBackend } from "@/shared/api/route-proxy";
+     2	import type { SessionSummaryResponse } from "@/shared/api";
+     3	
+     4	type RouteContext = {
+     5	  params: Promise<{ divisionId: string }>;
+     6	};
+     7	
+     8	export async function POST(_request: Request, context: RouteContext) {
+     9	  const { divisionId } = await context.params;
+    10	
+    11	  return proxySessionBackend<SessionSummaryResponse>(`/api/v1/company/divisions/${divisionId}/archive`, {
+    12	    method: "POST",
+    13	  });
+    14	}
+--- apps/web/app/api/company/divisions/[divisionId]/route.ts
+     1	import { proxySessionBackend } from "@/shared/api/route-proxy";
+     2	import type { SessionSummaryResponse } from "@/shared/api";
+     3	
+     4	type RouteContext = {
+     5	  params: Promise<{ divisionId: string }>;
+     6	};
+     7	
+     8	export async function PATCH(request: Request, context: RouteContext) {
+     9	  const { divisionId } = await context.params;
+    10	
+    11	  return proxySessionBackend<SessionSummaryResponse>(`/api/v1/company/divisions/${divisionId}`, {
+    12	    method: "PATCH",
+    13	    request,
+    14	  });
+    15	}
+--- apps/web/app/api/company/profile/route.ts
+     1	import { proxySessionBackend } from "@/shared/api/route-proxy";
+     2	import type { SessionSummaryResponse } from "@/shared/api";
+     3	
+     4	export async function PATCH(request: Request) {
+     5	  return proxySessionBackend<SessionSummaryResponse>("/api/v1/company/profile", {
+     6	    method: "PATCH",
+     7	    request,
+     8	  });
+     9	}
+
+8) Company UI field options and hidden division type selector:
+    39	const organizationPropertyTypeOptions = [
+    40	  { label: "ООО", value: "ООО" },
+    41	  { label: "АО", value: "АО" },
+    42	  { label: "ПАО", value: "ПАО" },
+    43	] as const;
+    44	
+    45	const unitTypeOptions = [
+    46	  { label: "ВРД", value: "ВРД" },
+    47	  { label: "ВРЗ", value: "ВРЗ" },
+    48	  { label: "ВУ", value: "ВУ" },
+    49	  { label: "ВРП", value: "ВРП" },
+    50	] as const;
+   172	function normalizeOrganizationPropertyType(value?: string) {
+   173	  switch ((value ?? "").trim().toUpperCase()) {
+   174	    case "ОАО":
+   175	      return "ПАО";
+   176	    case "ЗАО":
+   177	      return "АО";
+   178	    case "LLC":
+   179	      return "ООО";
+   180	    case "АО":
+   181	    case "ПАО":
+   182	    case "ООО":
+   183	      return (value ?? "").trim().toUpperCase();
+   184	    default:
+   185	      return "ООО";
+   186	  }
+   187	}
+   247	  function submitDivision() {
+   248	    startTransition(() => {
+   249	      const path = editingDivisionId
+   250	        ? `/api/company/divisions/${editingDivisionId}`
+   251	        : "/api/company/divisions";
+   252	      void mutateSession(
+   253	        path,
+   254	        {
+   255	          method: editingDivisionId ? "PATCH" : "POST",
+   256	          body: JSON.stringify(compactStructurePayload(divisionForm, false, false)),
+   257	        },
+   468	      {activeTab === "divisions" ? (
+   469	        <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+   470	          {canManage ? (
+   471	            <StructureFormCard
+   472	              form={divisionForm}
+   473	              isEditing={Boolean(editingDivisionId)}
+   474	              isPending={isPending}
+   475	              onCancel={() => {
+   476	                setDivisionForm(emptyStructureForm());
+   477	                setEditingDivisionId(null);
+   478	              }}
+   479	              onChange={setDivisionForm}
+   480	              onSubmit={submitDivision}
+   481	              namePrefix="division"
+   482	              submitLabel={editingDivisionId ? "Сохранить подразделение" : "Создать подразделение"}
+   483	              showType={false}
+   484	              title={editingDivisionId ? "Редактировать подразделение" : "Новое подразделение"}
+   485	            />
+   651	      <div className="grid gap-4 md:grid-cols-2">
+   652	        {showType ? (
+   653	          <SelectField
+   654	            autoComplete="off"
+   655	            label="Тип"
+   656	            name={`${namePrefix}Type`}
+   657	            onValueChange={(value) => update({ type: value })}
+   658	            options={unitTypeOptions}
+   659	            value={form.type}
+   660	          />
+   715	        {includeDivision ? (
+   716	          <SelectField
+   717	            autoComplete="off"
+   718	            label="Родитель"
+   719	            name={`${namePrefix}Parent`}
+   720	            onValueChange={(value) => update({ divisionId: value })}
+   721	            options={divisionOptions}
+   722	            value={form.divisionId}
+   723	          />
+   765	function NodeRow({ canManage, meta, name, onArchive, onEdit, type }: NodeRowProps) {
+   766	  return (
+   767	    <div className="rounded-[var(--radius-lg)] border border-border bg-card px-4 py-3">
+   768	      <div className="flex flex-wrap items-start justify-between gap-3">
+   769	        <div className="min-w-0 space-y-1">
+   770	          <div className="flex flex-wrap items-center gap-2">
+   771	            <p className="font-semibold text-foreground">{name}</p>
+   772	            {type ? (
+   773	              <Badge size="sm" tone="neutral">
+   774	                {type}
+   775	              </Badge>
+   776	            ) : null}
+
+9) Employee invite role/scope selectors:
+    28	const roleTemplates = [
+    29	  { value: "organization_admin", label: roleTemplateLabels.organization_admin },
+    30	  { value: "organization_head", label: roleTemplateLabels.organization_head },
+    31	  { value: "division_head", label: roleTemplateLabels.division_head },
+    32	  { value: "division_operator", label: roleTemplateLabels.division_operator },
+    33	  { value: "unit_head", label: roleTemplateLabels.unit_head },
+    34	  { value: "unit_operator", label: roleTemplateLabels.unit_operator },
+    35	  { value: "auditor", label: roleTemplateLabels.auditor },
+    36	] as const;
+    37	
+    38	const scopeTypeLabels: Record<ScopeType, string> = {
+    39	  organization: "Вся организация",
+    40	  division: "Подразделение",
+    41	  unit: "Юнит",
+    42	};
+    95	  const scopeOptions = useMemo<Record<ScopeType, ScopeOption[]>>(
+    96	    () => ({
+    97	      organization: [{ value: session.organization.id, label: session.organization.name }],
+    98	      division: session.divisions.map((item) => ({ value: item.id, label: item.name })),
+    99	      unit: session.units.map((item) => ({ value: item.id, label: item.name })),
+   100	    }),
+   241	              <SelectField
+   242	                label="Роль доступа"
+   243	                name="roleTemplate"
+   244	                onChange={(event) => setRoleTemplate(event.target.value as RoleTemplate)}
+   245	                options={roleTemplates}
+   246	                value={roleTemplate}
+   247	              />
+   248	          <div className="grid gap-4 md:grid-cols-2">
+   249	            <SelectField
+   250	                label="Уровень доступа"
+   251	                name="scopeType"
+   252	                onChange={(event) => setScopeType(event.target.value as ScopeType)}
+   253	                options={[
+   254	                  {
+   255	                    disabled: !isRoleScopeCompatible(roleTemplate, "organization"),
+   256	                    label: "Вся организация",
+   257	                    value: "organization",
+   258	                  },
+   259	                  {
+   260	                    disabled: !isRoleScopeCompatible(roleTemplate, "division") || !scopeOptions.division.length,
+   261	                    label: "Подразделение",
+   262	                    value: "division",
+   263	                  },
+   264	                  {
+   265	                    disabled: !isRoleScopeCompatible(roleTemplate, "unit") || !scopeOptions.unit.length,
+   266	                    label: "Юнит",
+   267	                    value: "unit",
+   268	                  },
+   269	                ]}
+   270	                value={scopeType}
+   271	            />
+   272	            <SelectField
+   273	              disabled={!scopeOptions[scopeType].length}
+   274	              label="Объект доступа"
+   275	              name="scopeId"
+   276	              onChange={(event) => setScopeId(event.target.value)}
+   277	              options={scopeOptions[scopeType]}
+   278	              value={scopeId}
+   279	            />
+
+10) Proof coverage snippets:
+   181	    for option in ("ООО", "АО", "ПАО"):
+   182	        assert_true(option in workspace_source, f"/company profile legal-form option {option} is missing from source")
+   183	    assert_true('{ label: "ОАО"' not in workspace_source and '{ label: "ЗАО"' not in workspace_source, "/company source must not expose legacy ОАО/ЗАО options")
+   184	    assert_true("showType={false}" in workspace_source, "division form must hide type selector")
+   185	    assert_true("type={division.type}" not in workspace_source, "division storage type must not be displayed")
+   186	    for option in ("ВРД", "ВРЗ", "ВУ", "ВРП"):
+   187	        assert_true(option in workspace_source, f"unit type option {option} is missing from source")
+   188	    assert_true("Тип подразделения" not in launch_wizard_source, "historical launch wizard must not expose division type selector")
+   189	    assert_true("Производственный юнит" not in launch_wizard_source, "historical launch wizard must not use obsolete unit type default")
+   190	
+   191	    return {
+   192	        "profileLegalForms": ["ООО", "АО", "ПАО"],
+   193	        "divisionTypeSelector": "hidden",
+   194	        "unitTypes": ["ВРД", "ВРЗ", "ВУ", "ВРП"],
+   417	        body=company_profile_payload("legacy-oao", legacy_type="ОАО"),
+   418	    )
+   419	    legacy_zao, _ = expect_ok(
+   420	        BACKEND_BASE,
+   421	        "PATCH",
+   422	        "/api/v1/company/profile",
+   423	        expected_status=200,
+   424	        token=admin.token,
+   425	        body=company_profile_payload("legacy-zao", legacy_type="ЗАО"),
+   426	    )
+   427	    legacy_llc, _ = expect_ok(
+   428	        BACKEND_BASE,
+   429	        "PATCH",
+   430	        "/api/v1/company/profile",
+   431	        expected_status=200,
+   432	        token=admin.token,
+   433	        body=company_profile_payload("legacy-llc", legacy_type="LLC"),
+   434	    )
+   435	    assert_true(accepted_ao["data"]["organization"]["propertyType"] == "АО", "organization profile rejected АО")
+   436	    assert_true(accepted_pao["data"]["organization"]["propertyType"] == "ПАО", "organization profile rejected ПАО")
+   437	    assert_true(legacy_oao["data"]["organization"]["propertyType"] == "ПАО", "legacy ОАО did not normalize to ПАО")
+   438	    assert_true(legacy_zao["data"]["organization"]["propertyType"] == "АО", "legacy ЗАО did not normalize to АО")
+   439	    assert_true(legacy_llc["data"]["organization"]["propertyType"] == "ООО", "legacy LLC did not normalize to ООО")
+   440	
+   441	    invalid_profile = expect_error(
+   442	        BACKEND_BASE,
+   443	        "PATCH",
+   444	        "/api/v1/company/profile",
+   445	        expected_status=400,
+   446	        token=admin.token,
+   447	        body=company_profile_payload("invalid-profile", "ВРД"),
+   448	    )
+   449	
+   450	    first_division, _ = expect_ok(
+   451	        BACKEND_BASE,
+   452	        "POST",
+   453	        "/api/v1/company/divisions",
+   454	        expected_status=201,
+   455	        token=admin.token,
+   456	        body=division_payload("first"),
+   457	    )
+   458	    first_division_id = first_division["data"]["divisions"][0]["id"]
+   459	    assert_true(first_division["data"]["divisions"][0]["type"] == "division", "division storage type should remain hidden internal default")
+   637	            "roleTemplate": "division_head",
+   638	            "scopeType": "division",
+   639	            "scopeId": archive_division_id,
+   640	            "expiresAt": future_expiry(),
+   641	        },
+   642	    )
+   643	
+   644	    division_invite = create_employee_invite(admin, "division-reader", "division_head", "division", first_division_id)
+   645	    division_session = send_and_accept_employee(admin, division_invite["id"], "division-reader")
+   646	    assert_true(division_session["workspace"]["scopeType"] == "division", "division user did not get division workspace")
+   647	    assert_true(len(division_session["divisions"]) == 1, "division user should see only target division")
+   648	    assert_true(all(unit.get("divisionId") == first_division_id for unit in division_session["units"]), "division user saw units outside subtree")
+   649	    assert_true(division_session["workspace"]["canManageEmployeeInvites"] is False, "division user should not manage invites")
+   650	    division_mutation = expect_error(
+   651	        BACKEND_BASE,
+   652	        "POST",
+   653	        "/api/v1/company/units",
+   654	        expected_status=403,
+   655	        token=division_session["sessionToken"],
+   688	            "accepted": ["ООО", "АО", "ПАО"],
+   689	            "legacyAliases": {
+   690	                "ОАО": legacy_oao["data"]["organization"]["propertyType"],
+   691	                "ЗАО": legacy_zao["data"]["organization"]["propertyType"],
+   692	                "LLC": legacy_llc["data"]["organization"]["propertyType"],
+   693	            },
+   694	            "invalidOperationalTypeError": invalid_profile,
+   695	        },
+   696	        "invalidUnitType": invalid_unit,
+   697	        "divisionScopedSession": {
+   698	            "workspace": division_session["workspace"],
+   699	            "divisionCount": len(division_session["divisions"]),
+   700	            "unitCount": len(division_session["units"]),
+   701	            "mutationError": division_mutation,
+   702	        },
+   703	        "unitScopedSession": {
+   704	            "workspace": unit_session["workspace"],
+   745	        "\n".join(
+   746	            [
+   747	                f"slice-010 proof PASS seed={SEED}",
+   748	                "first-admin web acceptance issued active session and /company landing",
+   749	                "organization profile legal-form contract accepted ООО/АО/ПАО and normalized legacy aliases",
+   750	                "division create/update omitted user-facing type while unit type remained required",
+   751	                "persistent /company APIs created/edited/archived divisions and units",
+   752	                "archive blockers and hidden archived invite-target validation returned expected errors",
+   753	                "division/unit scoped users saw read-only subtree projections and backend mutations returned 403",
+   754	                "org-scope employee invite worked before any division or unit existed",
+   755	            ]
+   756	        )
+
+11) Feature-list reopened state for affected entries:
+{
+  "id": "stage03-org-hierarchy-and-launch-wizard",
+  "passes": false
+}
+{
+  "id": "stage03-memberships-invites-scoped-access",
+  "passes": false
+}
+{
+  "id": "stage03-slice010-company-org-structure-correction",
+  "passes": false
+}
+
+Contract audit conclusion: PASS. Current backend/web/API/proof use division, /api/v1/company/divisions, session divisions, unit divisionId, scope division, roles division_head/division_operator, organization legal forms ООО/АО/ПАО with aliases ОАО->ПАО ЗАО->АО LLC->ООО, hidden division type default, and unit types ВРД/ВРЗ/ВУ/ВРП.
+EXIT_CODE=0

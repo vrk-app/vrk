@@ -1,19 +1,37 @@
 # Problems
 
-No open proof gaps on `86deb3285b46c6dcd9018a3f2564e78dd4f83a33`.
+Current verifier verdict for `slice-010-stage03-org-structure-management`: `PASS`.
 
-Truthfulness notes:
+## Failed Criteria
 
-- the current fresh verifier run completed and wrote a usable verdict, so the prior control-plane blocker raw `.agent/stages/03-identity-master-data/raw/slice-007-008-verifier-agent-blocked-2026-04-21-orchestrator-rerun3.txt` is historical only;
-- the named current bundle artifacts still match current repo truth:
-  - primary auth proof/summary: `.agent/stages/03-identity-master-data/raw/slice-007-008-direct-auth-proof-2026-04-21-orchestrator-rerun7.txt`, `.agent/stages/03-identity-master-data/raw/slice-007-008-direct-summary-2026-04-21.json`;
-  - current UI review: `.agent/stages/03-identity-master-data/raw/slice-007-008-ui-review-2026-04-21-orchestrator-rerun2.txt`;
-  - current harness refresh: `.agent/stages/03-identity-master-data/raw/slice-007-008-harness-check-2026-04-21-orchestrator-rerun8.txt`;
-- this verifier rechecked the same slice on the current localhost stack and recorded fresh artifacts in:
-  - `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-harness-post-verdict-2026-04-21.txt`;
-  - `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-proof-2026-04-21.txt`;
-  - `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-summary-2026-04-21.json`;
-  - `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-ui-review-2026-04-21.txt`;
-  - `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-evidence-audit-2026-04-21.txt`.
+- None.
 
-Fixer rerun required: `no`.
+## Proof Gaps
+
+- None.
+
+## Exact Reproduction
+
+```bash
+python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data
+python3 -m py_compile .agent/stages/03-identity-master-data/proof_slice010_org_structure.py
+VRK_API_BASE_URL=http://127.0.0.1:18180 VRK_WEB_BASE_URL=http://127.0.0.1:3110 VRK_STAGE03_SLICE010_SEED=20260429099 python3 .agent/stages/03-identity-master-data/proof_slice010_org_structure.py
+curl -fsSL https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md > .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-29-division-current-fresh-verifier.md
+python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query "slice-010 organization profile structure management company divisions units archive employee invite controls"
+python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query "Button Card InputField SelectField TextareaField InlineAlert Tabs company structure management"
+```
+
+Saved raw artifacts:
+
+- `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-harness-2026-04-29.txt`
+- `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-proof-run-2026-04-29.txt`
+- `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-summary-2026-04-29.json`
+- `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-contract-audit-2026-04-29.txt`
+- `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-terminology-audit-2026-04-29.txt`
+- `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-doc-sync-audit-2026-04-29.txt`
+- `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-ui-review-2026-04-29.txt`
+- `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-ui-evidence-audit-2026-04-29.txt`
+
+## Smallest Safe Fix Direction
+
+No implementation or documentation fix is required. Leave the affected `feature_list.json` pass flips to the parent orchestrator.

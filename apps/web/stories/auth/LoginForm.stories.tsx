@@ -50,6 +50,17 @@ export const ServerError: Story = {
   },
 };
 
+export const WithWorkspaceHint: Story = {
+  args: {
+    workspaceHint: {
+      organizationName: "ВРК Север",
+      scopeType: "unit",
+      scopeName: "Юнит 01",
+      landingPath: "/company",
+    },
+  },
+};
+
 export const Loading: Story = {
   args: {
     loading: true,

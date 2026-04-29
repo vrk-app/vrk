@@ -1,0 +1,75 @@
+
+> @vrk/web@0.1.0 build /Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/raw/slice-010-fresh-verifier-workspace-2026-04-29/apps/web
+> next build
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/yura-posledov/cursor/vrk/pnpm-lock.yaml as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * /Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/raw/slice-010-fresh-verifier-workspace-2026-04-29/pnpm-lock.yaml
+
+   ▲ Next.js 15.5.15
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 4.0s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/25) ...
+   Generating static pages (6/25) 
+   Generating static pages (12/25) 
+   Generating static pages (18/25) 
+ ✓ Generating static pages (25/25)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                                                   Size  First Load JS
+┌ ○ /                                                                        206 B         102 kB
+├ ○ /_not-found                                                              993 B         103 kB
+├ ○ /access-policy                                                           196 B         141 kB
+├ ƒ /api/auth/employee-invites                                               206 B         102 kB
+├ ƒ /api/auth/employee-invites/[inviteId]/revoke                             206 B         102 kB
+├ ƒ /api/auth/employee-invites/[inviteId]/send                               206 B         102 kB
+├ ƒ /api/auth/invites/[token]                                                206 B         102 kB
+├ ƒ /api/auth/invites/[token]/accept                                         206 B         102 kB
+├ ƒ /api/auth/session                                                        206 B         102 kB
+├ ƒ /api/auth/session/current                                                206 B         102 kB
+├ ƒ /api/bootstrap                                                           206 B         102 kB
+├ ƒ /api/company/profile                                                     206 B         102 kB
+├ ƒ /api/company/subdivisions                                                206 B         102 kB
+├ ƒ /api/company/subdivisions/[subdivisionId]                                206 B         102 kB
+├ ƒ /api/company/subdivisions/[subdivisionId]/archive                        206 B         102 kB
+├ ƒ /api/company/units                                                       206 B         102 kB
+├ ƒ /api/company/units/[unitId]                                              206 B         102 kB
+├ ƒ /api/company/units/[unitId]/archive                                      206 B         102 kB
+├ ƒ /api/contracts                                                           206 B         102 kB
+├ ƒ /api/contracts/[contractId]                                              206 B         102 kB
+├ ƒ /api/contracts/contractors                                               206 B         102 kB
+├ ƒ /api/contracts/routing/resolve                                           206 B         102 kB
+├ ƒ /api/equipment                                                           206 B         102 kB
+├ ƒ /api/equipment/[equipmentId]/archive                                     206 B         102 kB
+├ ƒ /api/equipment/measuring-instruments                                     206 B         102 kB
+├ ƒ /api/equipment/measuring-instruments/[measuringInstrumentId]/archive     206 B         102 kB
+├ ƒ /api/equipment/measuring-instruments/[measuringInstrumentId]/journals    206 B         102 kB
+├ ƒ /api/equipment/standards                                                 206 B         102 kB
+├ ƒ /api/equipment/standards/[standardId]/archive                            206 B         102 kB
+├ ƒ /api/equipment/standards/[standardId]/journals                           206 B         102 kB
+├ ƒ /api/platform/organization-shells                                        206 B         102 kB
+├ ƒ /company                                                               8.97 kB         152 kB
+├ ƒ /company/setup                                                           206 B         102 kB
+├ ƒ /contracts                                                             6.94 kB         147 kB
+├ ƒ /equipment                                                             14.8 kB         155 kB
+├ ○ /login                                                                 2.67 kB         155 kB
+├ ○ /password-reset                                                          196 B         141 kB
+├ ○ /register                                                                537 B         162 kB
+├ ƒ /register/[token]                                                        230 B         159 kB
+└ ƒ /requests                                                                196 B         141 kB
++ First Load JS shared by all                                               102 kB
+  ├ chunks/4287-1a1b6622c8fbdf8a.js                                        45.7 kB
+  ├ chunks/d9d495f0-0f113042a8009c03.js                                    54.2 kB
+  └ other shared chunks (total)                                            1.88 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

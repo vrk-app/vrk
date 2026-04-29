@@ -1,0 +1,68 @@
+
+> @vrk/web@0.1.0 build /Users/yura-posledov/cursor/vrk/apps/web
+> next build
+
+   ▲ Next.js 15.5.15
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 3.3s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/25) ...
+   Generating static pages (6/25) 
+   Generating static pages (12/25) 
+   Generating static pages (18/25) 
+ ✓ Generating static pages (25/25)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                                                   Size  First Load JS
+┌ ○ /                                                                        208 B         102 kB
+├ ○ /_not-found                                                              996 B         103 kB
+├ ○ /access-policy                                                           194 B         140 kB
+├ ƒ /api/auth/employee-invites                                               208 B         102 kB
+├ ƒ /api/auth/employee-invites/[inviteId]/revoke                             208 B         102 kB
+├ ƒ /api/auth/employee-invites/[inviteId]/send                               208 B         102 kB
+├ ƒ /api/auth/invites/[token]                                                208 B         102 kB
+├ ƒ /api/auth/invites/[token]/accept                                         208 B         102 kB
+├ ƒ /api/auth/session                                                        208 B         102 kB
+├ ƒ /api/auth/session/current                                                208 B         102 kB
+├ ƒ /api/bootstrap                                                           208 B         102 kB
+├ ƒ /api/company/profile                                                     208 B         102 kB
+├ ƒ /api/company/subdivisions                                                208 B         102 kB
+├ ƒ /api/company/subdivisions/[subdivisionId]                                208 B         102 kB
+├ ƒ /api/company/subdivisions/[subdivisionId]/archive                        208 B         102 kB
+├ ƒ /api/company/units                                                       208 B         102 kB
+├ ƒ /api/company/units/[unitId]                                              208 B         102 kB
+├ ƒ /api/company/units/[unitId]/archive                                      208 B         102 kB
+├ ƒ /api/contracts                                                           208 B         102 kB
+├ ƒ /api/contracts/[contractId]                                              208 B         102 kB
+├ ƒ /api/contracts/contractors                                               208 B         102 kB
+├ ƒ /api/contracts/routing/resolve                                           208 B         102 kB
+├ ƒ /api/equipment                                                           208 B         102 kB
+├ ƒ /api/equipment/[equipmentId]/archive                                     208 B         102 kB
+├ ƒ /api/equipment/measuring-instruments                                     208 B         102 kB
+├ ƒ /api/equipment/measuring-instruments/[measuringInstrumentId]/archive     208 B         102 kB
+├ ƒ /api/equipment/measuring-instruments/[measuringInstrumentId]/journals    208 B         102 kB
+├ ƒ /api/equipment/standards                                                 208 B         102 kB
+├ ƒ /api/equipment/standards/[standardId]/archive                            208 B         102 kB
+├ ƒ /api/equipment/standards/[standardId]/journals                           208 B         102 kB
+├ ƒ /api/platform/organization-shells                                        208 B         102 kB
+├ ƒ /company                                                               9.11 kB         151 kB
+├ ƒ /company/setup                                                           208 B         102 kB
+├ ƒ /contracts                                                             6.93 kB         147 kB
+├ ƒ /equipment                                                             14.8 kB         155 kB
+├ ○ /login                                                                 2.67 kB         155 kB
+├ ○ /password-reset                                                          194 B         140 kB
+├ ○ /register                                                                538 B         162 kB
+├ ƒ /register/[token]                                                        229 B         158 kB
+└ ƒ /requests                                                                194 B         140 kB
++ First Load JS shared by all                                               102 kB
+  ├ chunks/3554-c19825f276ec337d.js                                        45.5 kB
+  ├ chunks/a97b86c7-6ed9a45f307045da.js                                    54.2 kB
+  └ other shared chunks (total)                                            1.87 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

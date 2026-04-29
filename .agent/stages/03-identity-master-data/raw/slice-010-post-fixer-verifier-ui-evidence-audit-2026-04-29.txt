@@ -1,0 +1,161 @@
+UI workflow evidence audit
+Checked at: 2026-04-29T02:47:53Z
+
+{
+  "design_brief_source": {
+    "artifact": ".agent/stages/03-identity-master-data/sprint_contract.md",
+    "summary": "Replace historical /company/setup launch-wizard targeting with persistent /company organization profile and structure management, scoped read-only projections, archive lifecycle, and employee invite target validation."
+  },
+  "ui_lookup": {
+    "queries": [
+      "slice-010 organization profile structure management company subdivisions units archive employee invite controls",
+      "Button Card InputField SelectField TextareaField InlineAlert Tabs company structure management"
+    ],
+    "artifacts": [
+      ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-010-org-structure-primary-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-010-org-structure-primitives-2026-04-29.txt"
+    ],
+    "decision": "reuse",
+    "result": "No complete org-structure reusable family was present; the implementation reuses existing primitives and feature-local composition, with no new reusable family/stories required."
+  },
+  "changed_ui_files": [
+    "apps/web/app/(runtime)/company/page.tsx",
+    "apps/web/app/(runtime)/company/setup/page.tsx",
+    "apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx",
+    "apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx",
+    "apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx",
+    "apps/web/app/register/[token]/page.tsx",
+    "apps/web/shared/ui/InputField.tsx",
+    "apps/web/shared/ui/SelectField.tsx",
+    "apps/web/shared/ui/TextareaField.tsx",
+    "apps/web/shared/ui/Tabs.tsx",
+    "apps/web/shared/ui/InlineAlert.tsx"
+  ],
+  "ui_review": {
+    "gate": "$web-design-guidelines",
+    "status": "PASS",
+    "artifact": ".agent/stages/03-identity-master-data/raw/slice-010-ui-review-2026-04-29.txt",
+    "source": ".agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-29.md",
+    "notes": [
+      "Added stable names/autocomplete hints to new company form controls.",
+      "Marked decorative icon as aria-hidden.",
+      "Added confirmation before archive/revoke mutations.",
+      "Tab state remains local as a conscious exception because the slice does not require deep-linked tabs."
+    ]
+  }
+}
+
+Story/backlog refs for reused/new primitive families:
+apps/web/shared/ui/index.ts:2:export { Button, buttonVariants } from "./Button";
+apps/web/shared/ui/index.ts:3:export { Card } from "./Card";
+apps/web/shared/ui/index.ts:4:export { CopyableText, type CopyableTextProps } from "./CopyableText";
+apps/web/shared/ui/index.ts:5:export { InlineAlert, type InlineAlertProps } from "./InlineAlert";
+apps/web/shared/ui/index.ts:6:export { InputField } from "./InputField";
+apps/web/shared/ui/index.ts:7:export { SelectField, type SelectFieldOption, type SelectFieldProps } from "./SelectField";
+apps/web/shared/ui/index.ts:8:export { Tabs, type TabItem, type TabsProps } from "./Tabs";
+apps/web/shared/ui/index.ts:9:export { TextareaField, type TextareaFieldProps } from "./TextareaField";
+docs/design/storybook-component-backlog.md:52:- Не плодить дубликаты: `SearchInput` и `PasswordInput` являются вариантами `InputField`; статусные плашки являются обертками над `Badge`; круг процентов является оберткой над `CircularProgress`; доменные таблицы строятся на базе одного `DataTable`.
+docs/design/storybook-component-backlog.md:82:### UI-01 Button [P0]
+docs/design/storybook-component-backlog.md:89:### UI-02 IconButton [P0]
+docs/design/storybook-component-backlog.md:96:### UI-03 InputField [P0]
+docs/design/storybook-component-backlog.md:103:### UI-04 SelectField [P0]
+docs/design/storybook-component-backlog.md:109:- Реализация: `apps/web/shared/ui/SelectField.tsx`, stories в `apps/web/stories/primitives/SelectField.stories.tsx`.
+docs/design/storybook-component-backlog.md:132:### UI-08 Tabs [P0]
+docs/design/storybook-component-backlog.md:137:- Stories: `Basic`, `ManyTabs`, `WithLongLabels`.
+docs/design/storybook-component-backlog.md:138:- Реализация: `apps/web/shared/ui/Tabs.tsx`, stories в `apps/web/stories/primitives/Tabs.stories.tsx`; вкладки используют `tablist`/`tab`, roving focus и `Home`/`End`.
+docs/design/storybook-component-backlog.md:154:### UI-11 Card [P0]
+docs/design/storybook-component-backlog.md:224:- Stories: `TextLines`, `CardSkeleton`, `TableSkeleton`, `ChatSkeleton`.
+docs/design/storybook-component-backlog.md:226:### UI-21 CopyableText [P1]
+docs/design/storybook-component-backlog.md:286:### DASH-01 KpiStatCard [P0]
+docs/design/storybook-component-backlog.md:293:### DASH-02 DashboardLineChartCard [P0]
+docs/design/storybook-component-backlog.md:381:### DOC-01 FileCard [P0]
+docs/design/storybook-component-backlog.md:395:### DOC-03 DocumentCard [P0]
+docs/design/storybook-component-backlog.md:461:- Stories: `UnreadSimple`, `Read`, `WithActionButtons`, `WithQuote`.
+docs/design/storybook-component-backlog.md:539:### REG-03 ContractCard [P1]
+docs/design/storybook-component-backlog.md:567:- все новые компоненты строятся поверх уже описанных primitives: `Card`, `Badge`, `DataTable`, `Dialog`, `Drawer`, `FileCard`, `Tabs`, `EmptyState`, `Skeleton`;
+docs/design/storybook-component-backlog.md:575:#### FORM-01 `TextareaField` [P0]
+docs/design/storybook-component-backlog.md:581:- Реализация: `apps/web/shared/ui/TextareaField.tsx`, stories в `apps/web/stories/primitives/TextareaField.stories.tsx`.
+docs/design/storybook-component-backlog.md:590:#### FORM-03 `MultiSelectField` [P0]
+docs/design/storybook-component-backlog.md:690:#### STATE-04 `InlineAlert` / `FormAlert` [P0]
+docs/design/storybook-component-backlog.md:696:- Реализация: `apps/web/shared/ui/InlineAlert.tsx`, stories в `apps/web/stories/primitives/InlineAlert.stories.tsx`.
+docs/design/storybook-component-backlog.md:740:#### EQP-01 `DevicePassportCard` [P1]
+docs/design/storybook-component-backlog.md:747:#### EQP-02 `MetrologyStatusCard` [P1]
+docs/design/storybook-component-backlog.md:754:#### EQP-03 `CalibrationCountdownCard` [P1]
+docs/design/storybook-component-backlog.md:769:#### EQP-05 `ReferenceStandardCard` [P1]
+docs/design/storybook-component-backlog.md:858:#### INT-01 `IntegrationStatusCard` [P2]
+docs/design/storybook-component-backlog.md:879:#### BILL-02 `TariffCard` [P2]
+docs/design/storybook-component-backlog.md:922:Собирает: `AppShell`, `TopBar`, `SidebarNav`, `PageHeader`, `KpiStatCard`, `DataTable`, `DashboardLineChartCard`, `SummaryPanel`.
+docs/design/storybook-component-backlog.md:930:Собирает: `AppShell`, `Breadcrumbs`, `RequestDetailsHeader`, `Tabs`, `EquipmentTable`, `DocumentList`, `CommentThread`, `AuditTimeline`.
+docs/design/storybook-component-backlog.md:954:Собирает: `RegistryPageTemplate`, `ContractCard`.
+docs/design/storybook-component-backlog.md:958:Собирает: `RegistryPageTemplate`, `ReportFiltersPanel`, `ExportActions`, `DashboardLineChartCard`.
+docs/design/storybook-component-backlog.md:964:- `SearchInput` — это `InputField` с `type="search"`.
+docs/design/storybook-component-backlog.md:965:- `PasswordInput` — это `InputField` с `type="password"`.
+docs/design/storybook-component-backlog.md:968:- Мини-график в KPI — внутренняя часть `KpiStatCard`, не отдельный публичный компонент.
+docs/design/storybook-component-backlog.md:969:- Прикрепленный файл в чате — `FileCard` в `compact`-режиме.
+docs/design/storybook-component-backlog.md:973:- `DocumentPreviewDrawer`, `ImageLightboxGallery` и `FileCard` должны использовать единый файловый доменный слой.
+docs/design/storybook-component-backlog.md:974:- `MetrologyStatusCard`, `CalibrationCountdownCard` и `ContractValidityBanner` — это доменные обертки над общими `status/badge/panel` recipes.
+docs/design/storybook-component-backlog.md:986:`DataTable`, `KpiStatCard`, `DashboardLineChartCard`, `SummaryPanel`, `RequestDetailsHeader`, `EquipmentTable`, `CommentThread`, `AuditTimeline`, `FileCard`, `DocumentCard`, `DocumentList`.
+docs/design/storybook-component-backlog.md:994:`TextareaField`, `AsyncEntityPicker`, `MultiSelectField`, `RequestCreationWizard`, `RequestWorkflowStepper`, `ApprovalActionBar`, `AssignmentPanel`, `WorksEditorTable`, `MaterialsEditorTable`, `RequiredDocumentsChecklist`, `DocumentPreviewDrawer`, `DocumentVersionHistory`, `SignatureVerificationPanel`, `ConfirmDialog`, `ToastCenter`, `InlineAlert`, `AccessDeniedState`.
+docs/design/storybook-component-backlog.md:998:`DeadlineCountdownBadge`, `CostSummaryPanel`, `DevicePassportCard`, `MetrologyStatusCard`, `CalibrationCountdownCard`, `MeasurementOperationLog`, `ReferenceStandardCard`, `ContractDevicesMatrix`, `ServiceScheduleTable`, `ContractValidityBanner`, `AuditDiffViewer`, `ReportPresetCatalog`, `DatePresetPicker`, `ExportJobStatusPanel`, `SessionExpiredDialog`, `ImageLightboxGallery`.
+docs/design/storybook-component-backlog.md:1002:все `PWA-*`, все `INT-*`, `TrialActivationModal`, `TariffCard`, все `ADM-*`.
+apps/web/stories/primitives/InlineAlert.stories.tsx:3:import { Button, InlineAlert } from "@/shared/ui";
+apps/web/stories/primitives/InlineAlert.stories.tsx:6:  title: "Primitives/InlineAlert",
+apps/web/stories/primitives/InlineAlert.stories.tsx:7:  component: InlineAlert,
+apps/web/stories/primitives/InlineAlert.stories.tsx:18:      <InlineAlert {...args} />
+apps/web/stories/primitives/InlineAlert.stories.tsx:21:} satisfies Meta<typeof InlineAlert>;
+apps/web/stories/primitives/InlineAlert.stories.tsx:56:      <Button rightIcon={<ArrowUpRight className="size-4" />} size="sm" variant="secondary">
+apps/web/stories/primitives/InlineAlert.stories.tsx:58:      </Button>
+apps/web/stories/primitives/InputField.stories.tsx:4:import { InputField } from "@/shared/ui";
+apps/web/stories/primitives/InputField.stories.tsx:7:  title: "Primitives/InputField",
+apps/web/stories/primitives/InputField.stories.tsx:8:  component: InputField,
+apps/web/stories/primitives/InputField.stories.tsx:22:      <InputField {...args} />
+apps/web/stories/primitives/InputField.stories.tsx:25:} satisfies Meta<typeof InputField>;
+apps/web/stories/primitives/Tabs.stories.tsx:4:import { Tabs } from "@/shared/ui";
+apps/web/stories/primitives/Tabs.stories.tsx:6:const registryTabs = [
+apps/web/stories/primitives/Tabs.stories.tsx:13:  title: "Primitives/Tabs",
+apps/web/stories/primitives/Tabs.stories.tsx:14:  component: Tabs,
+apps/web/stories/primitives/Tabs.stories.tsx:22:    items: registryTabs,
+apps/web/stories/primitives/Tabs.stories.tsx:27:      <Tabs {...args} />
+apps/web/stories/primitives/Tabs.stories.tsx:30:} satisfies Meta<typeof Tabs>;
+apps/web/stories/primitives/Tabs.stories.tsx:50:export const ManyTabs: Story = {
+apps/web/stories/primitives/Tabs.stories.tsx:53:      ...registryTabs,
+apps/web/stories/primitives/SelectField.stories.tsx:3:import { SelectField } from "@/shared/ui";
+apps/web/stories/primitives/SelectField.stories.tsx:13:  title: "Primitives/SelectField",
+apps/web/stories/primitives/SelectField.stories.tsx:14:  component: SelectField,
+apps/web/stories/primitives/SelectField.stories.tsx:27:      <SelectField {...args} />
+apps/web/stories/primitives/SelectField.stories.tsx:30:} satisfies Meta<typeof SelectField>;
+apps/web/stories/primitives/CopyableText.stories.tsx:3:import { CopyableText } from "@/shared/ui";
+apps/web/stories/primitives/CopyableText.stories.tsx:6:  title: "Primitives/CopyableText",
+apps/web/stories/primitives/CopyableText.stories.tsx:7:  component: CopyableText,
+apps/web/stories/primitives/CopyableText.stories.tsx:17:      <CopyableText {...args} data-testid="copyable-text-story" />
+apps/web/stories/primitives/CopyableText.stories.tsx:20:} satisfies Meta<typeof CopyableText>;
+apps/web/stories/primitives/TextareaField.stories.tsx:3:import { TextareaField } from "@/shared/ui";
+apps/web/stories/primitives/TextareaField.stories.tsx:6:  title: "Primitives/TextareaField",
+apps/web/stories/primitives/TextareaField.stories.tsx:7:  component: TextareaField,
+apps/web/stories/primitives/TextareaField.stories.tsx:19:      <TextareaField {...args} />
+apps/web/stories/primitives/TextareaField.stories.tsx:22:} satisfies Meta<typeof TextareaField>;
+apps/web/stories/primitives/Button.stories.tsx:4:import { Button } from "@/shared/ui";
+apps/web/stories/primitives/Button.stories.tsx:7:  title: "Primitives/Button",
+apps/web/stories/primitives/Button.stories.tsx:8:  component: Button,
+apps/web/stories/primitives/Button.stories.tsx:16:} satisfies Meta<typeof Button>;
+apps/web/stories/primitives/Button.stories.tsx:98:      <Button {...args} />
+apps/web/stories/primitives/Card.stories.tsx:2:import { Badge, Button, Card } from "@/shared/ui";
+apps/web/stories/primitives/Card.stories.tsx:4:function CardPreview({
+apps/web/stories/primitives/Card.stories.tsx:17:      <Card bordered={bordered} elevated={elevated} padding={padding} tone={tone}>
+apps/web/stories/primitives/Card.stories.tsx:36:            <Button size="sm">Открыть</Button>
+apps/web/stories/primitives/Card.stories.tsx:37:            <Button size="sm" variant="secondary">
+apps/web/stories/primitives/Card.stories.tsx:39:            </Button>
+apps/web/stories/primitives/Card.stories.tsx:42:      </Card>
+apps/web/stories/primitives/Card.stories.tsx:48:  title: "Primitives/Card",
+apps/web/stories/primitives/Card.stories.tsx:49:  component: Card,
+apps/web/stories/primitives/Card.stories.tsx:54:} satisfies Meta<typeof Card>;
+apps/web/stories/primitives/Card.stories.tsx:61:  render: () => <CardPreview bordered={false} />,
+apps/web/stories/primitives/Card.stories.tsx:65:  render: () => <CardPreview bordered />,
+apps/web/stories/primitives/Card.stories.tsx:69:  render: () => <CardPreview bordered elevated />,
+apps/web/stories/primitives/Card.stories.tsx:73:  render: () => <CardPreview bordered padding="dense" tone="muted" />,
+
+Post-fixer lookup artifacts:
+- .agent/stages/03-identity-master-data/raw/storybook-lookup-slice-010-post-fixer-verifier-primary-2026-04-29.txt
+- .agent/stages/03-identity-master-data/raw/storybook-lookup-slice-010-post-fixer-verifier-primitives-2026-04-29.txt
+
+Conclusion: evidence includes prompt/brief source, lookup refs, reuse decision, changed UI files, and UI review result; primitive reusable files have stories/backlog refs; no complete duplicate org-structure reusable family found by lookup.

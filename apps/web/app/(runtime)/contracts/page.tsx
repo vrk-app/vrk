@@ -7,20 +7,18 @@ import {
   contractsShell,
   fetchContractRegistry,
   fetchContractorOptions,
-  getRuntimeBootstrap,
+  sessionHasCapability,
 } from "@/shared/api";
 import { fetchSessionSummary } from "@/shared/api/session-server";
 import { Badge, Card } from "@/shared/ui";
 import { PageHeader } from "@/widgets/OperatorShell";
 
 function AnonymousContractsShell() {
-  const runtimeBootstrap = getRuntimeBootstrap();
-
   return (
     <>
       <PageHeader
-        actions={<Badge tone="interactive">Public route: /contracts</Badge>}
-        subtitle="Анонимный пользователь по-прежнему видит truthful shell boundary. Живой contracts registry появляется только после Stage 03 auth/session projection."
+        actions={<Badge tone="interactive">Открытый просмотр</Badge>}
+        subtitle="Войдите, чтобы открыть договоры, подрядчиков и проверку маршрута."
         title="Договоры и подрядчики"
       />
 
@@ -50,16 +48,15 @@ function AnonymousContractsShell() {
 
       <Card className="mt-4 gap-4" id="boundary-notes" padding="lg">
         <div className="space-y-2">
-          <h2 className="text-xl font-semibold text-foreground">Normalized web boundary</h2>
+          <h2 className="text-xl font-semibold text-foreground">Как работает раздел</h2>
           <p className="text-sm leading-6 text-muted-foreground">
-            Публичный runtime route называется contracts, а backend resource пока остается agreements внутри explicit
-            adapter boundary.
+            Здесь отображаются договоры, подрядчики и проверка подходящего договора.
           </p>
         </div>
-        <div className="rounded-[var(--radius-xl)] border border-border bg-muted/60 p-4 font-mono text-sm text-foreground">
-          <div>Web route: /contracts</div>
-          <div>Backend resource: {runtimeBootstrap.resources.contracts}</div>
-          <div>Mode: anonymous shell before session</div>
+        <div className="rounded-[var(--radius-xl)] border border-border bg-muted/60 p-4 text-sm text-muted-foreground">
+          <div>Заказчик управляет договорами и привязкой подрядчиков.</div>
+          <div>Подрядчик видит назначенные ему договоры.</div>
+          <div>Подходящий договор помогает выбрать исполнителя заявки.</div>
         </div>
       </Card>
     </>
@@ -78,26 +75,23 @@ export default async function ContractsPage() {
   }
 
   const initialContracts = await fetchContractRegistry(session.sessionToken);
-  const canManageContracts =
-    session.organization.roleTitle === "customer" &&
-    session.grant?.roleTemplate === "organization_admin" &&
-    session.workspace.scopeType === "organization";
+  const canManageContracts = session.organization.roleTitle === "customer" && sessionHasCapability(session, "manage_contracts");
   const contractorOptions = canManageContracts ? await fetchContractorOptions(session.sessionToken) : [];
   const contourLabel =
-    session.organization.roleTitle === "contractor" ? "Contractor contracts workspace" : "Customer contracts registry";
+    session.organization.roleTitle === "contractor" ? "Договоры подрядчика" : "Реестр договоров заказчика";
 
   return (
     <>
       <PageHeader
         actions={
           <Badge tone={session.organization.roleTitle === "contractor" ? "warning" : "interactive"}>
-            Stage 03 • {contourLabel}
+            {contourLabel}
           </Badge>
         }
         subtitle={
           session.organization.roleTitle === "contractor"
-            ? "Подрядчик видит только customer contracts, привязанные к своей организации, без доступа к customer org graph."
-            : "Customer organization admin управляет contracts registry, contractor binding и routing eligibility preview внутри реального Stage 03 contour."
+            ? "Показаны договоры заказчиков, доступные вашей организации."
+            : "Создавайте договоры, привязывайте подрядчиков и проверяйте подходящий маршрут."
         }
         title="Договоры и маршрутизация"
       />

@@ -20,7 +20,7 @@ function ShellContent() {
     <>
       <PageHeader
         actions={null}
-        subtitle="Этот каркас доказывает базовую компоновку Stage 01: навигацию, верхнюю панель и рабочую зону без ранней живой интеграции."
+        subtitle="Навигация, верхняя панель и рабочая зона собраны в единую оболочку."
         title="Каркас приложения"
       />
       <div className="grid gap-4 xl:grid-cols-3">
@@ -33,12 +33,12 @@ function ShellContent() {
           {
             icon: Shield,
             title: "Статусы и аудит",
-            text: "UI уже готов к доказуемому состоянию, даже пока данные остаются Storybook-моками.",
+            text: "Статусы, права и служебные события остаются заметными в рабочей зоне.",
           },
           {
             icon: Files,
             title: "Документы и платежи",
-            text: "Shell остаётся нейтральным и не конкурирует с будущим business-контентом.",
+            text: "Оболочка не конкурирует с основным рабочим содержимым.",
           },
         ].map((item) => (
           <Card className="gap-3" key={item.title} padding="md">
@@ -60,7 +60,7 @@ function ShellContent() {
           <div className="space-y-1">
             <h3 className="text-lg font-semibold text-foreground">Рабочая зона</h3>
             <p className="text-sm text-muted-foreground">
-              Следующий этап уже сможет использовать этот каркас как runtime-основу, но Stage 01 ограничивается доказательством через Storybook.
+              Контентные разделы используют общий ритм отступов, навигации и заголовков.
             </p>
           </div>
         </div>

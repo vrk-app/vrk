@@ -1,0 +1,24 @@
+Minimal fixer note for Newton FAIL on slice-010 legal-type documentation drift
+Timestamp: 2026-04-29T04:07:54Z
+
+Scope:
+- Documentation-only correction for the three proof gaps reported in problems.md.
+- No production code edited.
+- feature_list.json, verdict.json, and problems.md were not edited.
+
+Changed canonical docs:
+- docs/roadmap.md: added `LLC -> ООО` to the legacy legal-form compatibility sentence.
+- docs/design/customer-admin-bootstrap-flow.md: added `LLC -> ООО` to the legacy legal-form compatibility sentence.
+- docs/design/diagrams/customer-admin-bootstrap-flow.drawio: replaced stale visible examples `АО, ЗАО, ООО, ИП` with `ООО, АО, ПАО`.
+
+Focused checks:
+- rg -n "LLC -> ООО" docs/roadmap.md docs/design/customer-admin-bootstrap-flow.md
+  Result: PASS; both canonical text docs include the mapping.
+- rg -n "Организационно-правовая.*ООО, АО, ПАО" docs/design/diagrams/customer-admin-bootstrap-flow.drawio
+  Result: PASS; drawio source shows the corrected visible selector set.
+- if rg -n "АО, ЗАО, ООО, ИП|ОАО|ЗАО" docs/design/diagrams/customer-admin-bootstrap-flow.drawio; then exit 1; else printf 'PASS: stale visible legal-form options/aliases absent from drawio\n'; fi
+  Result: PASS; stale visible options and legacy aliases are absent from the drawio source.
+- xmllint --noout docs/design/diagrams/customer-admin-bootstrap-flow.drawio
+  Result: PASS; drawio XML remains well formed.
+- jq empty .agent/stages/03-identity-master-data/evidence.json
+  Result: PASS; refreshed evidence JSON is valid.

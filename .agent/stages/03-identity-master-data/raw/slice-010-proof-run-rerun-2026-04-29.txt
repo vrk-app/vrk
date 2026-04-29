@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 653, in <module>
+    main()
+    ~~~~^^
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 618, in main
+    web = accept_first_admin_web("web", email_prefix="slice010-web-admin")
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 240, in accept_first_admin_web
+    assert_true(urllib.parse.urlparse(setup_headers.get("Location", "")).path == "/company", "/company/setup did not redirect to /company")
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 161, in assert_true
+    raise AssertionError(message)
+AssertionError: /company/setup did not redirect to /company

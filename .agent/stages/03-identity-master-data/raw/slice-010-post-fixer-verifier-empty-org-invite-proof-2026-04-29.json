@@ -1,0 +1,48 @@
+{
+  "organizationId": "eb1bad18-56eb-4877-aeb5-eb5a801b54e2",
+  "invite": {
+    "id": "475c053d-1d6d-4ac2-8140-3e6f2b13bb69",
+    "fullName": "org-before-structure User",
+    "email": "org-before-structure-1777430591@vrk.local",
+    "roleTemplate": "observer",
+    "scopeType": "organization",
+    "scopeId": "eb1bad18-56eb-4877-aeb5-eb5a801b54e2",
+    "scopeLabel": "VRK empty 1777430591",
+    "status": "draft",
+    "expiresAt": "2026-05-06T02:43:12Z"
+  },
+  "currentStructure": {
+    "sessionToken": "c9f3ac78-357a-49ac-a436-360f95932ef7",
+    "requiresLaunchWizard": false,
+    "account": {
+      "id": "cda4dc00-3041-4646-b2f6-64fdc025d517",
+      "fullName": "empty Admin",
+      "email": "slice010-empty-admin-1777430591@vrk.local"
+    },
+    "membershipId": "73b9c335-fb8b-4b67-ae24-a836cafd9460",
+    "membershipStatus": "active",
+    "organization": {
+      "id": "eb1bad18-56eb-4877-aeb5-eb5a801b54e2",
+      "roleTitle": "customer",
+      "name": "VRK empty 1777430591",
+      "launchState": "active"
+    },
+    "grant": {
+      "id": "d5a5b68c-c34c-467d-a824-a778e50013e2",
+      "roleTemplate": "organization_admin",
+      "scopeType": "organization",
+      "scopeId": "eb1bad18-56eb-4877-aeb5-eb5a801b54e2"
+    },
+    "workspace": {
+      "scopeType": "organization",
+      "scopeId": "eb1bad18-56eb-4877-aeb5-eb5a801b54e2",
+      "scopeName": "VRK empty 1777430591",
+      "landingTitle": "VRK empty 1777430591",
+      "landingSubtitle": "Администратор организации видит полный org graph и может управлять приглашениями сотрудников.",
+      "landingPath": "/company",
+      "canManageEmployeeInvites": true
+    },
+    "subdivisions": [],
+    "units": []
+  }
+}

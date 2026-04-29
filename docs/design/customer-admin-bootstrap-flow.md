@@ -1,7 +1,7 @@
 # Customer Admin Bootstrap Flow
 
 Статус: accepted baseline  
-Обновлено: 2026-04-19
+Обновлено: 2026-04-29
 
 ## Назначение
 
@@ -65,7 +65,7 @@ flowchart LR
 - `/equipment` как equipment contour:
   - empty state
   - add/import entry points
-  - subdivision / unit context selection shell
+  - division / unit context selection shell
 - `/contracts` как contracts contour:
   - create contract shell
   - contractor lookup / invite shell
@@ -82,7 +82,7 @@ flowchart LR
 Что **не** должно притворяться готовым в `Stage 02`:
 
 - real auth / RBAC;
-- persisted org / subdivision / unit / equipment / contract state;
+- persisted org / division / unit / equipment / contract state;
 - contractor invitation state machine;
 - live request creation.
 
@@ -90,11 +90,11 @@ flowchart LR
 
 `Stage 03` активирует те же surfaces из `Stage 02`, но уже на реальной доменной модели:
 
-- first-admin activation по invite link и launch wizard вместо ручной раздачи паролей;
+- first-admin activation по invite link и переход в постоянный `/company` management surface вместо ручной раздачи паролей и одноразового wizard;
 - auth / logout / refresh / role-aware access;
 - org model:
   - organization profile
-  - subdivisions
+  - divisions
   - units
   - users / memberships / scoped grants
 - employee invitations и invitation lifecycle;
@@ -107,7 +107,7 @@ flowchart LR
 - metrology operation journals;
 - access boundaries for customer / contractor contours.
 
-Именно здесь onboarding flow перестает быть shell и становится реальным master-data контуром.
+Именно здесь onboarding flow перестает быть shell и становится реальным master-data контуром: первый запуск, редактирование профиля, добавление филиалов/подразделений и добавление юнитов выполняются через один постоянный UI.
 
 ### Реализованный route contour для slice-001
 
@@ -115,15 +115,18 @@ flowchart LR
 
 - `/register` используется платформенным админом для выпуска first-admin invite;
 - `/register/[token]` используется приглашенным администратором для password setup и accept;
-- после accept пользователь попадает в `/company/setup`, а после завершения wizard — в `/company`;
+- после accept пользователь попадает в `/company`; empty state и первые действия по настройке организации живут в том же постоянном route;
+- `/company/setup` и launch wizard больше не являются целевым UX для Stage 03, даже если текущая historical implementation еще содержит этот route;
+- профиль организации в `/company` использует selector `Тип` как ОПФ `ООО` / `АО` / `ПАО`; legacy aliases `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО` поддерживаются только как входная совместимость и не показываются в UI;
+- форма подразделения/филиала не содержит selector `Тип`; форма юнита сохраняет selector operational type `ВРД` / `ВРЗ` / `ВУ` / `ВРП`;
 - повторный переход по использованной одноразовой ссылке показывает состояние `Одноразовая ссылка больше не активна`;
 - анонимный `/company` shell из `Stage 02` сохраняется как truthful public state до появления активной session.
 
 ```mermaid
 flowchart LR
     A["/register<br/>platform admin issues invite"] --> B["/register/[token]<br/>first admin sets password"]
-    B --> C["/company/setup<br/>launch wizard"]
-    C --> D["/company<br/>persisted org summary"]
+    B --> C["/company<br/>organization management"]
+    C --> D["profile / divisions / units"]
     B --> E["invite replay / expired link"]
 ```
 
@@ -135,7 +138,7 @@ flowchart LR
 - employee invite выдается из `/company`, а одноразовая ссылка снова ведет в `/register/[token]`;
 - после employee acceptance и последующего login тот же `/company` route становится scope-aware landing:
   - organization scope показывает полный org graph и invite management;
-  - subdivision scope показывает только свое поддерево;
+  - division scope показывает только свое поддерево;
   - unit scope показывает только один юнит без расширения вверх;
 - replay, expired и revoked employee links возвращают пользователя в состояние `Одноразовая ссылка больше не активна`, а не в ложный success flow.
 
@@ -179,7 +182,7 @@ flowchart LR
   - `/equipment?tab=mi`
   - `/equipment?tab=standards`
 - organization-scope `organization_admin` получает create/list surface для equipment, measuring instruments и standards;
-- subdivision-scope и unit-scope пользователи видят тот же route, но только в read-only режиме и только в рамках разрешенного subtree;
+- division-scope и unit-scope пользователи видят тот же route, но только в read-only режиме и только в рамках разрешенного subtree;
 - contractor contour по-прежнему не расширяется в `/equipment` и остается на договорном `/contracts` boundary.
 
 ```mermaid
@@ -191,7 +194,7 @@ flowchart LR
     C --> F["organization scope<br/>create + list"]
     D --> F
     E --> F
-    C --> G["subdivision / unit scope<br/>read-only filtered contour"]
+    C --> G["division / unit scope<br/>read-only filtered contour"]
     D --> G
     E --> G
     H["/login<br/>contractor user"] --> I["/contracts only"]
@@ -209,7 +212,7 @@ flowchart LR
 - archive visibility тоже становится query-backed и воспроизводится через `?archived=1`;
 - journal history для СИ и эталонов открывается на том же contour, без выноса в отдельный `/journals` route family;
 - archive action для equipment / MI / standards сохраняет record и убирает его из default active view, а не делает hard delete;
-- subdivision/unit users по-прежнему видят тот же route, но только в read-only scope-filtered contour, включая allowed journal/archive state;
+- division/unit users по-прежнему видят тот же route, но только в read-only scope-filtered contour, включая allowed journal/archive state;
 - contractor contour не расширяется в journal/archive master-data surface и остается на `/contracts`.
 
 ```mermaid

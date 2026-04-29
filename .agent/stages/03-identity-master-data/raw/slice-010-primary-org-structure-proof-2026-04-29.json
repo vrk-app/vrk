@@ -1,0 +1,84 @@
+{
+  "organizationId": "47958887-6c9f-4f00-8544-68a6e879b6cb",
+  "firstDivisionId": "43059f12-b2ed-4857-a2d8-89e86e3d5545",
+  "childUnitId": "a2c20fdb-37c0-48cf-9656-2025ec51bce9",
+  "directUnitId": "a7a86a7c-1b94-4837-9703-2a2f7ee53615",
+  "secondDivisionId": "0ba29e7c-70ca-4e15-8ed6-d80d3f8fa227",
+  "archivedUnitId": "a71b4206-fcf9-413a-be23-85f966007e76",
+  "archivedDivisionId": "5850e250-0e94-4235-a76a-34de5f158c49",
+  "blockingInviteId": "765a032c-c256-4433-84ff-b2563c948761",
+  "blockedDivisionArchive": {
+    "success": false,
+    "error": "archive blocked by active references"
+  },
+  "blockedUnitArchive": {
+    "success": false,
+    "error": "archive blocked by active references"
+  },
+  "missingTargetInvite": {
+    "success": false,
+    "error": "invite scope target is invalid"
+  },
+  "archivedUnitInvite": {
+    "success": false,
+    "error": "invite scope target is invalid"
+  },
+  "archivedDivisionInvite": {
+    "success": false,
+    "error": "invite scope target is invalid"
+  },
+  "legalFormProof": {
+    "accepted": [
+      "ООО",
+      "АО",
+      "ПАО"
+    ],
+    "legacyAliases": {
+      "ОАО": "ПАО",
+      "ЗАО": "АО",
+      "LLC": "ООО"
+    },
+    "invalidOperationalTypeError": {
+      "success": false,
+      "error": "property type must be ООО, АО, or ПАО"
+    }
+  },
+  "invalidUnitType": {
+    "success": false,
+    "error": "unit type must be ВРД, ВРЗ, ВУ, or ВРП"
+  },
+  "divisionScopedSession": {
+    "workspace": {
+      "scopeType": "division",
+      "scopeId": "43059f12-b2ed-4857-a2d8-89e86e3d5545",
+      "scopeName": "first-edited подразделение 20260429099",
+      "landingTitle": "first-edited подразделение 20260429099",
+      "landingSubtitle": "Доступ ограничен выбранным подразделением и его дочерними юнитами.",
+      "landingPath": "/company",
+      "canManageEmployeeInvites": false
+    },
+    "divisionCount": 1,
+    "unitCount": 1,
+    "mutationError": {
+      "success": false,
+      "error": "forbidden"
+    }
+  },
+  "unitScopedSession": {
+    "workspace": {
+      "scopeType": "unit",
+      "scopeId": "a2c20fdb-37c0-48cf-9656-2025ec51bce9",
+      "scopeName": "child-edited юнит 20260429099",
+      "landingTitle": "child-edited юнит 20260429099",
+      "landingSubtitle": "Доступ ограничен выбранным юнитом без расширения вверх по иерархии.",
+      "landingPath": "/company",
+      "canManageEmployeeInvites": false
+    },
+    "divisionCount": 0,
+    "unitCount": 1,
+    "mutationError": {
+      "success": false,
+      "error": "forbidden"
+    }
+  }
+}

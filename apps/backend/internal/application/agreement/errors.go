@@ -24,7 +24,7 @@ var (
 	ErrWorkTypeInvalid                = errors.New("work type is invalid")
 	ErrEquipmentTypeRequired          = errors.New("equipment type is required")
 	ErrRegionRequired                 = errors.New("region is required")
-	ErrScopeConflict                  = errors.New("subdivision and unit scope cannot be set together")
+	ErrScopeConflict                  = errors.New("division and unit scope cannot be set together")
 	ErrScopeInvalid                   = errors.New("contract scope is invalid")
 	ErrRoutingUnitRequired            = errors.New("routing unit is required")
 	ErrRoutingUnitInvalid             = errors.New("routing unit is invalid")

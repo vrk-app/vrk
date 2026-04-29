@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { Building2, ClipboardCheck, Route, ShieldAlert, UserRoundCheck } from "lucide-react";
-import { Badge, Button, Card, InputField } from "@/shared/ui";
+import { Badge, Button, Card, InputField, SelectField } from "@/shared/ui";
+import { sessionHasCapability } from "@/shared/api";
 import type {
   ApiEnvelope,
   ContractRecord,
@@ -13,14 +14,29 @@ import type {
   WorkType,
 } from "@/shared/api";
 
-const selectClassName =
-  "h-10 w-full rounded-[var(--radius-md)] border border-input bg-card px-3.5 text-sm text-foreground shadow-xs transition-colors duration-150 hover:border-border-strong focus-visible:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/15";
-
 const workTypeLabels: Record<WorkType, string> = {
   repair: "Ремонт",
   maintenance: "ТО",
   verification: "Поверка",
 };
+
+const contractStatusLabels: Record<ContractStatus, string> = {
+  inactive: "Не активен",
+  active: "Активен",
+  expired: "Истек",
+};
+
+const contractStatusOptions = [
+  { label: contractStatusLabels.inactive, value: "inactive" },
+  { label: contractStatusLabels.active, value: "active" },
+  { label: contractStatusLabels.expired, value: "expired" },
+] as const;
+
+const scopeTypeOptions = [
+  { label: "Вся организация", value: "organization" },
+  { label: "Подразделение", value: "division" },
+  { label: "Юнит", value: "unit" },
+] as const;
 
 const statusTones: Record<ContractStatus, "neutral" | "success" | "warning"> = {
   inactive: "neutral",
@@ -28,7 +44,7 @@ const statusTones: Record<ContractStatus, "neutral" | "success" | "warning"> = {
   expired: "warning",
 };
 
-const contractDateFormatter = new Intl.DateTimeFormat(undefined, {
+const contractDateFormatter = new Intl.DateTimeFormat("ru-RU", {
   dateStyle: "medium",
   timeZone: "UTC",
 });
@@ -39,14 +55,25 @@ type Props = {
   contractorOptions: ContractorOption[];
 };
 
-function resolveScopeLabel(session: SessionSummaryResponse, scopeType: "organization" | "subdivision" | "unit", scopeId: string) {
+function resolveScopeLabel(session: SessionSummaryResponse, scopeType: "organization" | "division" | "unit", scopeId: string) {
   if (scopeType === "organization") {
     return session.organization.name;
   }
-  if (scopeType === "subdivision") {
-    return session.subdivisions.find((item) => item.id === scopeId)?.name ?? session.organization.name;
+  if (scopeType === "division") {
+    return session.divisions.find((item) => item.id === scopeId)?.name ?? session.organization.name;
   }
   return session.units.find((item) => item.id === scopeId)?.name ?? session.organization.name;
+}
+
+function formatScopeType(scopeType: ContractRecord["locationScope"]["scopeType"]) {
+  switch (scopeType) {
+    case "organization":
+      return "Организация";
+    case "division":
+      return "Подразделение";
+    default:
+      return "Юнит";
+  }
 }
 
 function formatContractDate(date: string) {
@@ -61,10 +88,7 @@ function formatContractDate(date: string) {
 
 export function ContractsRegistry({ contractorOptions, initialContracts, session }: Props) {
   const isCustomerContour = session.organization.roleTitle === "customer";
-  const canManageContracts =
-    isCustomerContour &&
-    session.grant?.roleTemplate === "organization_admin" &&
-    session.workspace.scopeType === "organization";
+  const canManageContracts = isCustomerContour && sessionHasCapability(session, "manage_contracts");
   const [contracts, setContracts] = useState(initialContracts);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -79,7 +103,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
   const [equipmentType, setEquipmentType] = useState("");
   const [region, setRegion] = useState("");
   const [subjectOfAgreement, setSubjectOfAgreement] = useState("");
-  const [scopeType, setScopeType] = useState<"organization" | "subdivision" | "unit">("organization");
+  const [scopeType, setScopeType] = useState<"organization" | "division" | "unit">("organization");
   const [scopeId, setScopeId] = useState("");
   const [routingUnitId, setRoutingUnitId] = useState(session.units[0]?.id ?? "");
   const [routingWorkType, setRoutingWorkType] = useState<WorkType>("repair");
@@ -98,7 +122,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
       workType,
       equipmentType,
       region,
-      ...(scopeType === "subdivision" ? { subdivisionId: scopeId } : {}),
+      ...(scopeType === "division" ? { divisionId: scopeId } : {}),
       ...(scopeType === "unit" ? { unitId: scopeId } : {}),
       locationScopeLabel,
       ...(subjectOfAgreement ? { subjectOfAgreement } : {}),
@@ -173,11 +197,10 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
       {!isCustomerContour ? (
         <Card className="gap-4" padding="lg">
           <div className="space-y-2">
-            <Badge tone="info">Contractor contour</Badge>
-            <h2 className="text-xl font-semibold text-foreground">Доступные договорные контуры</h2>
+            <Badge tone="info">Договоры подрядчика</Badge>
+            <h2 className="text-xl font-semibold text-foreground">Доступные договоры</h2>
             <p className="text-sm leading-6 text-muted-foreground">
-              После входа подрядчик видит только customer contracts, привязанные к своей contractor organization,
-              без раскрытия customer org graph.
+              Показаны договоры заказчиков, назначенные вашей организации.
             </p>
           </div>
           {contracts.length ? (
@@ -189,21 +212,22 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                       <p className="font-semibold text-foreground">{contract.contractNumber}</p>
                       <p className="text-sm text-muted-foreground">{contract.customerOrganizationName}</p>
                     </div>
-                    <Badge tone={statusTones[contract.contractStatus]}>{contract.contractStatus}</Badge>
+                    <Badge tone={statusTones[contract.contractStatus]}>
+                      {contractStatusLabels[contract.contractStatus]}
+                    </Badge>
                   </div>
                   <div className="grid gap-3 text-sm text-muted-foreground md:grid-cols-2">
                     <div>Вид работ: {workTypeLabels[contract.workType]}</div>
                     <div>Тип оборудования: {contract.equipmentType}</div>
                     <div>Регион: {contract.region}</div>
-                    <div>Scope: {contract.locationScope.label}</div>
+                    <div>Область: {contract.locationScope.label}</div>
                   </div>
                 </Card>
               ))}
             </div>
           ) : (
             <div className="rounded-[var(--radius-lg)] border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
-              Для contractor organization пока нет customer contracts. После привязки customer admin здесь появится
-              только релевантный рабочий контур.
+              Для вашей организации пока нет доступных договоров.
             </div>
           )}
         </Card>
@@ -218,8 +242,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
               <div>
               <h2 className="text-xl font-semibold text-foreground">Контур договоров ограничен</h2>
               <p className="text-sm leading-6 text-muted-foreground">
-                В этом slice управлять contracts registry может только customer organization admin на уровне
-                `organization`.
+                Управлять реестром договоров может только администратор заказчика на уровне всей организации.
               </p>
             </div>
           </div>
@@ -231,11 +254,10 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
           <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
             <Card className="gap-5" padding="lg">
               <div className="space-y-2">
-                <Badge tone="interactive">Customer registry</Badge>
+                <Badge tone="interactive">Реестр заказчика</Badge>
                 <h2 className="text-xl font-semibold text-foreground">Создать договор и привязать подрядчика</h2>
                 <p className="text-sm leading-6 text-muted-foreground">
-                  Форма фиксирует минимальный Stage 03 contract context для будущей request routing baseline:
-                  contractor, scope, dates, work type, equipment type и region.
+                  Укажите подрядчика, область действия, сроки, вид работ, тип оборудования и регион.
                 </p>
               </div>
 
@@ -246,50 +268,31 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   onChange={(event) => setContractNumber(event.target.value)}
                   value={contractNumber}
                 />
-                <label className="flex flex-col gap-2.5">
-                  <span className="text-sm font-medium text-foreground">Подрядчик</span>
-                  <select
-                    className={selectClassName}
-                    name="contractorOrganizationId"
-                    onChange={(event) => setContractorOrganizationId(event.target.value)}
-                    value={contractorOrganizationId}
-                  >
-                    <option value="">Выберите contractor organization</option>
-                    {contractorOptions.map((option) => (
-                      <option key={option.id} value={option.id}>
-                        {option.shortName ? `${option.name} (${option.shortName})` : option.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="flex flex-col gap-2.5">
-                  <span className="text-sm font-medium text-foreground">Статус</span>
-                  <select
-                    className={selectClassName}
-                    name="contractStatus"
-                    onChange={(event) => setContractStatus(event.target.value as ContractStatus)}
-                    value={contractStatus}
-                  >
-                    <option value="inactive">inactive</option>
-                    <option value="active">active</option>
-                    <option value="expired">expired</option>
-                  </select>
-                </label>
-                <label className="flex flex-col gap-2.5">
-                  <span className="text-sm font-medium text-foreground">Вид работ</span>
-                  <select
-                    className={selectClassName}
-                    name="workType"
-                    onChange={(event) => setWorkType(event.target.value as WorkType)}
-                    value={workType}
-                  >
-                    {Object.entries(workTypeLabels).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <SelectField
+                  label="Подрядчик"
+                  name="contractorOrganizationId"
+                  onChange={(event) => setContractorOrganizationId(event.target.value)}
+                  options={contractorOptions.map((option) => ({
+                    label: option.shortName ? `${option.name} (${option.shortName})` : option.name,
+                    value: option.id,
+                  }))}
+                  placeholder="Выберите подрядчика"
+                  value={contractorOrganizationId}
+                />
+                <SelectField
+                  label="Статус"
+                  name="contractStatus"
+                  onChange={(event) => setContractStatus(event.target.value as ContractStatus)}
+                  options={contractStatusOptions}
+                  value={contractStatus}
+                />
+                <SelectField
+                  label="Вид работ"
+                  name="workType"
+                  onChange={(event) => setWorkType(event.target.value as WorkType)}
+                  options={Object.entries(workTypeLabels).map(([value, label]) => ({ label, value }))}
+                  value={workType}
+                />
                 <InputField
                   label="Дата начала"
                   name="startDate"
@@ -322,42 +325,31 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   onChange={(event) => setSubjectOfAgreement(event.target.value)}
                   value={subjectOfAgreement}
                 />
-                <label className="flex flex-col gap-2.5">
-                  <span className="text-sm font-medium text-foreground">Scope уровня заказчика</span>
-                  <select
-                    className={selectClassName}
-                    name="scopeType"
-                    onChange={(event) => {
-                      const value = event.target.value as "organization" | "subdivision" | "unit";
-                      setScopeType(value);
-                      setScopeId("");
-                    }}
-                    value={scopeType}
-                  >
-                    <option value="organization">Вся организация</option>
-                    <option value="subdivision">Подразделение</option>
-                    <option value="unit">Юнит</option>
-                  </select>
-                </label>
+                <SelectField
+                  label="Область действия заказчика"
+                  name="scopeType"
+                  onChange={(event) => {
+                    const value = event.target.value as "organization" | "division" | "unit";
+                    setScopeType(value);
+                    setScopeId("");
+                  }}
+                  options={scopeTypeOptions}
+                  value={scopeType}
+                />
               </div>
 
               {scopeType !== "organization" ? (
-                <label className="flex flex-col gap-2.5">
-                  <span className="text-sm font-medium text-foreground">Точка привязки</span>
-                  <select
-                    className={selectClassName}
-                    name="scopeId"
-                    onChange={(event) => setScopeId(event.target.value)}
-                    value={scopeId}
-                  >
-                    <option value="">Выберите scope</option>
-                    {(scopeType === "subdivision" ? session.subdivisions : session.units).map((option) => (
-                      <option key={option.id} value={option.id}>
-                        {option.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <SelectField
+                  label="Точка привязки"
+                  name="scopeId"
+                  onChange={(event) => setScopeId(event.target.value)}
+                  options={(scopeType === "division" ? session.divisions : session.units).map((option) => ({
+                    label: option.name,
+                    value: option.id,
+                  }))}
+                  placeholder="Выберите объект"
+                  value={scopeId}
+                />
               ) : null}
 
               <div className="flex flex-wrap gap-3">
@@ -374,51 +366,35 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                 >
                   Сохранить договор
                 </Button>
-                <Badge tone="info">/contracts public contour</Badge>
+                <Badge tone="info">Раздел «Договоры»</Badge>
               </div>
             </Card>
 
             <Card className="gap-5" padding="lg">
               <div className="space-y-2">
-                <Badge tone="violet">Routing baseline</Badge>
-                <h2 className="text-xl font-semibold text-foreground">Preview будущей маршрутизации</h2>
+                <Badge tone="violet">Проверка маршрутизации</Badge>
+                <h2 className="text-xl font-semibold text-foreground">Проверить подходящий договор</h2>
                 <p className="text-sm leading-6 text-muted-foreground">
-                  Этот preview доказывает, что contractor определяется из eligible contract context, а не вручную.
+                  Проверка показывает, какой подрядчик подходит под выбранный юнит, вид работ, тип оборудования и регион.
                 </p>
               </div>
 
               <div className="grid gap-4">
-                <label className="flex flex-col gap-2.5">
-                  <span className="text-sm font-medium text-foreground">Юнит</span>
-                  <select
-                    className={selectClassName}
-                    name="routingUnitId"
-                    onChange={(event) => setRoutingUnitId(event.target.value)}
-                    value={routingUnitId}
-                  >
-                    <option value="">Выберите юнит</option>
-                    {session.units.map((unit) => (
-                      <option key={unit.id} value={unit.id}>
-                        {unit.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="flex flex-col gap-2.5">
-                  <span className="text-sm font-medium text-foreground">Вид работ</span>
-                  <select
-                    className={selectClassName}
-                    name="routingWorkType"
-                    onChange={(event) => setRoutingWorkType(event.target.value as WorkType)}
-                    value={routingWorkType}
-                  >
-                    {Object.entries(workTypeLabels).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <SelectField
+                  label="Юнит"
+                  name="routingUnitId"
+                  onChange={(event) => setRoutingUnitId(event.target.value)}
+                  options={session.units.map((unit) => ({ label: unit.name, value: unit.id }))}
+                  placeholder="Выберите юнит"
+                  value={routingUnitId}
+                />
+                <SelectField
+                  label="Вид работ"
+                  name="routingWorkType"
+                  onChange={(event) => setRoutingWorkType(event.target.value as WorkType)}
+                  options={Object.entries(workTypeLabels).map(([value, label]) => ({ label, value }))}
+                  value={routingWorkType}
+                />
                 <InputField
                   label="Тип оборудования"
                   name="routingEquipmentType"
@@ -445,7 +421,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   }}
                   variant="secondary"
                 >
-                  Проверить eligibility
+                  Проверить договор
                 </Button>
               </div>
 
@@ -465,16 +441,16 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                       <div className="rounded-[var(--radius-lg)] border border-border bg-card px-4 py-3" key={match.contract.id}>
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <p className="font-semibold text-foreground">{match.contract.contractNumber}</p>
-                          <Badge tone="success">eligible</Badge>
+                          <Badge tone="success">Подходит</Badge>
                         </div>
                         <p className="mt-2 text-sm text-muted-foreground">
-                          Подрядчик: {match.contractor.name}. Scope: {match.contract.locationScope.label}.
+                          Подрядчик: {match.contractor.name}. Область: {match.contract.locationScope.label}.
                         </p>
                       </div>
                     ))
                   ) : (
                     <div className="rounded-[var(--radius-lg)] border border-dashed border-border px-4 py-4 text-sm text-muted-foreground">
-                      Eligible contracts не найдены: routing baseline корректно не выбрал contractor.
+                      Подходящие договоры не найдены: система не выбрала подрядчика без договорного основания.
                     </div>
                   )}
                 </div>
@@ -484,11 +460,10 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
 
           <Card className="gap-4" padding="lg">
             <div className="space-y-2">
-              <Badge tone="info">Customer contracts</Badge>
+              <Badge tone="info">Договоры заказчика</Badge>
               <h2 className="text-xl font-semibold text-foreground">Реестр договоров</h2>
               <p className="text-sm leading-6 text-muted-foreground">
-                Ниже отображается только customer-owned contracts registry. Contractor-side contour открывается отдельно
-                после contractor login и не расширяет customer workspace.
+                Список договоров заказчика с привязкой подрядчика и статусом маршрута.
               </p>
             </div>
 
@@ -502,9 +477,11 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                         <p className="text-sm text-muted-foreground">{contract.contractorOrganizationName}</p>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <Badge tone={statusTones[contract.contractStatus]}>{contract.contractStatus}</Badge>
+                        <Badge tone={statusTones[contract.contractStatus]}>
+                          {contractStatusLabels[contract.contractStatus]}
+                        </Badge>
                         <Badge tone={contract.routingEligible ? "success" : "warning"}>
-                          {contract.routingEligible ? "eligible" : "not eligible"}
+                          {contract.routingEligible ? "Подходит" : "Не подходит"}
                         </Badge>
                       </div>
                     </div>
@@ -516,8 +493,8 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                       <div>Вид работ: {workTypeLabels[contract.workType]}</div>
                       <div>Тип оборудования: {contract.equipmentType}</div>
                       <div>Регион: {contract.region}</div>
-                      <div>Scope: {contract.locationScope.label}</div>
-                      <div>Контур: {contract.locationScope.scopeType}</div>
+                      <div>Область: {contract.locationScope.label}</div>
+                      <div>Уровень: {formatScopeType(contract.locationScope.scopeType)}</div>
                     </div>
 
                     <div className="flex flex-wrap gap-2">
@@ -552,7 +529,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                           size="sm"
                           variant="secondary"
                         >
-                          Перевести в inactive
+                          Деактивировать
                         </Button>
                       ) : null}
                     </div>
@@ -561,7 +538,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
               </div>
             ) : (
               <div className="rounded-[var(--radius-lg)] border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
-                Договоров пока нет. После создания здесь появится реестр с routing eligibility и contractor binding.
+                Договоров пока нет. Создайте первый договор и привяжите подрядчика.
               </div>
             )}
           </Card>
@@ -578,10 +555,9 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
             )}
           </div>
           <div className="space-y-1 text-sm leading-6 text-muted-foreground">
-            <p className="font-medium text-foreground">Adapter boundary</p>
+            <p className="font-medium text-foreground">Исполнитель заявки</p>
             <p>
-              Публичный contour и login restore живут на `/contracts`, но data boundary остается адаптером к backend
-              `/agreements`. Это slice-003 truth, а не Stage 04 request flow.
+              Активный договор определяет, какой подрядчик подходит под выбранные условия.
             </p>
           </div>
         </div>

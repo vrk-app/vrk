@@ -216,8 +216,8 @@ def create_first_admin(label: str, email: str, password: str) -> OrgContext:
             "legalAddress": f"{label} street 1",
             "contactEmail": email,
             "contactPhone": "+7 (999) 123-45-67",
-            "structureMode": "subdivision",
-            "subdivision": {
+            "structureMode": "division",
+            "division": {
                 "type": "Branch",
                 "name": f"{label} Branch {SEED}",
             },

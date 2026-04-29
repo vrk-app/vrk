@@ -1,0 +1,4 @@
+repo-local sqlc check
+MISSING .agent/tmp-tools/sqlc
+MISSING .agent/tmp-tools/go/bin/go
+go not on PATH

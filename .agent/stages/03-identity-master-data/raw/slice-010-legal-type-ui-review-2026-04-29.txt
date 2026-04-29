@@ -1,0 +1,15 @@
+Web Interface Guidelines review: PASS
+
+Scope:
+- apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+- apps/web/features/Stage03Bootstrap/ui/LaunchWizardForm.tsx
+- apps/web/shared/api/bootstrap.ts
+
+Review:
+- The /company profile selector now uses bounded legal-form options ООО, АО, ПАО and keeps legacy ОАО/ЗАО normalization out of visible choices.
+- The subdivision form is not given a type selector, and subdivision rows no longer display the hidden storage default.
+- The unit form keeps a bounded operational type selector ВРД, ВРЗ, ВУ, ВРП.
+- Existing shared SelectField/InputField primitives are reused; no new reusable component family was introduced.
+- Form controls retain stable labels/names and disabled states for narrower scoped users.
+
+Open findings: none.

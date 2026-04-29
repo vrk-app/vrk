@@ -1,0 +1,52 @@
+Source: .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-29-legal-type-fresh-verifier.md
+Reviewer: fresh legal-type verifier
+Files reviewed:
+- apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+- apps/web/features/Stage03Bootstrap/ui/LaunchWizardForm.tsx
+- apps/web/shared/api/bootstrap.ts
+- apps/web/shared/ui/SelectField.tsx
+- apps/web/shared/ui/InputField.tsx
+- apps/web/shared/ui/TextareaField.tsx
+- apps/web/shared/ui/Button.tsx
+- apps/web/shared/ui/InlineAlert.tsx
+- apps/web/shared/ui/Tabs.tsx
+
+## apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+PASS: organization profile selector uses labelled SelectField with visible options exactly ООО, АО, ПАО; legacy ОАО/ЗАО/LLC appear only inside normalization logic, not option labels. Subdivision form is rendered with showType={false} and subdivision rows do not pass hidden storage type to NodeRow. Unit form keeps labelled SelectField with bounded options ВРД, ВРЗ, ВУ, ВРП. Controls retain names/autocomplete/type hints, visible focus via shared fields, read-only/empty/error states, and archive confirmation.
+
+Conscious exception reproduced from prior UI review: company subtab state remains local UI state rather than query-param synchronized state. This remains outside the legal-type correction contract and is not used for filters/pagination.
+
+## apps/web/features/Stage03Bootstrap/ui/LaunchWizardForm.tsx
+
+PASS: launch legal-form selector uses labelled SelectField with ООО, АО, ПАО only; subdivision path has no selectable subdivision type; unit type selector remains ВРД, ВРЗ, ВУ, ВРП. Form controls have labels/names, autocomplete/type/inputMode where applicable, beforeunload guard for unsaved changes, and polite async error state.
+
+## apps/web/shared/api/bootstrap.ts
+
+PASS: API typings preserve propertyType plus compatibility type alias for organization, optional subdivision type in generated response/payload compatibility, and required unit type. No UI controls are rendered in this file.
+
+## apps/web/shared/ui/SelectField.tsx
+
+PASS: labelled native and Radix select paths, stable name/value handling, visible focus state, empty/loading options, decorative icons hidden, and loading text uses ellipsis.
+
+## apps/web/shared/ui/InputField.tsx
+
+PASS: htmlFor-bound labels, visible focus-within/focus-visible treatment, password toggle aria-label, decorative icons hidden, and polite error messaging.
+
+## apps/web/shared/ui/TextareaField.tsx
+
+PASS: htmlFor-bound labels, visible focus state, polite error messaging, and controlled-value support.
+
+## apps/web/shared/ui/Button.tsx
+
+PASS: semantic button, visible focus state, hover/active variants, loading icon hidden from AT, and button icons wrapped as decorative.
+
+## apps/web/shared/ui/InlineAlert.tsx
+
+PASS: status role by default, labelled dismiss button, decorative icons hidden, and break-words handling.
+
+## apps/web/shared/ui/Tabs.tsx
+
+PASS: tablist/tab roles, keyboard navigation, roving tabIndex, visible focus state, and decorative tab icons hidden.
+
+Open findings: none.

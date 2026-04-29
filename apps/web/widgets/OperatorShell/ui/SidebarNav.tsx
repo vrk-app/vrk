@@ -37,8 +37,9 @@ function SidebarLink({
 
   return (
     <a
+      aria-current={active ? "page" : undefined}
       className={cn(
-        "group flex h-11 items-center gap-3 rounded-[var(--radius-lg)] px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "group flex h-11 touch-manipulation items-center gap-3 rounded-[var(--radius-lg)] px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         active
           ? "bg-muted text-foreground"
           : "text-muted-foreground hover:bg-muted/80 hover:text-foreground",
@@ -47,12 +48,16 @@ function SidebarLink({
       href={item.href}
       title={collapsed ? item.label : undefined}
     >
-      <Icon className="size-5 shrink-0" />
+      <Icon aria-hidden="true" className="size-5 shrink-0" />
       <span className={cn("min-w-0 flex-1 truncate", collapsed && "lg:hidden")}>
         {item.label}
       </span>
       {item.badge ? (
-        <Badge className={cn(collapsed && "lg:hidden")} size="sm" tone={active ? "interactive" : "neutral"}>
+        <Badge
+          className={cn(collapsed && "lg:hidden")}
+          size="sm"
+          tone={active ? "interactive" : "neutral"}
+        >
           {item.badge}
         </Badge>
       ) : null}
@@ -68,7 +73,7 @@ export function SidebarNav({
   footerItems = [],
   id,
   items,
-  metaLabel = "Stage 01",
+  metaLabel = "Рабочая область",
   metaTitle = "Сервисный контур",
   mobileOpen = false,
   onCollapsedChange,
@@ -104,10 +109,10 @@ export function SidebarNav({
       ) : null}
       <aside
         className={cn(
-          "flex h-full flex-col gap-6 overflow-y-auto overscroll-contain border-r border-border bg-card px-4 py-5",
+          "flex h-full max-h-full flex-col gap-6 overflow-hidden border-r border-border bg-card px-4 py-5",
           collapsed ? "w-[248px] lg:w-[88px]" : "w-[248px]",
           mobileOpen
-            ? "fixed inset-y-0 left-0 z-40 shadow-lg lg:static lg:shadow-none"
+            ? "fixed inset-y-0 left-0 z-40 h-dvh max-h-dvh shadow-lg lg:static lg:shadow-none"
             : "hidden lg:flex",
           className,
         )}
@@ -158,7 +163,10 @@ export function SidebarNav({
           </div>
         </div>
 
-        <div className="flex-1 space-y-1.5">
+        <nav
+          aria-label="Основная навигация"
+          className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain"
+        >
           {items.map((item) => (
             <SidebarLink
               active={item.key === activeKey}
@@ -167,10 +175,13 @@ export function SidebarNav({
               key={item.key}
             />
           ))}
-        </div>
+        </nav>
 
         {footerItems.length ? (
-          <div className="space-y-1.5 border-t border-border pt-5">
+          <nav
+            aria-label="Дополнительная навигация"
+            className="shrink-0 space-y-1.5 border-t border-border pt-5"
+          >
             {footerItems.map((item) => (
               <SidebarLink
                 active={item.key === activeKey}
@@ -179,7 +190,7 @@ export function SidebarNav({
                 key={item.key}
               />
             ))}
-          </div>
+          </nav>
         ) : null}
       </aside>
     </>

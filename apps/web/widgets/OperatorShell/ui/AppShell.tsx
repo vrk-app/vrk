@@ -22,7 +22,7 @@ export function AppShell({
         Перейти к основному контенту
       </a>
       <div className="flex min-h-screen">
-        <div className="shrink-0">{sidebar}</div>
+        <div className="shrink-0 lg:sticky lg:top-0 lg:h-dvh lg:max-h-dvh">{sidebar}</div>
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           {header}
           <main className="flex-1 px-4 py-5 md:px-6 md:py-6" id="main-content">

@@ -11,6 +11,202 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const archiveAuthDivision = `-- name: ArchiveAuthDivision :one
+UPDATE auth_divisions
+SET
+    status = 'archived',
+    updated_at = NOW()
+WHERE id = $1
+  AND organization_id = $2
+  AND status = 'active'
+RETURNING id, organization_id, division_type, name, code, region, address, manager_name, contacts, status, created_at, updated_at, leader_position, contract_phone, contract_email, acting_basis, comment
+`
+
+type ArchiveAuthDivisionParams struct {
+	ID             pgtype.UUID `json:"id"`
+	OrganizationID pgtype.UUID `json:"organizationId"`
+}
+
+func (q *Queries) ArchiveAuthDivision(ctx context.Context, arg ArchiveAuthDivisionParams) (AuthDivision, error) {
+	row := q.db.QueryRow(ctx, archiveAuthDivision, arg.ID, arg.OrganizationID)
+	var i AuthDivision
+	err := row.Scan(
+		&i.ID,
+		&i.OrganizationID,
+		&i.DivisionType,
+		&i.Name,
+		&i.Code,
+		&i.Region,
+		&i.Address,
+		&i.ManagerName,
+		&i.Contacts,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.LeaderPosition,
+		&i.ContractPhone,
+		&i.ContractEmail,
+		&i.ActingBasis,
+		&i.Comment,
+	)
+	return i, err
+}
+
+const archiveAuthUnit = `-- name: ArchiveAuthUnit :one
+UPDATE auth_units
+SET
+    status = 'archived',
+    updated_at = NOW()
+WHERE id = $1
+  AND organization_id = $2
+  AND status = 'active'
+RETURNING id, organization_id, division_id, unit_type, name, code, address, manager_name, contacts, status, created_at, updated_at, region, leader_position, contract_phone, contract_email, acting_basis, comment
+`
+
+type ArchiveAuthUnitParams struct {
+	ID             pgtype.UUID `json:"id"`
+	OrganizationID pgtype.UUID `json:"organizationId"`
+}
+
+func (q *Queries) ArchiveAuthUnit(ctx context.Context, arg ArchiveAuthUnitParams) (AuthUnit, error) {
+	row := q.db.QueryRow(ctx, archiveAuthUnit, arg.ID, arg.OrganizationID)
+	var i AuthUnit
+	err := row.Scan(
+		&i.ID,
+		&i.OrganizationID,
+		&i.DivisionID,
+		&i.UnitType,
+		&i.Name,
+		&i.Code,
+		&i.Address,
+		&i.ManagerName,
+		&i.Contacts,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Region,
+		&i.LeaderPosition,
+		&i.ContractPhone,
+		&i.ContractEmail,
+		&i.ActingBasis,
+		&i.Comment,
+	)
+	return i, err
+}
+
+const countAuthDivisionArchiveBlockers = `-- name: CountAuthDivisionArchiveBlockers :one
+SELECT
+    (
+        SELECT COUNT(*)
+        FROM auth_units u
+        WHERE u.organization_id = $1
+          AND u.division_id = $2
+          AND u.status = 'active'
+    )
+    + (
+        SELECT COUNT(*)
+        FROM auth_scoped_grants g
+        JOIN auth_memberships m ON m.id = g.membership_id
+        WHERE m.organization_id = $1
+          AND m.membership_status = 'active'
+          AND g.scope_type = 'division'
+          AND g.scope_id = $2
+    )
+    + (
+        SELECT COUNT(*)
+        FROM auth_employee_invites i
+        WHERE i.organization_id = $1
+          AND i.scope_type = 'division'
+          AND i.scope_id = $2
+          AND i.status IN ('draft', 'sent', 'opened')
+    )
+    + (
+        SELECT COUNT(*)
+        FROM registry_standards s
+        WHERE s.organization_id = $1
+          AND s.division_id = $2
+          AND s.archived_at IS NULL
+    )
+    + (
+        SELECT COUNT(*)
+        FROM agreements a
+        WHERE a.customer_organization_id = $1
+          AND a.division_id = $2
+    ) AS blockers
+`
+
+type CountAuthDivisionArchiveBlockersParams struct {
+	OrganizationID pgtype.UUID `json:"organizationId"`
+	ScopeID        pgtype.UUID `json:"scopeId"`
+}
+
+func (q *Queries) CountAuthDivisionArchiveBlockers(ctx context.Context, arg CountAuthDivisionArchiveBlockersParams) (int32, error) {
+	row := q.db.QueryRow(ctx, countAuthDivisionArchiveBlockers, arg.OrganizationID, arg.ScopeID)
+	var blockers int32
+	err := row.Scan(&blockers)
+	return blockers, err
+}
+
+const countAuthUnitArchiveBlockers = `-- name: CountAuthUnitArchiveBlockers :one
+SELECT
+    (
+        SELECT COUNT(*)
+        FROM auth_scoped_grants g
+        JOIN auth_memberships m ON m.id = g.membership_id
+        WHERE m.organization_id = $1
+          AND m.membership_status = 'active'
+          AND g.scope_type = 'unit'
+          AND g.scope_id = $2
+    )
+    + (
+        SELECT COUNT(*)
+        FROM auth_employee_invites i
+        WHERE i.organization_id = $1
+          AND i.scope_type = 'unit'
+          AND i.scope_id = $2
+          AND i.status IN ('draft', 'sent', 'opened')
+    )
+    + (
+        SELECT COUNT(*)
+        FROM registry_equipment e
+        WHERE e.organization_id = $1
+          AND e.unit_id = $2
+          AND e.archived_at IS NULL
+    )
+    + (
+        SELECT COUNT(*)
+        FROM registry_measuring_instruments mi
+        WHERE mi.organization_id = $1
+          AND mi.unit_id = $2
+          AND mi.archived_at IS NULL
+    )
+    + (
+        SELECT COUNT(*)
+        FROM registry_standards s
+        WHERE s.organization_id = $1
+          AND s.unit_id = $2
+          AND s.archived_at IS NULL
+    )
+    + (
+        SELECT COUNT(*)
+        FROM agreements a
+        WHERE a.customer_organization_id = $1
+          AND a.unit_id = $2
+    ) AS blockers
+`
+
+type CountAuthUnitArchiveBlockersParams struct {
+	OrganizationID pgtype.UUID `json:"organizationId"`
+	ScopeID        pgtype.UUID `json:"scopeId"`
+}
+
+func (q *Queries) CountAuthUnitArchiveBlockers(ctx context.Context, arg CountAuthUnitArchiveBlockersParams) (int32, error) {
+	row := q.db.QueryRow(ctx, countAuthUnitArchiveBlockers, arg.OrganizationID, arg.ScopeID)
+	var blockers int32
+	err := row.Scan(&blockers)
+	return blockers, err
+}
+
 const createAuthAccount = `-- name: CreateAuthAccount :one
 INSERT INTO auth_accounts (
     full_name,
@@ -41,6 +237,94 @@ func (q *Queries) CreateAuthAccount(ctx context.Context, arg CreateAuthAccountPa
 		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const createAuthDivision = `-- name: CreateAuthDivision :one
+INSERT INTO auth_divisions (
+    organization_id,
+    division_type,
+    name,
+    code,
+    region,
+    address,
+    manager_name,
+    contacts,
+    leader_position,
+    contract_phone,
+    contract_email,
+    acting_basis,
+    comment
+) VALUES (
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $6,
+    $7,
+    $8,
+    $9,
+    $10,
+    $11,
+    $12,
+    $13
+)
+RETURNING id, organization_id, division_type, name, code, region, address, manager_name, contacts, status, created_at, updated_at, leader_position, contract_phone, contract_email, acting_basis, comment
+`
+
+type CreateAuthDivisionParams struct {
+	OrganizationID pgtype.UUID `json:"organizationId"`
+	DivisionType   string      `json:"divisionType"`
+	Name           string      `json:"name"`
+	Code           *string     `json:"code"`
+	Region         *string     `json:"region"`
+	Address        *string     `json:"address"`
+	ManagerName    *string     `json:"managerName"`
+	Contacts       *string     `json:"contacts"`
+	LeaderPosition *string     `json:"leaderPosition"`
+	ContractPhone  *string     `json:"contractPhone"`
+	ContractEmail  *string     `json:"contractEmail"`
+	ActingBasis    *string     `json:"actingBasis"`
+	Comment        *string     `json:"comment"`
+}
+
+func (q *Queries) CreateAuthDivision(ctx context.Context, arg CreateAuthDivisionParams) (AuthDivision, error) {
+	row := q.db.QueryRow(ctx, createAuthDivision,
+		arg.OrganizationID,
+		arg.DivisionType,
+		arg.Name,
+		arg.Code,
+		arg.Region,
+		arg.Address,
+		arg.ManagerName,
+		arg.Contacts,
+		arg.LeaderPosition,
+		arg.ContractPhone,
+		arg.ContractEmail,
+		arg.ActingBasis,
+		arg.Comment,
+	)
+	var i AuthDivision
+	err := row.Scan(
+		&i.ID,
+		&i.OrganizationID,
+		&i.DivisionType,
+		&i.Name,
+		&i.Code,
+		&i.Region,
+		&i.Address,
+		&i.ManagerName,
+		&i.Contacts,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.LeaderPosition,
+		&i.ContractPhone,
+		&i.ContractEmail,
+		&i.ActingBasis,
+		&i.Comment,
 	)
 	return i, err
 }
@@ -162,16 +446,22 @@ func (q *Queries) CreateAuthSession(ctx context.Context, arg CreateAuthSessionPa
 	return i, err
 }
 
-const createAuthSubdivision = `-- name: CreateAuthSubdivision :one
-INSERT INTO auth_subdivisions (
+const createAuthUnit = `-- name: CreateAuthUnit :one
+INSERT INTO auth_units (
     organization_id,
-    subdivision_type,
+    division_id,
+    unit_type,
     name,
     code,
     region,
     address,
     manager_name,
-    contacts
+    contacts,
+    leader_position,
+    contract_phone,
+    contract_email,
+    acting_basis,
+    comment
 ) VALUES (
     $1,
     $2,
@@ -180,101 +470,56 @@ INSERT INTO auth_subdivisions (
     $5,
     $6,
     $7,
-    $8
+    $8,
+    $9,
+    $10,
+    $11,
+    $12,
+    $13,
+    $14
 )
-RETURNING id, organization_id, subdivision_type, name, code, region, address, manager_name, contacts, status, created_at, updated_at
+RETURNING id, organization_id, division_id, unit_type, name, code, address, manager_name, contacts, status, created_at, updated_at, region, leader_position, contract_phone, contract_email, acting_basis, comment
 `
 
-type CreateAuthSubdivisionParams struct {
-	OrganizationID  pgtype.UUID `json:"organizationId"`
-	SubdivisionType string      `json:"subdivisionType"`
-	Name            string      `json:"name"`
-	Code            *string     `json:"code"`
-	Region          *string     `json:"region"`
-	Address         *string     `json:"address"`
-	ManagerName     *string     `json:"managerName"`
-	Contacts        *string     `json:"contacts"`
+type CreateAuthUnitParams struct {
+	OrganizationID pgtype.UUID `json:"organizationId"`
+	DivisionID     pgtype.UUID `json:"divisionId"`
+	UnitType       string      `json:"unitType"`
+	Name           string      `json:"name"`
+	Code           *string     `json:"code"`
+	Region         *string     `json:"region"`
+	Address        *string     `json:"address"`
+	ManagerName    *string     `json:"managerName"`
+	Contacts       *string     `json:"contacts"`
+	LeaderPosition *string     `json:"leaderPosition"`
+	ContractPhone  *string     `json:"contractPhone"`
+	ContractEmail  *string     `json:"contractEmail"`
+	ActingBasis    *string     `json:"actingBasis"`
+	Comment        *string     `json:"comment"`
 }
 
-func (q *Queries) CreateAuthSubdivision(ctx context.Context, arg CreateAuthSubdivisionParams) (AuthSubdivision, error) {
-	row := q.db.QueryRow(ctx, createAuthSubdivision,
+func (q *Queries) CreateAuthUnit(ctx context.Context, arg CreateAuthUnitParams) (AuthUnit, error) {
+	row := q.db.QueryRow(ctx, createAuthUnit,
 		arg.OrganizationID,
-		arg.SubdivisionType,
+		arg.DivisionID,
+		arg.UnitType,
 		arg.Name,
 		arg.Code,
 		arg.Region,
 		arg.Address,
 		arg.ManagerName,
 		arg.Contacts,
-	)
-	var i AuthSubdivision
-	err := row.Scan(
-		&i.ID,
-		&i.OrganizationID,
-		&i.SubdivisionType,
-		&i.Name,
-		&i.Code,
-		&i.Region,
-		&i.Address,
-		&i.ManagerName,
-		&i.Contacts,
-		&i.Status,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-const createAuthUnit = `-- name: CreateAuthUnit :one
-INSERT INTO auth_units (
-    organization_id,
-    subdivision_id,
-    unit_type,
-    name,
-    code,
-    address,
-    manager_name,
-    contacts
-) VALUES (
-    $1,
-    $2,
-    $3,
-    $4,
-    $5,
-    $6,
-    $7,
-    $8
-)
-RETURNING id, organization_id, subdivision_id, unit_type, name, code, address, manager_name, contacts, status, created_at, updated_at
-`
-
-type CreateAuthUnitParams struct {
-	OrganizationID pgtype.UUID `json:"organizationId"`
-	SubdivisionID  pgtype.UUID `json:"subdivisionId"`
-	UnitType       string      `json:"unitType"`
-	Name           string      `json:"name"`
-	Code           *string     `json:"code"`
-	Address        *string     `json:"address"`
-	ManagerName    *string     `json:"managerName"`
-	Contacts       *string     `json:"contacts"`
-}
-
-func (q *Queries) CreateAuthUnit(ctx context.Context, arg CreateAuthUnitParams) (AuthUnit, error) {
-	row := q.db.QueryRow(ctx, createAuthUnit,
-		arg.OrganizationID,
-		arg.SubdivisionID,
-		arg.UnitType,
-		arg.Name,
-		arg.Code,
-		arg.Address,
-		arg.ManagerName,
-		arg.Contacts,
+		arg.LeaderPosition,
+		arg.ContractPhone,
+		arg.ContractEmail,
+		arg.ActingBasis,
+		arg.Comment,
 	)
 	var i AuthUnit
 	err := row.Scan(
 		&i.ID,
 		&i.OrganizationID,
-		&i.SubdivisionID,
+		&i.DivisionID,
 		&i.UnitType,
 		&i.Name,
 		&i.Code,
@@ -284,6 +529,12 @@ func (q *Queries) CreateAuthUnit(ctx context.Context, arg CreateAuthUnitParams) 
 		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Region,
+		&i.LeaderPosition,
+		&i.ContractPhone,
+		&i.ContractEmail,
+		&i.ActingBasis,
+		&i.Comment,
 	)
 	return i, err
 }
@@ -296,7 +547,7 @@ INSERT INTO auth_bootstrap_organizations (
     $1,
     $2
 )
-RETURNING id, role_title, shell_name, short_name, property_type, inn, kpp, legal_address, contact_email, contact_phone, launch_state, first_admin_account_id, launched_at, created_at, updated_at
+RETURNING id, role_title, shell_name, short_name, property_type, inn, kpp, legal_address, contact_email, contact_phone, launch_state, first_admin_account_id, launched_at, created_at, updated_at, leader_full_name, leader_position, contract_phone, contract_email, acting_basis
 `
 
 type CreateBootstrapOrganizationShellParams struct {
@@ -323,6 +574,11 @@ func (q *Queries) CreateBootstrapOrganizationShell(ctx context.Context, arg Crea
 		&i.LaunchedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LeaderFullName,
+		&i.LeaderPosition,
+		&i.ContractPhone,
+		&i.ContractEmail,
+		&i.ActingBasis,
 	)
 	return i, err
 }
@@ -430,6 +686,104 @@ func (q *Queries) GetAuthAccountByID(ctx context.Context, id pgtype.UUID) (AuthA
 	return i, err
 }
 
+const getAuthDivisionByID = `-- name: GetAuthDivisionByID :one
+SELECT
+    id,
+    organization_id,
+    division_type,
+    name,
+    code,
+    region,
+    address,
+    manager_name,
+    contacts,
+    status,
+    created_at,
+    updated_at,
+    leader_position,
+    contract_phone,
+    contract_email,
+    acting_basis,
+    comment
+FROM auth_divisions
+WHERE id = $1
+`
+
+func (q *Queries) GetAuthDivisionByID(ctx context.Context, id pgtype.UUID) (AuthDivision, error) {
+	row := q.db.QueryRow(ctx, getAuthDivisionByID, id)
+	var i AuthDivision
+	err := row.Scan(
+		&i.ID,
+		&i.OrganizationID,
+		&i.DivisionType,
+		&i.Name,
+		&i.Code,
+		&i.Region,
+		&i.Address,
+		&i.ManagerName,
+		&i.Contacts,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.LeaderPosition,
+		&i.ContractPhone,
+		&i.ContractEmail,
+		&i.ActingBasis,
+		&i.Comment,
+	)
+	return i, err
+}
+
+const getAuthUnitByID = `-- name: GetAuthUnitByID :one
+SELECT
+    id,
+    organization_id,
+    division_id,
+    unit_type,
+    name,
+    code,
+    address,
+    manager_name,
+    contacts,
+    status,
+    created_at,
+    updated_at,
+    region,
+    leader_position,
+    contract_phone,
+    contract_email,
+    acting_basis,
+    comment
+FROM auth_units
+WHERE id = $1
+`
+
+func (q *Queries) GetAuthUnitByID(ctx context.Context, id pgtype.UUID) (AuthUnit, error) {
+	row := q.db.QueryRow(ctx, getAuthUnitByID, id)
+	var i AuthUnit
+	err := row.Scan(
+		&i.ID,
+		&i.OrganizationID,
+		&i.DivisionID,
+		&i.UnitType,
+		&i.Name,
+		&i.Code,
+		&i.Address,
+		&i.ManagerName,
+		&i.Contacts,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Region,
+		&i.LeaderPosition,
+		&i.ContractPhone,
+		&i.ContractEmail,
+		&i.ActingBasis,
+		&i.Comment,
+	)
+	return i, err
+}
+
 const getCurrentSession = `-- name: GetCurrentSession :one
 SELECT
     s.id,
@@ -452,6 +806,11 @@ SELECT
     o.legal_address AS organization_legal_address,
     o.contact_email AS organization_contact_email,
     o.contact_phone AS organization_contact_phone,
+    o.leader_full_name AS organization_leader_full_name,
+    o.leader_position AS organization_leader_position,
+    o.contract_phone AS organization_contract_phone,
+    o.contract_email AS organization_contract_email,
+    o.acting_basis AS organization_acting_basis,
     o.launch_state AS organization_launch_state,
     o.launched_at AS organization_launched_at,
     g.id AS grant_id,
@@ -469,32 +828,37 @@ LIMIT 1
 `
 
 type GetCurrentSessionRow struct {
-	ID                       pgtype.UUID        `json:"id"`
-	AccountID                pgtype.UUID        `json:"accountId"`
-	MembershipID             pgtype.UUID        `json:"membershipId"`
-	SessionToken             string             `json:"sessionToken"`
-	ExpiresAt                pgtype.Timestamptz `json:"expiresAt"`
-	CreatedAt                pgtype.Timestamptz `json:"createdAt"`
-	LastSeenAt               pgtype.Timestamptz `json:"lastSeenAt"`
-	AccountFullName          string             `json:"accountFullName"`
-	AccountEmail             string             `json:"accountEmail"`
-	OrganizationID           pgtype.UUID        `json:"organizationId"`
-	MembershipStatus         string             `json:"membershipStatus"`
-	OrganizationRoleTitle    string             `json:"organizationRoleTitle"`
-	OrganizationShellName    string             `json:"organizationShellName"`
-	OrganizationShortName    *string            `json:"organizationShortName"`
-	OrganizationPropertyType *string            `json:"organizationPropertyType"`
-	OrganizationInn          *string            `json:"organizationInn"`
-	OrganizationKpp          *string            `json:"organizationKpp"`
-	OrganizationLegalAddress *string            `json:"organizationLegalAddress"`
-	OrganizationContactEmail *string            `json:"organizationContactEmail"`
-	OrganizationContactPhone *string            `json:"organizationContactPhone"`
-	OrganizationLaunchState  string             `json:"organizationLaunchState"`
-	OrganizationLaunchedAt   pgtype.Timestamptz `json:"organizationLaunchedAt"`
-	GrantID                  pgtype.UUID        `json:"grantId"`
-	GrantRoleTemplate        string             `json:"grantRoleTemplate"`
-	GrantScopeType           string             `json:"grantScopeType"`
-	GrantScopeID             pgtype.UUID        `json:"grantScopeId"`
+	ID                         pgtype.UUID        `json:"id"`
+	AccountID                  pgtype.UUID        `json:"accountId"`
+	MembershipID               pgtype.UUID        `json:"membershipId"`
+	SessionToken               string             `json:"sessionToken"`
+	ExpiresAt                  pgtype.Timestamptz `json:"expiresAt"`
+	CreatedAt                  pgtype.Timestamptz `json:"createdAt"`
+	LastSeenAt                 pgtype.Timestamptz `json:"lastSeenAt"`
+	AccountFullName            string             `json:"accountFullName"`
+	AccountEmail               string             `json:"accountEmail"`
+	OrganizationID             pgtype.UUID        `json:"organizationId"`
+	MembershipStatus           string             `json:"membershipStatus"`
+	OrganizationRoleTitle      string             `json:"organizationRoleTitle"`
+	OrganizationShellName      string             `json:"organizationShellName"`
+	OrganizationShortName      *string            `json:"organizationShortName"`
+	OrganizationPropertyType   *string            `json:"organizationPropertyType"`
+	OrganizationInn            *string            `json:"organizationInn"`
+	OrganizationKpp            *string            `json:"organizationKpp"`
+	OrganizationLegalAddress   *string            `json:"organizationLegalAddress"`
+	OrganizationContactEmail   *string            `json:"organizationContactEmail"`
+	OrganizationContactPhone   *string            `json:"organizationContactPhone"`
+	OrganizationLeaderFullName *string            `json:"organizationLeaderFullName"`
+	OrganizationLeaderPosition *string            `json:"organizationLeaderPosition"`
+	OrganizationContractPhone  *string            `json:"organizationContractPhone"`
+	OrganizationContractEmail  *string            `json:"organizationContractEmail"`
+	OrganizationActingBasis    *string            `json:"organizationActingBasis"`
+	OrganizationLaunchState    string             `json:"organizationLaunchState"`
+	OrganizationLaunchedAt     pgtype.Timestamptz `json:"organizationLaunchedAt"`
+	GrantID                    pgtype.UUID        `json:"grantId"`
+	GrantRoleTemplate          string             `json:"grantRoleTemplate"`
+	GrantScopeType             string             `json:"grantScopeType"`
+	GrantScopeID               pgtype.UUID        `json:"grantScopeId"`
 }
 
 func (q *Queries) GetCurrentSession(ctx context.Context, sessionToken string) (GetCurrentSessionRow, error) {
@@ -521,6 +885,11 @@ func (q *Queries) GetCurrentSession(ctx context.Context, sessionToken string) (G
 		&i.OrganizationLegalAddress,
 		&i.OrganizationContactEmail,
 		&i.OrganizationContactPhone,
+		&i.OrganizationLeaderFullName,
+		&i.OrganizationLeaderPosition,
+		&i.OrganizationContractPhone,
+		&i.OrganizationContractEmail,
+		&i.OrganizationActingBasis,
 		&i.OrganizationLaunchState,
 		&i.OrganizationLaunchedAt,
 		&i.GrantID,
@@ -605,6 +974,11 @@ SELECT
     o.legal_address AS organization_legal_address,
     o.contact_email AS organization_contact_email,
     o.contact_phone AS organization_contact_phone,
+    o.leader_full_name AS organization_leader_full_name,
+    o.leader_position AS organization_leader_position,
+    o.contract_phone AS organization_contract_phone,
+    o.contract_email AS organization_contract_email,
+    o.acting_basis AS organization_acting_basis,
     o.launch_state AS organization_launch_state,
     o.launched_at AS organization_launched_at,
     g.id AS grant_id,
@@ -620,24 +994,29 @@ ORDER BY m.created_at ASC, g.created_at ASC
 `
 
 type ListAccountAccessPathsByAccountIDRow struct {
-	MembershipID             pgtype.UUID        `json:"membershipId"`
-	OrganizationID           pgtype.UUID        `json:"organizationId"`
-	MembershipStatus         string             `json:"membershipStatus"`
-	OrganizationRoleTitle    string             `json:"organizationRoleTitle"`
-	OrganizationShellName    string             `json:"organizationShellName"`
-	OrganizationShortName    *string            `json:"organizationShortName"`
-	OrganizationPropertyType *string            `json:"organizationPropertyType"`
-	OrganizationInn          *string            `json:"organizationInn"`
-	OrganizationKpp          *string            `json:"organizationKpp"`
-	OrganizationLegalAddress *string            `json:"organizationLegalAddress"`
-	OrganizationContactEmail *string            `json:"organizationContactEmail"`
-	OrganizationContactPhone *string            `json:"organizationContactPhone"`
-	OrganizationLaunchState  string             `json:"organizationLaunchState"`
-	OrganizationLaunchedAt   pgtype.Timestamptz `json:"organizationLaunchedAt"`
-	GrantID                  pgtype.UUID        `json:"grantId"`
-	GrantRoleTemplate        string             `json:"grantRoleTemplate"`
-	GrantScopeType           string             `json:"grantScopeType"`
-	GrantScopeID             pgtype.UUID        `json:"grantScopeId"`
+	MembershipID               pgtype.UUID        `json:"membershipId"`
+	OrganizationID             pgtype.UUID        `json:"organizationId"`
+	MembershipStatus           string             `json:"membershipStatus"`
+	OrganizationRoleTitle      string             `json:"organizationRoleTitle"`
+	OrganizationShellName      string             `json:"organizationShellName"`
+	OrganizationShortName      *string            `json:"organizationShortName"`
+	OrganizationPropertyType   *string            `json:"organizationPropertyType"`
+	OrganizationInn            *string            `json:"organizationInn"`
+	OrganizationKpp            *string            `json:"organizationKpp"`
+	OrganizationLegalAddress   *string            `json:"organizationLegalAddress"`
+	OrganizationContactEmail   *string            `json:"organizationContactEmail"`
+	OrganizationContactPhone   *string            `json:"organizationContactPhone"`
+	OrganizationLeaderFullName *string            `json:"organizationLeaderFullName"`
+	OrganizationLeaderPosition *string            `json:"organizationLeaderPosition"`
+	OrganizationContractPhone  *string            `json:"organizationContractPhone"`
+	OrganizationContractEmail  *string            `json:"organizationContractEmail"`
+	OrganizationActingBasis    *string            `json:"organizationActingBasis"`
+	OrganizationLaunchState    string             `json:"organizationLaunchState"`
+	OrganizationLaunchedAt     pgtype.Timestamptz `json:"organizationLaunchedAt"`
+	GrantID                    pgtype.UUID        `json:"grantId"`
+	GrantRoleTemplate          string             `json:"grantRoleTemplate"`
+	GrantScopeType             string             `json:"grantScopeType"`
+	GrantScopeID               pgtype.UUID        `json:"grantScopeId"`
 }
 
 func (q *Queries) ListAccountAccessPathsByAccountID(ctx context.Context, accountID pgtype.UUID) ([]ListAccountAccessPathsByAccountIDRow, error) {
@@ -662,6 +1041,11 @@ func (q *Queries) ListAccountAccessPathsByAccountID(ctx context.Context, account
 			&i.OrganizationLegalAddress,
 			&i.OrganizationContactEmail,
 			&i.OrganizationContactPhone,
+			&i.OrganizationLeaderFullName,
+			&i.OrganizationLeaderPosition,
+			&i.OrganizationContractPhone,
+			&i.OrganizationContractEmail,
+			&i.OrganizationActingBasis,
 			&i.OrganizationLaunchState,
 			&i.OrganizationLaunchedAt,
 			&i.GrantID,
@@ -679,26 +1063,44 @@ func (q *Queries) ListAccountAccessPathsByAccountID(ctx context.Context, account
 	return items, nil
 }
 
-const listAuthSubdivisionsByOrganization = `-- name: ListAuthSubdivisionsByOrganization :many
-SELECT id, organization_id, subdivision_type, name, code, region, address, manager_name, contacts, status, created_at, updated_at
-FROM auth_subdivisions
+const listAuthDivisionsByOrganization = `-- name: ListAuthDivisionsByOrganization :many
+SELECT
+    id,
+    organization_id,
+    division_type,
+    name,
+    code,
+    region,
+    address,
+    manager_name,
+    contacts,
+    status,
+    created_at,
+    updated_at,
+    leader_position,
+    contract_phone,
+    contract_email,
+    acting_basis,
+    comment
+FROM auth_divisions
 WHERE organization_id = $1
+  AND status = 'active'
 ORDER BY created_at ASC
 `
 
-func (q *Queries) ListAuthSubdivisionsByOrganization(ctx context.Context, organizationID pgtype.UUID) ([]AuthSubdivision, error) {
-	rows, err := q.db.Query(ctx, listAuthSubdivisionsByOrganization, organizationID)
+func (q *Queries) ListAuthDivisionsByOrganization(ctx context.Context, organizationID pgtype.UUID) ([]AuthDivision, error) {
+	rows, err := q.db.Query(ctx, listAuthDivisionsByOrganization, organizationID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []AuthSubdivision{}
+	items := []AuthDivision{}
 	for rows.Next() {
-		var i AuthSubdivision
+		var i AuthDivision
 		if err := rows.Scan(
 			&i.ID,
 			&i.OrganizationID,
-			&i.SubdivisionType,
+			&i.DivisionType,
 			&i.Name,
 			&i.Code,
 			&i.Region,
@@ -708,6 +1110,11 @@ func (q *Queries) ListAuthSubdivisionsByOrganization(ctx context.Context, organi
 			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.LeaderPosition,
+			&i.ContractPhone,
+			&i.ContractEmail,
+			&i.ActingBasis,
+			&i.Comment,
 		); err != nil {
 			return nil, err
 		}
@@ -720,9 +1127,28 @@ func (q *Queries) ListAuthSubdivisionsByOrganization(ctx context.Context, organi
 }
 
 const listAuthUnitsByOrganization = `-- name: ListAuthUnitsByOrganization :many
-SELECT id, organization_id, subdivision_id, unit_type, name, code, address, manager_name, contacts, status, created_at, updated_at
+SELECT
+    id,
+    organization_id,
+    division_id,
+    unit_type,
+    name,
+    code,
+    address,
+    manager_name,
+    contacts,
+    status,
+    created_at,
+    updated_at,
+    region,
+    leader_position,
+    contract_phone,
+    contract_email,
+    acting_basis,
+    comment
 FROM auth_units
 WHERE organization_id = $1
+  AND status = 'active'
 ORDER BY created_at ASC
 `
 
@@ -738,7 +1164,7 @@ func (q *Queries) ListAuthUnitsByOrganization(ctx context.Context, organizationI
 		if err := rows.Scan(
 			&i.ID,
 			&i.OrganizationID,
-			&i.SubdivisionID,
+			&i.DivisionID,
 			&i.UnitType,
 			&i.Name,
 			&i.Code,
@@ -748,6 +1174,12 @@ func (q *Queries) ListAuthUnitsByOrganization(ctx context.Context, organizationI
 			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Region,
+			&i.LeaderPosition,
+			&i.ContractPhone,
+			&i.ContractEmail,
+			&i.ActingBasis,
+			&i.Comment,
 		); err != nil {
 			return nil, err
 		}
@@ -766,7 +1198,7 @@ SET
     launched_at = COALESCE(launched_at, NOW()),
     updated_at = NOW()
 WHERE id = $1
-RETURNING id, role_title, shell_name, short_name, property_type, inn, kpp, legal_address, contact_email, contact_phone, launch_state, first_admin_account_id, launched_at, created_at, updated_at
+RETURNING id, role_title, shell_name, short_name, property_type, inn, kpp, legal_address, contact_email, contact_phone, launch_state, first_admin_account_id, launched_at, created_at, updated_at, leader_full_name, leader_position, contract_phone, contract_email, acting_basis
 `
 
 func (q *Queries) MarkBootstrapOrganizationLaunched(ctx context.Context, id pgtype.UUID) (AuthBootstrapOrganization, error) {
@@ -788,6 +1220,11 @@ func (q *Queries) MarkBootstrapOrganizationLaunched(ctx context.Context, id pgty
 		&i.LaunchedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LeaderFullName,
+		&i.LeaderPosition,
+		&i.ContractPhone,
+		&i.ContractEmail,
+		&i.ActingBasis,
 	)
 	return i, err
 }
@@ -863,6 +1300,168 @@ func (q *Queries) TouchAuthSession(ctx context.Context, id pgtype.UUID) error {
 	return err
 }
 
+const updateAuthDivision = `-- name: UpdateAuthDivision :one
+UPDATE auth_divisions
+SET
+    division_type = $3,
+    name = $4,
+    code = $5,
+    region = $6,
+    address = $7,
+    manager_name = $8,
+    contacts = $9,
+    leader_position = $10,
+    contract_phone = $11,
+    contract_email = $12,
+    acting_basis = $13,
+    comment = $14,
+    updated_at = NOW()
+WHERE id = $1
+  AND organization_id = $2
+  AND status = 'active'
+RETURNING id, organization_id, division_type, name, code, region, address, manager_name, contacts, status, created_at, updated_at, leader_position, contract_phone, contract_email, acting_basis, comment
+`
+
+type UpdateAuthDivisionParams struct {
+	ID             pgtype.UUID `json:"id"`
+	OrganizationID pgtype.UUID `json:"organizationId"`
+	DivisionType   string      `json:"divisionType"`
+	Name           string      `json:"name"`
+	Code           *string     `json:"code"`
+	Region         *string     `json:"region"`
+	Address        *string     `json:"address"`
+	ManagerName    *string     `json:"managerName"`
+	Contacts       *string     `json:"contacts"`
+	LeaderPosition *string     `json:"leaderPosition"`
+	ContractPhone  *string     `json:"contractPhone"`
+	ContractEmail  *string     `json:"contractEmail"`
+	ActingBasis    *string     `json:"actingBasis"`
+	Comment        *string     `json:"comment"`
+}
+
+func (q *Queries) UpdateAuthDivision(ctx context.Context, arg UpdateAuthDivisionParams) (AuthDivision, error) {
+	row := q.db.QueryRow(ctx, updateAuthDivision,
+		arg.ID,
+		arg.OrganizationID,
+		arg.DivisionType,
+		arg.Name,
+		arg.Code,
+		arg.Region,
+		arg.Address,
+		arg.ManagerName,
+		arg.Contacts,
+		arg.LeaderPosition,
+		arg.ContractPhone,
+		arg.ContractEmail,
+		arg.ActingBasis,
+		arg.Comment,
+	)
+	var i AuthDivision
+	err := row.Scan(
+		&i.ID,
+		&i.OrganizationID,
+		&i.DivisionType,
+		&i.Name,
+		&i.Code,
+		&i.Region,
+		&i.Address,
+		&i.ManagerName,
+		&i.Contacts,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.LeaderPosition,
+		&i.ContractPhone,
+		&i.ContractEmail,
+		&i.ActingBasis,
+		&i.Comment,
+	)
+	return i, err
+}
+
+const updateAuthUnit = `-- name: UpdateAuthUnit :one
+UPDATE auth_units
+SET
+    division_id = $3,
+    unit_type = $4,
+    name = $5,
+    code = $6,
+    region = $7,
+    address = $8,
+    manager_name = $9,
+    contacts = $10,
+    leader_position = $11,
+    contract_phone = $12,
+    contract_email = $13,
+    acting_basis = $14,
+    comment = $15,
+    updated_at = NOW()
+WHERE id = $1
+  AND organization_id = $2
+  AND status = 'active'
+RETURNING id, organization_id, division_id, unit_type, name, code, address, manager_name, contacts, status, created_at, updated_at, region, leader_position, contract_phone, contract_email, acting_basis, comment
+`
+
+type UpdateAuthUnitParams struct {
+	ID             pgtype.UUID `json:"id"`
+	OrganizationID pgtype.UUID `json:"organizationId"`
+	DivisionID     pgtype.UUID `json:"divisionId"`
+	UnitType       string      `json:"unitType"`
+	Name           string      `json:"name"`
+	Code           *string     `json:"code"`
+	Region         *string     `json:"region"`
+	Address        *string     `json:"address"`
+	ManagerName    *string     `json:"managerName"`
+	Contacts       *string     `json:"contacts"`
+	LeaderPosition *string     `json:"leaderPosition"`
+	ContractPhone  *string     `json:"contractPhone"`
+	ContractEmail  *string     `json:"contractEmail"`
+	ActingBasis    *string     `json:"actingBasis"`
+	Comment        *string     `json:"comment"`
+}
+
+func (q *Queries) UpdateAuthUnit(ctx context.Context, arg UpdateAuthUnitParams) (AuthUnit, error) {
+	row := q.db.QueryRow(ctx, updateAuthUnit,
+		arg.ID,
+		arg.OrganizationID,
+		arg.DivisionID,
+		arg.UnitType,
+		arg.Name,
+		arg.Code,
+		arg.Region,
+		arg.Address,
+		arg.ManagerName,
+		arg.Contacts,
+		arg.LeaderPosition,
+		arg.ContractPhone,
+		arg.ContractEmail,
+		arg.ActingBasis,
+		arg.Comment,
+	)
+	var i AuthUnit
+	err := row.Scan(
+		&i.ID,
+		&i.OrganizationID,
+		&i.DivisionID,
+		&i.UnitType,
+		&i.Name,
+		&i.Code,
+		&i.Address,
+		&i.ManagerName,
+		&i.Contacts,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Region,
+		&i.LeaderPosition,
+		&i.ContractPhone,
+		&i.ContractEmail,
+		&i.ActingBasis,
+		&i.Comment,
+	)
+	return i, err
+}
+
 const updateBootstrapOrganizationCore = `-- name: UpdateBootstrapOrganizationCore :one
 UPDATE auth_bootstrap_organizations
 SET
@@ -874,21 +1473,31 @@ SET
     legal_address = $7,
     contact_email = $8,
     contact_phone = $9,
+    leader_full_name = $10,
+    leader_position = $11,
+    contract_phone = $12,
+    contract_email = $13,
+    acting_basis = $14,
     updated_at = NOW()
 WHERE id = $1
-RETURNING id, role_title, shell_name, short_name, property_type, inn, kpp, legal_address, contact_email, contact_phone, launch_state, first_admin_account_id, launched_at, created_at, updated_at
+RETURNING id, role_title, shell_name, short_name, property_type, inn, kpp, legal_address, contact_email, contact_phone, launch_state, first_admin_account_id, launched_at, created_at, updated_at, leader_full_name, leader_position, contract_phone, contract_email, acting_basis
 `
 
 type UpdateBootstrapOrganizationCoreParams struct {
-	ID           pgtype.UUID `json:"id"`
-	ShellName    string      `json:"shellName"`
-	ShortName    *string     `json:"shortName"`
-	PropertyType *string     `json:"propertyType"`
-	Inn          *string     `json:"inn"`
-	Kpp          *string     `json:"kpp"`
-	LegalAddress *string     `json:"legalAddress"`
-	ContactEmail *string     `json:"contactEmail"`
-	ContactPhone *string     `json:"contactPhone"`
+	ID             pgtype.UUID `json:"id"`
+	ShellName      string      `json:"shellName"`
+	ShortName      *string     `json:"shortName"`
+	PropertyType   *string     `json:"propertyType"`
+	Inn            *string     `json:"inn"`
+	Kpp            *string     `json:"kpp"`
+	LegalAddress   *string     `json:"legalAddress"`
+	ContactEmail   *string     `json:"contactEmail"`
+	ContactPhone   *string     `json:"contactPhone"`
+	LeaderFullName *string     `json:"leaderFullName"`
+	LeaderPosition *string     `json:"leaderPosition"`
+	ContractPhone  *string     `json:"contractPhone"`
+	ContractEmail  *string     `json:"contractEmail"`
+	ActingBasis    *string     `json:"actingBasis"`
 }
 
 func (q *Queries) UpdateBootstrapOrganizationCore(ctx context.Context, arg UpdateBootstrapOrganizationCoreParams) (AuthBootstrapOrganization, error) {
@@ -902,6 +1511,11 @@ func (q *Queries) UpdateBootstrapOrganizationCore(ctx context.Context, arg Updat
 		arg.LegalAddress,
 		arg.ContactEmail,
 		arg.ContactPhone,
+		arg.LeaderFullName,
+		arg.LeaderPosition,
+		arg.ContractPhone,
+		arg.ContractEmail,
+		arg.ActingBasis,
 	)
 	var i AuthBootstrapOrganization
 	err := row.Scan(
@@ -920,6 +1534,11 @@ func (q *Queries) UpdateBootstrapOrganizationCore(ctx context.Context, arg Updat
 		&i.LaunchedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LeaderFullName,
+		&i.LeaderPosition,
+		&i.ContractPhone,
+		&i.ContractEmail,
+		&i.ActingBasis,
 	)
 	return i, err
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"backend/internal/db/generated"
@@ -25,6 +26,13 @@ type Repository interface {
 	GetSession(ctx context.Context, sessionToken string) (*sessionSnapshot, error)
 	DeleteSession(ctx context.Context, sessionToken string) error
 	CompleteLaunch(ctx context.Context, snapshot *sessionSnapshot, req CompleteLaunchRequest) (*sessionSnapshot, error)
+	UpdateCompanyProfile(ctx context.Context, snapshot *sessionSnapshot, req CompanyProfileRequest) (*sessionSnapshot, error)
+	CreateDivision(ctx context.Context, snapshot *sessionSnapshot, req StructureNodeRequest) (*sessionSnapshot, error)
+	UpdateDivision(ctx context.Context, snapshot *sessionSnapshot, divisionID uuid.UUID, req StructureNodeRequest) (*sessionSnapshot, error)
+	ArchiveDivision(ctx context.Context, snapshot *sessionSnapshot, divisionID uuid.UUID) (*sessionSnapshot, error)
+	CreateUnit(ctx context.Context, snapshot *sessionSnapshot, req StructureNodeRequest) (*sessionSnapshot, error)
+	UpdateUnit(ctx context.Context, snapshot *sessionSnapshot, unitID uuid.UUID, req StructureNodeRequest) (*sessionSnapshot, error)
+	ArchiveUnit(ctx context.Context, snapshot *sessionSnapshot, unitID uuid.UUID) (*sessionSnapshot, error)
 	CreateEmployeeInviteDraft(ctx context.Context, snapshot *sessionSnapshot, req CreateEmployeeInviteRequest, expiresAt time.Time) (*generated.AuthEmployeeInvite, error)
 	ListEmployeeInvites(ctx context.Context, snapshot *sessionSnapshot) ([]generated.AuthEmployeeInvite, error)
 	GetEmployeeInviteByID(ctx context.Context, inviteID uuid.UUID) (*generated.AuthEmployeeInvite, error)
@@ -42,9 +50,9 @@ type organizationShellBundle struct {
 }
 
 type sessionSnapshot struct {
-	SessionRow   generated.GetCurrentSessionRow
-	Subdivisions []generated.AuthSubdivision
-	Units        []generated.AuthUnit
+	SessionRow generated.GetCurrentSessionRow
+	Divisions  []generated.AuthDivision
+	Units      []generated.AuthUnit
 }
 
 type repository struct {
@@ -153,7 +161,7 @@ func (r *repository) AcceptInvite(ctx context.Context, invite *generated.GetFirs
 
 	grant, err := qtx.CreateAuthScopedGrant(ctx, generated.CreateAuthScopedGrantParams{
 		MembershipID: membership.ID,
-		RoleTemplate: "organization_admin",
+		RoleTemplate: RoleOrganizationAdmin,
 		ScopeType:    "organization",
 		ScopeID:      invite.OrganizationID,
 	})
@@ -165,6 +173,10 @@ func (r *repository) AcceptInvite(ctx context.Context, invite *generated.GetFirs
 		ID:        invite.ID,
 		AccountID: account.ID,
 	}); err != nil {
+		return nil, err
+	}
+
+	if _, err := qtx.MarkBootstrapOrganizationLaunched(ctx, invite.OrganizationID); err != nil {
 		return nil, err
 	}
 
@@ -225,17 +237,17 @@ func (r *repository) GetSession(ctx context.Context, sessionToken string) (*sess
 
 	_ = r.q.TouchAuthSession(ctx, row.ID)
 
-	subdivisions, units, err := r.loadOrganizationGraph(ctx, r.q, row.OrganizationID)
+	divisions, units, err := r.loadOrganizationGraph(ctx, r.q, row.OrganizationID)
 	if err != nil {
 		return nil, err
 	}
 
-	filteredSubdivisions, filteredUnits := restrictOrganizationGraph(row, subdivisions, units)
+	filteredDivisions, filteredUnits := restrictOrganizationGraph(row, divisions, units)
 
 	return &sessionSnapshot{
-		SessionRow:   row,
-		Subdivisions: filteredSubdivisions,
-		Units:        filteredUnits,
+		SessionRow: row,
+		Divisions:  filteredDivisions,
+		Units:      filteredUnits,
 	}, nil
 }
 
@@ -252,47 +264,63 @@ func (r *repository) CompleteLaunch(ctx context.Context, snapshot *sessionSnapsh
 
 	qtx := r.q.WithTx(tx)
 	updatedOrg, err := qtx.UpdateBootstrapOrganizationCore(ctx, generated.UpdateBootstrapOrganizationCoreParams{
-		ID:           snapshot.SessionRow.OrganizationID,
-		ShellName:    req.OrganizationName,
-		ShortName:    trimOptional(req.ShortName),
-		PropertyType: trimOptionalString(req.PropertyType),
-		Inn:          trimOptionalString(req.Inn),
-		Kpp:          trimOptionalString(req.Kpp),
-		LegalAddress: trimOptionalString(req.LegalAddress),
-		ContactEmail: trimOptionalString(req.ContactEmail),
-		ContactPhone: trimOptionalString(req.ContactPhone),
+		ID:             snapshot.SessionRow.OrganizationID,
+		ShellName:      req.OrganizationName,
+		ShortName:      trimOptional(req.ShortName),
+		PropertyType:   trimOptionalString(req.PropertyType),
+		Inn:            trimOptionalString(req.Inn),
+		Kpp:            trimOptionalString(req.Kpp),
+		LegalAddress:   trimOptionalString(req.LegalAddress),
+		ContactEmail:   trimOptionalString(req.ContactEmail),
+		ContactPhone:   trimOptionalString(req.ContactPhone),
+		LeaderFullName: nil,
+		LeaderPosition: nil,
+		ContractPhone:  nil,
+		ContractEmail:  nil,
+		ActingBasis:    nil,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	var subdivisionID pgtype.UUID
-	if req.StructureMode == "subdivision" && req.Subdivision != nil {
-		subdivision, err := qtx.CreateAuthSubdivision(ctx, generated.CreateAuthSubdivisionParams{
-			OrganizationID:  updatedOrg.ID,
-			SubdivisionType: req.Subdivision.Type,
-			Name:            req.Subdivision.Name,
-			Code:            trimOptional(req.Subdivision.Code),
-			Region:          trimOptional(req.Subdivision.Region),
-			Address:         trimOptional(req.Subdivision.Address),
-			ManagerName:     trimOptional(req.Subdivision.ManagerName),
-			Contacts:        trimOptional(req.Subdivision.Contacts),
+	var divisionID pgtype.UUID
+	if req.StructureMode == "division" && req.Division != nil {
+		division, err := qtx.CreateAuthDivision(ctx, generated.CreateAuthDivisionParams{
+			OrganizationID: updatedOrg.ID,
+			DivisionType:   req.Division.Type,
+			Name:           req.Division.Name,
+			Code:           trimOptional(req.Division.Code),
+			Region:         trimOptional(req.Division.Region),
+			Address:        trimOptional(req.Division.Address),
+			ManagerName:    trimOptional(req.Division.ManagerName),
+			Contacts:       trimOptional(req.Division.Contacts),
+			LeaderPosition: nil,
+			ContractPhone:  nil,
+			ContractEmail:  nil,
+			ActingBasis:    nil,
+			Comment:        nil,
 		})
 		if err != nil {
 			return nil, err
 		}
-		subdivisionID = subdivision.ID
+		divisionID = division.ID
 	}
 
 	if _, err := qtx.CreateAuthUnit(ctx, generated.CreateAuthUnitParams{
 		OrganizationID: updatedOrg.ID,
-		SubdivisionID:  subdivisionID,
+		DivisionID:     divisionID,
 		UnitType:       req.Unit.Type,
 		Name:           req.Unit.Name,
 		Code:           trimOptional(req.Unit.Code),
+		Region:         nil,
 		Address:        trimOptional(req.Unit.Address),
 		ManagerName:    trimOptional(req.Unit.ManagerName),
 		Contacts:       trimOptional(req.Unit.Contacts),
+		LeaderPosition: nil,
+		ContractPhone:  nil,
+		ContractEmail:  nil,
+		ActingBasis:    nil,
+		Comment:        nil,
 	}); err != nil {
 		return nil, err
 	}
@@ -302,6 +330,209 @@ func (r *repository) CompleteLaunch(ctx context.Context, snapshot *sessionSnapsh
 	}
 
 	if err := tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+
+	return r.GetSession(ctx, snapshot.SessionRow.SessionToken)
+}
+
+func (r *repository) UpdateCompanyProfile(ctx context.Context, snapshot *sessionSnapshot, req CompanyProfileRequest) (*sessionSnapshot, error) {
+	if _, err := r.q.UpdateBootstrapOrganizationCore(ctx, generated.UpdateBootstrapOrganizationCoreParams{
+		ID:             snapshot.SessionRow.OrganizationID,
+		ShellName:      req.Name,
+		ShortName:      trimOptional(req.ShortName),
+		PropertyType:   trimOptionalString(req.Type),
+		Inn:            trimOptional(req.Inn),
+		Kpp:            trimOptional(req.Kpp),
+		LegalAddress:   trimOptional(resolveAddressAlias(req.RegisteredAddress, req.Address)),
+		ContactEmail:   trimOptional(req.ContractEmail),
+		ContactPhone:   trimOptional(req.ContractPhone),
+		LeaderFullName: trimOptional(resolveLeaderAlias(req.LeaderFullName, req.ManagerName)),
+		LeaderPosition: trimOptional(req.LeaderPosition),
+		ContractPhone:  trimOptional(req.ContractPhone),
+		ContractEmail:  trimOptional(req.ContractEmail),
+		ActingBasis:    trimOptional(req.ActingBasis),
+	}); err != nil {
+		return nil, err
+	}
+
+	return r.GetSession(ctx, snapshot.SessionRow.SessionToken)
+}
+
+func (r *repository) CreateDivision(ctx context.Context, snapshot *sessionSnapshot, req StructureNodeRequest) (*sessionSnapshot, error) {
+	if _, err := r.q.CreateAuthDivision(ctx, generated.CreateAuthDivisionParams{
+		OrganizationID: snapshot.SessionRow.OrganizationID,
+		DivisionType:   req.Type,
+		Name:           req.Name,
+		Code:           trimOptional(req.Code),
+		Region:         trimOptional(req.Region),
+		Address:        trimOptional(resolveAddressAlias(req.RegisteredAddress, req.Address)),
+		ManagerName:    trimOptional(resolveLeaderAlias(req.LeaderFullName, req.ManagerName)),
+		Contacts:       trimOptional(req.Contacts),
+		LeaderPosition: trimOptional(req.LeaderPosition),
+		ContractPhone:  trimOptional(req.ContractPhone),
+		ContractEmail:  trimOptional(req.ContractEmail),
+		ActingBasis:    trimOptional(req.ActingBasis),
+		Comment:        trimOptional(req.Comment),
+	}); err != nil {
+		return nil, err
+	}
+
+	return r.GetSession(ctx, snapshot.SessionRow.SessionToken)
+}
+
+func (r *repository) UpdateDivision(ctx context.Context, snapshot *sessionSnapshot, divisionID uuid.UUID, req StructureNodeRequest) (*sessionSnapshot, error) {
+	if _, err := r.q.UpdateAuthDivision(ctx, generated.UpdateAuthDivisionParams{
+		ID:             toPGUUID(divisionID),
+		OrganizationID: snapshot.SessionRow.OrganizationID,
+		DivisionType:   req.Type,
+		Name:           req.Name,
+		Code:           trimOptional(req.Code),
+		Region:         trimOptional(req.Region),
+		Address:        trimOptional(resolveAddressAlias(req.RegisteredAddress, req.Address)),
+		ManagerName:    trimOptional(resolveLeaderAlias(req.LeaderFullName, req.ManagerName)),
+		Contacts:       trimOptional(req.Contacts),
+		LeaderPosition: trimOptional(req.LeaderPosition),
+		ContractPhone:  trimOptional(req.ContractPhone),
+		ContractEmail:  trimOptional(req.ContractEmail),
+		ActingBasis:    trimOptional(req.ActingBasis),
+		Comment:        trimOptional(req.Comment),
+	}); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrDivisionNotFound
+		}
+		return nil, err
+	}
+
+	return r.GetSession(ctx, snapshot.SessionRow.SessionToken)
+}
+
+func (r *repository) ArchiveDivision(ctx context.Context, snapshot *sessionSnapshot, divisionID uuid.UUID) (*sessionSnapshot, error) {
+	current, err := r.q.GetAuthDivisionByID(ctx, toPGUUID(divisionID))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrDivisionNotFound
+		}
+		return nil, err
+	}
+	if !samePGUUID(current.OrganizationID, snapshot.SessionRow.OrganizationID) || current.Status != "active" {
+		return nil, ErrDivisionNotFound
+	}
+
+	blockers, err := r.q.CountAuthDivisionArchiveBlockers(ctx, generated.CountAuthDivisionArchiveBlockersParams{
+		OrganizationID: snapshot.SessionRow.OrganizationID,
+		ScopeID:        toPGUUID(divisionID),
+	})
+	if err != nil {
+		return nil, err
+	}
+	if blockers > 0 {
+		return nil, ErrArchiveBlocked
+	}
+
+	if _, err := r.q.ArchiveAuthDivision(ctx, generated.ArchiveAuthDivisionParams{
+		ID:             toPGUUID(divisionID),
+		OrganizationID: snapshot.SessionRow.OrganizationID,
+	}); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrDivisionNotFound
+		}
+		return nil, err
+	}
+
+	return r.GetSession(ctx, snapshot.SessionRow.SessionToken)
+}
+
+func (r *repository) CreateUnit(ctx context.Context, snapshot *sessionSnapshot, req StructureNodeRequest) (*sessionSnapshot, error) {
+	divisionID, err := optionalDivisionPGUUID(req.DivisionID)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err := r.q.CreateAuthUnit(ctx, generated.CreateAuthUnitParams{
+		OrganizationID: snapshot.SessionRow.OrganizationID,
+		DivisionID:     divisionID,
+		UnitType:       req.Type,
+		Name:           req.Name,
+		Code:           trimOptional(req.Code),
+		Region:         trimOptional(req.Region),
+		Address:        trimOptional(resolveAddressAlias(req.RegisteredAddress, req.Address)),
+		ManagerName:    trimOptional(resolveLeaderAlias(req.LeaderFullName, req.ManagerName)),
+		Contacts:       trimOptional(req.Contacts),
+		LeaderPosition: trimOptional(req.LeaderPosition),
+		ContractPhone:  trimOptional(req.ContractPhone),
+		ContractEmail:  trimOptional(req.ContractEmail),
+		ActingBasis:    trimOptional(req.ActingBasis),
+		Comment:        trimOptional(req.Comment),
+	}); err != nil {
+		return nil, err
+	}
+
+	return r.GetSession(ctx, snapshot.SessionRow.SessionToken)
+}
+
+func (r *repository) UpdateUnit(ctx context.Context, snapshot *sessionSnapshot, unitID uuid.UUID, req StructureNodeRequest) (*sessionSnapshot, error) {
+	divisionID, err := optionalDivisionPGUUID(req.DivisionID)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err := r.q.UpdateAuthUnit(ctx, generated.UpdateAuthUnitParams{
+		ID:             toPGUUID(unitID),
+		OrganizationID: snapshot.SessionRow.OrganizationID,
+		DivisionID:     divisionID,
+		UnitType:       req.Type,
+		Name:           req.Name,
+		Code:           trimOptional(req.Code),
+		Region:         trimOptional(req.Region),
+		Address:        trimOptional(resolveAddressAlias(req.RegisteredAddress, req.Address)),
+		ManagerName:    trimOptional(resolveLeaderAlias(req.LeaderFullName, req.ManagerName)),
+		Contacts:       trimOptional(req.Contacts),
+		LeaderPosition: trimOptional(req.LeaderPosition),
+		ContractPhone:  trimOptional(req.ContractPhone),
+		ContractEmail:  trimOptional(req.ContractEmail),
+		ActingBasis:    trimOptional(req.ActingBasis),
+		Comment:        trimOptional(req.Comment),
+	}); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrUnitNotFound
+		}
+		return nil, err
+	}
+
+	return r.GetSession(ctx, snapshot.SessionRow.SessionToken)
+}
+
+func (r *repository) ArchiveUnit(ctx context.Context, snapshot *sessionSnapshot, unitID uuid.UUID) (*sessionSnapshot, error) {
+	current, err := r.q.GetAuthUnitByID(ctx, toPGUUID(unitID))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrUnitNotFound
+		}
+		return nil, err
+	}
+	if !samePGUUID(current.OrganizationID, snapshot.SessionRow.OrganizationID) || current.Status != "active" {
+		return nil, ErrUnitNotFound
+	}
+
+	blockers, err := r.q.CountAuthUnitArchiveBlockers(ctx, generated.CountAuthUnitArchiveBlockersParams{
+		OrganizationID: snapshot.SessionRow.OrganizationID,
+		ScopeID:        toPGUUID(unitID),
+	})
+	if err != nil {
+		return nil, err
+	}
+	if blockers > 0 {
+		return nil, ErrArchiveBlocked
+	}
+
+	if _, err := r.q.ArchiveAuthUnit(ctx, generated.ArchiveAuthUnitParams{
+		ID:             toPGUUID(unitID),
+		OrganizationID: snapshot.SessionRow.OrganizationID,
+	}); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrUnitNotFound
+		}
 		return nil, err
 	}
 
@@ -464,8 +695,8 @@ func (r *repository) AcceptEmployeeInvite(ctx context.Context, invite *generated
 	return r.GetSession(ctx, sessionToken)
 }
 
-func (r *repository) loadOrganizationGraph(ctx context.Context, q graphReader, organizationID pgtype.UUID) ([]generated.AuthSubdivision, []generated.AuthUnit, error) {
-	subdivisions, err := q.ListAuthSubdivisionsByOrganization(ctx, organizationID)
+func (r *repository) loadOrganizationGraph(ctx context.Context, q graphReader, organizationID pgtype.UUID) ([]generated.AuthDivision, []generated.AuthUnit, error) {
+	divisions, err := q.ListAuthDivisionsByOrganization(ctx, organizationID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -475,11 +706,11 @@ func (r *repository) loadOrganizationGraph(ctx context.Context, q graphReader, o
 		return nil, nil, err
 	}
 
-	return subdivisions, units, nil
+	return divisions, units, nil
 }
 
 type graphReader interface {
-	ListAuthSubdivisionsByOrganization(ctx context.Context, organizationID pgtype.UUID) ([]generated.AuthSubdivision, error)
+	ListAuthDivisionsByOrganization(ctx context.Context, organizationID pgtype.UUID) ([]generated.AuthDivision, error)
 	ListAuthUnitsByOrganization(ctx context.Context, organizationID pgtype.UUID) ([]generated.AuthUnit, error)
 }
 
@@ -494,29 +725,29 @@ func selectSingleAccess(rows []generated.ListAccountAccessPathsByAccountIDRow) (
 	}
 }
 
-func restrictOrganizationGraph(row generated.GetCurrentSessionRow, subdivisions []generated.AuthSubdivision, units []generated.AuthUnit) ([]generated.AuthSubdivision, []generated.AuthUnit) {
+func restrictOrganizationGraph(row generated.GetCurrentSessionRow, divisions []generated.AuthDivision, units []generated.AuthUnit) ([]generated.AuthDivision, []generated.AuthUnit) {
 	if !row.GrantScopeID.Valid {
-		return []generated.AuthSubdivision{}, []generated.AuthUnit{}
+		return []generated.AuthDivision{}, []generated.AuthUnit{}
 	}
 
 	switch row.GrantScopeType {
 	case "organization":
-		return subdivisions, units
-	case "subdivision":
-		filteredSubdivisions := make([]generated.AuthSubdivision, 0, len(subdivisions))
+		return divisions, units
+	case "division":
+		filteredDivisions := make([]generated.AuthDivision, 0, len(divisions))
 		filteredUnits := make([]generated.AuthUnit, 0, len(units))
-		for _, subdivision := range subdivisions {
-			if samePGUUID(subdivision.ID, row.GrantScopeID) {
-				filteredSubdivisions = append(filteredSubdivisions, subdivision)
+		for _, division := range divisions {
+			if samePGUUID(division.ID, row.GrantScopeID) {
+				filteredDivisions = append(filteredDivisions, division)
 				break
 			}
 		}
 		for _, unit := range units {
-			if samePGUUID(unit.SubdivisionID, row.GrantScopeID) {
+			if samePGUUID(unit.DivisionID, row.GrantScopeID) {
 				filteredUnits = append(filteredUnits, unit)
 			}
 		}
-		return filteredSubdivisions, filteredUnits
+		return filteredDivisions, filteredUnits
 	case "unit":
 		filteredUnits := make([]generated.AuthUnit, 0, 1)
 		for _, unit := range units {
@@ -525,9 +756,9 @@ func restrictOrganizationGraph(row generated.GetCurrentSessionRow, subdivisions 
 				break
 			}
 		}
-		return []generated.AuthSubdivision{}, filteredUnits
+		return []generated.AuthDivision{}, filteredUnits
 	default:
-		return []generated.AuthSubdivision{}, []generated.AuthUnit{}
+		return []generated.AuthDivision{}, []generated.AuthUnit{}
 	}
 }
 
@@ -562,6 +793,33 @@ func trimOptional(value *string) *string {
 	}
 
 	return &trimmed
+}
+
+func resolveAddressAlias(registeredAddress *string, address *string) *string {
+	if registeredAddress != nil && strings.TrimSpace(*registeredAddress) != "" {
+		return registeredAddress
+	}
+	return address
+}
+
+func resolveLeaderAlias(leaderFullName *string, managerName *string) *string {
+	if leaderFullName != nil && strings.TrimSpace(*leaderFullName) != "" {
+		return leaderFullName
+	}
+	return managerName
+}
+
+func optionalDivisionPGUUID(value *string) (pgtype.UUID, error) {
+	if value == nil || strings.TrimSpace(*value) == "" {
+		return pgtype.UUID{}, nil
+	}
+
+	parsed, err := uuid.Parse(strings.TrimSpace(*value))
+	if err != nil {
+		return pgtype.UUID{}, ErrDivisionTargetInvalid
+	}
+
+	return toPGUUID(parsed), nil
 }
 
 func trimOptionalString(value string) *string {

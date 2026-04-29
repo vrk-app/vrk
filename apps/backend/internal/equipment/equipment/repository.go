@@ -31,8 +31,8 @@ const equipmentSelectColumns = `
     e.organization_id,
     e.unit_id,
     unit.name,
-    unit.subdivision_id,
-    subdivision.name,
+    unit.division_id,
+    division.name,
     e.manufacturer,
     e.classification,
     e.model,
@@ -59,15 +59,15 @@ func scanEquipment(scanner interface {
 	var item Equipment
 	var unitID uuid.UUID
 	var organizationID uuid.UUID
-	var subdivisionID *uuid.UUID
+	var divisionID *uuid.UUID
 
 	if err := scanner.Scan(
 		&item.ID,
 		&organizationID,
 		&unitID,
 		&item.UnitName,
-		&subdivisionID,
-		&item.SubdivisionName,
+		&divisionID,
+		&item.DivisionName,
 		&item.Manufacturer,
 		&item.Classification,
 		&item.Model,
@@ -88,9 +88,9 @@ func scanEquipment(scanner interface {
 
 	item.OrganizationID = organizationID.String()
 	item.UnitID = unitID.String()
-	if subdivisionID != nil {
-		value := subdivisionID.String()
-		item.SubdivisionID = &value
+	if divisionID != nil {
+		value := divisionID.String()
+		item.DivisionID = &value
 	}
 
 	return &item, nil
@@ -145,7 +145,7 @@ func (r *equipmentRepository) GetByID(ctx context.Context, id uuid.UUID) (*Equip
         SELECT %s
         FROM registry_equipment e
         JOIN auth_units unit ON unit.id = e.unit_id
-        LEFT JOIN auth_subdivisions subdivision ON subdivision.id = unit.subdivision_id
+        LEFT JOIN auth_divisions division ON division.id = unit.division_id
         WHERE e.id = $1
     `, equipmentSelectColumns)
 
@@ -162,7 +162,7 @@ func (r *equipmentRepository) ListByOrganization(ctx context.Context, organizati
         SELECT %s
         FROM registry_equipment e
         JOIN auth_units unit ON unit.id = e.unit_id
-        LEFT JOIN auth_subdivisions subdivision ON subdivision.id = unit.subdivision_id
+        LEFT JOIN auth_divisions division ON division.id = unit.division_id
         WHERE e.organization_id = $1
           AND ($2::boolean OR e.archived_at IS NULL)
         ORDER BY e.created_at DESC

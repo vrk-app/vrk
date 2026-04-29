@@ -29,8 +29,8 @@ type Agreement struct {
 	WorkType                   string
 	EquipmentType              string
 	Region                     string
-	SubdivisionID              *uuid.UUID
-	SubdivisionName            *string
+	DivisionID                 *uuid.UUID
+	DivisionName               *string
 	UnitID                     *uuid.UUID
 	UnitName                   *string
 	LocationScopeLabel         *string
@@ -55,7 +55,7 @@ type CreateRequest struct {
 	WorkType                 string  `json:"workType"`
 	EquipmentType            string  `json:"equipmentType"`
 	Region                   string  `json:"region"`
-	SubdivisionID            *string `json:"subdivisionId,omitempty"`
+	DivisionID               *string `json:"divisionId,omitempty"`
 	UnitID                   *string `json:"unitId,omitempty"`
 	LocationScopeLabel       *string `json:"locationScopeLabel,omitempty"`
 	Source                   *string `json:"source,omitempty"`
@@ -71,7 +71,7 @@ type UpdateRequest struct {
 	WorkType                 *string `json:"workType,omitempty"`
 	EquipmentType            *string `json:"equipmentType,omitempty"`
 	Region                   *string `json:"region,omitempty"`
-	SubdivisionID            *string `json:"subdivisionId,omitempty"`
+	DivisionID               *string `json:"divisionId,omitempty"`
 	UnitID                   *string `json:"unitId,omitempty"`
 	LocationScopeLabel       *string `json:"locationScopeLabel,omitempty"`
 	Source                   *string `json:"source,omitempty"`

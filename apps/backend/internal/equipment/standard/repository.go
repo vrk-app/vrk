@@ -28,8 +28,8 @@ const standardSelectColumns = `
     standard.id,
     standard.organization_id,
     org.shell_name,
-    standard.subdivision_id,
-    subdivision.name,
+    standard.division_id,
+    division.name,
     standard.unit_id,
     unit.name,
     standard.owner_label,
@@ -57,15 +57,15 @@ func scanStandard(scanner interface {
 }) (*Standard, error) {
 	var item Standard
 	var organizationID uuid.UUID
-	var subdivisionID *uuid.UUID
+	var divisionID *uuid.UUID
 	var unitID *uuid.UUID
 
 	if err := scanner.Scan(
 		&item.ID,
 		&organizationID,
 		&item.OrganizationName,
-		&subdivisionID,
-		&item.SubdivisionName,
+		&divisionID,
+		&item.DivisionName,
 		&unitID,
 		&item.UnitName,
 		&item.OwnerLabel,
@@ -86,9 +86,9 @@ func scanStandard(scanner interface {
 	}
 
 	item.OrganizationID = organizationID.String()
-	if subdivisionID != nil {
-		value := subdivisionID.String()
-		item.SubdivisionID = &value
+	if divisionID != nil {
+		value := divisionID.String()
+		item.DivisionID = &value
 	}
 	if unitID != nil {
 		value := unitID.String()
@@ -102,7 +102,7 @@ func (r *standardRepository) Create(ctx context.Context, item Standard) (*Standa
 	query := `
         INSERT INTO registry_standards (
             organization_id,
-            subdivision_id,
+            division_id,
             unit_id,
             owner_label,
             standard_type,
@@ -124,7 +124,7 @@ func (r *standardRepository) Create(ctx context.Context, item Standard) (*Standa
 		ctx,
 		query,
 		uuid.MustParse(item.OrganizationID),
-		nullableUUID(item.SubdivisionID),
+		nullableUUID(item.DivisionID),
 		nullableUUID(item.UnitID),
 		item.OwnerLabel,
 		item.StandardType,
@@ -147,7 +147,7 @@ func (r *standardRepository) GetByID(ctx context.Context, id uuid.UUID) (*Standa
         SELECT %s
         FROM registry_standards standard
         JOIN auth_bootstrap_organizations org ON org.id = standard.organization_id
-        LEFT JOIN auth_subdivisions subdivision ON subdivision.id = standard.subdivision_id
+        LEFT JOIN auth_divisions division ON division.id = standard.division_id
         LEFT JOIN auth_units unit ON unit.id = standard.unit_id
         WHERE standard.id = $1
     `, standardSelectColumns)
@@ -165,7 +165,7 @@ func (r *standardRepository) ListByOrganization(ctx context.Context, organizatio
         SELECT %s
         FROM registry_standards standard
         JOIN auth_bootstrap_organizations org ON org.id = standard.organization_id
-        LEFT JOIN auth_subdivisions subdivision ON subdivision.id = standard.subdivision_id
+        LEFT JOIN auth_divisions division ON division.id = standard.division_id
         LEFT JOIN auth_units unit ON unit.id = standard.unit_id
         WHERE standard.organization_id = $1
           AND ($2::boolean OR standard.archived_at IS NULL)
@@ -198,7 +198,7 @@ func (r *standardRepository) Update(ctx context.Context, item Standard) (*Standa
 	query := `
         UPDATE registry_standards
         SET
-            subdivision_id = $2,
+            division_id = $2,
             unit_id = $3,
             owner_label = $4,
             standard_type = $5,
@@ -219,7 +219,7 @@ func (r *standardRepository) Update(ctx context.Context, item Standard) (*Standa
 		ctx,
 		query,
 		uuid.MustParse(item.ID),
-		nullableUUID(item.SubdivisionID),
+		nullableUUID(item.DivisionID),
 		nullableUUID(item.UnitID),
 		item.OwnerLabel,
 		item.StandardType,

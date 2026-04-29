@@ -1,0 +1,76 @@
+JSON artifact audit after verifier verdict write.
+
+jq empty exit=0
+
+Verdict status:
+{
+  "status": "PASS",
+  "sprint_contract_id": "slice-010-stage03-org-structure-management",
+  "failed_criteria": [],
+  "proof_gaps": [],
+  "fixer_rerun_required": false
+}
+
+Affected feature-list entries before parent flip:
+{
+  "id": "stage03-org-hierarchy-and-launch-wizard",
+  "passes": false,
+  "evidence_refs": [
+    "docs/roadmap.md",
+    "docs/architecture/identity-master-data.md",
+    "docs/design/customer-admin-bootstrap-flow.md",
+    "docs/architecture/frontend-architecture.md",
+    ".agent/stages/03-identity-master-data/stage_spec.md",
+    ".agent/stages/03-identity-master-data/sprint_contract.md",
+    ".agent/stages/03-identity-master-data/evidence.md",
+    ".agent/stages/03-identity-master-data/verdict.json",
+    ".agent/stages/03-identity-master-data/raw/slice-010-division-proof-run-check-stack-2026-04-29.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-010-division-contract-audit-2026-04-29.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-010-division-terminology-audit-2026-04-29.txt"
+  ]
+}
+{
+  "id": "stage03-memberships-invites-scoped-access",
+  "passes": false,
+  "evidence_refs": [
+    "docs/architecture/identity-master-data.md",
+    "docs/architecture/frontend-architecture.md",
+    "docs/design/customer-admin-bootstrap-flow.md",
+    ".agent/stages/03-identity-master-data/evidence.md",
+    ".agent/stages/03-identity-master-data/verdict.json",
+    ".agent/stages/03-identity-master-data/raw/slice-002-web-browser-smoke-2026-04-19.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-002-direct-scope-proof-summary-2026-04-19.json",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-direct-summary-2026-04-21.json",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-summary-2026-04-21.json",
+    ".agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-evidence-audit-2026-04-21.txt"
+  ]
+}
+{
+  "id": "stage03-slice010-company-org-structure-correction",
+  "passes": false,
+  "evidence_refs": [
+    "docs/roadmap.md",
+    "docs/architecture/identity-master-data.md",
+    "docs/design/customer-admin-bootstrap-flow.md",
+    "docs/architecture/frontend-architecture.md",
+    ".agent/stages/03-identity-master-data/stage_spec.md",
+    ".agent/stages/03-identity-master-data/sprint_contract.md",
+    ".agent/stages/03-identity-master-data/evidence.md",
+    ".agent/stages/03-identity-master-data/verdict.json",
+    ".agent/stages/03-identity-master-data/problems.md",
+    ".agent/stages/03-identity-master-data/raw/slice-010-division-harness-2026-04-29.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-010-division-proof-run-check-stack-2026-04-29.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-010-division-contract-audit-2026-04-29.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-010-division-terminology-audit-2026-04-29.txt"
+  ]
+}
+
+Fresh proof summary status:
+{
+  "status": "PASS",
+  "seed": "20260429099",
+  "backendBase": "http://127.0.0.1:18180",
+  "webBase": "http://127.0.0.1:3110"
+}
+
+EXIT_CODE=0

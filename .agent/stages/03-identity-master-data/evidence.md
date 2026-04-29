@@ -1,176 +1,312 @@
 # Evidence
 
 - Stage ID: `03-identity-master-data`
-- Sprint Contract IDs:
-  - `slice-007-stage03-admin-surface-auth-hardening`
-  - `slice-008-stage03-multi-org-session-contract`
+- Current correction slice: `slice-010-stage03-org-structure-management`
+- Builder state: `COMPLETE`
+- Verifier state: `PASS_AFTER_DIVISION_ROLE_MODEL_V1`
 
-## Commands run
+This bundle records builder-collected proof, the minimal fixer doc-sync, and the historical post-fixer fresh verifier `PASS` for the 2026-04-29 Stage 03 correction that moves the product target from the historical launch wizard to persistent `/company` organization profile and structure management.
 
-- `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data`
-- `PATH=/Users/yura-posledov/cursor/vrk/.agent/tmp-tools/go/bin:$PATH /Users/yura-posledov/cursor/vrk/.agent/tmp-tools/sqlc generate -f apps/backend/sqlc.yaml`
-- `cd apps/backend && env PATH=/Users/yura-posledov/cursor/vrk/.agent/tmp-tools/go/bin:$PATH go test ./...`
-- `cd apps/backend && env PATH=/Users/yura-posledov/cursor/vrk/.agent/tmp-tools/go/bin:$PATH go build -buildvcs=false ./...`
-- `make clean`
-- `make dev`
-- `docker compose -f compose.platform.yml up --build -d --wait web`
-- `python3 -m py_compile .agent/stages/03-identity-master-data/proof_slice007_008_auth_contract.py`
-- `python3 .agent/stages/03-identity-master-data/proof_slice007_008_auth_contract.py`
-- `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run typecheck`
-- `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run lint`
-- `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run build`
-- review the touched auth/bootstrap UI against `https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md`
-- launch one brand-new fresh verifier leaf for the refreshed `slice-007` + `slice-008` bundle and wait for a harvestable verdict
+Newton later failed the legal-type correction only for documentation drift, and that doc-only gap was fixed. The latest user clarification confirms `division` is the intended API/domain term replacing `subdivision`; a fresh verifier reproduced the division-aligned proof and returned `PASS`. The follow-up Role Model v1 checkpoint verified the canonical role catalog, scope compatibility, v1 capability behavior, active terminology hard cutover, and full backend/web smoke gates.
 
-## Proof summary
+## Commands Run
 
-- Harness validation: `PASS`
-  - current orchestrator refresh: `.agent/stages/03-identity-master-data/raw/slice-007-008-harness-check-2026-04-21-orchestrator-rerun9.txt`
-  - fresh verifier post-verdict check: `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-harness-post-verdict-2026-04-21.txt`
-- `sqlc generate`: `PASS`
-  - raw: `.agent/stages/03-identity-master-data/raw/slice-007-008-sqlc-generate-2026-04-21-orchestrator-rerun.txt`
-- Backend `go test ./...`: `PASS`
-  - raw: `.agent/stages/03-identity-master-data/raw/slice-007-008-backend-go-test-2026-04-21-orchestrator-rerun.txt`
-- Backend `go build -buildvcs=false ./...`: `PASS`
-  - raw: `.agent/stages/03-identity-master-data/raw/slice-007-008-backend-go-build-2026-04-21-orchestrator-rerun.txt`
-- Swagger/OpenAPI: no new backend schema delta was required after the auth/session hardening landed; refreshed artifacts from `2026-04-20` remain current for this slice.
-  - raw: `.agent/stages/03-identity-master-data/raw/slice-007-008-swagger-refresh-2026-04-20-orchestrator.txt`
-- Clean runtime floor: `PASS`
-  - the dirty compose DB state was cleared with `make clean`;
-  - the fixed migration path boots cleanly through `make dev` on a fresh volume;
-  - raw:
-    - `.agent/stages/03-identity-master-data/raw/slice-007-008-make-clean-2026-04-21-orchestrator.txt`
-    - `.agent/stages/03-identity-master-data/raw/slice-007-008-make-dev-2026-04-21-orchestrator-clean.txt`
-- Local web checks after the accessibility follow-up fix: `PASS`
-  - `pnpm run typecheck`: `.agent/stages/03-identity-master-data/raw/slice-007-008-web-typecheck-2026-04-21-orchestrator-rerun2.txt`
-  - `pnpm run lint`: `.agent/stages/03-identity-master-data/raw/slice-007-008-web-lint-2026-04-21-orchestrator-rerun2.txt`
-  - `pnpm run build`: `.agent/stages/03-identity-master-data/raw/slice-007-008-web-build-2026-04-21-orchestrator-rerun2.txt`
-- Rebuilt runtime stack on the current dirty worktree: `PASS`
-  - raw: `.agent/stages/03-identity-master-data/raw/slice-007-008-web-rebuild-2026-04-21-orchestrator-rerun3.txt`
-- Proof script compile guard: `PASS`
-  - raw: `.agent/stages/03-identity-master-data/raw/slice-007-008-proof-py-compile-2026-04-21-orchestrator-rerun4.txt`
-- Primary targeted live auth proof via `proof_slice007_008_auth_contract.py`: `PASS`
-  - current raw: `.agent/stages/03-identity-master-data/raw/slice-007-008-direct-auth-proof-2026-04-21-orchestrator-rerun7.txt`
-  - current summary: `.agent/stages/03-identity-master-data/raw/slice-007-008-direct-summary-2026-04-21.json`
-  - covered checks:
-    - `GET /register` returns `200` and does not leak `PLATFORM_ADMIN_SHARED_SECRET` into HTML;
-    - web `POST /api/platform/organization-shells` preserves backend `201`;
-    - anonymous `POST /api/v1/platform/organization-shells` and anonymous `GET /api/v1/organizations` return `401`;
-    - authorized `GET /api/v1/organizations` returns `200`;
-    - first-admin invite issuance, acceptance, and launch wizard complete successfully;
-    - stored session tokens restore the original `membership_id + grant_id`;
-    - direct login with multiple eligible access paths returns truthful `409`.
-- Current local UI review: `PASS`
-  - raw: `.agent/stages/03-identity-master-data/raw/slice-007-008-ui-review-2026-04-21-orchestrator-rerun2.txt`
-  - reviewed UI scope:
-    - `apps/web/app/login/page.tsx`
-    - `apps/web/app/register/[token]/page.tsx`
-    - `apps/web/features/Stage03Bootstrap/ui/PlatformAdminInviteForm.tsx`
-- Final brand-new fresh verifier outcome: `PASS`
-  - `verdict.json` and `problems.md` were updated by the verifier with a usable final verdict;
-  - fresh verifier artifacts:
-    - `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-harness-post-verdict-2026-04-21.txt`
-    - `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-proof-2026-04-21.txt`
-    - `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-summary-2026-04-21.json`
-    - `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-ui-review-2026-04-21.txt`
-    - `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-evidence-audit-2026-04-21.txt`
-    - `.agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-21-continuation-verifier.md`
-  - verifier conclusion:
-    - admin surface auth hardening still holds;
-    - `/register` still keeps the platform-admin secret on the server boundary only;
-    - session restore still returns the explicit stored `membership_id + grant_id`;
-    - direct login still returns truthful `409` on multiple eligible access paths;
-    - no workspace-picker widening was reproduced.
-- Historical verifier-control-plane blockers are now chronology only:
-  - `.agent/stages/03-identity-master-data/raw/slice-007-008-verifier-agent-blocked-2026-04-21-orchestrator-rerun3.txt`
-  - `.agent/stages/03-identity-master-data/raw/slice-007-008-verifier-agent-blocked-2026-04-21-orchestrator-rerun2.txt`
-  - `.agent/stages/03-identity-master-data/raw/slice-007-008-verifier-agent-blocked-2026-04-21-orchestrator.txt`
+- Division terminology correction after user clarification:
+  - Realigned `proof_slice010_org_structure.py`, canonical docs, and stage artifacts to the implemented `/company/divisions`, `divisionId`, scope `division`, and role templates `division_head` / `division_operator`.
+  - Kept Russian UI wording `подразделение/филиал` where it is user-facing copy, but removed stale API/contract references to `subdivision`.
+  - Reopened `stage03-org-hierarchy-and-launch-wizard` and `stage03-slice010-company-org-structure-correction` in `feature_list.json` (`passes: false`) until a fresh verifier returns `PASS`.
+  - `python3 -m py_compile .agent/stages/03-identity-master-data/proof_slice010_org_structure.py`
+  - `VRK_API_BASE_URL=http://127.0.0.1:18180 VRK_WEB_BASE_URL=http://127.0.0.1:3110 VRK_STAGE03_SLICE010_SEED=20260429042 python3 .agent/stages/03-identity-master-data/proof_slice010_org_structure.py`
+  - `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data`
+  - focused stale `subdivision` terminology audit over current docs/stage/proof artifacts
+  - focused division contract audit over docs, proof, backend role/service code, web API types, and Swagger
+  - `jq empty .agent/stages/03-identity-master-data/evidence.json .agent/stages/03-identity-master-data/feature_list.json .agent/stages/03-identity-master-data/verdict.json`
+  - Status: `PASS` for compile, targeted proof on the division-aligned check stack, harness, stale-term audit, contract audit, and JSON validation.
+  - Raw:
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-proof-py-compile-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-proof-run-check-stack-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-harness-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-terminology-audit-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-contract-audit-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-json-audit-2026-04-29.txt`
 
-## Implemented contract closures
+- Fresh verifier after division terminology correction:
+  - `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data`
+  - `python3 -m py_compile .agent/stages/03-identity-master-data/proof_slice010_org_structure.py`
+  - `VRK_API_BASE_URL=http://127.0.0.1:18180 VRK_WEB_BASE_URL=http://127.0.0.1:3110 VRK_STAGE03_SLICE010_SEED=20260429099 python3 .agent/stages/03-identity-master-data/proof_slice010_org_structure.py`
+  - Storybook component lookup reruns and Web Interface Guidelines review
+  - Status: `PASS`; no failed criteria and no proof gaps.
+  - Raw:
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-harness-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-proof-run-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-summary-2026-04-29.json`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-contract-audit-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-terminology-audit-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-doc-sync-audit-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-ui-review-2026-04-29.txt`
+  - Parent orchestrator accepted this PASS and flipped the affected `feature_list.json` entries back to `passes: true`.
+  - Post-flip JSON audit and harness remained `PASS`:
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-post-verifier-json-audit-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-post-verifier-harness-2026-04-29.txt`
 
-- `slice-007`
-  - backend admin surface `/api/v1/organizations*` and backend `POST /api/v1/platform/organization-shells` require `X-VRK-Platform-Admin-Secret`;
-  - backend config requires `PLATFORM_ADMIN_SHARED_SECRET`;
-  - web `/register` continues to work through the server-side Next boundary without leaking the secret to browser code;
-  - the web proxy preserves backend `201` on `POST /api/platform/organization-shells`.
-- `slice-008`
-  - `auth_sessions` store explicit `grant_id`;
-  - direct login uses explicit access-path enumeration instead of arbitrary `LIMIT 1` selection;
-  - `POST /api/v1/sessions` returns truthful `409` when multiple eligible access paths exist;
-  - first-admin and employee invite acceptance issue sessions with explicit `grant_id`;
-  - `GetCurrentSession` restores only through the stored `grant_id` and an active membership.
-- Continuation-run hardening
-  - `apps/backend/migrations/000010_stage03_session_explicit_grant_binding.up.sql` boots on Postgres without `MIN(uuid)`;
-  - `.agent/stages/03-identity-master-data/proof_slice007_008_auth_contract.py` remains the canonical targeted live proof for `/register`, admin boundary enforcement, session restore, and truthful `409`;
-  - `docs/onboarding.md` remains synced to the admin-surface `401` / `200` smoke split.
+- Division + Role Model v1 final checkpoint:
+  - Canonical role templates are `organization_admin`, `organization_head`, `division_head`, `division_operator`, `unit_head`, `unit_operator`, and `auditor`.
+  - Scope compatibility is enforced: organization roles only on `organization`, division roles only on `division`, unit roles only on `unit`, and `auditor` on any of the three scopes.
+  - Stage 03 v1 mutate capabilities remain only on active customer `organization_admin` at organization scope; all other roles are scope-aware read-only until later stages enable more capability-map entries.
+  - Active terminology audit over `apps/backend/internal`, backend Swagger, `apps/web`, canonical docs, and `scripts` found no legacy public contract terms for the old subdivision/observer model.
+  - Updated canonical docs and stage contract:
+    - `docs/architecture/identity-master-data.md`
+    - `docs/roadmap.md`
+    - `docs/PRD-MVP.md`
+    - `.agent/stages/03-identity-master-data/stage_spec.md`
+    - `.agent/stages/03-identity-master-data/sprint_contract.md`
+  - Verification status: `PASS`.
+  - Raw:
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-role-model-active-audit-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-role-model-make-smoke-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-role-model-backend-test-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-role-model-backend-build-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-role-model-sqlc-docker-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-role-model-swagger-docker-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-role-model-web-lint-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-role-model-web-typecheck-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-role-model-web-build-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-role-model-storybook-build-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-role-model-browser-smoke-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-division-role-model-harness-2026-04-29.txt`
 
-## UI workflow evidence
+- Newton doc-drift fixer:
+  - Updated `docs/roadmap.md` and `docs/design/customer-admin-bootstrap-flow.md` so their legacy legal-form compatibility sentences include `LLC -> ООО`.
+  - Updated `docs/design/diagrams/customer-admin-bootstrap-flow.drawio` so the visible legal-form examples are `ООО, АО, ПАО`.
+  - `rg -n "LLC -> ООО" docs/roadmap.md docs/design/customer-admin-bootstrap-flow.md`
+  - `rg -n "Организационно-правовая.*ООО, АО, ПАО" docs/design/diagrams/customer-admin-bootstrap-flow.drawio`
+  - drawio stale option/alias absence audit for `АО, ЗАО, ООО, ИП`, `ОАО`, and `ЗАО`
+  - `xmllint --noout docs/design/diagrams/customer-admin-bootstrap-flow.drawio`
+  - `jq empty .agent/stages/03-identity-master-data/evidence.json`
+  - Status: `PASS`
+  - Raw: `.agent/stages/03-identity-master-data/raw/slice-010-newton-doc-drift-fixer-2026-04-29.txt`
 
-- Design/source-of-truth read:
+- Legal-type correction builder rerun:
+  - Corrected the stale field contract so organization `Тип` / `propertyType` is legal form `ООО` / `АО` / `ПАО`, division/branch has no selectable type, and unit type remains `ВРД` / `ВРЗ` / `ВУ` / `ВРП`.
+  - `python3 -m py_compile .agent/stages/03-identity-master-data/proof_slice010_org_structure.py`
+  - `docker run --rm -v /Users/yura-posledov/cursor/vrk/apps/backend:/src -w /src sqlc/sqlc:1.30.0 generate -f sqlc.yaml`
+  - `docker run --rm -v /Users/yura-posledov/cursor/vrk/apps/backend:/src -w /src -e GOCACHE=/tmp/go-cache -e GOMODCACHE=/tmp/go-mod-cache golang:1.26.1 go test ./...`
+  - `docker run --rm -v /Users/yura-posledov/cursor/vrk/apps/backend:/src -w /src -e GOCACHE=/tmp/go-cache -e GOMODCACHE=/tmp/go-mod-cache golang:1.26.1 go build -buildvcs=false ./...`
+  - `docker run --rm -v /Users/yura-posledov/cursor/vrk/apps/backend:/src -w /src -e GOCACHE=/tmp/go-cache -e GOMODCACHE=/tmp/go-mod-cache golang:1.26.1 sh -c 'go install github.com/swaggo/swag/cmd/swag@v1.16.6 && /go/bin/swag init -g cmd/api/main.go -o docs/swagger'`
+  - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run typecheck`
+  - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run lint`
+  - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run build`
+  - `VRK_STAGE03_SLICE010_SEED=1777434591 python3 .agent/stages/03-identity-master-data/proof_slice010_org_structure.py`
+  - `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data`
+  - Status: `PASS` for compile, sqlc Docker fallback, backend test/build, Swagger refresh, web typecheck/lint/build, targeted proof, doc audit, UI review, and harness.
+  - Raw:
+    - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-proof-py-compile-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-sqlc-docker-generate-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-backend-go-test-docker-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-backend-go-build-docker-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-swagger-docker-rerun-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-web-typecheck-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-web-lint-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-web-build-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-proof-run-rerun2-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-summary-2026-04-29.json`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-primary-org-structure-proof-2026-04-29.json`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-web-web-accept-company-2026-04-29.json`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-doc-contract-audit-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-ui-review-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-harness-pre-verifier-2026-04-29.txt`
+- Post-Newton doc-only fixer:
+  - Newton's fresh verifier reproduced the runtime/code proof but returned `FAIL` for documentation drift.
+  - The doc-only fixer added explicit `LLC -> ООО` alongside `ОАО -> ПАО` and `ЗАО -> АО` in the roadmap and customer-admin bootstrap flow docs, and updated the Draw.io source to show visible legal-form options `ООО, АО, ПАО`.
+  - Follow-up parent cleanup restored `division` terminology in `docs/roadmap.md` and kept all three alias mappings explicit.
+  - Status: `READY_FOR_POST_FIXER_FRESH_VERIFIER`.
+  - Raw:
+    - `.agent/stages/03-identity-master-data/raw/slice-010-newton-doc-drift-fixer-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-parent-doc-cleanup-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-harness-after-doc-fix-2026-04-29.txt`
+
+- Harness self-check:
+  - `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data`
+  - Status: `PASS`
+  - Raw: `.agent/stages/03-identity-master-data/raw/slice-010-harness-check-2026-04-29.txt`
+- Doc-sync fixer checks:
+  - `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data`
+  - Status: `PASS` on 2026-04-29T02:34:55Z
+  - `rg -n "ВРД|ВРЗ|ВУ|ВРП|registeredAddress|address|leaderFullName|managerName|leaderPosition|contractPhone|contractEmail|actingBasis|active.*select|Archived|archive|alias|compatibility" docs/architecture/identity-master-data.md .agent/stages/03-identity-master-data/sprint_contract.md .agent/stages/03-identity-master-data/problems.md`
+  - Status: `PASS`; canonical hits are now present in `docs/architecture/identity-master-data.md`.
+  - Raw: `.agent/stages/03-identity-master-data/raw/slice-010-fixer-doc-sync-2026-04-29.txt`
+- Post-fixer fresh verifier:
+  - `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data`
+  - `VRK_STAGE03_SLICE010_SEED=1777430591 python3 .agent/stages/03-identity-master-data/proof_slice010_org_structure.py`
+  - Storybook component lookup reruns and Web Interface Guidelines review
+  - Status: `PASS`
+  - Raw:
+    - `.agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-harness-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-proof-run-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-summary-2026-04-29.json`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-doc-alias-audit-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-ui-review-2026-04-29.txt`
+- Requested repo-local sqlc:
+  - `PATH=/Users/yura-posledov/cursor/vrk/.agent/tmp-tools/go/bin:$PATH /Users/yura-posledov/cursor/vrk/.agent/tmp-tools/sqlc generate -f apps/backend/sqlc.yaml`
+  - Status: `BLOCKED`
+  - Blocker: `.agent/tmp-tools/sqlc` does not exist in this checkout.
+  - Raw: `.agent/stages/03-identity-master-data/raw/slice-010-sqlc-repo-tool-missing-2026-04-29.txt`
+- Requested repo-local Go:
+  - `PATH=/Users/yura-posledov/cursor/vrk/.agent/tmp-tools/go/bin:$PATH go version`
+  - Status: `BLOCKED`
+  - Blocker: repo-local `go` is not available under `.agent/tmp-tools/go/bin`, and `go` is not on PATH.
+  - Raw: `.agent/stages/03-identity-master-data/raw/slice-010-go-repo-tool-missing-2026-04-29.txt`
+- Docker sqlc fallback:
+  - `docker run --rm -v /Users/yura-posledov/cursor/vrk/apps/backend:/src -w /src sqlc/sqlc:1.30.0 generate -f sqlc.yaml`
+  - Status: `PASS`
+  - Raw: `.agent/stages/03-identity-master-data/raw/slice-010-sqlc-docker-generate-2026-04-29.txt`
+- Backend formatting:
+  - Docker `gofmt` over touched backend Go files
+  - Status: `PASS`
+  - Raw: `.agent/stages/03-identity-master-data/raw/slice-010-backend-gofmt-docker-2026-04-29.txt`
+- Backend tests:
+  - Docker `go test ./...`
+  - Status: `PASS`
+  - Raw: `.agent/stages/03-identity-master-data/raw/slice-010-backend-go-test-docker-2026-04-29.txt`
+- Backend build:
+  - Docker `go build -buildvcs=false ./...`
+  - Status: `PASS`
+  - Raw: `.agent/stages/03-identity-master-data/raw/slice-010-backend-go-build-docker-2026-04-29.txt`
+- Web typecheck:
+  - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run typecheck`
+  - Status: `PASS`
+  - Current raw: `.agent/stages/03-identity-master-data/raw/slice-010-web-typecheck-rerun-2026-04-29.txt`
+- Web lint:
+  - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run lint`
+  - Status: `PASS`
+  - Current raw: `.agent/stages/03-identity-master-data/raw/slice-010-web-lint-rerun-2026-04-29.txt`
+- Web build:
+  - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run build`
+  - Status: `PASS`
+  - Current raw: `.agent/stages/03-identity-master-data/raw/slice-010-web-build-rerun-2026-04-29.txt`
+- UI review gate:
+  - Web Interface Guidelines source fetched from `https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md`
+  - Status: `PASS` after local fixes
+  - Raw:
+    - `.agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-29.md`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-ui-review-2026-04-29.txt`
+- Runtime stack:
+  - `make dev`
+  - Status: `PASS`
+  - Raw: `.agent/stages/03-identity-master-data/raw/slice-010-make-dev-2026-04-29.txt`
+- Targeted slice proof:
+  - `python3 -m py_compile .agent/stages/03-identity-master-data/proof_slice010_org_structure.py`
+  - Status: `PASS`
+  - Raw: `.agent/stages/03-identity-master-data/raw/slice-010-proof-py-compile-2026-04-29.txt`
+  - `python3 .agent/stages/03-identity-master-data/proof_slice010_org_structure.py`
+  - Status: `PASS` on final rerun
+  - Current raw:
+    - `.agent/stages/03-identity-master-data/raw/slice-010-proof-run-rerun3-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-proof-run-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-summary-2026-04-29.json`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-primary-org-structure-proof-2026-04-29.json`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-empty-org-invite-proof-2026-04-29.json`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-web-web-accept-company-2026-04-29.json`
+  - Historical failed proof-script reruns were harness defects, not accepted product proof:
+    - `.agent/stages/03-identity-master-data/raw/slice-010-proof-run-command-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-proof-run-rerun-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-010-proof-run-rerun2-2026-04-29.txt`
+
+## Builder Proof Coverage
+
+- First-admin acceptance through the web path:
+  - `POST /api/auth/invites/{token}/accept` sets `vrk_session`;
+  - returned session has `requiresLaunchWizard: false`, `organization.launchState: active`, and `workspace.landingPath: /company`;
+  - authenticated `/company` renders the persistent management surface;
+  - `/company/setup` is non-canonical and redirects to `/company`.
+- Persistent organization profile:
+  - `PATCH /api/v1/company/profile` preserves organization legal form through `propertyType` and `type` compatibility alias plus `name`, `registeredAddress`, `leaderFullName`, `leaderPosition`, `contractPhone`, `contractEmail`, and `actingBasis`;
+  - accepted visible legal forms are `ООО`, `АО`, `ПАО`;
+  - legacy inputs normalize as `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО`;
+  - operational values such as `ВРД` are rejected for organization legal form.
+- Canonical field contract:
+  - `docs/architecture/identity-master-data.md` now records differentiated type semantics: organization `propertyType`/`type` alias is ОПФ `ООО`/`АО`/`ПАО`, division/branch has no selectable type and uses hidden storage default `division`, and unit `type` is `ВРД`/`ВРЗ`/`ВУ`/`ВРП`;
+  - the same doc records `registeredAddress`/`address` and `leaderFullName`/`managerName` alias semantics, remaining business fields, preserved `code`/`region`/`status`/`comment`, and active-only archive/selection constraints for `/company`.
+- Persistent division/unit management:
+  - first division create works without a user-facing `type` payload;
+  - division rows no longer show hidden storage type in the `/company` UI;
+  - unit under division create works;
+  - direct organization unit create works;
+  - unit create rejects invalid legal-form values such as `ООО` and preserves valid operational values such as `ВУ`;
+  - later division and unit create works through the same endpoints;
+  - division and unit edit persist fields;
+  - empty division/unit archive succeeds and archived nodes disappear from active session selectors/projections.
+- Archive blockers and invite target validation:
+  - division with active child unit returns `409 archive blocked by active references`;
+  - unit with active scoped invite returns `409 archive blocked by active references`;
+  - missing, hidden, or archived division/unit invite targets return `400 invite scope target is invalid`.
+- Scoped read-only projections:
+  - division-scoped accepted employee sees only target division and child units;
+  - unit-scoped accepted employee sees only target unit and no broader division graph;
+  - backend mutation attempts from division/unit sessions return `403 forbidden`;
+  - scoped users have `workspace.canManageEmployeeInvites: false`.
+- Employee invites:
+  - organization-scope employee invite works immediately after first-admin acceptance in an organization with no divisions or units.
+
+## UI Workflow Evidence
+
+- Skill/workflow used: `$vrk-web-ui-workflow`.
+- Design/source-of-truth context read:
   - `.impeccable.md`
-  - `docs/design/serviceops-design-system.md`
   - `docs/design/ui-workflow.md`
-  - `docs/design/storybook-component-backlog.md`
+  - `docs/design/serviceops-design-system.md`
   - `docs/architecture/frontend-architecture.md`
-- Storybook lookup:
-  - query: `platform admin invite auth route proxy session conflict login restore register boundary`
-  - result: existing auth/layout primitives cover the touched surfaces; no new reusable component family is justified
-  - raw: `.agent/stages/03-identity-master-data/raw/storybook-lookup-slice-007-008-2026-04-20-orchestrator.txt`
+  - `docs/design/storybook-component-backlog.md`
+- Storybook lookup raw:
+  - `.agent/stages/03-identity-master-data/raw/storybook-lookup-slice-010-org-structure-primary-2026-04-29.txt`
+  - `.agent/stages/03-identity-master-data/raw/storybook-lookup-slice-010-org-structure-primitives-2026-04-29.txt`
 - Reuse decision: `reuse`
-- Current reviewed UI scope remains bounded and singular:
-  - reviewed UI scope:
-    - `apps/web/app/login/page.tsx`
-    - `apps/web/app/register/[token]/page.tsx`
-    - `apps/web/features/Stage03Bootstrap/ui/PlatformAdminInviteForm.tsx`
-  - current note:
-    - the async invite-issued success region now announces state changes with `aria-live="polite"` and `aria-atomic="true"`, closing the only reproduced UI finding from the last verifier pass
-    - the final verifier reran the Web Interface Guidelines check and returned `PASS` on `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-ui-review-2026-04-21.txt`
-  - historical note:
-    - `.agent/stages/03-identity-master-data/raw/slice-007-008-final-final-verifier-ui-review-2026-04-21.txt` remains in `raw/` as a truthful historical artifact for the pre-fix failure, but it is no longer the current UI state
+  - no complete org-structure reusable family existed;
+  - implementation reused current primitives and feature-local composition: `Button`, `Card`, `InputField`, `SelectField`, `TextareaField`, `InlineAlert`, `Tabs`;
+  - no new reusable UI family was introduced, so no net-new stories/backlog entry are required for the company workspace.
+- Changed UI files reviewed:
+  - `apps/web/app/(runtime)/company/page.tsx`
+  - `apps/web/app/(runtime)/company/setup/page.tsx`
+  - `apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx`
+  - `apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx`
+  - `apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx`
+  - `apps/web/app/register/[token]/page.tsx`
+  - `apps/web/shared/ui/InputField.tsx`
+  - `apps/web/shared/ui/SelectField.tsx`
+  - `apps/web/shared/ui/TextareaField.tsx`
+  - `apps/web/shared/ui/Tabs.tsx`
+  - `apps/web/shared/ui/InlineAlert.tsx`
+- Review result: `PASS` after adding stable form names/autocomplete hints, decorative icon hiding, and confirmation before archive/revoke actions.
 
-## Canonical docs synced
+## Canonical Docs Synced
 
 - `docs/roadmap.md`
+- `docs/PRD-MVP.md`
 - `docs/architecture/identity-master-data.md`
+- `docs/design/customer-admin-bootstrap-flow.md`
+- `docs/design/diagrams/customer-admin-bootstrap-flow.drawio`
 - `docs/architecture/frontend-architecture.md`
-- `docs/onboarding.md`
-- `apps/backend/docs/swagger/docs.go`
-- `apps/backend/docs/swagger/swagger.json`
-- `apps/backend/docs/swagger/swagger.yaml`
+- Swagger/OpenAPI:
+  - `apps/backend/docs/swagger/docs.go`
+  - `apps/backend/docs/swagger/swagger.json`
+  - `apps/backend/docs/swagger/swagger.yaml`
 
-## Key artifacts updated
+Fixer doc-sync update: `docs/architecture/identity-master-data.md` section `1.2.1` now records the concrete `/company` business-field alias/type contract required by `sprint_contract.md`. No production code or generated OpenAPI was changed in the fixer pass.
 
-- `.agent/stages/03-identity-master-data/progress.md`
-- `.agent/stages/03-identity-master-data/feature_list.json`
-- `.agent/stages/03-identity-master-data/evidence.md`
-- `.agent/stages/03-identity-master-data/evidence.json`
-- `.agent/stages/03-identity-master-data/verdict.json`
-- `.agent/stages/03-identity-master-data/problems.md`
-- `.agent/stages/03-identity-master-data/proof_slice007_008_auth_contract.py`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-harness-check-2026-04-21-orchestrator-rerun9.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-sqlc-generate-2026-04-21-orchestrator-rerun.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-backend-go-test-2026-04-21-orchestrator-rerun.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-backend-go-build-2026-04-21-orchestrator-rerun.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-make-clean-2026-04-21-orchestrator.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-make-dev-2026-04-21-orchestrator-clean.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-web-typecheck-2026-04-21-orchestrator-rerun2.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-web-lint-2026-04-21-orchestrator-rerun2.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-web-build-2026-04-21-orchestrator-rerun2.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-web-rebuild-2026-04-21-orchestrator-rerun3.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-proof-py-compile-2026-04-21-orchestrator-rerun4.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-direct-auth-proof-2026-04-21-orchestrator-rerun7.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-direct-platform-shell-unauthorized-2026-04-21.json`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-direct-summary-2026-04-21.json`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-ui-review-2026-04-21-orchestrator-rerun2.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-harness-post-verdict-2026-04-21.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-proof-2026-04-21.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-summary-2026-04-21.json`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-ui-review-2026-04-21.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-evidence-audit-2026-04-21.txt`
-- `.agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-21-continuation-verifier.md`
-- `.agent/stages/03-identity-master-data/raw/slice-007-008-verifier-agent-blocked-2026-04-21-orchestrator-rerun3.txt`
-- `apps/backend/migrations/000010_stage03_session_explicit_grant_binding.up.sql`
-- `apps/backend/internal/db/queries/auth/bootstrap.sql`
-- `apps/backend/internal/db/generated/bootstrap.sql.go`
-- `apps/web/shared/api/route-proxy.ts`
-- `apps/web/app/api/platform/organization-shells/route.ts`
+Newton doc-drift fixer update: `docs/roadmap.md`, `docs/design/customer-admin-bootstrap-flow.md`, and `docs/design/diagrams/customer-admin-bootstrap-flow.drawio` now align with the `LLC -> ООО` compatibility mapping and the visible selector set `ООО`, `АО`, `ПАО`.
+
+## Stage Artifact State
+
+- `evidence.md`, `evidence.json`, and `progress.md` are updated by the builder for slice-010.
+- Fixer refreshed `evidence.md`, `evidence.json`, `progress.md`, and `problems.md` after closing the canonical doc gap locally.
+- Post-fixer fresh verifier updated `verdict.json` and `problems.md` to `PASS` / no open slice-010 proof gaps.
+- Parent orchestrator updated `feature_list.json` after verifier `PASS` for:
+  - `stage03-first-admin-activation`;
+  - `stage03-org-hierarchy-and-launch-wizard`;
+  - `stage03-slice010-company-org-structure-correction`.
+- Newton doc-drift fixer refreshed `evidence.md`, `evidence.json`, `progress.md`, and raw note only. It did not edit `feature_list.json`, `verdict.json`, or `problems.md`.
+
+## Remaining Verifier Requirements
+
+- Newton reported documentation drift only on the legal-type correction. The three reported canonical doc/diagram gaps are fixed and ready for a new fresh verifier to own `verdict.json` / `problems.md`.
+- Residual environment note: repo-local `.agent/tmp-tools/sqlc` and `.agent/tmp-tools/go/bin/go` are absent in this checkout; Docker fallbacks were used and passed before the doc-only fixer, and the post-fixer verifier confirmed production code did not change afterward.

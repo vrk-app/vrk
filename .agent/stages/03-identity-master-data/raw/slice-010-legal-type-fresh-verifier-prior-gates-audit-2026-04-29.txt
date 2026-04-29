@@ -1,0 +1,134 @@
+Fresh verifier prior-gates audit for slice-010 legal-type correction
+Date: 2026-04-29
+
+Parent-run legal-type gate artifact mtimes:
+2026-04-29 06:52:07 .agent/stages/03-identity-master-data/raw/slice-010-legal-type-backend-go-test-docker-2026-04-29.txt
+2026-04-29 06:52:20 .agent/stages/03-identity-master-data/raw/slice-010-legal-type-backend-go-build-docker-2026-04-29.txt
+2026-04-29 06:51:40 .agent/stages/03-identity-master-data/raw/slice-010-legal-type-sqlc-docker-generate-2026-04-29.txt
+2026-04-29 06:52:55 .agent/stages/03-identity-master-data/raw/slice-010-legal-type-swagger-docker-rerun-2026-04-29.txt
+2026-04-29 06:51:41 .agent/stages/03-identity-master-data/raw/slice-010-legal-type-web-typecheck-2026-04-29.txt
+2026-04-29 06:51:55 .agent/stages/03-identity-master-data/raw/slice-010-legal-type-web-lint-2026-04-29.txt
+2026-04-29 06:52:34 .agent/stages/03-identity-master-data/raw/slice-010-legal-type-web-build-2026-04-29.txt
+
+Relevant production/doc mtimes after legal-type correction:
+2026-04-29 06:42:13 apps/backend/internal/auth/bootstrap/service.go
+2026-04-29 06:42:18 apps/backend/internal/auth/bootstrap/handler.go
+2026-04-29 06:50:43 apps/backend/internal/auth/bootstrap/models.go
+2026-04-29 04:45:22 apps/backend/internal/auth/bootstrap/repository.go
+2026-04-29 06:43:20 apps/backend/internal/auth/bootstrap/handler_test.go
+2026-04-29 04:43:52 apps/backend/internal/db/queries/auth/bootstrap.sql
+2026-04-29 06:52:55 apps/backend/docs/swagger/swagger.yaml
+2026-04-29 06:52:55 apps/backend/docs/swagger/swagger.json
+2026-04-29 06:52:55 apps/backend/docs/swagger/docs.go
+2026-04-29 06:46:16 apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+2026-04-29 06:50:36 apps/web/features/Stage03Bootstrap/ui/LaunchWizardForm.tsx
+2026-04-29 06:50:27 apps/web/shared/api/bootstrap.ts
+2026-04-29 04:33:10 apps/web/shared/ui/SelectField.tsx
+2026-04-29 06:49:36 docs/architecture/identity-master-data.md
+2026-04-29 06:49:19 docs/design/customer-admin-bootstrap-flow.md
+2026-04-29 06:49:05 docs/roadmap.md
+2026-04-29 06:49:13 docs/PRD-MVP.md
+
+Backend go test tail:
+go: downloading github.com/go-openapi/swag/typeutils v0.25.5
+go: downloading github.com/go-openapi/swag/conv v0.25.5
+go: downloading github.com/go-openapi/swag/yamlutils v0.25.5
+go: downloading go.yaml.in/yaml/v3 v3.0.4
+?   	backend/cmd/api	[no test files]
+?   	backend/docs/swagger	[no test files]
+ok  	backend/internal/app	0.011s
+ok  	backend/internal/application/agreement	0.003s
+?   	backend/internal/application/application	[no test files]
+ok  	backend/internal/auth/bootstrap	0.003s
+ok  	backend/internal/auth/organization	0.004s
+?   	backend/internal/auth/user	[no test files]
+?   	backend/internal/db/generated	[no test files]
+ok  	backend/internal/equipment/equipment	0.003s
+?   	backend/internal/equipment/measuringinstrument	[no test files]
+?   	backend/internal/equipment/metrologyjournal	[no test files]
+?   	backend/internal/equipment/registryaccess	[no test files]
+?   	backend/internal/equipment/standard	[no test files]
+?   	backend/internal/infrastructure/config	[no test files]
+?   	backend/internal/infrastructure/db	[no test files]
+
+Backend go build line count/head-tail (go build is silent on success except downloads):
+      28 .agent/stages/03-identity-master-data/raw/slice-010-legal-type-backend-go-build-docker-2026-04-29.txt
+go: downloading github.com/google/uuid v1.6.0
+go: downloading github.com/joho/godotenv v1.5.1
+go: downloading github.com/swaggo/http-swagger v1.3.4
+go: downloading github.com/jackc/pgx/v5 v5.9.1
+go: downloading github.com/go-chi/chi/v5 v5.2.5
+go: downloading github.com/go-openapi/swag/conv v0.25.5
+go: downloading github.com/go-openapi/swag/yamlutils v0.25.5
+go: downloading golang.org/x/mod v0.34.0
+go: downloading go.yaml.in/yaml/v3 v3.0.4
+go: downloading golang.org/x/net v0.52.0
+
+SQLC generate raw line count (silent on success):
+       0 .agent/stages/03-identity-master-data/raw/slice-010-legal-type-sqlc-docker-generate-2026-04-29.txt
+
+Swagger refresh tail:
+2026/04/29 03:52:55 Generating measuringinstrument.Response
+2026/04/29 03:52:55 Generating measuringinstrument.Meta
+2026/04/29 03:52:55 Generating measuringinstrument.MeasuringInstrumentResponse
+2026/04/29 03:52:55 Generating measuringinstrument.UnitSummary
+2026/04/29 03:52:55 Generating measuringinstrument.EquipmentSummary
+2026/04/29 03:52:55 Generating measuringinstrument.LinkedStandard
+2026/04/29 03:52:55 Generating measuringinstrument.JournalResponse
+2026/04/29 03:52:55 Generating measuringinstrument.UpdateRequest
+2026/04/29 03:52:55 Generating measuringinstrument.CreateJournalRequest
+2026/04/29 03:52:55 Generating standard.CreateRequest
+2026/04/29 03:52:55 Generating standard.Response
+2026/04/29 03:52:55 Generating standard.Meta
+2026/04/29 03:52:55 Generating standard.StandardResponse
+2026/04/29 03:52:55 Generating standard.OwnershipScopeResponse
+2026/04/29 03:52:55 Generating standard.JournalResponse
+2026/04/29 03:52:55 Generating standard.UpdateRequest
+2026/04/29 03:52:55 Generating standard.CreateJournalRequest
+2026/04/29 03:52:55 create docs.go at docs/swagger/docs.go
+2026/04/29 03:52:55 create swagger.json at docs/swagger/swagger.json
+2026/04/29 03:52:55 create swagger.yaml at docs/swagger/swagger.yaml
+
+Web typecheck tail:
+
+> @vrk/web@0.1.0 typecheck /Users/yura-posledov/cursor/vrk/apps/web
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Route types generated successfully
+
+Web lint tail:
+
+> @vrk/web@0.1.0 lint /Users/yura-posledov/cursor/vrk/apps/web
+> eslint .
+
+
+Web build tail:
+├ ƒ /api/equipment/measuring-instruments                                     208 B         102 kB
+├ ƒ /api/equipment/measuring-instruments/[measuringInstrumentId]/archive     208 B         102 kB
+├ ƒ /api/equipment/measuring-instruments/[measuringInstrumentId]/journals    208 B         102 kB
+├ ƒ /api/equipment/standards                                                 208 B         102 kB
+├ ƒ /api/equipment/standards/[standardId]/archive                            208 B         102 kB
+├ ƒ /api/equipment/standards/[standardId]/journals                           208 B         102 kB
+├ ƒ /api/platform/organization-shells                                        208 B         102 kB
+├ ƒ /company                                                               9.11 kB         151 kB
+├ ƒ /company/setup                                                           208 B         102 kB
+├ ƒ /contracts                                                             6.93 kB         147 kB
+├ ƒ /equipment                                                             14.8 kB         155 kB
+├ ○ /login                                                                 2.67 kB         155 kB
+├ ○ /password-reset                                                          194 B         140 kB
+├ ○ /register                                                                538 B         162 kB
+├ ƒ /register/[token]                                                        229 B         158 kB
+└ ƒ /requests                                                                194 B         140 kB
++ First Load JS shared by all                                               102 kB
+  ├ chunks/3554-c19825f276ec337d.js                                        45.5 kB
+  ├ chunks/a97b86c7-6ed9a45f307045da.js                                    54.2 kB
+  └ other shared chunks (total)                                            1.87 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+Fresh verifier conclusion:
+- No production code was modified by this verifier. Existing parent-run backend/web/sqlc/swagger raws postdate the relevant production-code changes for this correction; only verifier raw artifacts and generated proof outputs were written afterward. No rerun required by the user constraint.

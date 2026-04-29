@@ -9,7 +9,7 @@ import (
 )
 
 type StandardScope struct {
-	SubdivisionID *string
+	DivisionID *string
 	UnitID        *string
 	OwnerLabel    *string
 }
@@ -39,8 +39,8 @@ const measuringInstrumentSelectColumns = `
     mi.organization_id,
     mi.unit_id,
     unit.name,
-    unit.subdivision_id,
-    subdivision.name,
+    unit.division_id,
+    division.name,
     mi.equipment_id,
     equipment.full_name,
     mi.name,
@@ -63,7 +63,7 @@ func scanMeasuringInstrument(scanner interface {
 	var item MeasuringInstrument
 	var organizationID uuid.UUID
 	var unitID uuid.UUID
-	var subdivisionID *uuid.UUID
+	var divisionID *uuid.UUID
 	var equipmentID *uuid.UUID
 
 	if err := scanner.Scan(
@@ -71,8 +71,8 @@ func scanMeasuringInstrument(scanner interface {
 		&organizationID,
 		&unitID,
 		&item.UnitName,
-		&subdivisionID,
-		&item.SubdivisionName,
+		&divisionID,
+		&item.DivisionName,
 		&equipmentID,
 		&item.EquipmentFullName,
 		&item.Name,
@@ -93,9 +93,9 @@ func scanMeasuringInstrument(scanner interface {
 
 	item.OrganizationID = organizationID.String()
 	item.UnitID = unitID.String()
-	if subdivisionID != nil {
-		value := subdivisionID.String()
-		item.SubdivisionID = &value
+	if divisionID != nil {
+		value := divisionID.String()
+		item.DivisionID = &value
 	}
 	if equipmentID != nil {
 		value := equipmentID.String()
@@ -154,7 +154,7 @@ func (r *measuringInstrumentRepository) GetByID(ctx context.Context, id uuid.UUI
         SELECT %s
         FROM registry_measuring_instruments mi
         JOIN auth_units unit ON unit.id = mi.unit_id
-        LEFT JOIN auth_subdivisions subdivision ON subdivision.id = unit.subdivision_id
+        LEFT JOIN auth_divisions division ON division.id = unit.division_id
         LEFT JOIN registry_equipment equipment ON equipment.id = mi.equipment_id
         WHERE mi.id = $1
     `, measuringInstrumentSelectColumns)
@@ -172,7 +172,7 @@ func (r *measuringInstrumentRepository) ListByOrganization(ctx context.Context, 
         SELECT %s
         FROM registry_measuring_instruments mi
         JOIN auth_units unit ON unit.id = mi.unit_id
-        LEFT JOIN auth_subdivisions subdivision ON subdivision.id = unit.subdivision_id
+        LEFT JOIN auth_divisions division ON division.id = unit.division_id
         LEFT JOIN registry_equipment equipment ON equipment.id = mi.equipment_id
         WHERE mi.organization_id = $1
           AND ($2::boolean OR mi.archived_at IS NULL)
@@ -341,7 +341,7 @@ func (r *measuringInstrumentRepository) GetStandardScopes(ctx context.Context, o
 	}
 
 	rows, err := r.db.Query(ctx, `
-        SELECT id, subdivision_id, unit_id, owner_label
+        SELECT id, division_id, unit_id, owner_label
         FROM registry_standards
         WHERE organization_id = $1 AND id = ANY($2) AND archived_at IS NULL
     `, organizationID, standardIDs)
@@ -353,17 +353,17 @@ func (r *measuringInstrumentRepository) GetStandardScopes(ctx context.Context, o
 	result := make(map[string]StandardScope, len(standardIDs))
 	for rows.Next() {
 		var id uuid.UUID
-		var subdivisionID *uuid.UUID
+		var divisionID *uuid.UUID
 		var unitID *uuid.UUID
 		var ownerLabel *string
-		if err := rows.Scan(&id, &subdivisionID, &unitID, &ownerLabel); err != nil {
+		if err := rows.Scan(&id, &divisionID, &unitID, &ownerLabel); err != nil {
 			return nil, err
 		}
 
 		scope := StandardScope{OwnerLabel: ownerLabel}
-		if subdivisionID != nil {
-			value := subdivisionID.String()
-			scope.SubdivisionID = &value
+		if divisionID != nil {
+			value := divisionID.String()
+			scope.DivisionID = &value
 		}
 		if unitID != nil {
 			value := unitID.String()

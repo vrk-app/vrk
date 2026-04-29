@@ -1,0 +1,64 @@
+Source: /Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-29.md
+Files reviewed:
+- apps/web/app/(runtime)/company/page.tsx
+- apps/web/app/(runtime)/company/setup/page.tsx
+- apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+- apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx
+- apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx
+- apps/web/app/register/[token]/page.tsx
+- apps/web/shared/ui/InputField.tsx
+- apps/web/shared/ui/SelectField.tsx
+- apps/web/shared/ui/TextareaField.tsx
+- apps/web/shared/ui/Tabs.tsx
+- apps/web/shared/ui/InlineAlert.tsx
+
+## apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+Fixed:
+- New profile/subdivision/unit form controls now pass meaningful name and autocomplete/spellcheck/type hints.
+- Archive actions now require confirmation before mutating state.
+
+Conscious exception:
+- Tab state remains local UI state instead of query-param synchronized state. The Stage 03 correction contract does not define deep-linked tabs, and preserving a simple session-scoped operator surface is lower risk for this slice.
+
+## apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx
+
+Fixed:
+- Decorative ShieldCheck icon is aria-hidden.
+- Revoke action now requires confirmation before mutating state.
+
+## apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx
+
+PASS: password fields have labels, names, autocomplete, visible focus through InputField, and inline polite error state.
+
+## apps/web/app/register/[token]/page.tsx
+
+PASS: registration invite page uses semantic text and no unlabeled controls.
+
+## apps/web/app/(runtime)/company/page.tsx
+
+PASS: authenticated /company surface renders persistent profile/structure management; anonymous shell uses noninteractive disabled buttons and decorative icons are aria-hidden.
+
+## apps/web/app/(runtime)/company/setup/page.tsx
+
+PASS: route is non-canonical redirect only.
+
+## apps/web/shared/ui/InputField.tsx
+
+PASS: labels are htmlFor-bound, password toggle has aria-label, focus state is visible, icons are decorative.
+
+## apps/web/shared/ui/SelectField.tsx
+
+PASS: labels are bound in native select fallback; Radix trigger receives id/name/value and visible focus state; options handle empty/loading states.
+
+## apps/web/shared/ui/TextareaField.tsx
+
+PASS: labels are bound, errors are announced politely, focus state is visible.
+
+## apps/web/shared/ui/Tabs.tsx
+
+PASS: semantic tablist/tab roles, keyboard navigation, focus-visible state, decorative tab icons hidden.
+
+## apps/web/shared/ui/InlineAlert.tsx
+
+PASS: status role, dismiss button label, break-words on user-visible text.

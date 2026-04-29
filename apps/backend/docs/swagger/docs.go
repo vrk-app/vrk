@@ -387,6 +387,488 @@ const docTemplate = `{
                 }
             }
         },
+        "/company/divisions": {
+            "post": {
+                "description": "Creates the first or later active division from the persistent company management surface.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "company"
+                ],
+                "summary": "Create company division",
+                "parameters": [
+                    {
+                        "description": "Division payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.StructureNodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.SessionSummaryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/divisions/{divisionID}": {
+            "patch": {
+                "description": "Updates an active division visible to the organization-scope admin.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "company"
+                ],
+                "summary": "Update company division",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Division ID",
+                        "name": "divisionID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Division payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.StructureNodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.SessionSummaryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/divisions/{divisionID}/archive": {
+            "post": {
+                "description": "Archives a division instead of physically deleting it.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "company"
+                ],
+                "summary": "Archive company division",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Division ID",
+                        "name": "divisionID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.SessionSummaryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/profile": {
+            "patch": {
+                "description": "Updates the persistent Stage 03 company profile for an active organization-scope admin.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "company"
+                ],
+                "summary": "Update company profile",
+                "parameters": [
+                    {
+                        "description": "Company profile payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.CompanyProfileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.SessionSummaryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/units": {
+            "post": {
+                "description": "Creates the first or later active unit, with optional division parent.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "company"
+                ],
+                "summary": "Create company unit",
+                "parameters": [
+                    {
+                        "description": "Unit payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.StructureNodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.SessionSummaryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/units/{unitID}": {
+            "patch": {
+                "description": "Updates an active unit and its optional division parent.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "company"
+                ],
+                "summary": "Update company unit",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Unit ID",
+                        "name": "unitID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Unit payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.StructureNodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.SessionSummaryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/company/units/{unitID}/archive": {
+            "post": {
+                "description": "Archives a unit instead of physically deleting it.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "company"
+                ],
+                "summary": "Archive company unit",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Unit ID",
+                        "name": "unitID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.SessionSummaryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/employee-invites": {
             "get": {
                 "description": "Returns the employee invite lifecycle visible to the active organization admin.",
@@ -1206,7 +1688,7 @@ const docTemplate = `{
         },
         "/launch-wizard": {
             "post": {
-                "description": "Saves the core organization data and creates the first subdivision or direct unit.",
+                "description": "Saves the core organization data and creates the first division or direct unit.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2836,6 +3318,9 @@ const docTemplate = `{
                 "contractorOrganizationId": {
                     "type": "string"
                 },
+                "divisionId": {
+                    "type": "string"
+                },
                 "endDate": {
                     "type": "string"
                 },
@@ -2852,9 +3337,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "startDate": {
-                    "type": "string"
-                },
-                "subdivisionId": {
                     "type": "string"
                 },
                 "subjectOfAgreement": {
@@ -2943,6 +3425,9 @@ const docTemplate = `{
                 "contractorOrganizationId": {
                     "type": "string"
                 },
+                "divisionId": {
+                    "type": "string"
+                },
                 "endDate": {
                     "type": "string"
                 },
@@ -2959,9 +3444,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "startDate": {
-                    "type": "string"
-                },
-                "subdivisionId": {
                     "type": "string"
                 },
                 "subjectOfAgreement": {
@@ -2983,6 +3465,53 @@ const docTemplate = `{
                 }
             }
         },
+        "bootstrap.CompanyProfileRequest": {
+            "type": "object",
+            "properties": {
+                "actingBasis": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "contractEmail": {
+                    "type": "string"
+                },
+                "contractPhone": {
+                    "type": "string"
+                },
+                "inn": {
+                    "type": "string"
+                },
+                "kpp": {
+                    "type": "string"
+                },
+                "leaderFullName": {
+                    "type": "string"
+                },
+                "leaderPosition": {
+                    "type": "string"
+                },
+                "managerName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "propertyType": {
+                    "type": "string"
+                },
+                "registeredAddress": {
+                    "type": "string"
+                },
+                "shortName": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "bootstrap.CompleteLaunchRequest": {
             "type": "object",
             "properties": {
@@ -2991,6 +3520,9 @@ const docTemplate = `{
                 },
                 "contactPhone": {
                     "type": "string"
+                },
+                "division": {
+                    "$ref": "#/definitions/bootstrap.LaunchDivisionInput"
                 },
                 "inn": {
                     "type": "string"
@@ -3012,9 +3544,6 @@ const docTemplate = `{
                 },
                 "structureMode": {
                     "type": "string"
-                },
-                "subdivision": {
-                    "$ref": "#/definitions/bootstrap.LaunchSubdivisionInput"
                 },
                 "unit": {
                     "$ref": "#/definitions/bootstrap.LaunchUnitInput"
@@ -3068,6 +3597,59 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "bootstrap.DivisionResponse": {
+            "type": "object",
+            "properties": {
+                "actingBasis": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "contacts": {
+                    "type": "string"
+                },
+                "contractEmail": {
+                    "type": "string"
+                },
+                "contractPhone": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "leaderFullName": {
+                    "type": "string"
+                },
+                "leaderPosition": {
+                    "type": "string"
+                },
+                "managerName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "region": {
+                    "type": "string"
+                },
+                "registeredAddress": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }
@@ -3151,7 +3733,7 @@ const docTemplate = `{
                 }
             }
         },
-        "bootstrap.LaunchSubdivisionInput": {
+        "bootstrap.LaunchDivisionInput": {
             "type": "object",
             "properties": {
                 "address": {
@@ -3316,10 +3898,22 @@ const docTemplate = `{
         "bootstrap.SessionOrganizationResponse": {
             "type": "object",
             "properties": {
+                "actingBasis": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
                 "contactEmail": {
                     "type": "string"
                 },
                 "contactPhone": {
+                    "type": "string"
+                },
+                "contractEmail": {
+                    "type": "string"
+                },
+                "contractPhone": {
                     "type": "string"
                 },
                 "id": {
@@ -3334,7 +3928,16 @@ const docTemplate = `{
                 "launchState": {
                     "type": "string"
                 },
+                "leaderFullName": {
+                    "type": "string"
+                },
+                "leaderPosition": {
+                    "type": "string"
+                },
                 "legalAddress": {
+                    "type": "string"
+                },
+                "managerName": {
                     "type": "string"
                 },
                 "name": {
@@ -3343,10 +3946,16 @@ const docTemplate = `{
                 "propertyType": {
                     "type": "string"
                 },
+                "registeredAddress": {
+                    "type": "string"
+                },
                 "roleTitle": {
                     "type": "string"
                 },
                 "shortName": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }
@@ -3356,6 +3965,12 @@ const docTemplate = `{
             "properties": {
                 "account": {
                     "$ref": "#/definitions/bootstrap.SessionAccountResponse"
+                },
+                "divisions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/bootstrap.DivisionResponse"
+                    }
                 },
                 "grant": {
                     "$ref": "#/definitions/bootstrap.SessionGrantResponse"
@@ -3374,12 +3989,6 @@ const docTemplate = `{
                 },
                 "sessionToken": {
                     "type": "string"
-                },
-                "subdivisions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/bootstrap.SubdivisionResponse"
-                    }
                 },
                 "units": {
                     "type": "array",
@@ -3418,16 +4027,49 @@ const docTemplate = `{
                 }
             }
         },
-        "bootstrap.SubdivisionResponse": {
+        "bootstrap.StructureNodeRequest": {
             "type": "object",
             "properties": {
+                "actingBasis": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
                 "code": {
                     "type": "string"
                 },
-                "id": {
+                "comment": {
+                    "type": "string"
+                },
+                "contacts": {
+                    "type": "string"
+                },
+                "contractEmail": {
+                    "type": "string"
+                },
+                "contractPhone": {
+                    "type": "string"
+                },
+                "divisionId": {
+                    "type": "string"
+                },
+                "leaderFullName": {
+                    "type": "string"
+                },
+                "leaderPosition": {
+                    "type": "string"
+                },
+                "managerName": {
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "region": {
+                    "type": "string"
+                },
+                "registeredAddress": {
                     "type": "string"
                 },
                 "type": {
@@ -3438,16 +4080,52 @@ const docTemplate = `{
         "bootstrap.UnitResponse": {
             "type": "object",
             "properties": {
+                "actingBasis": {
+                    "type": "string"
+                },
+                "address": {
+                    "type": "string"
+                },
                 "code": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "contacts": {
+                    "type": "string"
+                },
+                "contractEmail": {
+                    "type": "string"
+                },
+                "contractPhone": {
+                    "type": "string"
+                },
+                "divisionId": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
+                "leaderFullName": {
+                    "type": "string"
+                },
+                "leaderPosition": {
+                    "type": "string"
+                },
+                "managerName": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
-                "subdivisionId": {
+                "region": {
+                    "type": "string"
+                },
+                "registeredAddress": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 },
                 "type": {
@@ -3581,16 +4259,16 @@ const docTemplate = `{
         "equipment.UnitSummary": {
             "type": "object",
             "properties": {
+                "divisionId": {
+                    "type": "string"
+                },
+                "divisionName": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "subdivisionId": {
-                    "type": "string"
-                },
-                "subdivisionName": {
                     "type": "string"
                 }
             }
@@ -3869,16 +4547,16 @@ const docTemplate = `{
         "measuringinstrument.UnitSummary": {
             "type": "object",
             "properties": {
+                "divisionId": {
+                    "type": "string"
+                },
+                "divisionName": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "subdivisionId": {
-                    "type": "string"
-                },
-                "subdivisionName": {
                     "type": "string"
                 }
             }
@@ -4131,6 +4809,9 @@ const docTemplate = `{
                 "comment": {
                     "type": "string"
                 },
+                "divisionId": {
+                    "type": "string"
+                },
                 "documentUrl": {
                     "type": "string"
                 },
@@ -4150,9 +4831,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "standardType": {
-                    "type": "string"
-                },
-                "subdivisionId": {
                     "type": "string"
                 },
                 "unitId": {
@@ -4300,6 +4978,9 @@ const docTemplate = `{
                 "comment": {
                     "type": "string"
                 },
+                "divisionId": {
+                    "type": "string"
+                },
                 "documentUrl": {
                     "type": "string"
                 },
@@ -4319,9 +5000,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "standardType": {
-                    "type": "string"
-                },
-                "subdivisionId": {
                     "type": "string"
                 },
                 "unitId": {

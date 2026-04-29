@@ -1,0 +1,37 @@
+{
+  "success": true,
+  "data": {
+    "sessionToken": "8ce9f8d8-c615-416c-b7c6-1e042f06f723",
+    "requiresLaunchWizard": false,
+    "account": {
+      "id": "0d491370-fbc0-437b-8d59-ed90fe3c0463",
+      "fullName": "primary Admin",
+      "email": "slice010-primary-admin-20260429099@vrk.local"
+    },
+    "membershipId": "cba4fee1-8abd-442f-8ea3-f2120b865bfe",
+    "membershipStatus": "active",
+    "organization": {
+      "id": "47958887-6c9f-4f00-8544-68a6e879b6cb",
+      "roleTitle": "customer",
+      "name": "VRK primary 20260429099",
+      "launchState": "active"
+    },
+    "grant": {
+      "id": "49f7d0d1-ab01-45ea-a697-b28444b54ea8",
+      "roleTemplate": "organization_admin",
+      "scopeType": "organization",
+      "scopeId": "47958887-6c9f-4f00-8544-68a6e879b6cb"
+    },
+    "workspace": {
+      "scopeType": "organization",
+      "scopeId": "47958887-6c9f-4f00-8544-68a6e879b6cb",
+      "scopeName": "VRK primary 20260429099",
+      "landingTitle": "VRK primary 20260429099",
+      "landingSubtitle": "Администратор организации видит полный org graph и может управлять приглашениями сотрудников.",
+      "landingPath": "/company",
+      "canManageEmployeeInvites": true
+    },
+    "divisions": [],
+    "units": []
+  }
+}

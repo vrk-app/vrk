@@ -61,6 +61,8 @@ definitions:
         type: string
       contractorOrganizationId:
         type: string
+      divisionId:
+        type: string
       endDate:
         type: string
       equipmentType:
@@ -72,8 +74,6 @@ definitions:
       source:
         type: string
       startDate:
-        type: string
-      subdivisionId:
         type: string
       subjectOfAgreement:
         type: string
@@ -131,6 +131,8 @@ definitions:
         type: string
       contractorOrganizationId:
         type: string
+      divisionId:
+        type: string
       endDate:
         type: string
       equipmentType:
@@ -142,8 +144,6 @@ definitions:
       source:
         type: string
       startDate:
-        type: string
-      subdivisionId:
         type: string
       subjectOfAgreement:
         type: string
@@ -157,12 +157,45 @@ definitions:
       password:
         type: string
     type: object
+  bootstrap.CompanyProfileRequest:
+    properties:
+      actingBasis:
+        type: string
+      address:
+        type: string
+      contractEmail:
+        type: string
+      contractPhone:
+        type: string
+      inn:
+        type: string
+      kpp:
+        type: string
+      leaderFullName:
+        type: string
+      leaderPosition:
+        type: string
+      managerName:
+        type: string
+      name:
+        type: string
+      propertyType:
+        type: string
+      registeredAddress:
+        type: string
+      shortName:
+        type: string
+      type:
+        type: string
+    type: object
   bootstrap.CompleteLaunchRequest:
     properties:
       contactEmail:
         type: string
       contactPhone:
         type: string
+      division:
+        $ref: '#/definitions/bootstrap.LaunchDivisionInput'
       inn:
         type: string
       kpp:
@@ -177,8 +210,6 @@ definitions:
         type: string
       structureMode:
         type: string
-      subdivision:
-        $ref: '#/definitions/bootstrap.LaunchSubdivisionInput'
       unit:
         $ref: '#/definitions/bootstrap.LaunchUnitInput'
     type: object
@@ -213,6 +244,41 @@ definitions:
       email:
         type: string
       password:
+        type: string
+    type: object
+  bootstrap.DivisionResponse:
+    properties:
+      actingBasis:
+        type: string
+      address:
+        type: string
+      code:
+        type: string
+      comment:
+        type: string
+      contacts:
+        type: string
+      contractEmail:
+        type: string
+      contractPhone:
+        type: string
+      id:
+        type: string
+      leaderFullName:
+        type: string
+      leaderPosition:
+        type: string
+      managerName:
+        type: string
+      name:
+        type: string
+      region:
+        type: string
+      registeredAddress:
+        type: string
+      status:
+        type: string
+      type:
         type: string
     type: object
   bootstrap.EmployeeInviteResponse:
@@ -267,7 +333,7 @@ definitions:
       organizationRole:
         type: string
     type: object
-  bootstrap.LaunchSubdivisionInput:
+  bootstrap.LaunchDivisionInput:
     properties:
       address:
         type: string
@@ -375,9 +441,17 @@ definitions:
     type: object
   bootstrap.SessionOrganizationResponse:
     properties:
+      actingBasis:
+        type: string
+      address:
+        type: string
       contactEmail:
         type: string
       contactPhone:
+        type: string
+      contractEmail:
+        type: string
+      contractPhone:
         type: string
       id:
         type: string
@@ -387,21 +461,35 @@ definitions:
         type: string
       launchState:
         type: string
+      leaderFullName:
+        type: string
+      leaderPosition:
+        type: string
       legalAddress:
+        type: string
+      managerName:
         type: string
       name:
         type: string
       propertyType:
         type: string
+      registeredAddress:
+        type: string
       roleTitle:
         type: string
       shortName:
+        type: string
+      type:
         type: string
     type: object
   bootstrap.SessionSummaryResponse:
     properties:
       account:
         $ref: '#/definitions/bootstrap.SessionAccountResponse'
+      divisions:
+        items:
+          $ref: '#/definitions/bootstrap.DivisionResponse'
+        type: array
       grant:
         $ref: '#/definitions/bootstrap.SessionGrantResponse'
       membershipId:
@@ -414,10 +502,6 @@ definitions:
         type: boolean
       sessionToken:
         type: string
-      subdivisions:
-        items:
-          $ref: '#/definitions/bootstrap.SubdivisionResponse'
-        type: array
       units:
         items:
           $ref: '#/definitions/bootstrap.UnitResponse'
@@ -442,26 +526,72 @@ definitions:
       scopeType:
         type: string
     type: object
-  bootstrap.SubdivisionResponse:
+  bootstrap.StructureNodeRequest:
     properties:
+      actingBasis:
+        type: string
+      address:
+        type: string
       code:
         type: string
-      id:
+      comment:
+        type: string
+      contacts:
+        type: string
+      contractEmail:
+        type: string
+      contractPhone:
+        type: string
+      divisionId:
+        type: string
+      leaderFullName:
+        type: string
+      leaderPosition:
+        type: string
+      managerName:
         type: string
       name:
+        type: string
+      region:
+        type: string
+      registeredAddress:
         type: string
       type:
         type: string
     type: object
   bootstrap.UnitResponse:
     properties:
+      actingBasis:
+        type: string
+      address:
+        type: string
       code:
+        type: string
+      comment:
+        type: string
+      contacts:
+        type: string
+      contractEmail:
+        type: string
+      contractPhone:
+        type: string
+      divisionId:
         type: string
       id:
         type: string
+      leaderFullName:
+        type: string
+      leaderPosition:
+        type: string
+      managerName:
+        type: string
       name:
         type: string
-      subdivisionId:
+      region:
+        type: string
+      registeredAddress:
+        type: string
+      status:
         type: string
       type:
         type: string
@@ -549,13 +679,13 @@ definitions:
     type: object
   equipment.UnitSummary:
     properties:
+      divisionId:
+        type: string
+      divisionName:
+        type: string
       id:
         type: string
       name:
-        type: string
-      subdivisionId:
-        type: string
-      subdivisionName:
         type: string
     type: object
   equipment.UpdateRequest:
@@ -738,13 +868,13 @@ definitions:
     type: object
   measuringinstrument.UnitSummary:
     properties:
+      divisionId:
+        type: string
+      divisionName:
+        type: string
       id:
         type: string
       name:
-        type: string
-      subdivisionId:
-        type: string
-      subdivisionName:
         type: string
     type: object
   measuringinstrument.UpdateRequest:
@@ -913,6 +1043,8 @@ definitions:
     properties:
       comment:
         type: string
+      divisionId:
+        type: string
       documentUrl:
         type: string
       identifier:
@@ -926,8 +1058,6 @@ definitions:
       serialNumber:
         type: string
       standardType:
-        type: string
-      subdivisionId:
         type: string
       unitId:
         type: string
@@ -1024,6 +1154,8 @@ definitions:
     properties:
       comment:
         type: string
+      divisionId:
+        type: string
       documentUrl:
         type: string
       identifier:
@@ -1037,8 +1169,6 @@ definitions:
       serialNumber:
         type: string
       standardType:
-        type: string
-      subdivisionId:
         type: string
       unitId:
         type: string
@@ -1281,6 +1411,306 @@ paths:
       summary: Resolve contract routing
       tags:
       - agreements
+  /company/divisions:
+    post:
+      consumes:
+      - application/json
+      description: Creates the first or later active division from the persistent
+        company management surface.
+      parameters:
+      - description: Division payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/bootstrap.StructureNodeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.SessionSummaryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Create company division
+      tags:
+      - company
+  /company/divisions/{divisionID}:
+    patch:
+      consumes:
+      - application/json
+      description: Updates an active division visible to the organization-scope admin.
+      parameters:
+      - description: Division ID
+        in: path
+        name: divisionID
+        required: true
+        type: string
+      - description: Division payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/bootstrap.StructureNodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.SessionSummaryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Update company division
+      tags:
+      - company
+  /company/divisions/{divisionID}/archive:
+    post:
+      description: Archives a division instead of physically deleting it.
+      parameters:
+      - description: Division ID
+        in: path
+        name: divisionID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.SessionSummaryResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Archive company division
+      tags:
+      - company
+  /company/profile:
+    patch:
+      consumes:
+      - application/json
+      description: Updates the persistent Stage 03 company profile for an active organization-scope
+        admin.
+      parameters:
+      - description: Company profile payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/bootstrap.CompanyProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.SessionSummaryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Update company profile
+      tags:
+      - company
+  /company/units:
+    post:
+      consumes:
+      - application/json
+      description: Creates the first or later active unit, with optional division
+        parent.
+      parameters:
+      - description: Unit payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/bootstrap.StructureNodeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.SessionSummaryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Create company unit
+      tags:
+      - company
+  /company/units/{unitID}:
+    patch:
+      consumes:
+      - application/json
+      description: Updates an active unit and its optional division parent.
+      parameters:
+      - description: Unit ID
+        in: path
+        name: unitID
+        required: true
+        type: string
+      - description: Unit payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/bootstrap.StructureNodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.SessionSummaryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Update company unit
+      tags:
+      - company
+  /company/units/{unitID}/archive:
+    post:
+      description: Archives a unit instead of physically deleting it.
+      parameters:
+      - description: Unit ID
+        in: path
+        name: unitID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.SessionSummaryResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Archive company unit
+      tags:
+      - company
   /employee-invites:
     get:
       description: Returns the employee invite lifecycle visible to the active organization
@@ -1799,7 +2229,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Saves the core organization data and creates the first subdivision
+      description: Saves the core organization data and creates the first division
         or direct unit.
       parameters:
       - description: Launch wizard payload

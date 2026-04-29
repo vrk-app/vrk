@@ -27,9 +27,9 @@ export default async function RequestsPage() {
   return (
     <>
       <PageHeader
-        actions={<Badge tone="warning">Public route: /requests • gated</Badge>}
-        subtitle="Контур заявок уже включен в навигацию, но честно остается закрытым до Stage 04."
-        title="Заявки станут live позже"
+        actions={<Badge tone="warning">Недоступно</Badge>}
+        subtitle="Создание и сопровождение заявок пока закрыты."
+        title="Заявки"
       />
 
       <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
@@ -38,22 +38,22 @@ export default async function RequestsPage() {
             <LockKeyhole aria-hidden="true" className="size-6" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-semibold text-foreground">Requests contour закрыт до следующего этапа</h2>
+            <h2 className="text-xl font-semibold text-foreground">Раздел заявок пока закрыт</h2>
             <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
               {requestsShell.summary}
             </p>
           </div>
           <div className="flex flex-wrap justify-center gap-3">
-            <ActionLink href="/company" label="Вернуться к company shell" />
-            <ActionLink href="/contracts" label="Проверить contracts contour" />
+            <ActionLink href="/company" label="Вернуться к компании" />
+            <ActionLink href="/contracts" label="Открыть договоры" />
           </div>
         </Card>
 
         <Card className="gap-4" padding="lg">
           <div className="space-y-2">
-            <h2 className="text-lg font-semibold text-foreground">Что должно стать live позже</h2>
+            <h2 className="text-lg font-semibold text-foreground">Перед созданием заявки</h2>
             <p className="text-sm leading-6 text-muted-foreground">
-              Этот маршрут уже объясняет зависимость от Stage 03/04 и не скрывает будущие prerequisites.
+              Проверьте данные, которые понадобятся для работы с заявками.
             </p>
           </div>
           <div className="grid gap-3">
@@ -69,12 +69,7 @@ export default async function RequestsPage() {
             ))}
             {requestsShell.boundaries.map((boundary) => (
               <div className="rounded-[var(--radius-lg)] border border-border bg-card px-4 py-3" key={boundary.label}>
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-sm font-semibold text-foreground">{boundary.label}</p>
-                  <Badge size="sm" tone={boundary.tone}>
-                    {boundary.tone}
-                  </Badge>
-                </div>
+                <p className="text-sm font-semibold text-foreground">{boundary.label}</p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{boundary.detail}</p>
               </div>
             ))}

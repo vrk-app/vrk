@@ -80,17 +80,17 @@ func (s *standardService) List(ctx context.Context, token string, includeArchive
 
 	filtered := make([]Standard, 0, len(items))
 	for _, item := range items {
-		var subdivisionID *uuid.UUID
+		var divisionID *uuid.UUID
 		var unitID *uuid.UUID
-		if item.SubdivisionID != nil {
-			value := uuid.MustParse(*item.SubdivisionID)
-			subdivisionID = &value
+		if item.DivisionID != nil {
+			value := uuid.MustParse(*item.DivisionID)
+			divisionID = &value
 		}
 		if item.UnitID != nil {
 			value := uuid.MustParse(*item.UnitID)
 			unitID = &value
 		}
-		if !registryaccess.CanSeeStandard(session, subdivisionID, unitID) {
+		if !registryaccess.CanSeeStandard(session, divisionID, unitID) {
 			continue
 		}
 		filtered = append(filtered, item)
@@ -124,17 +124,17 @@ func (s *standardService) GetByID(ctx context.Context, token string, id string) 
 	if item.OrganizationID != session.Organization.ID {
 		return nil, ErrForbidden
 	}
-	var subdivisionID *uuid.UUID
+	var divisionID *uuid.UUID
 	var unitID *uuid.UUID
-	if item.SubdivisionID != nil {
-		value := uuid.MustParse(*item.SubdivisionID)
-		subdivisionID = &value
+	if item.DivisionID != nil {
+		value := uuid.MustParse(*item.DivisionID)
+		divisionID = &value
 	}
 	if item.UnitID != nil {
 		value := uuid.MustParse(*item.UnitID)
 		unitID = &value
 	}
-	if !registryaccess.CanSeeStandard(session, subdivisionID, unitID) {
+	if !registryaccess.CanSeeStandard(session, divisionID, unitID) {
 		return nil, ErrForbidden
 	}
 
@@ -323,7 +323,7 @@ func (s *standardService) buildCreateModel(session *bootstrap.SessionSummaryResp
 		return Standard{}, ErrMetrologicalCharRequired
 	}
 
-	subdivisionID, unitID, ownerLabel, err := registryaccess.ValidateStandardScope(session, req.SubdivisionID, req.UnitID, req.OwnerLabel)
+	divisionID, unitID, ownerLabel, err := registryaccess.ValidateStandardScope(session, req.DivisionID, req.UnitID, req.OwnerLabel)
 	if err != nil {
 		return Standard{}, mapScopeError(err)
 	}
@@ -340,9 +340,9 @@ func (s *standardService) buildCreateModel(session *bootstrap.SessionSummaryResp
 		Comment:                     req.Comment,
 		DocumentURL:                 req.DocumentURL,
 	}
-	if subdivisionID != nil {
-		value := subdivisionID.String()
-		item.SubdivisionID = &value
+	if divisionID != nil {
+		value := divisionID.String()
+		item.DivisionID = &value
 	}
 	if unitID != nil {
 		value := unitID.String()
@@ -396,24 +396,24 @@ func (s *standardService) buildUpdatedModel(session *bootstrap.SessionSummaryRes
 		updated.DocumentURL = normalizeOptional(req.DocumentURL)
 	}
 
-	subdivisionValue := req.SubdivisionID
+	divisionValue := req.DivisionID
 	unitValue := req.UnitID
 	ownerLabel := req.OwnerLabel
-	if subdivisionValue == nil && unitValue == nil && ownerLabel == nil {
-		subdivisionValue = updated.SubdivisionID
+	if divisionValue == nil && unitValue == nil && ownerLabel == nil {
+		divisionValue = updated.DivisionID
 		unitValue = updated.UnitID
 		ownerLabel = updated.OwnerLabel
 	}
-	subdivisionID, unitID, resolvedOwnerLabel, err := registryaccess.ValidateStandardScope(session, subdivisionValue, unitValue, ownerLabel)
+	divisionID, unitID, resolvedOwnerLabel, err := registryaccess.ValidateStandardScope(session, divisionValue, unitValue, ownerLabel)
 	if err != nil {
 		return nil, mapScopeError(err)
 	}
-	updated.SubdivisionID = nil
+	updated.DivisionID = nil
 	updated.UnitID = nil
 	updated.OwnerLabel = resolvedOwnerLabel
-	if subdivisionID != nil {
-		value := subdivisionID.String()
-		updated.SubdivisionID = &value
+	if divisionID != nil {
+		value := divisionID.String()
+		updated.DivisionID = &value
 	}
 	if unitID != nil {
 		value := unitID.String()
@@ -429,11 +429,11 @@ func toResponse(
 	derived metrologyjournal.DerivedState,
 ) *StandardResponse {
 	scopeType := "organization"
-	scopeLabel := registryaccess.ResolveScopeLabel(session, mustUUID(item.SubdivisionID), mustUUID(item.UnitID), item.OwnerLabel)
+	scopeLabel := registryaccess.ResolveScopeLabel(session, mustUUID(item.DivisionID), mustUUID(item.UnitID), item.OwnerLabel)
 	var scopeID *string
-	if item.SubdivisionID != nil {
-		scopeType = "subdivision"
-		scopeID = item.SubdivisionID
+	if item.DivisionID != nil {
+		scopeType = "division"
+		scopeID = item.DivisionID
 	}
 	if item.UnitID != nil {
 		scopeType = "unit"
@@ -535,17 +535,17 @@ func (s *standardService) visibleStandard(
 		return uuid.Nil, nil, ErrForbidden
 	}
 
-	var subdivisionID *uuid.UUID
+	var divisionID *uuid.UUID
 	var unitID *uuid.UUID
-	if item.SubdivisionID != nil {
-		value := uuid.MustParse(*item.SubdivisionID)
-		subdivisionID = &value
+	if item.DivisionID != nil {
+		value := uuid.MustParse(*item.DivisionID)
+		divisionID = &value
 	}
 	if item.UnitID != nil {
 		value := uuid.MustParse(*item.UnitID)
 		unitID = &value
 	}
-	if !registryaccess.CanSeeStandard(session, subdivisionID, unitID) {
+	if !registryaccess.CanSeeStandard(session, divisionID, unitID) {
 		return uuid.Nil, nil, ErrForbidden
 	}
 
@@ -647,7 +647,7 @@ func mapAccessError(err error) error {
 
 func mapScopeError(err error) error {
 	switch err {
-	case registryaccess.ErrInvalidScope, registryaccess.ErrInvalidSubdivision, registryaccess.ErrInvalidUnit:
+	case registryaccess.ErrInvalidScope, registryaccess.ErrInvalidDivision, registryaccess.ErrInvalidUnit:
 		return ErrScopeInvalid
 	default:
 		return mapAccessError(err)

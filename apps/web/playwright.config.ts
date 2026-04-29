@@ -1,7 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const port = 3001;
+const port = Number(process.env.WEB_SMOKE_PORT ?? "3001");
 const baseURL = `http://127.0.0.1:${port}`;
+const backendBaseURL = process.env.WEB_SMOKE_BACKEND_URL ?? "http://127.0.0.1:18080";
 
 export default defineConfig({
   testDir: "./tests",
@@ -23,8 +24,8 @@ export default defineConfig({
     stdout: "ignore",
     stderr: "pipe",
     env: {
-      INTERNAL_API_BASE_URL: "http://127.0.0.1:18080",
-      NEXT_PUBLIC_API_BASE_URL: "http://127.0.0.1:18080",
+      INTERNAL_API_BASE_URL: backendBaseURL,
+      NEXT_PUBLIC_API_BASE_URL: backendBaseURL,
       NEXT_PUBLIC_RUNTIME_DATA_MODE: "seed-read",
       PLATFORM_ADMIN_SHARED_SECRET: "stage03-platform-admin-secret",
       PORT: String(port),

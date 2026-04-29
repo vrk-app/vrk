@@ -29,8 +29,8 @@ SEED = os.getenv("VRK_STAGE03_SLICE005_SEED", str(int(time.time())))
 class OrgContext:
     label: str
     organization_id: str
-    subdivision_id: str
-    subdivision_name: str
+    division_id: str
+    division_name: str
     unit_id: str
     unit_name: str
     email: str
@@ -201,8 +201,8 @@ def create_org(label: str) -> OrgContext:
             "legalAddress": f"г. Москва, ул. {label}, д. 5",
             "contactEmail": email,
             "contactPhone": "+7 (999) 123-45-67",
-            "structureMode": "subdivision",
-            "subdivision": {
+            "structureMode": "division",
+            "division": {
                 "type": "Филиал",
                 "name": f"{label.title()} Подразделение {SEED}",
             },
@@ -217,14 +217,14 @@ def create_org(label: str) -> OrgContext:
     current = expect_ok("GET", "/api/v1/sessions/current", expected_status=200, token=launched["sessionToken"])
     write_json(f"{label}-session-current", current)
 
-    subdivision = current["data"]["subdivisions"][0]
+    division = current["data"]["divisions"][0]
     unit = current["data"]["units"][0]
 
     return OrgContext(
         label=label,
         organization_id=current["data"]["organization"]["id"],
-        subdivision_id=subdivision["id"],
-        subdivision_name=subdivision["name"],
+        division_id=division["id"],
+        division_name=division["name"],
         unit_id=unit["id"],
         unit_name=unit["name"],
         email=email,
@@ -251,7 +251,7 @@ def create_scoped_employee(
         body={
             "fullName": f"{label.title()} Employee {SEED}",
             "email": email,
-            "roleTemplate": "unit_operator" if scope_type == "unit" else "subdivision_manager",
+            "roleTemplate": "unit_operator" if scope_type == "unit" else "division_manager",
             "scopeType": scope_type,
             "scopeId": scope_id,
             "expiresAt": (TODAY + timedelta(days=7)).isoformat() + "T12:00:00Z",
@@ -293,7 +293,7 @@ def insert_second_unit(customer: OrgContext) -> dict[str, str]:
     sql = f"""
 INSERT INTO auth_units (
     organization_id,
-    subdivision_id,
+    division_id,
     unit_type,
     name,
     code,
@@ -302,7 +302,7 @@ INSERT INTO auth_units (
     contacts
 ) VALUES (
     '{customer.organization_id}'::uuid,
-    '{customer.subdivision_id}'::uuid,
+    '{customer.division_id}'::uuid,
     'Юнит',
     'Второй юнит {SEED}',
     'U2-{SEED}',
@@ -371,8 +371,8 @@ def create_standard(
     }
     if owner_label is not None:
         body["ownerLabel"] = owner_label
-    if scope_type == "subdivision":
-        body["subdivisionId"] = scope_id
+    if scope_type == "division":
+        body["divisionId"] = scope_id
     elif scope_type == "unit":
         body["unitId"] = scope_id
 
@@ -558,11 +558,11 @@ def main() -> int:
         admin_current = expect_ok("GET", "/api/v1/sessions/current", expected_status=200, token=customer.session_token)
         write_json("admin-session-current-post-unit-seed", admin_current)
 
-        subdivision_employee = create_scoped_employee(
+        division_employee = create_scoped_employee(
             customer,
-            label="subdivision-metrology",
-            scope_type="subdivision",
-            scope_id=customer.subdivision_id,
+            label="division-metrology",
+            scope_type="division",
+            scope_id=customer.division_id,
         )
         unit_employee = create_scoped_employee(
             customer,
@@ -626,13 +626,13 @@ def main() -> int:
             owner_label=f"Организация {SEED}",
             metrological_characteristics="0.1 кПа, общий контур организации",
         )
-        subdivision_standard = create_standard(
+        division_standard = create_standard(
             customer.session_token,
             standard_type="Эталон температуры",
             model="STD-SUB",
             identifier=f"STD-SUB-{SEED}",
-            scope_type="subdivision",
-            scope_id=customer.subdivision_id,
+            scope_type="division",
+            scope_id=customer.division_id,
             metrological_characteristics="0.3°C, контур подразделения",
         )
         unit_one_standard = create_standard(
@@ -663,7 +663,7 @@ def main() -> int:
             metrological_characteristics="0.5 В, архивный контур",
         )
         write_json("standard-shared", shared_standard)
-        write_json("standard-subdivision", subdivision_standard)
+        write_json("standard-division", division_standard)
         write_json("standard-unit-one", unit_one_standard)
         write_json("standard-unit-two", unit_two_standard)
         write_json("standard-archive-target", archived_standard)
@@ -874,38 +874,38 @@ def main() -> int:
         write_json("admin-standards-list-include-archived", admin_standards_archived)
         write_json("admin-agreements-list", admin_agreements)
 
-        subdivision_equipment_archived = list_registry(
-            subdivision_employee["sessionToken"],
+        division_equipment_archived = list_registry(
+            division_employee["sessionToken"],
             "/api/v1/equipment",
             include_archived=True,
         )
-        subdivision_measuring_instruments_archived = list_registry(
-            subdivision_employee["sessionToken"],
+        division_measuring_instruments_archived = list_registry(
+            division_employee["sessionToken"],
             "/api/v1/measuring-instruments",
             include_archived=True,
         )
-        subdivision_standards_archived = list_registry(
-            subdivision_employee["sessionToken"],
+        division_standards_archived = list_registry(
+            division_employee["sessionToken"],
             "/api/v1/standards",
             include_archived=True,
         )
-        subdivision_mi_secondary_journals = expect_ok(
+        division_mi_secondary_journals = expect_ok(
             "GET",
             f"/api/v1/measuring-instruments/{mi_secondary['id']}/journals",
             expected_status=200,
-            token=subdivision_employee["sessionToken"],
+            token=division_employee["sessionToken"],
         )
-        subdivision_standard_unit_two_journals = expect_ok(
+        division_standard_unit_two_journals = expect_ok(
             "GET",
             f"/api/v1/standards/{unit_two_standard['id']}/journals",
             expected_status=200,
-            token=subdivision_employee["sessionToken"],
+            token=division_employee["sessionToken"],
         )
-        write_json("subdivision-equipment-list-include-archived", subdivision_equipment_archived)
-        write_json("subdivision-measuring-instruments-list-include-archived", subdivision_measuring_instruments_archived)
-        write_json("subdivision-standards-list-include-archived", subdivision_standards_archived)
-        write_json("subdivision-mi-secondary-journals", subdivision_mi_secondary_journals)
-        write_json("subdivision-standard-unit-two-journals", subdivision_standard_unit_two_journals)
+        write_json("division-equipment-list-include-archived", division_equipment_archived)
+        write_json("division-measuring-instruments-list-include-archived", division_measuring_instruments_archived)
+        write_json("division-standards-list-include-archived", division_standards_archived)
+        write_json("division-mi-secondary-journals", division_mi_secondary_journals)
+        write_json("division-standard-unit-two-journals", division_standard_unit_two_journals)
 
         unit_equipment = list_registry(unit_employee["sessionToken"], "/api/v1/equipment")
         unit_equipment_archived = list_registry(unit_employee["sessionToken"], "/api/v1/equipment", include_archived=True)
@@ -988,7 +988,7 @@ def main() -> int:
         admin_mi_archived_items = admin_measuring_instruments_archived["data"]
         admin_standard_items = admin_standards["data"]
         admin_standard_archived_items = admin_standards_archived["data"]
-        subdivision_standard_ids = {item["id"] for item in subdivision_standards_archived["data"]}
+        division_standard_ids = {item["id"] for item in division_standards_archived["data"]}
         unit_equipment_names = names(unit_equipment["data"], "fullName")
         unit_equipment_archived_names = names(unit_equipment_archived["data"], "fullName")
         unit_mi_names = names(unit_measuring_instruments["data"], "name")
@@ -1035,16 +1035,16 @@ def main() -> int:
             "archiveVisibleInStandardListWhenRequested": find_by_id(admin_standard_archived_items, archived_standard["id"])["archivedAt"] is not None,
             "archiveBlocksMIJournalMutation": archived_mi_mutation_error.get("error") == "archived measuring instruments cannot be changed",
             "archiveBlocksStandardJournalMutation": archived_standard_mutation_error.get("error") == "archived standards cannot be changed",
-            "subdivisionUserSeesBothUnitsAndArchive": {
+            "divisionUserSeesBothUnitsAndArchive": {
                 equipment_primary["fullName"],
                 equipment_secondary["fullName"],
                 equipment_archive["fullName"],
-            }.issubset(set(names(subdivision_equipment_archived["data"], "fullName"))),
-            "subdivisionUserNoOrgStandardLeak": shared_standard["id"] not in subdivision_standard_ids,
-            "subdivisionUserSeesUnitTwoJournal": len(subdivision_mi_secondary_journals["data"]) == 1
-            and subdivision_mi_secondary_journals["data"][0]["documentNumber"] == mi_secondary_journal["documentNumber"],
-            "subdivisionUserSeesUnitTwoStandardJournal": len(subdivision_standard_unit_two_journals["data"]) == 1
-            and subdivision_standard_unit_two_journals["data"][0]["documentNumber"] == unit_two_standard_journal["documentNumber"],
+            }.issubset(set(names(division_equipment_archived["data"], "fullName"))),
+            "divisionUserNoOrgStandardLeak": shared_standard["id"] not in division_standard_ids,
+            "divisionUserSeesUnitTwoJournal": len(division_mi_secondary_journals["data"]) == 1
+            and division_mi_secondary_journals["data"][0]["documentNumber"] == mi_secondary_journal["documentNumber"],
+            "divisionUserSeesUnitTwoStandardJournal": len(division_standard_unit_two_journals["data"]) == 1
+            and division_standard_unit_two_journals["data"][0]["documentNumber"] == unit_two_standard_journal["documentNumber"],
             "unitUserVisibleEquipment": unit_equipment_names,
             "unitUserVisibleEquipmentWithArchive": unit_equipment_archived_names,
             "unitUserVisibleMI": unit_mi_names,
@@ -1052,7 +1052,7 @@ def main() -> int:
             "unitUserNoEquipmentLeak": equipment_secondary["fullName"] not in unit_equipment_archived_names,
             "unitUserNoMILLeak": mi_secondary["name"] not in unit_mi_archived_names,
             "unitUserNoBroaderStandardLeak": shared_standard["id"] not in unit_standard_archived_ids
-            and subdivision_standard["id"] not in unit_standard_archived_ids
+            and division_standard["id"] not in unit_standard_archived_ids
             and unit_two_standard["id"] not in unit_standard_archived_ids,
             "unitUserKeepsOwnStandard": unit_one_standard["id"] in unit_standard_ids,
             "unitUserKeepsArchivedOwnStandard": archived_standard["id"] in unit_standard_archived_ids,
@@ -1102,10 +1102,10 @@ def main() -> int:
         assert checks["archiveVisibleInStandardListWhenRequested"], admin_standards_archived
         assert checks["archiveBlocksMIJournalMutation"], archived_mi_mutation_error
         assert checks["archiveBlocksStandardJournalMutation"], archived_standard_mutation_error
-        assert checks["subdivisionUserSeesBothUnitsAndArchive"], subdivision_equipment_archived
-        assert checks["subdivisionUserNoOrgStandardLeak"], subdivision_standards_archived
-        assert checks["subdivisionUserSeesUnitTwoJournal"], subdivision_mi_secondary_journals
-        assert checks["subdivisionUserSeesUnitTwoStandardJournal"], subdivision_standard_unit_two_journals
+        assert checks["divisionUserSeesBothUnitsAndArchive"], division_equipment_archived
+        assert checks["divisionUserNoOrgStandardLeak"], division_standards_archived
+        assert checks["divisionUserSeesUnitTwoJournal"], division_mi_secondary_journals
+        assert checks["divisionUserSeesUnitTwoStandardJournal"], division_standard_unit_two_journals
         assert checks["unitUserNoEquipmentLeak"], unit_equipment_archived
         assert checks["unitUserNoMILLeak"], unit_measuring_instruments_archived
         assert checks["unitUserNoBroaderStandardLeak"], unit_standards_archived
@@ -1130,7 +1130,7 @@ def main() -> int:
         summary = {
             "seed": SEED,
             "organizationId": customer.organization_id,
-            "subdivisionId": customer.subdivision_id,
+            "divisionId": customer.division_id,
             "unitOneId": customer.unit_id,
             "unitTwoId": second_unit["id"],
             "equipmentIds": {
@@ -1146,7 +1146,7 @@ def main() -> int:
             },
             "standardIds": {
                 "shared": shared_standard["id"],
-                "subdivision": subdivision_standard["id"],
+                "division": division_standard["id"],
                 "unitOne": unit_one_standard["id"],
                 "unitTwo": unit_two_standard["id"],
                 "archived": archived_standard["id"],

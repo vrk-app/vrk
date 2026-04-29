@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { cookies } from "next/headers";
 import { RuntimeShell } from "./_components/RuntimeShell";
-import { SESSION_COOKIE_NAME } from "@/shared/api";
+import { roleTemplateLabel, SESSION_COOKIE_NAME } from "@/shared/api";
 import { fetchSessionSummary } from "@/shared/api/session-server";
 
 export default async function RuntimeLayout({
@@ -14,15 +14,15 @@ export default async function RuntimeLayout({
 
   return (
     <RuntimeShell
-      eyebrow={session ? "Stage 03 • Launch workspace" : "Stage 02 • Runtime shell"}
+      eyebrow={session ? "Рабочая область организации" : "Обзор без входа"}
       viewer={
         session
           ? {
-              name: session.account.fullName,
-              role: session.requiresLaunchWizard
-                ? "организация запускается"
-                : `${session.grant?.roleTemplate ?? "organization_admin"} / ${session.workspace.scopeName}`,
-            }
+	              name: session.account.fullName,
+	              role: session.requiresLaunchWizard
+	                ? "организация запускается"
+	                : `${roleTemplateLabel(session.grant?.roleTemplate ?? "organization_admin").toLocaleLowerCase("ru-RU")} / ${session.workspace.scopeName}`,
+	            }
           : undefined
       }
     >

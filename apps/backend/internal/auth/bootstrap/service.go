@@ -14,15 +14,22 @@ import (
 
 const (
 	defaultOrganizationRole = "customer"
+	defaultDivisionType     = "division"
 	inviteLifetime          = 7 * 24 * time.Hour
 	sessionLifetime         = 24 * time.Hour
 )
 
-var allowedRoleTemplates = map[string]string{
-	"organization_admin":  "Администратор организации",
-	"subdivision_manager": "Руководитель подразделения",
-	"unit_operator":       "Администратор юнита",
-	"observer":            "Наблюдатель",
+var allowedOrganizationPropertyTypes = map[string]struct{}{
+	"ООО": {},
+	"АО":  {},
+	"ПАО": {},
+}
+
+var allowedUnitTypes = map[string]struct{}{
+	"ВРД": {},
+	"ВРЗ": {},
+	"ВУ":  {},
+	"ВРП": {},
 }
 
 type Service interface {
@@ -39,6 +46,13 @@ type Service interface {
 	GetSession(ctx context.Context, token string) (*SessionSummaryResponse, error)
 	DeleteSession(ctx context.Context, token string) error
 	CompleteLaunch(ctx context.Context, token string, req CompleteLaunchRequest) (*SessionSummaryResponse, error)
+	UpdateCompanyProfile(ctx context.Context, token string, req CompanyProfileRequest) (*SessionSummaryResponse, error)
+	CreateDivision(ctx context.Context, token string, req StructureNodeRequest) (*SessionSummaryResponse, error)
+	UpdateDivision(ctx context.Context, token string, divisionID string, req StructureNodeRequest) (*SessionSummaryResponse, error)
+	ArchiveDivision(ctx context.Context, token string, divisionID string) (*SessionSummaryResponse, error)
+	CreateUnit(ctx context.Context, token string, req StructureNodeRequest) (*SessionSummaryResponse, error)
+	UpdateUnit(ctx context.Context, token string, unitID string, req StructureNodeRequest) (*SessionSummaryResponse, error)
+	ArchiveUnit(ctx context.Context, token string, unitID string) (*SessionSummaryResponse, error)
 }
 
 type service struct {
@@ -399,9 +413,9 @@ func (s *service) CompleteLaunch(ctx context.Context, token string, req Complete
 	req.StructureMode = strings.TrimSpace(req.StructureMode)
 	req.Unit.Name = strings.TrimSpace(req.Unit.Name)
 	req.Unit.Type = strings.TrimSpace(req.Unit.Type)
-	if req.Subdivision != nil {
-		req.Subdivision.Name = strings.TrimSpace(req.Subdivision.Name)
-		req.Subdivision.Type = strings.TrimSpace(req.Subdivision.Type)
+	if req.Division != nil {
+		req.Division.Name = strings.TrimSpace(req.Division.Name)
+		req.Division.Type = strings.TrimSpace(req.Division.Type)
 	}
 
 	if req.OrganizationName == "" {
@@ -410,6 +424,11 @@ func (s *service) CompleteLaunch(ctx context.Context, token string, req Complete
 	if req.PropertyType == "" {
 		return nil, ErrPropertyTypeRequired
 	}
+	propertyType, err := normalizeOrganizationPropertyType(req.PropertyType)
+	if err != nil {
+		return nil, err
+	}
+	req.PropertyType = propertyType
 	if req.Inn == "" {
 		return nil, ErrInnRequired
 	}
@@ -431,27 +450,29 @@ func (s *service) CompleteLaunch(ctx context.Context, token string, req Complete
 	if req.Unit.Type == "" {
 		return nil, ErrUnitTypeRequired
 	}
-	if req.StructureMode != "subdivision" && req.StructureMode != "unit" {
+	if _, ok := allowedUnitTypes[req.Unit.Type]; !ok {
+		return nil, ErrStructureTypeInvalid
+	}
+	if req.StructureMode != "division" && req.StructureMode != "unit" {
 		return nil, ErrStructureModeInvalid
 	}
-	if req.StructureMode == "subdivision" {
-		if req.Subdivision == nil {
-			return nil, ErrSubdivisionNameRequired
+	if req.StructureMode == "division" {
+		if req.Division == nil {
+			return nil, ErrDivisionNameRequired
 		}
-		if req.Subdivision.Name == "" {
-			return nil, ErrSubdivisionNameRequired
+		if req.Division.Name == "" {
+			return nil, ErrDivisionNameRequired
 		}
-		if req.Subdivision.Type == "" {
-			return nil, ErrSubdivisionTypeRequired
-		}
+		req.Division.Type = defaultDivisionType
 	}
 
 	snapshot, err := s.repository.GetSession(ctx, strings.TrimSpace(token))
 	if err != nil {
 		return nil, err
 	}
-	if snapshot.SessionRow.OrganizationLaunchState == "active" {
-		return nil, ErrLaunchAlreadyCompleted
+	if snapshot.SessionRow.OrganizationLaunchState == "active" &&
+		!snapshotHasCapability(snapshot, CapabilityManageStructure) {
+		return nil, ErrForbidden
 	}
 
 	updated, err := s.repository.CompleteLaunch(ctx, snapshot, req)
@@ -460,6 +481,143 @@ func (s *service) CompleteLaunch(ctx context.Context, token string, req Complete
 	}
 
 	return mapSessionSummary(updated), nil
+}
+
+func (s *service) UpdateCompanyProfile(ctx context.Context, token string, req CompanyProfileRequest) (*SessionSummaryResponse, error) {
+	snapshot, err := s.authorizeCompanyStructureManager(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	if err := normalizeCompanyProfileRequest(&req); err != nil {
+		return nil, err
+	}
+
+	updated, err := s.repository.UpdateCompanyProfile(ctx, snapshot, req)
+	if err != nil {
+		return nil, err
+	}
+	return mapSessionSummary(updated), nil
+}
+
+func (s *service) CreateDivision(ctx context.Context, token string, req StructureNodeRequest) (*SessionSummaryResponse, error) {
+	snapshot, err := s.authorizeCompanyStructureManager(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	if err := normalizeStructureNodeRequest(&req, false, snapshot, ErrDivisionNameRequired); err != nil {
+		return nil, err
+	}
+
+	updated, err := s.repository.CreateDivision(ctx, snapshot, req)
+	if err != nil {
+		return nil, err
+	}
+	return mapSessionSummary(updated), nil
+}
+
+func (s *service) UpdateDivision(ctx context.Context, token string, divisionID string, req StructureNodeRequest) (*SessionSummaryResponse, error) {
+	snapshot, err := s.authorizeCompanyStructureManager(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	id, err := parseRequiredUUID(divisionID)
+	if err != nil {
+		return nil, err
+	}
+	if err := normalizeStructureNodeRequest(&req, false, snapshot, ErrDivisionNameRequired); err != nil {
+		return nil, err
+	}
+
+	updated, err := s.repository.UpdateDivision(ctx, snapshot, id, req)
+	if err != nil {
+		return nil, err
+	}
+	return mapSessionSummary(updated), nil
+}
+
+func (s *service) ArchiveDivision(ctx context.Context, token string, divisionID string) (*SessionSummaryResponse, error) {
+	snapshot, err := s.authorizeCompanyStructureManager(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	id, err := parseRequiredUUID(divisionID)
+	if err != nil {
+		return nil, err
+	}
+
+	updated, err := s.repository.ArchiveDivision(ctx, snapshot, id)
+	if err != nil {
+		return nil, err
+	}
+	return mapSessionSummary(updated), nil
+}
+
+func (s *service) CreateUnit(ctx context.Context, token string, req StructureNodeRequest) (*SessionSummaryResponse, error) {
+	snapshot, err := s.authorizeCompanyStructureManager(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	if err := normalizeStructureNodeRequest(&req, true, snapshot, ErrUnitNameRequired); err != nil {
+		return nil, err
+	}
+
+	updated, err := s.repository.CreateUnit(ctx, snapshot, req)
+	if err != nil {
+		return nil, err
+	}
+	return mapSessionSummary(updated), nil
+}
+
+func (s *service) UpdateUnit(ctx context.Context, token string, unitID string, req StructureNodeRequest) (*SessionSummaryResponse, error) {
+	snapshot, err := s.authorizeCompanyStructureManager(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	id, err := parseRequiredUUID(unitID)
+	if err != nil {
+		return nil, err
+	}
+	if err := normalizeStructureNodeRequest(&req, true, snapshot, ErrUnitNameRequired); err != nil {
+		return nil, err
+	}
+
+	updated, err := s.repository.UpdateUnit(ctx, snapshot, id, req)
+	if err != nil {
+		return nil, err
+	}
+	return mapSessionSummary(updated), nil
+}
+
+func (s *service) ArchiveUnit(ctx context.Context, token string, unitID string) (*SessionSummaryResponse, error) {
+	snapshot, err := s.authorizeCompanyStructureManager(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	id, err := parseRequiredUUID(unitID)
+	if err != nil {
+		return nil, err
+	}
+
+	updated, err := s.repository.ArchiveUnit(ctx, snapshot, id)
+	if err != nil {
+		return nil, err
+	}
+	return mapSessionSummary(updated), nil
+}
+
+func (s *service) authorizeCompanyStructureManager(ctx context.Context, token string) (*sessionSnapshot, error) {
+	snapshot, err := s.repository.GetSession(ctx, strings.TrimSpace(token))
+	if err != nil {
+		return nil, err
+	}
+	if snapshot.SessionRow.OrganizationLaunchState != "active" {
+		return nil, ErrLaunchRequired
+	}
+	if snapshot.SessionRow.OrganizationRoleTitle != "customer" ||
+		!snapshotHasCapability(snapshot, CapabilityManageStructure) {
+		return nil, ErrForbidden
+	}
+	return snapshot, nil
 }
 
 func (s *service) authorizeInviteManager(ctx context.Context, token string) (*sessionSnapshot, error) {
@@ -499,8 +657,11 @@ func (s *service) normalizeEmployeeInviteRequest(snapshot *sessionSnapshot, req 
 	if _, ok := allowedRoleTemplates[req.RoleTemplate]; !ok {
 		return time.Time{}, ErrInviteRoleTemplateInvalid
 	}
-	if req.ScopeType != "organization" && req.ScopeType != "subdivision" && req.ScopeType != "unit" {
+	if req.ScopeType != ScopeOrganization && req.ScopeType != ScopeDivision && req.ScopeType != ScopeUnit {
 		return time.Time{}, ErrInviteScopeTypeInvalid
+	}
+	if !IsRoleScopeCompatible(req.RoleTemplate, req.ScopeType) {
+		return time.Time{}, ErrInviteRoleScopeInvalid
 	}
 	if req.ScopeID == "" {
 		return time.Time{}, ErrInviteScopeTargetRequired
@@ -573,20 +734,29 @@ func mapSessionSummary(snapshot *sessionSnapshot) *SessionSummaryResponse {
 		MembershipID:     uuidFromPG(session.MembershipID).String(),
 		MembershipStatus: session.MembershipStatus,
 		Organization: SessionOrganizationResponse{
-			ID:           uuidFromPG(session.OrganizationID).String(),
-			RoleTitle:    session.OrganizationRoleTitle,
-			Name:         session.OrganizationShellName,
-			ShortName:    session.OrganizationShortName,
-			PropertyType: session.OrganizationPropertyType,
-			Inn:          session.OrganizationInn,
-			Kpp:          session.OrganizationKpp,
-			LegalAddress: session.OrganizationLegalAddress,
-			ContactEmail: session.OrganizationContactEmail,
-			ContactPhone: session.OrganizationContactPhone,
-			LaunchState:  session.OrganizationLaunchState,
+			ID:                uuidFromPG(session.OrganizationID).String(),
+			RoleTitle:         session.OrganizationRoleTitle,
+			Type:              session.OrganizationPropertyType,
+			Name:              session.OrganizationShellName,
+			ShortName:         session.OrganizationShortName,
+			PropertyType:      session.OrganizationPropertyType,
+			Inn:               session.OrganizationInn,
+			Kpp:               session.OrganizationKpp,
+			LegalAddress:      session.OrganizationLegalAddress,
+			RegisteredAddress: session.OrganizationLegalAddress,
+			Address:           session.OrganizationLegalAddress,
+			ContactEmail:      session.OrganizationContactEmail,
+			ContactPhone:      session.OrganizationContactPhone,
+			LeaderFullName:    session.OrganizationLeaderFullName,
+			ManagerName:       session.OrganizationLeaderFullName,
+			LeaderPosition:    session.OrganizationLeaderPosition,
+			ContractPhone:     coalesceStringPointer(session.OrganizationContractPhone, session.OrganizationContactPhone),
+			ContractEmail:     coalesceStringPointer(session.OrganizationContractEmail, session.OrganizationContactEmail),
+			ActingBasis:       session.OrganizationActingBasis,
+			LaunchState:       session.OrganizationLaunchState,
 		},
-		Subdivisions: []SubdivisionResponse{},
-		Units:        []UnitResponse{},
+		Divisions: []DivisionResponse{},
+		Units:     []UnitResponse{},
 	}
 
 	if session.GrantID.Valid && session.GrantScopeID.Valid {
@@ -598,28 +768,52 @@ func mapSessionSummary(snapshot *sessionSnapshot) *SessionSummaryResponse {
 		}
 	}
 
-	for _, subdivision := range snapshot.Subdivisions {
-		response.Subdivisions = append(response.Subdivisions, SubdivisionResponse{
-			ID:   uuidFromPG(subdivision.ID).String(),
-			Type: subdivision.SubdivisionType,
-			Name: subdivision.Name,
-			Code: subdivision.Code,
+	for _, division := range snapshot.Divisions {
+		response.Divisions = append(response.Divisions, DivisionResponse{
+			ID:                uuidFromPG(division.ID).String(),
+			Type:              division.DivisionType,
+			Name:              division.Name,
+			Code:              division.Code,
+			Region:            division.Region,
+			Address:           division.Address,
+			RegisteredAddress: division.Address,
+			ManagerName:       division.ManagerName,
+			LeaderFullName:    division.ManagerName,
+			Contacts:          division.Contacts,
+			LeaderPosition:    division.LeaderPosition,
+			ContractPhone:     division.ContractPhone,
+			ContractEmail:     division.ContractEmail,
+			ActingBasis:       division.ActingBasis,
+			Status:            division.Status,
+			Comment:           division.Comment,
 		})
 	}
 
 	for _, unit := range snapshot.Units {
-		var subdivisionID *string
-		if unit.SubdivisionID.Valid {
-			value := uuidFromPG(unit.SubdivisionID).String()
-			subdivisionID = &value
+		var divisionID *string
+		if unit.DivisionID.Valid {
+			value := uuidFromPG(unit.DivisionID).String()
+			divisionID = &value
 		}
 
 		response.Units = append(response.Units, UnitResponse{
-			ID:            uuidFromPG(unit.ID).String(),
-			Type:          unit.UnitType,
-			Name:          unit.Name,
-			Code:          unit.Code,
-			SubdivisionID: subdivisionID,
+			ID:                uuidFromPG(unit.ID).String(),
+			Type:              unit.UnitType,
+			Name:              unit.Name,
+			Code:              unit.Code,
+			Region:            unit.Region,
+			DivisionID:        divisionID,
+			Address:           unit.Address,
+			RegisteredAddress: unit.Address,
+			ManagerName:       unit.ManagerName,
+			LeaderFullName:    unit.ManagerName,
+			Contacts:          unit.Contacts,
+			LeaderPosition:    unit.LeaderPosition,
+			ContractPhone:     unit.ContractPhone,
+			ContractEmail:     unit.ContractEmail,
+			ActingBasis:       unit.ActingBasis,
+			Status:            unit.Status,
+			Comment:           unit.Comment,
 		})
 	}
 
@@ -631,7 +825,7 @@ func mapSessionSummary(snapshot *sessionSnapshot) *SessionSummaryResponse {
 func resolveWorkspace(snapshot *sessionSnapshot) SessionWorkspaceResponse {
 	session := snapshot.SessionRow
 	roleTemplate := session.GrantRoleTemplate
-	scopeType := "organization"
+	scopeType := ScopeOrganization
 	scopeID := uuid.Nil.String()
 	if session.GrantScopeType != "" {
 		scopeType = session.GrantScopeType
@@ -656,16 +850,16 @@ func resolveWorkspace(snapshot *sessionSnapshot) SessionWorkspaceResponse {
 	}
 
 	switch scopeType {
-	case "subdivision":
-		if len(snapshot.Subdivisions) > 0 {
-			workspace.ScopeName = snapshot.Subdivisions[0].Name
-			workspace.LandingTitle = snapshot.Subdivisions[0].Name
+	case ScopeDivision:
+		if len(snapshot.Divisions) > 0 {
+			workspace.ScopeName = snapshot.Divisions[0].Name
+			workspace.LandingTitle = snapshot.Divisions[0].Name
 		} else {
 			workspace.ScopeName = "Подразделение"
 			workspace.LandingTitle = "Подразделение"
 		}
 		workspace.LandingSubtitle = "Доступ ограничен выбранным подразделением и его дочерними юнитами."
-	case "unit":
+	case ScopeUnit:
 		if len(snapshot.Units) > 0 {
 			workspace.ScopeName = snapshot.Units[0].Name
 			workspace.LandingTitle = snapshot.Units[0].Name
@@ -675,7 +869,7 @@ func resolveWorkspace(snapshot *sessionSnapshot) SessionWorkspaceResponse {
 		}
 		workspace.LandingSubtitle = "Доступ ограничен выбранным юнитом без расширения вверх по иерархии."
 	default:
-		if roleTemplate == "organization_admin" {
+		if roleTemplate == RoleOrganizationAdmin {
 			workspace.LandingSubtitle = "Администратор организации видит полный org graph и может управлять приглашениями сотрудников."
 		}
 	}
@@ -684,23 +878,20 @@ func resolveWorkspace(snapshot *sessionSnapshot) SessionWorkspaceResponse {
 }
 
 func canManageEmployeeInvites(snapshot *sessionSnapshot) bool {
-	session := snapshot.SessionRow
-	return session.OrganizationLaunchState == "active" &&
-		session.GrantRoleTemplate == "organization_admin" &&
-		session.GrantScopeType == "organization"
+	return snapshotHasCapability(snapshot, CapabilityManageAccess)
 }
 
 func scopeExistsInSnapshot(snapshot *sessionSnapshot, scopeType string, scopeID string) bool {
 	switch scopeType {
-	case "organization":
+	case ScopeOrganization:
 		return snapshot.SessionRow.OrganizationID.Valid && uuidFromPG(snapshot.SessionRow.OrganizationID).String() == scopeID
-	case "subdivision":
-		for _, subdivision := range snapshot.Subdivisions {
-			if uuidFromPG(subdivision.ID).String() == scopeID {
+	case ScopeDivision:
+		for _, division := range snapshot.Divisions {
+			if uuidFromPG(division.ID).String() == scopeID {
 				return true
 			}
 		}
-	case "unit":
+	case ScopeUnit:
 		for _, unit := range snapshot.Units {
 			if uuidFromPG(unit.ID).String() == scopeID {
 				return true
@@ -709,6 +900,141 @@ func scopeExistsInSnapshot(snapshot *sessionSnapshot, scopeType string, scopeID 
 	}
 
 	return false
+}
+
+func normalizeCompanyProfileRequest(req *CompanyProfileRequest) error {
+	req.Type = strings.TrimSpace(req.Type)
+	req.PropertyType = trimStringPointer(req.PropertyType)
+	req.Name = strings.TrimSpace(req.Name)
+	req.ShortName = trimStringPointer(req.ShortName)
+	req.Inn = trimStringPointer(req.Inn)
+	req.Kpp = trimStringPointer(req.Kpp)
+	req.RegisteredAddress = trimStringPointer(req.RegisteredAddress)
+	req.Address = trimStringPointer(req.Address)
+	req.LeaderFullName = trimStringPointer(req.LeaderFullName)
+	req.ManagerName = trimStringPointer(req.ManagerName)
+	req.LeaderPosition = trimStringPointer(req.LeaderPosition)
+	req.ContractPhone = trimStringPointer(req.ContractPhone)
+	req.ContractEmail = trimStringPointer(req.ContractEmail)
+	req.ActingBasis = trimStringPointer(req.ActingBasis)
+
+	if req.Name == "" {
+		return ErrOrganizationNameRequired
+	}
+
+	propertyType, err := normalizeOrganizationPropertyType(firstNonEmptyStringPointer(req.PropertyType, req.Type))
+	if err != nil {
+		return err
+	}
+	req.Type = propertyType
+	req.PropertyType = stringPointer(propertyType)
+
+	if req.ContractEmail != nil && !looksLikeEmail(*req.ContractEmail) {
+		return ErrInvalidEmail
+	}
+
+	return nil
+}
+
+func normalizeStructureNodeRequest(req *StructureNodeRequest, allowDivision bool, snapshot *sessionSnapshot, nameRequiredErr error) error {
+	req.Type = strings.TrimSpace(req.Type)
+	req.Name = strings.TrimSpace(req.Name)
+	req.Code = trimStringPointer(req.Code)
+	req.Region = trimStringPointer(req.Region)
+	req.Address = trimStringPointer(req.Address)
+	req.RegisteredAddress = trimStringPointer(req.RegisteredAddress)
+	req.LeaderFullName = trimStringPointer(req.LeaderFullName)
+	req.ManagerName = trimStringPointer(req.ManagerName)
+	req.LeaderPosition = trimStringPointer(req.LeaderPosition)
+	req.ContractPhone = trimStringPointer(req.ContractPhone)
+	req.ContractEmail = trimStringPointer(req.ContractEmail)
+	req.ActingBasis = trimStringPointer(req.ActingBasis)
+	req.Contacts = trimStringPointer(req.Contacts)
+	req.Comment = trimStringPointer(req.Comment)
+	req.DivisionID = trimStringPointer(req.DivisionID)
+
+	if req.Name == "" {
+		return nameRequiredErr
+	}
+
+	if allowDivision {
+		if req.Type == "" {
+			return ErrUnitTypeRequired
+		}
+		if _, ok := allowedUnitTypes[req.Type]; !ok {
+			return ErrStructureTypeInvalid
+		}
+	} else {
+		req.Type = defaultDivisionType
+	}
+
+	if req.ContractEmail != nil && !looksLikeEmail(*req.ContractEmail) {
+		return ErrInvalidEmail
+	}
+	if req.DivisionID != nil {
+		if !allowDivision {
+			return ErrDivisionTargetInvalid
+		}
+		if _, err := uuid.Parse(*req.DivisionID); err != nil {
+			return ErrDivisionTargetInvalid
+		}
+		if !scopeExistsInSnapshot(snapshot, "division", *req.DivisionID) {
+			return ErrDivisionTargetInvalid
+		}
+	}
+
+	return nil
+}
+
+func normalizeOrganizationPropertyType(value string) (string, error) {
+	normalized := strings.ToUpper(strings.TrimSpace(value))
+	switch normalized {
+	case "":
+		return "", ErrPropertyTypeRequired
+	case "LLC":
+		normalized = "ООО"
+	case "ОАО":
+		normalized = "ПАО"
+	case "ЗАО":
+		normalized = "АО"
+	}
+	if _, ok := allowedOrganizationPropertyTypes[normalized]; !ok {
+		return "", ErrPropertyTypeInvalid
+	}
+	return normalized, nil
+}
+
+func firstNonEmptyStringPointer(value *string, fallback string) string {
+	if value != nil && strings.TrimSpace(*value) != "" {
+		return *value
+	}
+	return fallback
+}
+
+func parseRequiredUUID(value string) (uuid.UUID, error) {
+	parsed, err := uuid.Parse(strings.TrimSpace(value))
+	if err != nil {
+		return uuid.Nil, ErrInvalidID
+	}
+	return parsed, nil
+}
+
+func trimStringPointer(value *string) *string {
+	if value == nil {
+		return nil
+	}
+	trimmed := strings.TrimSpace(*value)
+	if trimmed == "" {
+		return nil
+	}
+	return &trimmed
+}
+
+func coalesceStringPointer(primary *string, fallback *string) *string {
+	if primary != nil && strings.TrimSpace(*primary) != "" {
+		return primary
+	}
+	return fallback
 }
 
 func (s *service) mapEmployeeInvite(ctx context.Context, snapshot *sessionSnapshot, invite *generated.AuthEmployeeInvite) *EmployeeInviteResponse {
@@ -740,19 +1066,19 @@ func (s *service) resolveScopeLabel(ctx context.Context, organizationID pgtype.U
 	switch scopeType {
 	case "organization":
 		return organizationName
-	case "subdivision":
+	case "division":
 		if snapshot != nil {
-			for _, subdivision := range snapshot.Subdivisions {
-				if samePGUUID(subdivision.ID, scopeID) {
-					return subdivision.Name
+			for _, division := range snapshot.Divisions {
+				if samePGUUID(division.ID, scopeID) {
+					return division.Name
 				}
 			}
 		}
-		subdivisions, err := s.queries.ListAuthSubdivisionsByOrganization(ctx, organizationID)
+		divisions, err := s.queries.ListAuthDivisionsByOrganization(ctx, organizationID)
 		if err == nil {
-			for _, subdivision := range subdivisions {
-				if samePGUUID(subdivision.ID, scopeID) {
-					return subdivision.Name
+			for _, division := range divisions {
+				if samePGUUID(division.ID, scopeID) {
+					return division.Name
 				}
 			}
 		}
