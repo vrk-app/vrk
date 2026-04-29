@@ -231,6 +231,7 @@ def connect_db() -> psycopg.Connection:
         dbname=env("DB_NAME", "db"),
         user=env("DB_USER", "postgres"),
         password=env("DB_PASSWORD", "postgres"),
+        sslmode=env("DB_SSL_MODE", "disable"),
     )
 
 
