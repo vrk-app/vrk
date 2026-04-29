@@ -15,8 +15,8 @@ from psycopg.types.json import Jsonb
 
 
 DEV_SEED_KEY = "vrk-local-dev-seed"
-DEV_SEED_VERSION = "2026-04-29.1"
-ADMIN_PASSWORD = "vrk-dev-admin-secret"
+DEV_SEED_VERSION = "2026-04-29.2"
+ADMIN_PASSWORD = "vrk-dev-admin-2026!"
 
 ADMIN_EMAIL = f"admin+{DEV_SEED_VERSION.replace('.', '-')}@vrk.local"
 ADMIN_NAME = "Анна Волкова"
