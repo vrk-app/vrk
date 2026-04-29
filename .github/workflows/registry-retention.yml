@@ -1,0 +1,59 @@
+name: registry-retention
+
+on:
+  schedule:
+    - cron: "35 2 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Run without deleting images"
+        type: boolean
+        default: true
+      keep_autogen_images:
+        description: "Recent sha-tagged images to keep per repository"
+        type: number
+        default: 20
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup:
+    name: Cleanup old registry images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yc CLI
+        run: |
+          curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash -s -- -i /tmp/yc -n
+          echo "/tmp/yc/bin" >> "$GITHUB_PATH"
+
+      - name: Configure yc CLI
+        env:
+          YC_SA_JSON_CREDENTIALS: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+          YC_FOLDER_ID: ${{ secrets.YC_FOLDER_ID }}
+        run: |
+          printf '%s' "$YC_SA_JSON_CREDENTIALS" > /tmp/sa.json
+          yc config set service-account-key /tmp/sa.json
+          yc config set folder-id "$YC_FOLDER_ID"
+
+      - name: Run retention cleanup
+        env:
+          YC_REGISTRY_ID: ${{ secrets.YC_REGISTRY_ID }}
+          EVENT_NAME: ${{ github.event_name }}
+          DRY_RUN_INPUT: ${{ github.event.inputs.dry_run || 'false' }}
+          KEEP_AUTOGEN_INPUT: ${{ github.event.inputs.keep_autogen_images || '20' }}
+        run: |
+          set -euo pipefail
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            export DRY_RUN="$DRY_RUN_INPUT"
+            export KEEP_AUTOGEN_IMAGES="$KEEP_AUTOGEN_INPUT"
+          else
+            export DRY_RUN="false"
+            export KEEP_AUTOGEN_IMAGES="20"
+          fi
+
+          chmod +x scripts/yc_registry_retention.sh
+          scripts/yc_registry_retention.sh
