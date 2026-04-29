@@ -78,24 +78,24 @@ func (h *EquipmentHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Failure      404      {object}  Response  "Оборудование не найдено"
 // @Failure      500      {object}  Response  "Внутренняя ошибка сервера"
 // @Router       /equipment/{id} [put]
-func (h *EquipmentHandler) Update(w http.ResponseWriter, r *http.Request) {
-    id := chi.URLParam(r, "id")
-    if id == "" {
-        sendError(w, http.StatusBadRequest, "ID is required")
-        return
-    }
-    var req UpdateRequest
-    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-        sendError(w, http.StatusBadRequest, "Invalid request body")
-        return
-    }
-    resp, err := h.service.Update(r.Context(), id, req)
-    if err != nil {
-        sendError(w, http.StatusInternalServerError, err.Error())
-        return
-    }
-    sendSuccess(w, http.StatusOK, resp, nil)
-}
+// func (h *EquipmentHandler) Update(w http.ResponseWriter, r *http.Request) {
+//     id := chi.URLParam(r, "id")
+//     if id == "" {
+//         sendError(w, http.StatusBadRequest, "ID is required")
+//         return
+//     }
+//     var req UpdateRequest
+//     if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+//         sendError(w, http.StatusBadRequest, "Invalid request body")
+//         return
+//     }
+//     resp, err := h.service.Update(r.Context(), id, req)
+//     if err != nil {
+//         sendError(w, http.StatusInternalServerError, err.Error())
+//         return
+//     }
+//     sendSuccess(w, http.StatusOK, resp, nil)
+// }
 
 // Delete удаляет оборудование
 // @Summary      Удалить оборудование

@@ -67,11 +67,11 @@ type ApplicationType struct {
 
 type Equipment struct {
 	ID                    pgtype.UUID        `json:"id"`
+	ManufacturerID        pgtype.UUID        `json:"manufacturerId"`
+	EquipmentDictionaryID pgtype.UUID        `json:"equipmentDictionaryId"`
 	FactoryNumber         string             `json:"factoryNumber"`
 	InventoryNumber       *string            `json:"inventoryNumber"`
 	ManufactureYear       pgtype.Date        `json:"manufactureYear"`
-	RegistrationYear      pgtype.Date        `json:"registrationYear"`
-	EquipmentDictionaryID pgtype.UUID        `json:"equipmentDictionaryId"`
 	OrganizationID        pgtype.UUID        `json:"organizationId"`
 	StatusID              int16              `json:"statusId"`
 	CreatedAt             pgtype.Timestamptz `json:"createdAt"`
@@ -79,21 +79,26 @@ type Equipment struct {
 }
 
 type EquipmentDictionary struct {
-	ID                  pgtype.UUID        `json:"id"`
-	Manufacturer        string             `json:"manufacturer"`
-	ClassificationID    pgtype.UUID        `json:"classificationId"`
-	FullName            string             `json:"fullName"`
-	Model               string             `json:"model"`
-	IsMetrological      bool               `json:"isMetrological"`
-	FifRegistration     *string            `json:"fifRegistration"`
-	TechnicalConditions *string            `json:"technicalConditions"`
-	CreatedAt           pgtype.Timestamptz `json:"createdAt"`
+	ID                               pgtype.UUID        `json:"id"`
+	FullName                         string             `json:"fullName"`
+	Model                            string             `json:"model"`
+	MeasuringInstrumentsDictionaryID pgtype.UUID        `json:"measuringInstrumentsDictionaryId"`
+	CreatedAt                        pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt                        pgtype.Timestamptz `json:"updatedAt"`
 }
 
 type EquipmentStatus struct {
-	ID        int16              `json:"id"`
+	ID        int32              `json:"id"`
 	Status    string             `json:"status"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt"`
+}
+
+type Manufacturer struct {
+	ID               pgtype.UUID        `json:"id"`
+	Name             string             `json:"name"`
+	ClassificationID int32              `json:"classificationId"`
+	CreatedAt        pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt        pgtype.Timestamptz `json:"updatedAt"`
 }
 
 type Material struct {
@@ -115,28 +120,27 @@ type MaterialsServiceType struct {
 
 type MeasuringInstrument struct {
 	ID                           pgtype.UUID        `json:"id"`
-	RegistryNumber               string             `json:"registryNumber"`
-	MetrologicalOperationTypeID  pgtype.UUID        `json:"metrologicalOperationTypeId"`
-	CertificateNumber            string             `json:"certificateNumber"`
+	EquipmentID                  pgtype.UUID        `json:"equipmentId"`
+	MetrologicalOperationTypeID  *int32             `json:"metrologicalOperationTypeId"`
+	CertificateNumber            *string            `json:"certificateNumber"`
 	LastOperationDate            pgtype.Date        `json:"lastOperationDate"`
 	NextOperationDate            pgtype.Date        `json:"nextOperationDate"`
-	DocumentProviderOrganization string             `json:"documentProviderOrganization"`
-	DocumentUrl                  string             `json:"documentUrl"`
-	StandardID                   pgtype.UUID        `json:"standardId"`
-	OrganizationID               pgtype.UUID        `json:"organizationId"`
+	DocumentProviderOrganization *string            `json:"documentProviderOrganization"`
+	DocumentUrl                  *string            `json:"documentUrl"`
 	CreatedAt                    pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt                    pgtype.Timestamptz `json:"updatedAt"`
 }
 
-type MeasuringInstrumentsStandard struct {
-	ID                    pgtype.UUID        `json:"id"`
-	MeasuringInstrumentID pgtype.UUID        `json:"measuringInstrumentId"`
-	StandardID            pgtype.UUID        `json:"standardId"`
-	CreatedAt             pgtype.Timestamptz `json:"createdAt"`
+type MeasuringInstrumentsDictionary struct {
+	ID                          pgtype.UUID        `json:"id"`
+	RegistryNumber              string             `json:"registryNumber"`
+	MetrologicalOperationTypeID *int32             `json:"metrologicalOperationTypeId"`
+	CreatedAt                   pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt                   pgtype.Timestamptz `json:"updatedAt"`
 }
 
 type MetrologicalType struct {
-	ID                        pgtype.UUID        `json:"id"`
+	ID                        int32              `json:"id"`
 	MetrologicalOperationType string             `json:"metrologicalOperationType"`
 	CreatedAt                 pgtype.Timestamptz `json:"createdAt"`
 }
@@ -205,26 +209,34 @@ type Schedule struct {
 type ServiceType struct {
 	ID                    pgtype.UUID        `json:"id"`
 	Name                  string             `json:"name"`
-	UsageClassificationID pgtype.UUID        `json:"usageClassificationId"`
+	UsageClassificationID int32              `json:"usageClassificationId"`
 	NormHourAmount        int32              `json:"normHourAmount"`
 	CreatedAt             pgtype.Timestamptz `json:"createdAt"`
 }
 
 type Standard struct {
 	ID                           pgtype.UUID        `json:"id"`
-	Model                        string             `json:"model"`
-	CertificateNumber            string             `json:"certificateNumber"`
+	EquipmentID                  pgtype.UUID        `json:"equipmentId"`
+	CertificateNumber            *string            `json:"certificateNumber"`
 	LastOperationDate            pgtype.Date        `json:"lastOperationDate"`
 	NextOperationDate            pgtype.Date        `json:"nextOperationDate"`
-	DocumentProviderOrganization string             `json:"documentProviderOrganization"`
-	DocumentUrl                  string             `json:"documentUrl"`
-	MetrologicalCharacteristics  string             `json:"metrologicalCharacteristics"`
+	DocumentProviderOrganization *string            `json:"documentProviderOrganization"`
+	DocumentUrl                  *string            `json:"documentUrl"`
+	MetrologicalCharacteristics  *string            `json:"metrologicalCharacteristics"`
 	CreatedAt                    pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt                    pgtype.Timestamptz `json:"updatedAt"`
 }
 
+type StandardsDictionary struct {
+	ID                               pgtype.UUID        `json:"id"`
+	MeasuringInstrumentsDictionaryID pgtype.UUID        `json:"measuringInstrumentsDictionaryId"`
+	Model                            string             `json:"model"`
+	CreatedAt                        pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt                        pgtype.Timestamptz `json:"updatedAt"`
+}
+
 type UsageClassification struct {
-	ID             pgtype.UUID        `json:"id"`
+	ID             int32              `json:"id"`
 	Classification string             `json:"classification"`
 	CreatedAt      pgtype.Timestamptz `json:"createdAt"`
 }

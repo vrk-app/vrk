@@ -12,5 +12,7 @@ DROP TABLE IF EXISTS warehouses CASCADE;
 DROP TABLE IF EXISTS equipment_dictionaries CASCADE;
 DROP TABLE IF EXISTS equipment_status CASCADE;
 DROP TABLE IF EXISTS usage_classifications CASCADE;
+DROP TABLE IF EXISTS measuring_instruments_dictionaries CASCADE;
+DROP TABLE IF EXISTS standards_dictionaries CASCADE;
 
 COMMIT;

@@ -17,8 +17,12 @@ import (
 	"backend/internal/auth/organization"
 	"backend/internal/db/generated"
 	"backend/internal/equipment/equipment"
-	"backend/internal/equipment/measuringinstrument"
-	"backend/internal/equipment/standard"
+	"backend/internal/equipment/manufacturer"
+	"backend/internal/equipment/equipmentdictionary"
+	"backend/internal/equipment/usageclassification"
+    "backend/internal/equipment/metrologicaltype"
+	// "backend/internal/equipment/measuringinstrument"
+	// "backend/internal/equipment/standard"
 	"backend/internal/infrastructure/config"
 	"backend/internal/infrastructure/db"
 )
@@ -65,18 +69,34 @@ func New(cfg *config.Config) (*App, error) {
 	eqHandler := equipment.NewHandler(eqService)
 
 	// Standard
-	stdRepo := standard.NewRepository(queries)
-	stdService := standard.NewService(stdRepo)
-	stdHandler := standard.NewHandler(stdService)
+	// stdRepo := standard.NewRepository(queries)
+	// stdService := standard.NewService(stdRepo)
+	// stdHandler := standard.NewHandler(stdService)
 
-	// Measuring Instrument
-	miRepo := measuringinstrument.NewRepository(queries)
-	miService := measuringinstrument.NewService(miRepo)
-	miHandler := measuringinstrument.NewHandler(miService)
+	// // Measuring Instrument
+	// miRepo := measuringinstrument.NewRepository(queries)
+	// miService := measuringinstrument.NewService(miRepo)
+	// miHandler := measuringinstrument.NewHandler(miService)
 
 	agreementRepo := agreement.NewRepository(queries)
 	agreementService := agreement.NewService(agreementRepo)
 	agreementHandler := agreement.NewHandler(agreementService)
+
+	manufacturerRepo := manufacturer.NewRepository(queries)
+	manufacturerService := manufacturer.NewService(manufacturerRepo)
+	manufacturerHandler := manufacturer.NewHandler(manufacturerService)
+
+	equipDictRepo := equipmentdictionary.NewRepository(queries)
+	equipDictService := equipmentdictionary.NewService(equipDictRepo)
+	equipDictHandler := equipmentdictionary.NewHandler(equipDictService)
+
+	usageClassRepo := usageclassification.NewRepository(queries)
+	usageClassService := usageclassification.NewService(usageClassRepo)
+	usageClassHandler := usageclassification.NewHandler(usageClassService)
+
+	metrologicalTypeRepo := metrologicaltype.NewRepository(queries)
+	metrologicalTypeService := metrologicaltype.NewService(metrologicalTypeRepo)
+	metrologicalTypeHandler := metrologicaltype.NewHandler(metrologicalTypeService)
 
 	// router
 	router := chi.NewRouter()
@@ -108,7 +128,7 @@ func New(cfg *config.Config) (*App, error) {
 	}
 
 	// Routes
-	app.registerRoutes(orgHandler, eqHandler, stdHandler, miHandler, agreementHandler)
+	app.registerRoutes(orgHandler, eqHandler, agreementHandler, manufacturerHandler, equipDictHandler, usageClassHandler, metrologicalTypeHandler)
 
 	return app, nil
 }
@@ -116,9 +136,11 @@ func New(cfg *config.Config) (*App, error) {
 func (a *App) registerRoutes(
 	organizationHandler *organization.OrganizationHandler,
 	eqHandler *equipment.EquipmentHandler,
-	stdHandler *standard.StandardHandler,
-	miHandler *measuringinstrument.MeasuringInstrumentHandler,
 	agreementHandler *agreement.AgreementHandler,
+	manufacturerHandler *manufacturer.ManufacturerHandler,
+	equipDictHandler *equipmentdictionary.Handler,
+	usageClassHandler *usageclassification.Handler,
+	metrologicalTypeHandler *metrologicaltype.Handler,
 ) {
 	// Health/readiness вынесены из `/api/v1`, чтобы compose, CI и внешние
 	// health probes могли проверять процесс и БД без зависимости от business API.
@@ -144,36 +166,66 @@ func (a *App) registerRoutes(
 			r.Get("/", eqHandler.List)
 			r.Post("/", eqHandler.Create)
 			r.Get("/{id}", eqHandler.GetByID)
-			r.Patch("/{id}", eqHandler.Update)
+		//	r.Patch("/{id}", eqHandler.Update)
 			r.Delete("/{id}", eqHandler.Delete)
 		})
 
-		// Standards
-		r.Route("/standards", func(r chi.Router) {
-			r.Get("/", stdHandler.List)
-			r.Post("/", stdHandler.Create)
-			r.Get("/{id}", stdHandler.GetByID)
-			r.Patch("/{id}", stdHandler.Update)
-			r.Delete("/{id}", stdHandler.Delete)
+		r.Route("/manufacturers", func(r chi.Router) {
+			r.Get("/", manufacturerHandler.List)
+			r.Post("/", manufacturerHandler.Create)
+			r.Get("/{id}", manufacturerHandler.GetByID)
+			r.Put("/{id}", manufacturerHandler.Update)
+			r.Delete("/{id}", manufacturerHandler.Delete)
 		})
+
+		r.Route("/equipment-dictionaries", func(r chi.Router) {
+			r.Get("/", equipDictHandler.List)
+			r.Post("/", equipDictHandler.Create)
+			r.Get("/{id}", equipDictHandler.GetByID)
+			r.Put("/{id}", equipDictHandler.Update)
+			r.Delete("/{id}", equipDictHandler.Delete)
+		})
+
+		r.Route("/usage-classifications", func(r chi.Router) {
+			r.Get("/", usageClassHandler.List)
+			r.Post("/", usageClassHandler.Create)
+			r.Get("/{id}", usageClassHandler.GetByID)
+			r.Delete("/{id}", usageClassHandler.Delete)
+		})
+
+		r.Route("/metrological-types", func(r chi.Router) {
+			r.Get("/", metrologicalTypeHandler.List)
+			r.Post("/", metrologicalTypeHandler.Create)
+			r.Get("/{id}", metrologicalTypeHandler.GetByID)
+			r.Delete("/{id}", metrologicalTypeHandler.Delete)
+		})
+
+		// Standards
+		// r.Route("/standards", func(r chi.Router) {
+		// 	r.Get("/", stdHandler.List)
+		// 	r.Post("/", stdHandler.Create)
+		// 	r.Get("/{id}", stdHandler.GetByID)
+		// 	r.Patch("/{id}", stdHandler.Update)
+		// 	r.Delete("/{id}", stdHandler.Delete)
+		// })
 
 		// Measuring Instruments
-		r.Route("/measuring-instruments", func(r chi.Router) {
-			r.Get("/", miHandler.List)
-			r.Post("/", miHandler.Create)
-			r.Get("/{id}", miHandler.GetByID)
-			r.Patch("/{id}", miHandler.Update)
-			r.Delete("/{id}", miHandler.Delete)
-		})
+		// r.Route("/measuring-instruments", func(r chi.Router) {
+		// 	r.Get("/", miHandler.List)
+		// 	r.Post("/", miHandler.Create)
+		// 	r.Get("/{id}", miHandler.GetByID)
+		// 	r.Patch("/{id}", miHandler.Update)
+		// 	r.Delete("/{id}", miHandler.Delete)
+		// })
 
 		// Agreements
-		r.Route("/agreements", func(r chi.Router) {
-			r.Get("/", agreementHandler.List)
-			r.Post("/", agreementHandler.Create)
-			r.Get("/{id}", agreementHandler.GetByID)
-			r.Put("/{id}", agreementHandler.Update)
-			r.Delete("/{id}", agreementHandler.Delete)
-		})
+		// r.Route("/agreements", func(r chi.Router) {
+		// 	r.Get("/", agreementHandler.List)
+		// 	r.Post("/", agreementHandler.Create)
+		// 	r.Get("/{id}", agreementHandler.GetByID)
+		// 	r.Put("/{id}", agreementHandler.Update)
+		// 	r.Delete("/{id}", agreementHandler.Delete)
+		// })
 	})
 }
 
