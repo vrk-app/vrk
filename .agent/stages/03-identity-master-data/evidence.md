@@ -336,6 +336,17 @@ Newton doc-drift fixer update: `docs/roadmap.md`, `docs/design/customer-admin-bo
   - `stage03-slice010-company-org-structure-correction`.
 - Newton doc-drift fixer refreshed `evidence.md`, `evidence.json`, `progress.md`, and raw note only. It did not edit `feature_list.json`, `verdict.json`, or `problems.md`.
 
+## Incubator Seed Promotion Note
+
+- During Incubator seed promotion on 2026-04-29, the public Yandex Serverless Container endpoint returned a cloud-front `403` for protected backend calls carrying `Authorization: Bearer ...`.
+- Runtime fix:
+  - backend protected handlers accept `X-VRK-Session-Token` in addition to `Authorization: Bearer`;
+  - web server proxies and server-side backend clients use `X-VRK-Session-Token`;
+  - `scripts/dev_seed.py` uses `X-VRK-Session-Token` for session-authenticated API calls.
+- Canonical docs synced:
+  - `docs/architecture/platform-runtime-baseline.md`;
+  - `docs/architecture/yandex-cloud-incubator-deployment.md`.
+
 ## Remaining Verifier Requirements
 
 - Newton reported documentation drift only on the legal-type correction. The three reported canonical doc/diagram gaps are fixed and ready for a new fresh verifier to own `verdict.json` / `problems.md`.

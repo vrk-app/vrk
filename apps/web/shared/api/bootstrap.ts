@@ -1,4 +1,5 @@
 export const SESSION_COOKIE_NAME = "vrk_session";
+export const SESSION_TOKEN_HEADER_NAME = "X-VRK-Session-Token";
 
 export type ScopeType = "organization" | "division" | "unit";
 

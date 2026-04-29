@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { BackendError, fetchBackend } from "./backend";
-import type { SessionSummaryResponse } from "./bootstrap";
+import { SESSION_TOKEN_HEADER_NAME, type SessionSummaryResponse } from "./bootstrap";
 
 export const fetchSessionSummary = cache(async (sessionToken: string | undefined) => {
   if (!sessionToken) {
@@ -10,7 +10,7 @@ export const fetchSessionSummary = cache(async (sessionToken: string | undefined
   try {
     const result = await fetchBackend<SessionSummaryResponse>("/api/v1/sessions/current", {
       headers: {
-        Authorization: `Bearer ${sessionToken}`,
+        [SESSION_TOKEN_HEADER_NAME]: sessionToken,
       },
     });
 

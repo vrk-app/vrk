@@ -296,6 +296,11 @@ func writeServiceError(w http.ResponseWriter, err error) {
 }
 
 func readBearerToken(r *http.Request) (string, error) {
+	const sessionTokenHeader = "X-VRK-Session-Token"
+	if token := strings.TrimSpace(r.Header.Get(sessionTokenHeader)); token != "" {
+		return token, nil
+	}
+
 	header := strings.TrimSpace(r.Header.Get("Authorization"))
 	if header == "" {
 		return "", ErrUnauthorized

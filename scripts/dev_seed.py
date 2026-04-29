@@ -196,7 +196,7 @@ def request_json(
         headers["Content-Type"] = "application/json"
         data = json.dumps(body, ensure_ascii=False).encode("utf-8")
     if token is not None:
-        headers["Authorization"] = f"Bearer {token}"
+        headers["X-VRK-Session-Token"] = token
     if platform_admin:
         headers["X-VRK-Platform-Admin-Secret"] = PLATFORM_ADMIN_SECRET
 

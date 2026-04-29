@@ -11,6 +11,7 @@
 
 - root `make dev` поднимает `db`, `migrate`, backend, `apps/web`, `apps/field`, дожидается container health через compose `--wait`, а затем запускает one-shot `dev-seed`;
 - `dev-seed` создает локальную demo organization через backend API, а не через бизнес-данные в миграциях: first-admin invite, accept, `/company/profile`, `/company/divisions`, `/company/units`;
+- session-authenticated API calls accept both local `Authorization: Bearer <token>` and deployment-safe `X-VRK-Session-Token: <token>`; web server proxies and `dev-seed` use the latter so the same flow works behind Yandex Serverless Container public endpoints;
 - `dev-seed` печатает URL, email/password, organization id, 3 филиала и 9 юнитов в stdout, а полный локальный результат сохраняет в gitignored `.local/dev-seed.json` с правами `0600`;
 - таблица `dev_seed_runs` хранит только marker/idempotency metadata и non-secret result JSON; пароль не пишется в БД;
 - root `make smoke` проверяет:
@@ -72,6 +73,7 @@ flowchart LR
 
 - Если локально уже заняты стандартные frontend ports, compose не должен ломаться: используются отдельные host defaults `3100` и `3102`.
 - `make dev-seed` можно запускать отдельно после поднятого stack; при уже успешной версии он не создает дубли и переписывает `.local/dev-seed.json` из marker metadata.
+- `X-VRK-Session-Token` is the preferred app-session header for server-to-backend calls in deployed serverless environments; `Authorization: Bearer` remains supported for local Compose, smoke tests, and backward compatibility.
 - Agent-driven feature work must use the existing compose-backed runtime on `localhost:3100` for web verification. Do not start ad-hoc `next dev`, `pnpm dev`, `storybook dev`, static preview servers, or separate feature instances unless the user explicitly requests a dev server / separate instance in the prompt.
 - Для локального `pnpm run web:smoke` нужен установленный Playwright Chromium; первый прогон на новой машине делайте через `pnpm run web:browser-install`.
 - `make down` подходит для обычной остановки stack; если нужно заново доказать исходный seeded floor без влияния предыдущих записей или failed seed marker, сначала запускайте `make clean`.

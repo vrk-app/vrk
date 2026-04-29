@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { BackendError, fetchBackend } from "./backend";
 import type { ApiMeta } from "./bootstrap";
-import { SESSION_COOKIE_NAME } from "./bootstrap";
+import { SESSION_COOKIE_NAME, SESSION_TOKEN_HEADER_NAME } from "./bootstrap";
 
 const PLATFORM_ADMIN_HEADER_NAME = "X-VRK-Platform-Admin-Secret";
 
@@ -98,7 +98,7 @@ export async function proxySessionBackend<T>(path: string, options: ProxyOptions
 
   try {
     const headers = new Headers(options.headers);
-    headers.set("Authorization", `Bearer ${token}`);
+    headers.set(SESSION_TOKEN_HEADER_NAME, token);
     const init = await buildProxyInit({
       ...options,
       headers,

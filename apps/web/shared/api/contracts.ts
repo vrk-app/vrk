@@ -1,4 +1,5 @@
 import { fetchBackend } from "./backend";
+import { SESSION_TOKEN_HEADER_NAME } from "./bootstrap";
 
 export type ContractStatus = "inactive" | "active" | "expired";
 export type WorkType = "repair" | "maintenance" | "verification";
@@ -52,7 +53,7 @@ export type RoutingResolveResult = {
 
 function sessionHeaders(sessionToken: string) {
   return {
-    Authorization: `Bearer ${sessionToken}`,
+    [SESSION_TOKEN_HEADER_NAME]: sessionToken,
   };
 }
 

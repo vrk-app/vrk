@@ -581,5 +581,23 @@
     "divisions": 3,
     "units": 9,
     "passwordStoredInDatabase": false
+  },
+  "incubator_session_header": {
+    "status": "IMPLEMENTED",
+    "checked_at": "2026-04-29T11:05:00+03:00",
+    "reason": "Yandex Serverless Container public endpoints can intercept Authorization before protected backend requests reach the container.",
+    "backend_accepts": [
+      "X-VRK-Session-Token",
+      "Authorization: Bearer"
+    ],
+    "incubator_callers": [
+      "apps/web server proxies",
+      "apps/web server-side backend clients",
+      "scripts/dev_seed.py"
+    ],
+    "docs_synced": [
+      "docs/architecture/platform-runtime-baseline.md",
+      "docs/architecture/yandex-cloud-incubator-deployment.md"
+    ]
   }
 }
