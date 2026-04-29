@@ -23,6 +23,11 @@
 | CI deployer SA | `vrk-deployer` |
 | Runtime container SA | `vrk-container-sa` |
 
+Required IAM roles:
+
+- `vrk-deployer`: `container-registry.images.pusher`, `container-registry.images.puller`, `lockbox.payloadViewer`, `iam.serviceAccounts.user`, `serverless.containers.admin`.
+- `vrk-container-sa`: `container-registry.images.puller`, `lockbox.payloadViewer`, `logging.writer`.
+
 Cost guardrails:
 
 - PostgreSQL uses the smallest available low-memory preset observed in the current folder (`b1.medium`) with the minimum 10 GB `network-hdd` disk.
