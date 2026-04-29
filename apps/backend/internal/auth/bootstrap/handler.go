@@ -3,7 +3,10 @@ package bootstrap
 import (
 	"encoding/json"
 	"errors"
+	"io"
+	"mime"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
@@ -389,7 +392,107 @@ func (h *Handler) UpdateCompanyProfile(w http.ResponseWriter, r *http.Request) {
 	sendSuccess(w, http.StatusOK, resp)
 }
 
-// CreateDivision creates a division or branch at organization scope.
+// UploadCompanyLogo replaces the current organization logo.
+// @Summary      Upload company logo
+// @Description  Stores the current organization logo in private object storage and keeps only object metadata in Postgres.
+// @Tags         company
+// @Accept       multipart/form-data
+// @Produce      json
+// @Param        logo formData file true "Logo file"
+// @Success      200  {object}  Response{data=SessionSummaryResponse}
+// @Failure      400  {object}  Response
+// @Failure      401  {object}  Response
+// @Failure      403  {object}  Response
+// @Failure      503  {object}  Response
+// @Router       /company/logo [post]
+func (h *Handler) UploadCompanyLogo(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	r.Body = http.MaxBytesReader(w, r.Body, maxLogoSizeBytes+(512*1024))
+	file, header, err := r.FormFile("logo")
+	if err != nil {
+		sendError(w, http.StatusBadRequest, ErrLogoRequired.Error())
+		return
+	}
+	defer file.Close()
+
+	resp, err := h.service.UploadCompanyLogo(r.Context(), token, header.Filename, header.Header.Get("Content-Type"), file)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp)
+}
+
+// GetCompanyLogo streams the current organization logo.
+// @Summary      Stream company logo
+// @Description  Streams the private object-storage-backed logo for the authenticated current organization.
+// @Tags         company
+// @Produce      octet-stream
+// @Success      200
+// @Failure      401  {object}  Response
+// @Failure      404  {object}  Response
+// @Failure      503  {object}  Response
+// @Router       /company/logo [get]
+func (h *Handler) GetCompanyLogo(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	logo, err := h.service.GetCompanyLogo(r.Context(), token)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	defer logo.Body.Close()
+
+	if logo.ContentType != "" {
+		w.Header().Set("Content-Type", logo.ContentType)
+	}
+	if logo.Size > 0 {
+		w.Header().Set("Content-Length", strconv.FormatInt(logo.Size, 10))
+	}
+	if logo.FileName != "" {
+		w.Header().Set("Content-Disposition", mime.FormatMediaType("inline", map[string]string{"filename": logo.FileName}))
+	}
+	w.WriteHeader(http.StatusOK)
+	_, _ = io.Copy(w, logo.Body)
+}
+
+// DeleteCompanyLogo deletes the current organization logo.
+// @Summary      Delete company logo
+// @Description  Removes logo object metadata from Postgres and deletes the private object when present.
+// @Tags         company
+// @Produce      json
+// @Success      200  {object}  Response{data=SessionSummaryResponse}
+// @Failure      401  {object}  Response
+// @Failure      403  {object}  Response
+// @Failure      503  {object}  Response
+// @Router       /company/logo [delete]
+func (h *Handler) DeleteCompanyLogo(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	resp, err := h.service.DeleteCompanyLogo(r.Context(), token)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp)
+}
+
+// CreateDivision creates a division at organization scope.
 // @Summary      Create company division
 // @Description  Creates the first or later active division from the persistent company management surface.
 // @Tags         company
@@ -713,7 +816,7 @@ func sendError(w http.ResponseWriter, status int, message string) {
 
 func writeServiceError(w http.ResponseWriter, err error) {
 	switch {
-	case errors.Is(err, ErrInviteNotFound), errors.Is(err, ErrEmployeeAccessNotFound):
+	case errors.Is(err, ErrInviteNotFound), errors.Is(err, ErrEmployeeAccessNotFound), errors.Is(err, ErrLogoNotFound):
 		sendError(w, http.StatusNotFound, err.Error())
 	case errors.Is(err, ErrDivisionNotFound), errors.Is(err, ErrUnitNotFound):
 		sendError(w, http.StatusNotFound, err.Error())
@@ -753,18 +856,29 @@ func writeServiceError(w http.ResponseWriter, err error) {
 		errors.Is(err, ErrPropertyTypeInvalid),
 		errors.Is(err, ErrInnRequired),
 		errors.Is(err, ErrKppRequired),
+		errors.Is(err, ErrInnInvalid),
+		errors.Is(err, ErrKppInvalid),
+		errors.Is(err, ErrOgrnInvalid),
+		errors.Is(err, ErrBankAccountInvalid),
+		errors.Is(err, ErrBikInvalid),
 		errors.Is(err, ErrLegalAddressRequired),
 		errors.Is(err, ErrContactPhoneRequired),
 		errors.Is(err, ErrDivisionNameRequired),
 		errors.Is(err, ErrDivisionTypeRequired),
 		errors.Is(err, ErrUnitNameRequired),
 		errors.Is(err, ErrUnitTypeRequired),
-		errors.Is(err, ErrStructureModeInvalid):
+		errors.Is(err, ErrStructureModeInvalid),
+		errors.Is(err, ErrPasswordWeak),
+		errors.Is(err, ErrLogoRequired),
+		errors.Is(err, ErrLogoInvalidContentType),
+		errors.Is(err, ErrLogoTooLarge):
 		sendError(w, http.StatusBadRequest, err.Error())
 	case errors.Is(err, ErrInvalidID),
 		errors.Is(err, ErrStructureTypeInvalid),
 		errors.Is(err, ErrDivisionTargetInvalid):
 		sendError(w, http.StatusBadRequest, err.Error())
+	case errors.Is(err, ErrObjectStorageUnavailable):
+		sendError(w, http.StatusServiceUnavailable, err.Error())
 	default:
 		sendError(w, http.StatusInternalServerError, err.Error())
 	}

@@ -1,11 +1,19 @@
 package bootstrap
 
 import (
+	"bytes"
 	"context"
+	"errors"
+	"io"
+	"net/http"
+	"path"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"backend/internal/db/generated"
+	"backend/internal/infrastructure/objectstorage"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -17,12 +25,14 @@ const (
 	defaultDivisionType     = "division"
 	inviteLifetime          = 7 * 24 * time.Hour
 	sessionLifetime         = 24 * time.Hour
+	maxLogoSizeBytes        = 2 * 1024 * 1024
 )
 
 var allowedOrganizationPropertyTypes = map[string]struct{}{
 	"ООО": {},
-	"АО":  {},
 	"ПАО": {},
+	"НАО": {},
+	"ИП":  {},
 }
 
 var allowedUnitTypes = map[string]struct{}{
@@ -50,6 +60,9 @@ type Service interface {
 	DeleteSession(ctx context.Context, token string) error
 	CompleteLaunch(ctx context.Context, token string, req CompleteLaunchRequest) (*SessionSummaryResponse, error)
 	UpdateCompanyProfile(ctx context.Context, token string, req CompanyProfileRequest) (*SessionSummaryResponse, error)
+	UploadCompanyLogo(ctx context.Context, token string, fileName string, contentType string, body io.Reader) (*SessionSummaryResponse, error)
+	GetCompanyLogo(ctx context.Context, token string) (*CompanyLogoObject, error)
+	DeleteCompanyLogo(ctx context.Context, token string) (*SessionSummaryResponse, error)
 	CreateDivision(ctx context.Context, token string, req StructureNodeRequest) (*SessionSummaryResponse, error)
 	UpdateDivision(ctx context.Context, token string, divisionID string, req StructureNodeRequest) (*SessionSummaryResponse, error)
 	ArchiveDivision(ctx context.Context, token string, divisionID string) (*SessionSummaryResponse, error)
@@ -61,10 +74,11 @@ type Service interface {
 type service struct {
 	repository Repository
 	queries    *generated.Queries
+	logos      objectstorage.Storage
 }
 
-func NewService(repository Repository, queries *generated.Queries) Service {
-	return &service{repository: repository, queries: queries}
+func NewService(repository Repository, queries *generated.Queries, logos objectstorage.Storage) Service {
+	return &service{repository: repository, queries: queries, logos: logos}
 }
 
 func (s *service) CreateOrganizationShell(ctx context.Context, req CreateOrganizationShellRequest) (*OrganizationShellResponse, error) {
@@ -291,6 +305,9 @@ func (s *service) ListEmployeeInvites(ctx context.Context, token string) ([]Empl
 	result := make([]EmployeeInviteResponse, 0, len(invites))
 	now := time.Now()
 	for _, invite := range invites {
+		if !scopeExistsInSnapshot(snapshot, invite.ScopeType, uuidFromPG(invite.ScopeID).String()) {
+			continue
+		}
 		if invite.ExpiresAt.Valid && invite.ExpiresAt.Time.Before(now) && (invite.Status == "sent" || invite.Status == "opened") {
 			_ = s.repository.MarkEmployeeInviteExpired(ctx, uuidFromPG(invite.ID))
 			invite.Status = "expired"
@@ -317,6 +334,9 @@ func (s *service) SendEmployeeInvite(ctx context.Context, token string, inviteID
 		return nil, err
 	}
 	if !samePGUUID(invite.OrganizationID, snapshot.SessionRow.OrganizationID) {
+		return nil, ErrForbidden
+	}
+	if !scopeExistsInSnapshot(snapshot, invite.ScopeType, uuidFromPG(invite.ScopeID).String()) {
 		return nil, ErrForbidden
 	}
 	if invite.Status != "draft" {
@@ -350,6 +370,9 @@ func (s *service) RevokeEmployeeInvite(ctx context.Context, token string, invite
 		return nil, err
 	}
 	if !samePGUUID(invite.OrganizationID, snapshot.SessionRow.OrganizationID) {
+		return nil, ErrForbidden
+	}
+	if !scopeExistsInSnapshot(snapshot, invite.ScopeType, uuidFromPG(invite.ScopeID).String()) {
 		return nil, ErrForbidden
 	}
 	if invite.Status != "draft" && invite.Status != "sent" && invite.Status != "opened" {
@@ -395,6 +418,13 @@ func (s *service) UpdateEmployeeAccess(ctx context.Context, token string, access
 	if isCurrentSessionAccess(snapshot, id) {
 		return nil, ErrEmployeeAccessSelfMutation
 	}
+	current, err := s.repository.GetEmployeeAccessByID(ctx, snapshot, id)
+	if err != nil {
+		return nil, err
+	}
+	if !scopeExistsInSnapshot(snapshot, current.ScopeType, uuidFromPG(current.ScopeID).String()) {
+		return nil, ErrForbidden
+	}
 	if err := normalizeEmployeeAccessUpdateRequest(snapshot, &req); err != nil {
 		return nil, err
 	}
@@ -418,6 +448,13 @@ func (s *service) DeactivateEmployee(ctx context.Context, token string, accessID
 	}
 	if isCurrentSessionAccess(snapshot, id) {
 		return nil, ErrEmployeeAccessSelfMutation
+	}
+	current, err := s.repository.GetEmployeeAccessByID(ctx, snapshot, id)
+	if err != nil {
+		return nil, err
+	}
+	if !scopeExistsInSnapshot(snapshot, current.ScopeType, uuidFromPG(current.ScopeID).String()) {
+		return nil, ErrForbidden
 	}
 
 	record, err := s.repository.DeactivateEmployeeAccess(ctx, snapshot, id)
@@ -498,8 +535,14 @@ func (s *service) CompleteLaunch(ctx context.Context, token string, req Complete
 	if req.Inn == "" {
 		return nil, ErrInnRequired
 	}
-	if req.Kpp == "" {
+	if req.Kpp == "" && propertyType != "ИП" {
 		return nil, ErrKppRequired
+	}
+	if propertyType == "ИП" {
+		req.Kpp = ""
+	}
+	if err := validateOrganizationRequisites(propertyType, stringPointer(req.Inn), stringPointer(req.Kpp), nil); err != nil {
+		return nil, err
 	}
 	if req.LegalAddress == "" {
 		return nil, ErrLegalAddressRequired
@@ -550,7 +593,7 @@ func (s *service) CompleteLaunch(ctx context.Context, token string, req Complete
 }
 
 func (s *service) UpdateCompanyProfile(ctx context.Context, token string, req CompanyProfileRequest) (*SessionSummaryResponse, error) {
-	snapshot, err := s.authorizeCompanyStructureManager(ctx, token)
+	snapshot, err := s.authorizeOrganizationProfileManager(ctx, token)
 	if err != nil {
 		return nil, err
 	}
@@ -565,8 +608,108 @@ func (s *service) UpdateCompanyProfile(ctx context.Context, token string, req Co
 	return mapSessionSummary(updated), nil
 }
 
+func (s *service) UploadCompanyLogo(ctx context.Context, token string, fileName string, contentType string, body io.Reader) (*SessionSummaryResponse, error) {
+	snapshot, err := s.authorizeOrganizationProfileManager(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	payload, err := io.ReadAll(io.LimitReader(body, maxLogoSizeBytes+1))
+	if err != nil {
+		return nil, err
+	}
+	if len(payload) == 0 {
+		return nil, ErrLogoRequired
+	}
+	if len(payload) > maxLogoSizeBytes {
+		return nil, ErrLogoTooLarge
+	}
+
+	contentType = normalizeLogoContentType(fileName, contentType, payload)
+	if contentType == "" {
+		return nil, ErrLogoInvalidContentType
+	}
+	fileName = strings.TrimSpace(fileName)
+	if fileName == "" {
+		fileName = "logo" + logoExtension(contentType)
+	}
+
+	orgID := uuidFromPG(snapshot.SessionRow.OrganizationID).String()
+	objectKey := "organizations/" + orgID + "/logo/" + uuid.NewString() + logoExtension(contentType)
+	if err := s.logos.Put(ctx, objectKey, contentType, bytes.NewReader(payload), int64(len(payload))); err != nil {
+		return nil, mapObjectStorageError(err)
+	}
+
+	previousKey := optionalStringValue(snapshot.SessionRow.OrganizationLogoObjectKey)
+	updated, err := s.repository.UpdateCompanyLogo(ctx, snapshot, objectKey, fileName, contentType, int64(len(payload)))
+	if err != nil {
+		_ = s.logos.Delete(ctx, objectKey)
+		return nil, err
+	}
+	if previousKey != "" && previousKey != objectKey {
+		_ = s.logos.Delete(ctx, previousKey)
+	}
+
+	return mapSessionSummary(updated), nil
+}
+
+func (s *service) GetCompanyLogo(ctx context.Context, token string) (*CompanyLogoObject, error) {
+	snapshot, err := s.repository.GetSession(ctx, strings.TrimSpace(token))
+	if err != nil {
+		return nil, err
+	}
+	if snapshot.SessionRow.OrganizationLaunchState != "active" {
+		return nil, ErrLaunchRequired
+	}
+	if snapshot.SessionRow.OrganizationRoleTitle != "customer" && snapshot.SessionRow.OrganizationRoleTitle != "contractor" {
+		return nil, ErrForbidden
+	}
+
+	logo := mapCompanyLogo(snapshot)
+	objectKey := optionalStringValue(snapshot.SessionRow.OrganizationLogoObjectKey)
+	if logo == nil || objectKey == "" {
+		return nil, ErrLogoNotFound
+	}
+
+	object, err := s.logos.Get(ctx, objectKey)
+	if err != nil {
+		return nil, mapObjectStorageError(err)
+	}
+	if object.ContentType == "" {
+		object.ContentType = logo.ContentType
+	}
+	if object.Size == 0 {
+		object.Size = logo.SizeBytes
+	}
+
+	return &CompanyLogoObject{
+		Body:        object.Body,
+		ContentType: object.ContentType,
+		Size:        object.Size,
+		FileName:    logo.FileName,
+	}, nil
+}
+
+func (s *service) DeleteCompanyLogo(ctx context.Context, token string) (*SessionSummaryResponse, error) {
+	snapshot, err := s.authorizeOrganizationProfileManager(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	previousKey := optionalStringValue(snapshot.SessionRow.OrganizationLogoObjectKey)
+	updated, err := s.repository.ClearCompanyLogo(ctx, snapshot)
+	if err != nil {
+		return nil, err
+	}
+	if previousKey != "" {
+		_ = s.logos.Delete(ctx, previousKey)
+	}
+
+	return mapSessionSummary(updated), nil
+}
+
 func (s *service) CreateDivision(ctx context.Context, token string, req StructureNodeRequest) (*SessionSummaryResponse, error) {
-	snapshot, err := s.authorizeCompanyStructureManager(ctx, token)
+	snapshot, err := s.authorizeCompanyStructureManager(ctx, token, ScopeOrganization)
 	if err != nil {
 		return nil, err
 	}
@@ -582,13 +725,16 @@ func (s *service) CreateDivision(ctx context.Context, token string, req Structur
 }
 
 func (s *service) UpdateDivision(ctx context.Context, token string, divisionID string, req StructureNodeRequest) (*SessionSummaryResponse, error) {
-	snapshot, err := s.authorizeCompanyStructureManager(ctx, token)
+	snapshot, err := s.authorizeCompanyStructureManager(ctx, token, ScopeDivision)
 	if err != nil {
 		return nil, err
 	}
 	id, err := parseRequiredUUID(divisionID)
 	if err != nil {
 		return nil, err
+	}
+	if !canManageStructureTarget(snapshot, ScopeDivision, id.String()) {
+		return nil, ErrForbidden
 	}
 	if err := normalizeStructureNodeRequest(&req, false, snapshot, ErrDivisionNameRequired); err != nil {
 		return nil, err
@@ -602,13 +748,16 @@ func (s *service) UpdateDivision(ctx context.Context, token string, divisionID s
 }
 
 func (s *service) ArchiveDivision(ctx context.Context, token string, divisionID string) (*SessionSummaryResponse, error) {
-	snapshot, err := s.authorizeCompanyStructureManager(ctx, token)
+	snapshot, err := s.authorizeCompanyStructureManager(ctx, token, ScopeDivision)
 	if err != nil {
 		return nil, err
 	}
 	id, err := parseRequiredUUID(divisionID)
 	if err != nil {
 		return nil, err
+	}
+	if !canManageStructureTarget(snapshot, ScopeDivision, id.String()) {
+		return nil, ErrForbidden
 	}
 
 	updated, err := s.repository.ArchiveDivision(ctx, snapshot, id)
@@ -619,12 +768,15 @@ func (s *service) ArchiveDivision(ctx context.Context, token string, divisionID 
 }
 
 func (s *service) CreateUnit(ctx context.Context, token string, req StructureNodeRequest) (*SessionSummaryResponse, error) {
-	snapshot, err := s.authorizeCompanyStructureManager(ctx, token)
+	snapshot, err := s.authorizeCompanyStructureManager(ctx, token, ScopeUnit)
 	if err != nil {
 		return nil, err
 	}
 	if err := normalizeStructureNodeRequest(&req, true, snapshot, ErrUnitNameRequired); err != nil {
 		return nil, err
+	}
+	if !canCreateUnitInRequestedScope(snapshot, req.DivisionID) {
+		return nil, ErrForbidden
 	}
 
 	updated, err := s.repository.CreateUnit(ctx, snapshot, req)
@@ -635,7 +787,7 @@ func (s *service) CreateUnit(ctx context.Context, token string, req StructureNod
 }
 
 func (s *service) UpdateUnit(ctx context.Context, token string, unitID string, req StructureNodeRequest) (*SessionSummaryResponse, error) {
-	snapshot, err := s.authorizeCompanyStructureManager(ctx, token)
+	snapshot, err := s.authorizeCompanyStructureManager(ctx, token, ScopeUnit)
 	if err != nil {
 		return nil, err
 	}
@@ -643,8 +795,14 @@ func (s *service) UpdateUnit(ctx context.Context, token string, unitID string, r
 	if err != nil {
 		return nil, err
 	}
+	if !canManageStructureTarget(snapshot, ScopeUnit, id.String()) {
+		return nil, ErrForbidden
+	}
 	if err := normalizeStructureNodeRequest(&req, true, snapshot, ErrUnitNameRequired); err != nil {
 		return nil, err
+	}
+	if !canUpdateUnitInRequestedScope(snapshot, id.String(), req.DivisionID) {
+		return nil, ErrForbidden
 	}
 
 	updated, err := s.repository.UpdateUnit(ctx, snapshot, id, req)
@@ -655,13 +813,16 @@ func (s *service) UpdateUnit(ctx context.Context, token string, unitID string, r
 }
 
 func (s *service) ArchiveUnit(ctx context.Context, token string, unitID string) (*SessionSummaryResponse, error) {
-	snapshot, err := s.authorizeCompanyStructureManager(ctx, token)
+	snapshot, err := s.authorizeCompanyStructureManager(ctx, token, ScopeUnit)
 	if err != nil {
 		return nil, err
 	}
 	id, err := parseRequiredUUID(unitID)
 	if err != nil {
 		return nil, err
+	}
+	if !canManageStructureTarget(snapshot, ScopeUnit, id.String()) {
+		return nil, ErrForbidden
 	}
 
 	updated, err := s.repository.ArchiveUnit(ctx, snapshot, id)
@@ -671,7 +832,23 @@ func (s *service) ArchiveUnit(ctx context.Context, token string, unitID string) 
 	return mapSessionSummary(updated), nil
 }
 
-func (s *service) authorizeCompanyStructureManager(ctx context.Context, token string) (*sessionSnapshot, error) {
+func (s *service) authorizeOrganizationProfileManager(ctx context.Context, token string) (*sessionSnapshot, error) {
+	snapshot, err := s.repository.GetSession(ctx, strings.TrimSpace(token))
+	if err != nil {
+		return nil, err
+	}
+	if snapshot.SessionRow.OrganizationLaunchState != "active" {
+		return nil, ErrLaunchRequired
+	}
+	if snapshot.SessionRow.OrganizationRoleTitle != "customer" ||
+		snapshot.SessionRow.GrantRoleTemplate != RoleOrganizationAdmin ||
+		snapshot.SessionRow.GrantScopeType != ScopeOrganization {
+		return nil, ErrForbidden
+	}
+	return snapshot, nil
+}
+
+func (s *service) authorizeCompanyStructureManager(ctx context.Context, token string, actionScope string) (*sessionSnapshot, error) {
 	snapshot, err := s.repository.GetSession(ctx, strings.TrimSpace(token))
 	if err != nil {
 		return nil, err
@@ -683,7 +860,26 @@ func (s *service) authorizeCompanyStructureManager(ctx context.Context, token st
 		!snapshotHasCapability(snapshot, CapabilityManageStructure) {
 		return nil, ErrForbidden
 	}
-	return snapshot, nil
+	if snapshot.SessionRow.GrantRoleTemplate == RoleOrganizationAdmin &&
+		snapshot.SessionRow.GrantScopeType == ScopeOrganization {
+		return snapshot, nil
+	}
+
+	switch actionScope {
+	case ScopeDivision:
+		if snapshot.SessionRow.GrantRoleTemplate == RoleDivisionAdmin && snapshot.SessionRow.GrantScopeType == ScopeDivision {
+			return snapshot, nil
+		}
+	case ScopeUnit:
+		if snapshot.SessionRow.GrantRoleTemplate == RoleDivisionAdmin && snapshot.SessionRow.GrantScopeType == ScopeDivision {
+			return snapshot, nil
+		}
+		if snapshot.SessionRow.GrantRoleTemplate == RoleUnitAdmin && snapshot.SessionRow.GrantScopeType == ScopeUnit {
+			return snapshot, nil
+		}
+	}
+
+	return nil, ErrForbidden
 }
 
 func (s *service) authorizeInviteManager(ctx context.Context, token string) (*sessionSnapshot, error) {
@@ -858,26 +1054,33 @@ func mapSessionSummary(snapshot *sessionSnapshot) *SessionSummaryResponse {
 		MembershipID:     uuidFromPG(session.MembershipID).String(),
 		MembershipStatus: session.MembershipStatus,
 		Organization: SessionOrganizationResponse{
-			ID:                uuidFromPG(session.OrganizationID).String(),
-			RoleTitle:         session.OrganizationRoleTitle,
-			Type:              session.OrganizationPropertyType,
-			Name:              session.OrganizationShellName,
-			ShortName:         session.OrganizationShortName,
-			PropertyType:      session.OrganizationPropertyType,
-			Inn:               session.OrganizationInn,
-			Kpp:               session.OrganizationKpp,
-			LegalAddress:      session.OrganizationLegalAddress,
-			RegisteredAddress: session.OrganizationLegalAddress,
-			Address:           session.OrganizationLegalAddress,
-			ContactEmail:      session.OrganizationContactEmail,
-			ContactPhone:      session.OrganizationContactPhone,
-			LeaderFullName:    session.OrganizationLeaderFullName,
-			ManagerName:       session.OrganizationLeaderFullName,
-			LeaderPosition:    session.OrganizationLeaderPosition,
-			ContractPhone:     coalesceStringPointer(session.OrganizationContractPhone, session.OrganizationContactPhone),
-			ContractEmail:     coalesceStringPointer(session.OrganizationContractEmail, session.OrganizationContactEmail),
-			ActingBasis:       session.OrganizationActingBasis,
-			LaunchState:       session.OrganizationLaunchState,
+			ID:                   uuidFromPG(session.OrganizationID).String(),
+			RoleTitle:            session.OrganizationRoleTitle,
+			Type:                 session.OrganizationPropertyType,
+			Name:                 session.OrganizationShellName,
+			ShortName:            session.OrganizationShortName,
+			PropertyType:         session.OrganizationPropertyType,
+			Logo:                 mapCompanyLogo(snapshot),
+			Inn:                  session.OrganizationInn,
+			Kpp:                  session.OrganizationKpp,
+			LegalAddress:         session.OrganizationLegalAddress,
+			PostalAddress:        session.OrganizationPostalAddress,
+			RegisteredAddress:    session.OrganizationLegalAddress,
+			Address:              session.OrganizationLegalAddress,
+			Ogrn:                 session.OrganizationOgrn,
+			SettlementAccount:    session.OrganizationSettlementAccount,
+			BankName:             session.OrganizationBankName,
+			CorrespondentAccount: session.OrganizationCorrespondentAccount,
+			Bik:                  session.OrganizationBik,
+			ContactEmail:         session.OrganizationContactEmail,
+			ContactPhone:         session.OrganizationContactPhone,
+			LeaderFullName:       session.OrganizationLeaderFullName,
+			ManagerName:          session.OrganizationLeaderFullName,
+			LeaderPosition:       session.OrganizationLeaderPosition,
+			ContractPhone:        coalesceStringPointer(session.OrganizationContractPhone, session.OrganizationContactPhone),
+			ContractEmail:        coalesceStringPointer(session.OrganizationContractEmail, session.OrganizationContactEmail),
+			ActingBasis:          session.OrganizationActingBasis,
+			LaunchState:          session.OrganizationLaunchState,
 		},
 		Divisions: []DivisionResponse{},
 		Units:     []UnitResponse{},
@@ -897,7 +1100,6 @@ func mapSessionSummary(snapshot *sessionSnapshot) *SessionSummaryResponse {
 			ID:                uuidFromPG(division.ID).String(),
 			Type:              division.DivisionType,
 			Name:              division.Name,
-			Code:              division.Code,
 			Region:            division.Region,
 			Address:           division.Address,
 			RegisteredAddress: division.Address,
@@ -924,7 +1126,6 @@ func mapSessionSummary(snapshot *sessionSnapshot) *SessionSummaryResponse {
 			ID:                uuidFromPG(unit.ID).String(),
 			Type:              unit.UnitType,
 			Name:              unit.Name,
-			Code:              unit.Code,
 			Region:            unit.Region,
 			DivisionID:        divisionID,
 			Address:           unit.Address,
@@ -946,6 +1147,30 @@ func mapSessionSummary(snapshot *sessionSnapshot) *SessionSummaryResponse {
 	return response
 }
 
+func mapCompanyLogo(snapshot *sessionSnapshot) *CompanyLogoResponse {
+	if snapshot == nil {
+		return nil
+	}
+
+	session := snapshot.SessionRow
+	if optionalStringValue(session.OrganizationLogoObjectKey) == "" {
+		return nil
+	}
+
+	updatedAt := ""
+	if session.OrganizationLogoUpdatedAt.Valid {
+		updatedAt = session.OrganizationLogoUpdatedAt.Time.UTC().Format(time.RFC3339)
+	}
+
+	return &CompanyLogoResponse{
+		FileName:    optionalStringValue(session.OrganizationLogoFileName),
+		ContentType: optionalStringValue(session.OrganizationLogoContentType),
+		SizeBytes:   optionalInt64Value(session.OrganizationLogoSizeBytes),
+		UpdatedAt:   updatedAt,
+		URL:         "/api/company/logo",
+	}
+}
+
 func resolveWorkspace(snapshot *sessionSnapshot) SessionWorkspaceResponse {
 	session := snapshot.SessionRow
 	roleTemplate := session.GrantRoleTemplate
@@ -963,7 +1188,7 @@ func resolveWorkspace(snapshot *sessionSnapshot) SessionWorkspaceResponse {
 		ScopeID:                  scopeID,
 		ScopeName:                session.OrganizationShellName,
 		LandingTitle:             session.OrganizationShellName,
-		LandingSubtitle:          "Доступ уровня organization: доступны подразделения и юниты организации.",
+		LandingSubtitle:          "Доступ уровня organization: доступны дивизионы и юниты организации.",
 		LandingPath:              "/company",
 		CanManageEmployeeInvites: canManageEmployeeInvites(snapshot),
 		CanViewEmployees:         canViewEmployees(snapshot),
@@ -981,10 +1206,10 @@ func resolveWorkspace(snapshot *sessionSnapshot) SessionWorkspaceResponse {
 			workspace.ScopeName = snapshot.Divisions[0].Name
 			workspace.LandingTitle = snapshot.Divisions[0].Name
 		} else {
-			workspace.ScopeName = "Подразделение"
-			workspace.LandingTitle = "Подразделение"
+			workspace.ScopeName = "Дивизион"
+			workspace.LandingTitle = "Дивизион"
 		}
-		workspace.LandingSubtitle = "Доступ ограничен выбранным подразделением и его дочерними юнитами."
+		workspace.LandingSubtitle = "Доступ ограничен выбранным дивизионом и его дочерними юнитами."
 	case ScopeUnit:
 		if len(snapshot.Units) > 0 {
 			workspace.ScopeName = snapshot.Units[0].Name
@@ -1026,9 +1251,14 @@ func isCurrentSessionAccess(snapshot *sessionSnapshot, accessID uuid.UUID) bool 
 }
 
 func scopeExistsInSnapshot(snapshot *sessionSnapshot, scopeType string, scopeID string) bool {
+	if snapshot == nil {
+		return false
+	}
 	switch scopeType {
 	case ScopeOrganization:
-		return snapshot.SessionRow.OrganizationID.Valid && uuidFromPG(snapshot.SessionRow.OrganizationID).String() == scopeID
+		return snapshot.SessionRow.GrantScopeType == ScopeOrganization &&
+			snapshot.SessionRow.OrganizationID.Valid &&
+			uuidFromPG(snapshot.SessionRow.OrganizationID).String() == scopeID
 	case ScopeDivision:
 		for _, division := range snapshot.Divisions {
 			if uuidFromPG(division.ID).String() == scopeID {
@@ -1046,6 +1276,59 @@ func scopeExistsInSnapshot(snapshot *sessionSnapshot, scopeType string, scopeID 
 	return false
 }
 
+func canManageStructureTarget(snapshot *sessionSnapshot, scopeType string, scopeID string) bool {
+	if snapshot == nil {
+		return false
+	}
+	if snapshot.SessionRow.GrantRoleTemplate == RoleOrganizationAdmin &&
+		snapshot.SessionRow.GrantScopeType == ScopeOrganization {
+		return true
+	}
+	return scopeExistsInSnapshot(snapshot, scopeType, scopeID)
+}
+
+func canCreateUnitInRequestedScope(snapshot *sessionSnapshot, divisionID *string) bool {
+	if snapshot == nil {
+		return false
+	}
+	if snapshot.SessionRow.GrantRoleTemplate == RoleOrganizationAdmin &&
+		snapshot.SessionRow.GrantScopeType == ScopeOrganization {
+		return true
+	}
+	if snapshot.SessionRow.GrantRoleTemplate == RoleDivisionAdmin &&
+		snapshot.SessionRow.GrantScopeType == ScopeDivision {
+		return divisionID != nil && uuidFromPG(snapshot.SessionRow.GrantScopeID).String() == *divisionID
+	}
+	return false
+}
+
+func canUpdateUnitInRequestedScope(snapshot *sessionSnapshot, unitID string, divisionID *string) bool {
+	if snapshot == nil {
+		return false
+	}
+	if snapshot.SessionRow.GrantRoleTemplate == RoleOrganizationAdmin &&
+		snapshot.SessionRow.GrantScopeType == ScopeOrganization {
+		return true
+	}
+	if snapshot.SessionRow.GrantRoleTemplate == RoleDivisionAdmin &&
+		snapshot.SessionRow.GrantScopeType == ScopeDivision {
+		return divisionID != nil && uuidFromPG(snapshot.SessionRow.GrantScopeID).String() == *divisionID
+	}
+	if snapshot.SessionRow.GrantRoleTemplate != RoleUnitAdmin || snapshot.SessionRow.GrantScopeType != ScopeUnit {
+		return false
+	}
+	for _, unit := range snapshot.Units {
+		if uuidFromPG(unit.ID).String() != unitID {
+			continue
+		}
+		if !unit.DivisionID.Valid {
+			return divisionID == nil
+		}
+		return divisionID != nil && uuidFromPG(unit.DivisionID).String() == *divisionID
+	}
+	return false
+}
+
 func normalizeCompanyProfileRequest(req *CompanyProfileRequest) error {
 	req.Type = strings.TrimSpace(req.Type)
 	req.PropertyType = trimStringPointer(req.PropertyType)
@@ -1053,8 +1336,14 @@ func normalizeCompanyProfileRequest(req *CompanyProfileRequest) error {
 	req.ShortName = trimStringPointer(req.ShortName)
 	req.Inn = trimStringPointer(req.Inn)
 	req.Kpp = trimStringPointer(req.Kpp)
+	req.PostalAddress = trimStringPointer(req.PostalAddress)
 	req.RegisteredAddress = trimStringPointer(req.RegisteredAddress)
 	req.Address = trimStringPointer(req.Address)
+	req.Ogrn = trimStringPointer(req.Ogrn)
+	req.SettlementAccount = trimStringPointer(req.SettlementAccount)
+	req.BankName = trimStringPointer(req.BankName)
+	req.CorrespondentAccount = trimStringPointer(req.CorrespondentAccount)
+	req.Bik = trimStringPointer(req.Bik)
 	req.LeaderFullName = trimStringPointer(req.LeaderFullName)
 	req.ManagerName = trimStringPointer(req.ManagerName)
 	req.LeaderPosition = trimStringPointer(req.LeaderPosition)
@@ -1072,6 +1361,16 @@ func normalizeCompanyProfileRequest(req *CompanyProfileRequest) error {
 	}
 	req.Type = propertyType
 	req.PropertyType = stringPointer(propertyType)
+	if propertyType == "ИП" {
+		req.Kpp = nil
+	}
+
+	if err := validateOrganizationRequisites(propertyType, req.Inn, req.Kpp, req.Ogrn); err != nil {
+		return err
+	}
+	if err := validateBankRequisites(req.SettlementAccount, req.CorrespondentAccount, req.Bik); err != nil {
+		return err
+	}
 
 	if req.ContractEmail != nil && !looksLikeEmail(*req.ContractEmail) {
 		return ErrInvalidEmail
@@ -1083,7 +1382,6 @@ func normalizeCompanyProfileRequest(req *CompanyProfileRequest) error {
 func normalizeStructureNodeRequest(req *StructureNodeRequest, allowDivision bool, snapshot *sessionSnapshot, nameRequiredErr error) error {
 	req.Type = strings.TrimSpace(req.Type)
 	req.Name = strings.TrimSpace(req.Name)
-	req.Code = trimStringPointer(req.Code)
 	req.Region = trimStringPointer(req.Region)
 	req.Address = trimStringPointer(req.Address)
 	req.RegisteredAddress = trimStringPointer(req.RegisteredAddress)
@@ -1122,12 +1420,26 @@ func normalizeStructureNodeRequest(req *StructureNodeRequest, allowDivision bool
 		if _, err := uuid.Parse(*req.DivisionID); err != nil {
 			return ErrDivisionTargetInvalid
 		}
-		if !scopeExistsInSnapshot(snapshot, "division", *req.DivisionID) {
+		if !scopeExistsInSnapshot(snapshot, "division", *req.DivisionID) && !unitAdminCanKeepParentDivision(snapshot, *req.DivisionID) {
 			return ErrDivisionTargetInvalid
 		}
 	}
 
 	return nil
+}
+
+func unitAdminCanKeepParentDivision(snapshot *sessionSnapshot, divisionID string) bool {
+	if snapshot == nil ||
+		snapshot.SessionRow.GrantRoleTemplate != RoleUnitAdmin ||
+		snapshot.SessionRow.GrantScopeType != ScopeUnit {
+		return false
+	}
+	for _, unit := range snapshot.Units {
+		if unit.DivisionID.Valid && uuidFromPG(unit.DivisionID).String() == divisionID {
+			return true
+		}
+	}
+	return false
 }
 
 func normalizeOrganizationPropertyType(value string) (string, error) {
@@ -1140,12 +1452,69 @@ func normalizeOrganizationPropertyType(value string) (string, error) {
 	case "ОАО":
 		normalized = "ПАО"
 	case "ЗАО":
-		normalized = "АО"
+		normalized = "НАО"
+	case "АО":
+		normalized = "НАО"
 	}
 	if _, ok := allowedOrganizationPropertyTypes[normalized]; !ok {
 		return "", ErrPropertyTypeInvalid
 	}
 	return normalized, nil
+}
+
+func validateOrganizationRequisites(propertyType string, inn *string, kpp *string, ogrn *string) error {
+	if propertyType == "ИП" {
+		if err := validateDigitPointer(inn, 12, ErrInnInvalid); err != nil {
+			return err
+		}
+		if err := validateDigitPointer(ogrn, 15, ErrOgrnInvalid); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	if err := validateDigitPointer(inn, 10, ErrInnInvalid); err != nil {
+		return err
+	}
+	if err := validateDigitPointer(kpp, 9, ErrKppInvalid); err != nil {
+		return err
+	}
+	if err := validateDigitPointer(ogrn, 13, ErrOgrnInvalid); err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateBankRequisites(settlementAccount *string, correspondentAccount *string, bik *string) error {
+	if err := validateDigitPointer(settlementAccount, 20, ErrBankAccountInvalid); err != nil {
+		return err
+	}
+	if err := validateDigitPointer(correspondentAccount, 20, ErrBankAccountInvalid); err != nil {
+		return err
+	}
+	if err := validateDigitPointer(bik, 9, ErrBikInvalid); err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateDigitPointer(value *string, exactLength int, err error) error {
+	if value == nil {
+		return nil
+	}
+	if len(*value) != exactLength || !isDigitsOnly(*value) {
+		return err
+	}
+	return nil
+}
+
+func isDigitsOnly(value string) bool {
+	for _, r := range value {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+	return true
 }
 
 func firstNonEmptyStringPointer(value *string, fallback string) string {
@@ -1270,12 +1639,99 @@ func (s *service) resolveScopeLabel(ctx context.Context, organizationID pgtype.U
 	return organizationName
 }
 
+func normalizeLogoContentType(fileName string, contentType string, payload []byte) string {
+	declared := strings.ToLower(strings.TrimSpace(strings.Split(contentType, ";")[0]))
+	extension := strings.ToLower(path.Ext(fileName))
+	detected := strings.ToLower(strings.TrimSpace(strings.Split(httpDetectContentType(payload), ";")[0]))
+
+	switch {
+	case declared == "image/svg+xml" || extension == ".svg":
+		return "image/svg+xml"
+	case declared == "image/png" || detected == "image/png":
+		return "image/png"
+	case declared == "image/jpeg" || detected == "image/jpeg":
+		return "image/jpeg"
+	case declared == "image/webp" || detected == "image/webp":
+		return "image/webp"
+	default:
+		return ""
+	}
+}
+
+func logoExtension(contentType string) string {
+	switch contentType {
+	case "image/png":
+		return ".png"
+	case "image/jpeg":
+		return ".jpg"
+	case "image/webp":
+		return ".webp"
+	case "image/svg+xml":
+		return ".svg"
+	default:
+		return ""
+	}
+}
+
+func mapObjectStorageError(err error) error {
+	switch {
+	case errors.Is(err, objectstorage.ErrNotConfigured):
+		return ErrObjectStorageUnavailable
+	case errors.Is(err, objectstorage.ErrObjectNotFound):
+		return ErrLogoNotFound
+	default:
+		return err
+	}
+}
+
+func optionalStringValue(value *string) string {
+	if value == nil {
+		return ""
+	}
+	return *value
+}
+
+func optionalInt64Value(value *int64) int64 {
+	if value == nil {
+		return 0
+	}
+	return *value
+}
+
 func hashInvitePassword(password string) ([]byte, error) {
 	password = strings.TrimSpace(password)
-	if len(password) < 8 {
+	if utf8.RuneCountInString(password) < 8 {
 		return nil, ErrPasswordTooShort
 	}
+	if !passwordHasRequiredClasses(password) {
+		return nil, ErrPasswordWeak
+	}
 	return bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+}
+
+func passwordHasRequiredClasses(password string) bool {
+	hasLetter := false
+	hasDigit := false
+	hasSymbol := false
+	for _, r := range password {
+		switch {
+		case unicode.IsLetter(r):
+			hasLetter = true
+		case unicode.IsDigit(r):
+			hasDigit = true
+		case !unicode.IsSpace(r):
+			hasSymbol = true
+		}
+	}
+	return hasLetter && hasDigit && hasSymbol
+}
+
+func httpDetectContentType(payload []byte) string {
+	sample := payload
+	if len(sample) > 512 {
+		sample = sample[:512]
+	}
+	return http.DetectContentType(sample)
 }
 
 func looksLikeEmail(value string) bool {

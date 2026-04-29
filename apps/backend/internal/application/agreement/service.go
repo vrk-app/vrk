@@ -125,6 +125,9 @@ func (s *agreementService) Update(ctx context.Context, token string, id string, 
 	if current.CustomerOrganizationID.String() != session.Organization.ID {
 		return nil, ErrForbidden
 	}
+	if !canViewAgreement(session, current) {
+		return nil, ErrForbidden
+	}
 
 	updated, err := s.buildUpdatedModel(ctx, session, current, req)
 	if err != nil {
@@ -614,6 +617,9 @@ func validateScopeForSession(session *bootstrap.SessionSummaryResponse, division
 	if label == nil {
 		resolved := session.Organization.Name
 		label = &resolved
+	}
+	if session.Workspace.ScopeType != "organization" {
+		return nil, nil, nil, ErrScopeInvalid
 	}
 	return nil, nil, label, nil
 }

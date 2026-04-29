@@ -189,7 +189,7 @@ Stage target lines:
 .agent/stages/03-identity-master-data/sprint_contract.md-67-- Organization profile and business fields:
 .agent/stages/03-identity-master-data/sprint_contract.md:68:  - create/edit flows handle legal-form `propertyType`/`type` alias, `name`, `registeredAddress`/`address`, `leaderFullName`/`managerName`, `leaderPosition`, `contractPhone`, `contractEmail`, and `actingBasis`;
 .agent/stages/03-identity-master-data/sprint_contract.md:69:  - visible profile type selector shows `ООО`, `АО`, `ПАО` only, while legacy `ОАО`, `ЗАО`, and `LLC` inputs normalize for compatibility;
-.agent/stages/03-identity-master-data/sprint_contract.md-70-  - existing `code`, `region`, `status`, and `comment` fields remain visible/preserved if still used by the model;
+.agent/stages/03-identity-master-data/sprint_contract.md-70-  - existing `region`, `status`, and `comment` fields remain visible/preserved if still used by the model;
 .agent/stages/03-identity-master-data/sprint_contract.md-71-  - saved data survives session restore and is reflected in `/company`.
 .agent/stages/03-identity-master-data/sprint_contract.md-72-- Division/branch management:
 .agent/stages/03-identity-master-data/sprint_contract.md:73:  - organization admin can create the first division/branch from `/company`;
@@ -287,7 +287,6 @@ Stage target lines:
 .agent/stages/03-identity-master-data/proof_slice010_org_structure.py-323-    payload = {
 .agent/stages/03-identity-master-data/proof_slice010_org_structure.py:324:        "type": "ВУ",
 .agent/stages/03-identity-master-data/proof_slice010_org_structure.py-325-        "name": f"{label} юнит {SEED}",
-.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-326-        "code": f"{label[:3].upper()}-UNIT",
 --
 .agent/stages/03-identity-master-data/proof_slice010_org_structure.py-334-        "comment": "Создано proof_slice010",
 .agent/stages/03-identity-master-data/proof_slice010_org_structure.py-335-    }
@@ -573,7 +572,7 @@ Stage target lines:
 .agent/stages/03-identity-master-data/evidence.md:181:  - operational values such as `ВРД` are rejected for organization legal form.
 .agent/stages/03-identity-master-data/evidence.md-182-- Canonical field contract:
 .agent/stages/03-identity-master-data/evidence.md:183:  - `docs/architecture/identity-master-data.md` now records differentiated type semantics: organization `propertyType`/`type` alias is ОПФ `ООО`/`АО`/`ПАО`, division/branch has no selectable type and uses hidden storage default `division`, and unit `type` is `ВРД`/`ВРЗ`/`ВУ`/`ВРП`;
-.agent/stages/03-identity-master-data/evidence.md-184-  - the same doc records `registeredAddress`/`address` and `leaderFullName`/`managerName` alias semantics, remaining business fields, preserved `code`/`region`/`status`/`comment`, and active-only archive/selection constraints for `/company`.
+.agent/stages/03-identity-master-data/evidence.md-184-  - the same doc records `registeredAddress`/`address` and `leaderFullName`/`managerName` alias semantics, remaining business fields, preserved `region`/`status`/`comment`, and active-only archive/selection constraints for `/company`.
 .agent/stages/03-identity-master-data/evidence.md:185:- Persistent division/unit management:
 .agent/stages/03-identity-master-data/evidence.md:186:  - first division create works without a user-facing `type` payload;
 .agent/stages/03-identity-master-data/evidence.md:187:  - division rows no longer show hidden storage type in the `/company` UI;
@@ -625,7 +624,7 @@ Stage target lines:
 --
 .agent/stages/03-identity-master-data/stage_spec.md-121-  - создание первого и последующих подразделений/филиалов;
 .agent/stages/03-identity-master-data/stage_spec.md-122-  - создание первого и последующих юнитов, включая direct `organization -> unit`;
-.agent/stages/03-identity-master-data/stage_spec.md:123:  - редактирование business fields: organization `propertyType`/`type` alias as legal-form selector `ООО` / `АО` / `ПАО` with legacy `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО`; division/branch has no selectable type and stores hidden internal default only for compatibility; unit keeps operational type selector `ВРД` / `ВРЗ` / `ВУ` / `ВРП`; name, registeredAddress/address alias, leaderFullName with managerName migration/display compatibility, leaderPosition, contractPhone, contractEmail, actingBasis, plus code/region/status/comment where those fields still exist in the model;
+.agent/stages/03-identity-master-data/stage_spec.md:123:  - редактирование business fields: organization `propertyType`/`type` alias as legal-form selector `ООО` / `АО` / `ПАО` with legacy `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО`; division/branch has no selectable type and stores hidden internal default only for compatibility; unit keeps operational type selector `ВРД` / `ВРЗ` / `ВУ` / `ВРП`; name, registeredAddress/address alias, leaderFullName with managerName migration/display compatibility, leaderPosition, contractPhone, contractEmail, actingBasis, plus region/status/comment where those fields still exist in the model;
 .agent/stages/03-identity-master-data/stage_spec.md-124-  - архивирование подразделений/юнитов вместо удаления;
 .agent/stages/03-identity-master-data/stage_spec.md:125:  - приглашение сотрудников с проверкой существующего target scope для division/unit invites;
 .agent/stages/03-identity-master-data/stage_spec.md-126-  - entry points к добавлению оборудования после появления юнита;

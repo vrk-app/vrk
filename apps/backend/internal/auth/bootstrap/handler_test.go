@@ -4,6 +4,7 @@ import (
 	"backend/internal/db/generated"
 	"context"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -84,6 +85,18 @@ func (s stubBootstrapService) UpdateCompanyProfile(ctx context.Context, token st
 	return nil, errors.New("unexpected call")
 }
 
+func (s stubBootstrapService) UploadCompanyLogo(ctx context.Context, token string, fileName string, contentType string, body io.Reader) (*SessionSummaryResponse, error) {
+	return nil, errors.New("unexpected call")
+}
+
+func (s stubBootstrapService) GetCompanyLogo(ctx context.Context, token string) (*CompanyLogoObject, error) {
+	return nil, errors.New("unexpected call")
+}
+
+func (s stubBootstrapService) DeleteCompanyLogo(ctx context.Context, token string) (*SessionSummaryResponse, error) {
+	return nil, errors.New("unexpected call")
+}
+
 func (s stubBootstrapService) CreateDivision(ctx context.Context, token string, req StructureNodeRequest) (*SessionSummaryResponse, error) {
 	return nil, errors.New("unexpected call")
 }
@@ -156,12 +169,31 @@ func TestNormalizeCompanyProfilePropertyType(t *testing.T) {
 			wantType: "ПАО",
 		},
 		{
-			name: "maps legacy ЗАО to АО",
+			name: "maps legacy ЗАО to НАО",
 			req: CompanyProfileRequest{
 				Type: "ЗАО",
 				Name: "VRK Customer",
 			},
-			wantType: "АО",
+			wantType: "НАО",
+		},
+		{
+			name: "maps legacy АО to НАО",
+			req: CompanyProfileRequest{
+				Type: "АО",
+				Name: "VRK Customer",
+			},
+			wantType: "НАО",
+		},
+		{
+			name: "accepts current ИП property type and clears kpp",
+			req: CompanyProfileRequest{
+				Type: "ИП",
+				Name: "VRK Customer",
+				Inn:  stringPointer("123456789012"),
+				Kpp:  stringPointer("123456789"),
+				Ogrn: stringPointer("123456789012345"),
+			},
+			wantType: "ИП",
 		},
 		{
 			name: "maps legacy LLC to ООО",
@@ -202,6 +234,157 @@ func TestNormalizeCompanyProfilePropertyType(t *testing.T) {
 			if tt.req.PropertyType == nil || *tt.req.PropertyType != tt.wantType {
 				t.Fatalf("propertyType = %v, want %q", tt.req.PropertyType, tt.wantType)
 			}
+			if tt.wantType == "ИП" && tt.req.Kpp != nil {
+				t.Fatalf("kpp = %v, want nil for ИП", tt.req.Kpp)
+			}
+		})
+	}
+}
+
+func TestNormalizeCompanyProfileRequisitesValidation(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		req     CompanyProfileRequest
+		wantErr error
+	}{
+		{
+			name: "accepts legal entity requisites",
+			req: CompanyProfileRequest{
+				Type:                 "НАО",
+				Name:                 "VRK Customer",
+				Inn:                  stringPointer("1234567890"),
+				Kpp:                  stringPointer("123456789"),
+				Ogrn:                 stringPointer("1234567890123"),
+				SettlementAccount:    stringPointer("40702810900000000001"),
+				CorrespondentAccount: stringPointer("30101810400000000225"),
+				Bik:                  stringPointer("044525225"),
+			},
+		},
+		{
+			name: "rejects wrong IP inn length",
+			req: CompanyProfileRequest{
+				Type: "ИП",
+				Name: "VRK Customer",
+				Inn:  stringPointer("1234567890"),
+			},
+			wantErr: ErrInnInvalid,
+		},
+		{
+			name: "rejects non-digit settlement account",
+			req: CompanyProfileRequest{
+				Type:              "ООО",
+				Name:              "VRK Customer",
+				SettlementAccount: stringPointer("4070281090000000000A"),
+			},
+			wantErr: ErrBankAccountInvalid,
+		},
+		{
+			name: "rejects wrong bik length",
+			req: CompanyProfileRequest{
+				Type: "ООО",
+				Name: "VRK Customer",
+				Bik:  stringPointer("04452522"),
+			},
+			wantErr: ErrBikInvalid,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			err := normalizeCompanyProfileRequest(&tt.req)
+			if tt.wantErr != nil {
+				if !errors.Is(err, tt.wantErr) {
+					t.Fatalf("error = %v, want %v", err, tt.wantErr)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+		})
+	}
+}
+
+func TestHashInvitePasswordPolicy(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		password string
+		wantErr  error
+	}{
+		{name: "accepts letter digit and symbol", password: "Vrk_2026"},
+		{name: "rejects too short", password: "Vrk_26", wantErr: ErrPasswordTooShort},
+		{name: "rejects missing symbol", password: "Vrk20260", wantErr: ErrPasswordWeak},
+		{name: "rejects missing digit", password: "Vrk_secret", wantErr: ErrPasswordWeak},
+		{name: "rejects missing letter", password: "1234567_", wantErr: ErrPasswordWeak},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := hashInvitePassword(tt.password)
+			if tt.wantErr != nil {
+				if !errors.Is(err, tt.wantErr) {
+					t.Fatalf("error = %v, want %v", err, tt.wantErr)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+		})
+	}
+}
+
+func TestNormalizeLogoContentType(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		fileName    string
+		contentType string
+		payload     []byte
+		want        string
+	}{
+		{
+			name:        "accepts detected png",
+			fileName:    "logo.bin",
+			contentType: "application/octet-stream",
+			payload:     []byte{0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a},
+			want:        "image/png",
+		},
+		{
+			name:        "accepts declared svg",
+			fileName:    "logo.svg",
+			contentType: "image/svg+xml; charset=utf-8",
+			payload:     []byte("<svg xmlns=\"http://www.w3.org/2000/svg\"/>"),
+			want:        "image/svg+xml",
+		},
+		{
+			name:        "rejects plain text",
+			fileName:    "logo.txt",
+			contentType: "text/plain",
+			payload:     []byte("not an image"),
+			want:        "",
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := normalizeLogoContentType(tt.fileName, tt.contentType, tt.payload); got != tt.want {
+				t.Fatalf("content type = %q, want %q", got, tt.want)
+			}
 		})
 	}
 }
@@ -209,7 +392,7 @@ func TestNormalizeCompanyProfilePropertyType(t *testing.T) {
 func TestNormalizeStructureNodeTypeRules(t *testing.T) {
 	t.Parallel()
 
-	divisionReq := StructureNodeRequest{Name: "Branch"}
+	divisionReq := StructureNodeRequest{Name: "Division"}
 	if err := normalizeStructureNodeRequest(&divisionReq, false, &sessionSnapshot{}, ErrDivisionNameRequired); err != nil {
 		t.Fatalf("division without type returned error: %v", err)
 	}
@@ -270,11 +453,29 @@ func TestEmployeeCapabilityRules(t *testing.T) {
 			wantView:     true,
 		},
 		{
+			name:         "division admin can view, invite and manage own subtree",
+			roleTemplate: RoleDivisionAdmin,
+			scopeType:    ScopeDivision,
+			orgRole:      "customer",
+			wantView:     true,
+			wantManage:   true,
+			wantInvite:   true,
+		},
+		{
 			name:         "unit head can view own unit",
 			roleTemplate: RoleUnitHead,
 			scopeType:    ScopeUnit,
 			orgRole:      "customer",
 			wantView:     true,
+		},
+		{
+			name:         "unit admin can view, invite and manage own unit",
+			roleTemplate: RoleUnitAdmin,
+			scopeType:    ScopeUnit,
+			orgRole:      "customer",
+			wantView:     true,
+			wantManage:   true,
+			wantInvite:   true,
 		},
 		{
 			name:         "auditor can view by its own scope",
@@ -335,6 +536,7 @@ func TestNormalizeEmployeeAccessUpdateRequest(t *testing.T) {
 	snapshot := &sessionSnapshot{
 		SessionRow: generated.GetCurrentSessionRow{
 			OrganizationID: toPGUUID(organizationID),
+			GrantScopeType: ScopeOrganization,
 		},
 		Divisions: []generated.AuthDivision{{ID: toPGUUID(divisionID)}},
 		Units:     []generated.AuthUnit{{ID: toPGUUID(unitID), DivisionID: toPGUUID(divisionID)}},
@@ -406,6 +608,41 @@ func TestNormalizeEmployeeAccessUpdateRequest(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 		})
+	}
+}
+
+func TestNormalizeEmployeeAccessUpdateRejectsBroaderScopeForScopedAdmin(t *testing.T) {
+	t.Parallel()
+
+	organizationID := uuid.MustParse("00000000-0000-0000-0000-000000000001")
+	divisionID := uuid.MustParse("00000000-0000-0000-0000-000000000002")
+	unitID := uuid.MustParse("00000000-0000-0000-0000-000000000003")
+	snapshot := &sessionSnapshot{
+		SessionRow: generated.GetCurrentSessionRow{
+			OrganizationID: toPGUUID(organizationID),
+			GrantScopeType: ScopeDivision,
+			GrantScopeID:   toPGUUID(divisionID),
+		},
+		Divisions: []generated.AuthDivision{{ID: toPGUUID(divisionID)}},
+		Units:     []generated.AuthUnit{{ID: toPGUUID(unitID), DivisionID: toPGUUID(divisionID)}},
+	}
+
+	organizationReq := UpdateEmployeeAccessRequest{
+		RoleTemplate: RoleOrganizationHead,
+		ScopeType:    ScopeOrganization,
+		ScopeID:      organizationID.String(),
+	}
+	if err := normalizeEmployeeAccessUpdateRequest(snapshot, &organizationReq); !errors.Is(err, ErrInviteScopeTargetInvalid) {
+		t.Fatalf("organization-scope update error = %v, want %v", err, ErrInviteScopeTargetInvalid)
+	}
+
+	unitReq := UpdateEmployeeAccessRequest{
+		RoleTemplate: RoleUnitAdmin,
+		ScopeType:    ScopeUnit,
+		ScopeID:      unitID.String(),
+	}
+	if err := normalizeEmployeeAccessUpdateRequest(snapshot, &unitReq); err != nil {
+		t.Fatalf("child unit update returned error: %v", err)
 	}
 }
 

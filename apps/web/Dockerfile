@@ -16,11 +16,17 @@ COPY . .
 
 ARG NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
 ARG NEXT_PUBLIC_RUNTIME_DATA_MODE=seed-read
+ARG NEXT_PUBLIC_STORYBOOK_URL=
 
 ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
 ENV NEXT_PUBLIC_RUNTIME_DATA_MODE=${NEXT_PUBLIC_RUNTIME_DATA_MODE}
+ENV NEXT_PUBLIC_STORYBOOK_URL=${NEXT_PUBLIC_STORYBOOK_URL}
 
-RUN pnpm --filter @vrk/web build
+RUN pnpm --filter @vrk/web build-storybook \
+  && rm -rf apps/web/public/storybook \
+  && mkdir -p apps/web/public/storybook \
+  && cp -R apps/web/storybook-static/. apps/web/public/storybook/ \
+  && pnpm --filter @vrk/web build
 
 EXPOSE 8080
 

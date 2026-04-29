@@ -196,6 +196,7 @@ jobs:
           build-args: |
             NEXT_PUBLIC_API_BASE_URL=${{ vars.VRK_BACKEND_URL }}
             NEXT_PUBLIC_RUNTIME_DATA_MODE=seed-read
+            NEXT_PUBLIC_STORYBOOK_URL=${{ vars.VRK_WEB_URL }}/storybook/
           cache-from: type=gha,scope=vrk-web-incubator
           cache-to: type=gha,mode=max,scope=vrk-web-incubator
 
@@ -249,9 +250,15 @@ jobs:
             DB_PASSWORD=${{ vars.YC_LOCKBOX_SECRET_ID }}/${{ vars.YC_LOCKBOX_VERSION_ID }}/DB_PASSWORD
             DB_SSL_MODE=${{ vars.YC_LOCKBOX_SECRET_ID }}/${{ vars.YC_LOCKBOX_VERSION_ID }}/DB_SSL_MODE
             PLATFORM_ADMIN_SHARED_SECRET=${{ vars.YC_LOCKBOX_SECRET_ID }}/${{ vars.YC_LOCKBOX_VERSION_ID }}/PLATFORM_ADMIN_SHARED_SECRET
+            OBJECT_STORAGE_BUCKET=${{ vars.YC_LOCKBOX_SECRET_ID }}/${{ vars.YC_LOCKBOX_VERSION_ID }}/OBJECT_STORAGE_BUCKET
+            OBJECT_STORAGE_ACCESS_KEY_ID=${{ vars.YC_LOCKBOX_SECRET_ID }}/${{ vars.YC_LOCKBOX_VERSION_ID }}/OBJECT_STORAGE_ACCESS_KEY_ID
+            OBJECT_STORAGE_SECRET_ACCESS_KEY=${{ vars.YC_LOCKBOX_SECRET_ID }}/${{ vars.YC_LOCKBOX_VERSION_ID }}/OBJECT_STORAGE_SECRET_ACCESS_KEY
           revision-env: |
             ENVIRONMENT=incubator
             SERVER_PORT=8080
+            OBJECT_STORAGE_ENDPOINT=https://storage.yandexcloud.net
+            OBJECT_STORAGE_REGION=ru-central1
+            OBJECT_STORAGE_FORCE_PATH_STYLE=false
 
   deploy-web:
     name: Deploy web
@@ -302,6 +309,7 @@ jobs:
             INTERNAL_API_BASE_URL=${{ vars.VRK_BACKEND_URL }}
             NEXT_PUBLIC_API_BASE_URL=${{ vars.VRK_BACKEND_URL }}
             NEXT_PUBLIC_RUNTIME_DATA_MODE=seed-read
+            NEXT_PUBLIC_STORYBOOK_URL=${{ vars.VRK_WEB_URL }}/storybook/
 
   health-check:
     name: Health check
@@ -340,13 +348,16 @@ jobs:
           web_base="${WEB_URL%/}"
           for i in $(seq 1 20); do
             code="$(curl -sS -o /dev/null -w "%{http_code}" --max-time 30 "$web_base/login" || echo "000")"
-            if [ "$code" = "200" ]; then
-              echo "Web route check passed"
+            storybook_code="$(curl -sS -o /dev/null -w "%{http_code}" --max-time 30 "$web_base/storybook/index.html" || echo "000")"
+            storybook_json="$(curl -sS --max-time 30 "$web_base/storybook/index.json" || true)"
+            if [ "$code" = "200" ] && [ "$storybook_code" = "200" ] && STORYBOOK_JSON="$storybook_json" python3 -c 'import json, os, sys; payload = json.loads(os.environ["STORYBOOK_JSON"]); entries = payload.get("entries"); sys.exit(0 if isinstance(entries, dict) and entries else 1)' 2>/dev/null
+            then
+              echo "Web route and Storybook checks passed"
               exit 0
             fi
-            echo "Attempt $i/20: /login=$code, waiting 5s..."
+            echo "Attempt $i/20: /login=$code /storybook/index.html=$storybook_code, waiting 5s..."
             sleep 5
           done
 
-          echo "Web route check failed"
+          echo "Web route or Storybook check failed"
           exit 1

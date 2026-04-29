@@ -1,0 +1,11 @@
+Web Interface Guidelines review for structure identifier removal.
+
+Changed UI surface:
+- apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+Review result: PASS
+
+Notes:
+- The change removes one optional structure input from an existing form and metadata formatter.
+- Existing form labels, focusable controls, modal behavior, disabled/loading states, and Russian UI copy remain intact.
+- No new reusable component family was introduced.

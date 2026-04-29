@@ -91,8 +91,11 @@ flowchart LR
 - анонимный пользователь все еще видит Stage 02 shell на `/company`, пока у него нет сессии;
 - платформенный админ выпускает invite через `/register`;
 - historical slice-001 implementation проводит приглашенного администратора по пути `/register/[token] -> /company/setup -> /company`;
-- target correction от 2026-04-29 заменяет этот одноразовый wizard на путь `/register/[token] -> /company`, где первый и последующие филиалы/подразделения и юниты создаются через постоянный organization management UI;
-- `/company` разделяет semantics поля `Тип`: профиль организации показывает legal-form selector `ООО` / `АО` / `ПАО`, подразделение/филиал не показывает type selector, а юнит сохраняет operational type selector `ВРД` / `ВРЗ` / `ВУ` / `ВРП`;
+- target correction от 2026-04-29 заменяет этот одноразовый wizard на путь `/register/[token] -> /company`, где первый и последующие дивизионы и юниты создаются через постоянный organization management UI;
+- `/company` разделяет semantics поля `Тип`: профиль организации показывает legal-form selector `ООО` / `ПАО` / `НАО` / `ИП`, дивизион не показывает type selector, а юнит сохраняет operational type selector `ВРД` / `ВРЗ` / `ВУ` / `ВРП`;
+- `/company` показывает optional requisites и логотип; логотип загружается через `app/api/company/logo`, а browser получает только authenticated proxy URL, не S3 object key;
+- `/company` держит формы создания дивизионов и юнитов постоянными create-surfaces: edit actions не подставляют значения в эти формы;
+- редактирование дивизионов и юнитов открывается отдельным modal PATCH surface с focus trap, `Escape`/backdrop close и restore focus, аналогично registry edit dialogs в `/equipment`;
 - server-side runtime layout читает текущую session и не пускает активированного администратора в пустой shell;
 - browser не ходит напрямую в container-only backend host: Next route handlers в `app/api/*` проксируют invite/session/bootstrap requests к `apps/backend`;
 - `/api/platform/organization-shells` inject-ит `X-VRK-Platform-Admin-Secret` только на server side из `PLATFORM_ADMIN_SHARED_SECRET`, поэтому browser не видит deployment-scoped admin credential;
@@ -117,8 +120,8 @@ flowchart LR
 - Next route handlers в `app/api/auth/invites/*`, `app/api/auth/employee-invites/*` и `app/api/auth/employees/*` закрывают browser от прямого доступа к internal backend host и держат cookie/session boundary на стороне `apps/web`;
 - `/company` стал scope-aware landing page:
   - organization-scope пользователь видит весь org graph; вкладка `Сотрудники` появляется при `workspace.canViewEmployees`, а invite/edit/deactivate controls только при admin-флагах;
-  - division-scope пользователь видит только свое подразделение и его child units; `division_head` и scoped `auditor` получают read-only employees registry;
-  - unit-scope пользователь видит только один юнит и не видит broader org graph; `unit_head` и scoped `auditor` получают read-only employees registry;
+  - division-scope пользователь видит только свой дивизион и его child units; `division_admin` получает scoped invite/edit/deactivate controls, а `division_head` и scoped `auditor` получают read-only employees registry;
+  - unit-scope пользователь видит только один юнит и не видит broader org graph; `unit_admin` получает scoped invite/edit/deactivate controls, а `unit_head` и scoped `auditor` получают read-only employees registry;
 - `/login` после employee acceptance больше не возвращает пользователя в generic shell, а сразу восстанавливает его сохраненный scoped contour;
 - ссылка `политикой доступа` в login consent ведет на `/access-policy`, где временно живет non-legal draft/stub политики до замены юридически оформленной редакцией;
 - checkbox `Запомнить вход` на `/login` управляет только web-session UX: checked ставит HttpOnly `vrk_session` cookie с 24h `maxAge` и сохраняет localStorage-подсказку последнего workspace по hash нормализованного email; unchecked ставит session cookie без `maxAge` и чистит подсказку для текущего email;
@@ -182,7 +185,7 @@ flowchart LR
 - `app/api/equipment*` скрывает browser от internal backend host и держит один public web boundary для equipment, measuring instruments и standards;
 - анонимный пользователь по-прежнему видит truthful shell без live scoped records;
 - customer `organization_admin` на organization scope получает live create/list surface для всех трех registries на одном route;
-- division-scope и unit-scope пользователи попадают на тот же `/equipment`, но получают только scope-filtered read-only contour без broader record leak и без mutate surface;
+- division-scope и unit-scope пользователи попадают на тот же `/equipment`; scoped admins получают mutate surface только внутри visible scope/subtree, read-only роли получают scope-filtered contour без broader record leak;
 - contractor session не получает parallel registry family и остается вне customer master-data contour;
 - relation baseline теперь реальна в runtime и proof bundle:
   - equipment может существовать без СИ;
@@ -218,8 +221,9 @@ flowchart LR
 - edit surface открывается только для `sessionHasCapability(session, "manage_equipment")` и не показывается на archived records;
 - derived метрологический статус СИ и эталонов остается read-only в edit UI и продолжает пересчитываться через journal endpoints;
 - active pickers остаются отфильтрованными даже когда archive visibility включена:
-  - built-in MI picker использует только `activeEquipmentRecords`;
+  - equipment create picker использует только активные standalone-СИ выбранного юнита;
   - standard link picker использует только `activeStandards`;
+- create surface больше не показывает в форме СИ поля `Размещение` и `Привязка к оборудованию`: новое СИ создается standalone, а связь с оборудованием задается через селектор `Связанные средства измерения` в форме `Новое оборудование`;
 - mutate surface остается только у customer `organization_admin` на `organization` scope;
 - division/unit users читают только свой scope-filtered active/archive contour и journal history без broader leak.
 
@@ -236,7 +240,7 @@ flowchart LR
     F --> I["backend archive endpoints"]
     L --> M["backend PATCH endpoints"]
     G --> J["active lists + archived rows"]
-    C --> K["activeEquipmentRecords / activeStandards pickers only"]
+    C --> K["active standalone MI / activeStandards pickers only"]
 ```
 
 Диаграмма фиксирует текущую frontend boundary для slice-005 и edit follow-up: query state управляет тем, что видно на одном публичном route, archived visibility не расширяет mutate surface, а PATCH editor доступен только для активных записей у роли с `manage_equipment`.

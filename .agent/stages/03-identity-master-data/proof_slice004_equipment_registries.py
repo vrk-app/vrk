@@ -296,7 +296,6 @@ INSERT INTO auth_units (
     division_id,
     unit_type,
     name,
-    code,
     address,
     manager_name,
     contacts
@@ -305,7 +304,6 @@ INSERT INTO auth_units (
     '{customer.division_id}'::uuid,
     'Юнит',
     'Второй юнит {SEED}',
-    'U2-{SEED}',
     'г. Москва, площадка 2',
     'Старший инженер',
     '+7 (999) 000-00-02'

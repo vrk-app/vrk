@@ -2,9 +2,9 @@
 
 - Stage ID: `03-identity-master-data`
 - Current correction slice: `slice-010-stage03-org-structure-management`
-- Current local-dev slice: `stage03-local-dev-seed`
+- Current continuation slice: `stage03-company-profile-access-policy`
 - Builder state: `COMPLETE`
-- Verifier state: `PASS_AFTER_DIVISION_ROLE_MODEL_V1`; local-dev seed proof collected by parent on 2026-04-29
+- Verifier state: `PASS_AFTER_COMPANY_PROFILE_ACCESS_POLICY_CONTINUATION`
 
 This bundle records builder-collected proof, the minimal fixer doc-sync, and the historical post-fixer fresh verifier `PASS` for the 2026-04-29 Stage 03 correction that moves the product target from the historical launch wizard to persistent `/company` organization profile and structure management.
 
@@ -12,7 +12,36 @@ Newton later failed the legal-type correction only for documentation drift, and 
 
 The 2026-04-29 local-dev seed slice adds an operational developer workflow on top of the proven Stage 03 identity/org-structure APIs: `make dev` now runs a one-shot `dev-seed` service after compose health, creates a demo customer organization through backend API only, prints credentials, and writes `.local/dev-seed.json`.
 
+The 2026-04-29 company profile/access continuation completes the expanded profile, scoped admin, logo storage, password policy, and contract-scope hardening proof. It adds the missing contract update visibility guard, aligns the contracts UI to workspace-visible scopes for `division_admin` / `unit_admin`, refreshes Storybook scoped-admin coverage, updates active stage legal-form evidence to `ООО` / `ПАО` / `НАО` / `ИП`, and confirms the measuring-instrument UI label is `ФИФ`.
+
 ## Commands Run
+
+- Company profile/access continuation:
+  - Fixed contract update authorization so scoped admins cannot update contracts outside their visible scope/subtree.
+  - Added `TestAgreementUpdateRejectsContractOutsideVisibleScope`.
+  - Updated `ContractsRegistry` to derive available contract scopes from `session.workspace`, `session.divisions`, and `session.units`.
+  - Added `DivisionAdminScoped` and `UnitAdminScoped` Storybook stories for the contracts registry.
+  - Updated Storybook runtime mock contract creation to derive `locationScope` from `divisionId` / `unitId`.
+  - Updated active proof/stage artifacts to `ООО` / `ПАО` / `НАО` / `ИП`, with `АО -> НАО`, `ЗАО -> НАО`, `ОАО -> ПАО`, and `LLC -> ООО`.
+  - Updated `docs/design/diagrams/customer-admin-bootstrap-flow.drawio` visible measuring-instrument label to `ФИФ`.
+  - Web Interface Guidelines review: `PASS`.
+  - Verification status: `PASS` for backend, web, compose config, existing compose smoke, XML/JSON/stale-text audits, and proof script compile.
+  - Raw:
+    - `.agent/stages/03-identity-master-data/raw/company-profile-access-backend-go-test-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/company-profile-access-backend-go-build-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/company-profile-access-web-lint-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/company-profile-access-web-typecheck-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/company-profile-access-web-build-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/company-profile-access-storybook-build-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/company-profile-access-compose-config-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/company-profile-access-platform-smoke-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/company-profile-access-proof-pycompile-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/company-profile-access-json-audit-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/company-profile-access-drawio-xml-audit-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/company-profile-access-stale-doc-audit-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/company-profile-access-registration-label-audit-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/company-profile-access-ui-review-2026-04-29.txt`
+    - `.agent/stages/03-identity-master-data/raw/storybook-lookup-company-profile-access-contracts-2026-04-29.txt`
 
 - Local dev seed workflow:
   - Added schema-only migration `000013_dev_seed_runs` for seed idempotency markers.
@@ -80,9 +109,9 @@ The 2026-04-29 local-dev seed slice adds an operational developer workflow on to
     - `.agent/stages/03-identity-master-data/raw/slice-010-division-post-verifier-harness-2026-04-29.txt`
 
 - Division + Role Model v1 final checkpoint:
-  - Canonical role templates are `organization_admin`, `organization_head`, `division_head`, `division_operator`, `unit_head`, `unit_operator`, and `auditor`.
+  - Canonical role templates are `organization_admin`, `organization_head`, `division_admin`, `division_head`, `division_operator`, `unit_admin`, `unit_head`, `unit_operator`, and `auditor`.
   - Scope compatibility is enforced: organization roles only on `organization`, division roles only on `division`, unit roles only on `unit`, and `auditor` on any of the three scopes.
-  - Stage 03 v1 mutate capabilities remain only on active customer `organization_admin` at organization scope; all other roles are scope-aware read-only until later stages enable more capability-map entries.
+  - Stage 03 v1 mutate capabilities are active for customer `organization_admin`, `division_admin`, and `unit_admin`, each constrained to its compatible scope; non-admin roles remain scope-aware read-only.
   - Active terminology audit over `apps/backend/internal`, backend Swagger, `apps/web`, canonical docs, and `scripts` found no legacy public contract terms for the old subdivision/observer model.
   - Updated canonical docs and stage contract:
     - `docs/architecture/identity-master-data.md`
@@ -107,9 +136,9 @@ The 2026-04-29 local-dev seed slice adds an operational developer workflow on to
 
 - Newton doc-drift fixer:
   - Updated `docs/roadmap.md` and `docs/design/customer-admin-bootstrap-flow.md` so their legacy legal-form compatibility sentences include `LLC -> ООО`.
-  - Updated `docs/design/diagrams/customer-admin-bootstrap-flow.drawio` so the visible legal-form examples are `ООО, АО, ПАО`.
+  - Updated `docs/design/diagrams/customer-admin-bootstrap-flow.drawio` so the visible legal-form examples are `ООО, ПАО, НАО, ИП`.
   - `rg -n "LLC -> ООО" docs/roadmap.md docs/design/customer-admin-bootstrap-flow.md`
-  - `rg -n "Организационно-правовая.*ООО, АО, ПАО" docs/design/diagrams/customer-admin-bootstrap-flow.drawio`
+  - `rg -n "Организационно-правовая.*ООО, ПАО, НАО, ИП" docs/design/diagrams/customer-admin-bootstrap-flow.drawio`
   - drawio stale option/alias absence audit for `АО, ЗАО, ООО, ИП`, `ОАО`, and `ЗАО`
   - `xmllint --noout docs/design/diagrams/customer-admin-bootstrap-flow.drawio`
   - `jq empty .agent/stages/03-identity-master-data/evidence.json`
@@ -117,7 +146,7 @@ The 2026-04-29 local-dev seed slice adds an operational developer workflow on to
   - Raw: `.agent/stages/03-identity-master-data/raw/slice-010-newton-doc-drift-fixer-2026-04-29.txt`
 
 - Legal-type correction builder rerun:
-  - Corrected the stale field contract so organization `Тип` / `propertyType` is legal form `ООО` / `АО` / `ПАО`, division/branch has no selectable type, and unit type remains `ВРД` / `ВРЗ` / `ВУ` / `ВРП`.
+  - Corrected the stale field contract so organization `Тип` / `propertyType` is legal form `ООО` / `ПАО` / `НАО` / `ИП`, division/branch has no selectable type, and unit type remains `ВРД` / `ВРЗ` / `ВУ` / `ВРП`.
   - `python3 -m py_compile .agent/stages/03-identity-master-data/proof_slice010_org_structure.py`
   - `docker run --rm -v /Users/yura-posledov/cursor/vrk/apps/backend:/src -w /src sqlc/sqlc:1.30.0 generate -f sqlc.yaml`
   - `docker run --rm -v /Users/yura-posledov/cursor/vrk/apps/backend:/src -w /src -e GOCACHE=/tmp/go-cache -e GOMODCACHE=/tmp/go-mod-cache golang:1.26.1 go test ./...`
@@ -147,7 +176,7 @@ The 2026-04-29 local-dev seed slice adds an operational developer workflow on to
     - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-harness-pre-verifier-2026-04-29.txt`
 - Post-Newton doc-only fixer:
   - Newton's fresh verifier reproduced the runtime/code proof but returned `FAIL` for documentation drift.
-  - The doc-only fixer added explicit `LLC -> ООО` alongside `ОАО -> ПАО` and `ЗАО -> АО` in the roadmap and customer-admin bootstrap flow docs, and updated the Draw.io source to show visible legal-form options `ООО, АО, ПАО`.
+  - The doc-only fixer added explicit `LLC -> ООО` alongside `АО -> НАО`, `ОАО -> ПАО`, and `ЗАО -> НАО` in the roadmap and customer-admin bootstrap flow docs, and updated the Draw.io source to show visible legal-form options `ООО, ПАО, НАО, ИП`.
   - Follow-up parent cleanup restored `division` terminology in `docs/roadmap.md` and kept all three alias mappings explicit.
   - Status: `READY_FOR_POST_FIXER_FRESH_VERIFIER`.
   - Raw:
@@ -251,12 +280,12 @@ The 2026-04-29 local-dev seed slice adds an operational developer workflow on to
   - `/company/setup` is non-canonical and redirects to `/company`.
 - Persistent organization profile:
   - `PATCH /api/v1/company/profile` preserves organization legal form through `propertyType` and `type` compatibility alias plus `name`, `registeredAddress`, `leaderFullName`, `leaderPosition`, `contractPhone`, `contractEmail`, and `actingBasis`;
-  - accepted visible legal forms are `ООО`, `АО`, `ПАО`;
-  - legacy inputs normalize as `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО`;
+  - accepted visible legal forms are `ООО`, `ПАО`, `НАО`, `ИП`;
+  - legacy inputs normalize as `АО -> НАО`, `ОАО -> ПАО`, `ЗАО -> НАО`, `LLC -> ООО`;
   - operational values such as `ВРД` are rejected for organization legal form.
 - Canonical field contract:
-  - `docs/architecture/identity-master-data.md` now records differentiated type semantics: organization `propertyType`/`type` alias is ОПФ `ООО`/`АО`/`ПАО`, division/branch has no selectable type and uses hidden storage default `division`, and unit `type` is `ВРД`/`ВРЗ`/`ВУ`/`ВРП`;
-  - the same doc records `registeredAddress`/`address` and `leaderFullName`/`managerName` alias semantics, remaining business fields, preserved `code`/`region`/`status`/`comment`, and active-only archive/selection constraints for `/company`.
+  - `docs/architecture/identity-master-data.md` now records differentiated type semantics: organization `propertyType`/`type` alias is ОПФ `ООО`/`ПАО`/`НАО`/`ИП`, division/branch has no selectable type and uses hidden storage default `division`, and unit `type` is `ВРД`/`ВРЗ`/`ВУ`/`ВРП`;
+  - the same doc records `registeredAddress`/`address` and `leaderFullName`/`managerName` alias semantics, remaining business fields, preserved `region`/`status`/`comment`, and active-only archive/selection constraints for `/company`.
 - Persistent division/unit management:
   - first division create works without a user-facing `type` payload;
   - division rows no longer show hidden storage type in the `/company` UI;
@@ -323,7 +352,7 @@ The 2026-04-29 local-dev seed slice adds an operational developer workflow on to
 
 Fixer doc-sync update: `docs/architecture/identity-master-data.md` section `1.2.1` now records the concrete `/company` business-field alias/type contract required by `sprint_contract.md`. No production code or generated OpenAPI was changed in the fixer pass.
 
-Newton doc-drift fixer update: `docs/roadmap.md`, `docs/design/customer-admin-bootstrap-flow.md`, and `docs/design/diagrams/customer-admin-bootstrap-flow.drawio` now align with the `LLC -> ООО` compatibility mapping and the visible selector set `ООО`, `АО`, `ПАО`.
+Newton doc-drift fixer update: `docs/roadmap.md`, `docs/design/customer-admin-bootstrap-flow.md`, and `docs/design/diagrams/customer-admin-bootstrap-flow.drawio` now align with the compatibility mappings and the visible selector set `ООО`, `ПАО`, `НАО`, `ИП`.
 
 ## Stage Artifact State
 
@@ -351,3 +380,29 @@ Newton doc-drift fixer update: `docs/roadmap.md`, `docs/design/customer-admin-bo
 
 - Newton reported documentation drift only on the legal-type correction. The three reported canonical doc/diagram gaps are fixed and ready for a new fresh verifier to own `verdict.json` / `problems.md`.
 - Residual environment note: repo-local `.agent/tmp-tools/sqlc` and `.agent/tmp-tools/go/bin/go` are absent in this checkout; Docker fallbacks were used and passed before the doc-only fixer, and the post-fixer verifier confirmed production code did not change afterward.
+
+## Structure Code Removal
+
+- User correction on 2026-04-29: the division/unit short identifier field is not a product requirement and should be removed from application, docs, and harness.
+- Implementation:
+  - `000014_remove_structure_code` drops `auth_divisions.code` and `auth_units.code`;
+  - backend request/response models, repository writes, sqlc queries/generated code, and Swagger no longer expose the field;
+  - `/company` create/edit forms, node metadata, web API types, and Storybook runtime fixtures/mocks no longer read or send the field;
+  - canonical docs and Stage 03 artifacts now list only the remaining structure fields.
+- UI workflow:
+  - `$vrk-web-ui-workflow` was used;
+  - no new reusable UI family was created, so Storybook component lookup/backlog changes were not required for this removal;
+  - Web Interface Guidelines review of the changed company UI found no new blocking issue because the change only removes one optional input and keeps existing labels, controls, and dialog behavior.
+- Proof run in this worktree:
+  - Docker sqlc generation;
+  - Docker Swagger generation;
+  - Docker `go test ./...`;
+  - Docker `go build -buildvcs=false ./...`;
+  - `PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run lint`;
+  - `PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run typecheck`;
+  - `PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run build`;
+  - `PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run build-storybook`;
+  - `python3 -m py_compile` for updated Stage 03 proof scripts;
+  - stage harness self-check;
+  - targeted obsolete-field `rg` guard;
+  - `git diff --check`.

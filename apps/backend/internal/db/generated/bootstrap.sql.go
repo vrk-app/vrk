@@ -19,7 +19,7 @@ SET
 WHERE id = $1
   AND organization_id = $2
   AND status = 'active'
-RETURNING id, organization_id, division_type, name, code, region, address, manager_name, contacts, status, created_at, updated_at, leader_position, contract_phone, contract_email, acting_basis, comment
+RETURNING id, organization_id, division_type, name, region, address, manager_name, contacts, status, created_at, updated_at, leader_position, contract_phone, contract_email, acting_basis, comment
 `
 
 type ArchiveAuthDivisionParams struct {
@@ -35,7 +35,6 @@ func (q *Queries) ArchiveAuthDivision(ctx context.Context, arg ArchiveAuthDivisi
 		&i.OrganizationID,
 		&i.DivisionType,
 		&i.Name,
-		&i.Code,
 		&i.Region,
 		&i.Address,
 		&i.ManagerName,
@@ -60,7 +59,7 @@ SET
 WHERE id = $1
   AND organization_id = $2
   AND status = 'active'
-RETURNING id, organization_id, division_id, unit_type, name, code, address, manager_name, contacts, status, created_at, updated_at, region, leader_position, contract_phone, contract_email, acting_basis, comment
+RETURNING id, organization_id, division_id, unit_type, name, address, manager_name, contacts, status, created_at, updated_at, region, leader_position, contract_phone, contract_email, acting_basis, comment
 `
 
 type ArchiveAuthUnitParams struct {
@@ -77,7 +76,6 @@ func (q *Queries) ArchiveAuthUnit(ctx context.Context, arg ArchiveAuthUnitParams
 		&i.DivisionID,
 		&i.UnitType,
 		&i.Name,
-		&i.Code,
 		&i.Address,
 		&i.ManagerName,
 		&i.Contacts,
@@ -90,6 +88,58 @@ func (q *Queries) ArchiveAuthUnit(ctx context.Context, arg ArchiveAuthUnitParams
 		&i.ContractEmail,
 		&i.ActingBasis,
 		&i.Comment,
+	)
+	return i, err
+}
+
+const clearBootstrapOrganizationLogo = `-- name: ClearBootstrapOrganizationLogo :one
+UPDATE auth_bootstrap_organizations
+SET
+    logo_object_key = NULL,
+    logo_file_name = NULL,
+    logo_content_type = NULL,
+    logo_size_bytes = NULL,
+    logo_updated_at = NULL,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING id, role_title, shell_name, short_name, property_type, inn, kpp, legal_address, contact_email, contact_phone, launch_state, first_admin_account_id, launched_at, created_at, updated_at, leader_full_name, leader_position, contract_phone, contract_email, acting_basis, postal_address, ogrn, settlement_account, bank_name, correspondent_account, bik, logo_object_key, logo_file_name, logo_content_type, logo_size_bytes, logo_updated_at
+`
+
+func (q *Queries) ClearBootstrapOrganizationLogo(ctx context.Context, id pgtype.UUID) (AuthBootstrapOrganization, error) {
+	row := q.db.QueryRow(ctx, clearBootstrapOrganizationLogo, id)
+	var i AuthBootstrapOrganization
+	err := row.Scan(
+		&i.ID,
+		&i.RoleTitle,
+		&i.ShellName,
+		&i.ShortName,
+		&i.PropertyType,
+		&i.Inn,
+		&i.Kpp,
+		&i.LegalAddress,
+		&i.ContactEmail,
+		&i.ContactPhone,
+		&i.LaunchState,
+		&i.FirstAdminAccountID,
+		&i.LaunchedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.LeaderFullName,
+		&i.LeaderPosition,
+		&i.ContractPhone,
+		&i.ContractEmail,
+		&i.ActingBasis,
+		&i.PostalAddress,
+		&i.Ogrn,
+		&i.SettlementAccount,
+		&i.BankName,
+		&i.CorrespondentAccount,
+		&i.Bik,
+		&i.LogoObjectKey,
+		&i.LogoFileName,
+		&i.LogoContentType,
+		&i.LogoSizeBytes,
+		&i.LogoUpdatedAt,
 	)
 	return i, err
 }
@@ -246,7 +296,6 @@ INSERT INTO auth_divisions (
     organization_id,
     division_type,
     name,
-    code,
     region,
     address,
     manager_name,
@@ -268,17 +317,15 @@ INSERT INTO auth_divisions (
     $9,
     $10,
     $11,
-    $12,
-    $13
+    $12
 )
-RETURNING id, organization_id, division_type, name, code, region, address, manager_name, contacts, status, created_at, updated_at, leader_position, contract_phone, contract_email, acting_basis, comment
+RETURNING id, organization_id, division_type, name, region, address, manager_name, contacts, status, created_at, updated_at, leader_position, contract_phone, contract_email, acting_basis, comment
 `
 
 type CreateAuthDivisionParams struct {
 	OrganizationID pgtype.UUID `json:"organizationId"`
 	DivisionType   string      `json:"divisionType"`
 	Name           string      `json:"name"`
-	Code           *string     `json:"code"`
 	Region         *string     `json:"region"`
 	Address        *string     `json:"address"`
 	ManagerName    *string     `json:"managerName"`
@@ -295,7 +342,6 @@ func (q *Queries) CreateAuthDivision(ctx context.Context, arg CreateAuthDivision
 		arg.OrganizationID,
 		arg.DivisionType,
 		arg.Name,
-		arg.Code,
 		arg.Region,
 		arg.Address,
 		arg.ManagerName,
@@ -312,7 +358,6 @@ func (q *Queries) CreateAuthDivision(ctx context.Context, arg CreateAuthDivision
 		&i.OrganizationID,
 		&i.DivisionType,
 		&i.Name,
-		&i.Code,
 		&i.Region,
 		&i.Address,
 		&i.ManagerName,
@@ -452,7 +497,6 @@ INSERT INTO auth_units (
     division_id,
     unit_type,
     name,
-    code,
     region,
     address,
     manager_name,
@@ -475,10 +519,9 @@ INSERT INTO auth_units (
     $10,
     $11,
     $12,
-    $13,
-    $14
+    $13
 )
-RETURNING id, organization_id, division_id, unit_type, name, code, address, manager_name, contacts, status, created_at, updated_at, region, leader_position, contract_phone, contract_email, acting_basis, comment
+RETURNING id, organization_id, division_id, unit_type, name, address, manager_name, contacts, status, created_at, updated_at, region, leader_position, contract_phone, contract_email, acting_basis, comment
 `
 
 type CreateAuthUnitParams struct {
@@ -486,7 +529,6 @@ type CreateAuthUnitParams struct {
 	DivisionID     pgtype.UUID `json:"divisionId"`
 	UnitType       string      `json:"unitType"`
 	Name           string      `json:"name"`
-	Code           *string     `json:"code"`
 	Region         *string     `json:"region"`
 	Address        *string     `json:"address"`
 	ManagerName    *string     `json:"managerName"`
@@ -504,7 +546,6 @@ func (q *Queries) CreateAuthUnit(ctx context.Context, arg CreateAuthUnitParams) 
 		arg.DivisionID,
 		arg.UnitType,
 		arg.Name,
-		arg.Code,
 		arg.Region,
 		arg.Address,
 		arg.ManagerName,
@@ -522,7 +563,6 @@ func (q *Queries) CreateAuthUnit(ctx context.Context, arg CreateAuthUnitParams) 
 		&i.DivisionID,
 		&i.UnitType,
 		&i.Name,
-		&i.Code,
 		&i.Address,
 		&i.ManagerName,
 		&i.Contacts,
@@ -547,7 +587,7 @@ INSERT INTO auth_bootstrap_organizations (
     $1,
     $2
 )
-RETURNING id, role_title, shell_name, short_name, property_type, inn, kpp, legal_address, contact_email, contact_phone, launch_state, first_admin_account_id, launched_at, created_at, updated_at, leader_full_name, leader_position, contract_phone, contract_email, acting_basis
+RETURNING id, role_title, shell_name, short_name, property_type, inn, kpp, legal_address, contact_email, contact_phone, launch_state, first_admin_account_id, launched_at, created_at, updated_at, leader_full_name, leader_position, contract_phone, contract_email, acting_basis, postal_address, ogrn, settlement_account, bank_name, correspondent_account, bik, logo_object_key, logo_file_name, logo_content_type, logo_size_bytes, logo_updated_at
 `
 
 type CreateBootstrapOrganizationShellParams struct {
@@ -579,6 +619,17 @@ func (q *Queries) CreateBootstrapOrganizationShell(ctx context.Context, arg Crea
 		&i.ContractPhone,
 		&i.ContractEmail,
 		&i.ActingBasis,
+		&i.PostalAddress,
+		&i.Ogrn,
+		&i.SettlementAccount,
+		&i.BankName,
+		&i.CorrespondentAccount,
+		&i.Bik,
+		&i.LogoObjectKey,
+		&i.LogoFileName,
+		&i.LogoContentType,
+		&i.LogoSizeBytes,
+		&i.LogoUpdatedAt,
 	)
 	return i, err
 }
@@ -692,7 +743,6 @@ SELECT
     organization_id,
     division_type,
     name,
-    code,
     region,
     address,
     manager_name,
@@ -717,7 +767,6 @@ func (q *Queries) GetAuthDivisionByID(ctx context.Context, id pgtype.UUID) (Auth
 		&i.OrganizationID,
 		&i.DivisionType,
 		&i.Name,
-		&i.Code,
 		&i.Region,
 		&i.Address,
 		&i.ManagerName,
@@ -741,7 +790,6 @@ SELECT
     division_id,
     unit_type,
     name,
-    code,
     address,
     manager_name,
     contacts,
@@ -767,7 +815,6 @@ func (q *Queries) GetAuthUnitByID(ctx context.Context, id pgtype.UUID) (AuthUnit
 		&i.DivisionID,
 		&i.UnitType,
 		&i.Name,
-		&i.Code,
 		&i.Address,
 		&i.ManagerName,
 		&i.Contacts,
@@ -804,6 +851,17 @@ SELECT
     o.inn AS organization_inn,
     o.kpp AS organization_kpp,
     o.legal_address AS organization_legal_address,
+    o.postal_address AS organization_postal_address,
+    o.ogrn AS organization_ogrn,
+    o.settlement_account AS organization_settlement_account,
+    o.bank_name AS organization_bank_name,
+    o.correspondent_account AS organization_correspondent_account,
+    o.bik AS organization_bik,
+    o.logo_object_key AS organization_logo_object_key,
+    o.logo_file_name AS organization_logo_file_name,
+    o.logo_content_type AS organization_logo_content_type,
+    o.logo_size_bytes AS organization_logo_size_bytes,
+    o.logo_updated_at AS organization_logo_updated_at,
     o.contact_email AS organization_contact_email,
     o.contact_phone AS organization_contact_phone,
     o.leader_full_name AS organization_leader_full_name,
@@ -828,37 +886,48 @@ LIMIT 1
 `
 
 type GetCurrentSessionRow struct {
-	ID                         pgtype.UUID        `json:"id"`
-	AccountID                  pgtype.UUID        `json:"accountId"`
-	MembershipID               pgtype.UUID        `json:"membershipId"`
-	SessionToken               string             `json:"sessionToken"`
-	ExpiresAt                  pgtype.Timestamptz `json:"expiresAt"`
-	CreatedAt                  pgtype.Timestamptz `json:"createdAt"`
-	LastSeenAt                 pgtype.Timestamptz `json:"lastSeenAt"`
-	AccountFullName            string             `json:"accountFullName"`
-	AccountEmail               string             `json:"accountEmail"`
-	OrganizationID             pgtype.UUID        `json:"organizationId"`
-	MembershipStatus           string             `json:"membershipStatus"`
-	OrganizationRoleTitle      string             `json:"organizationRoleTitle"`
-	OrganizationShellName      string             `json:"organizationShellName"`
-	OrganizationShortName      *string            `json:"organizationShortName"`
-	OrganizationPropertyType   *string            `json:"organizationPropertyType"`
-	OrganizationInn            *string            `json:"organizationInn"`
-	OrganizationKpp            *string            `json:"organizationKpp"`
-	OrganizationLegalAddress   *string            `json:"organizationLegalAddress"`
-	OrganizationContactEmail   *string            `json:"organizationContactEmail"`
-	OrganizationContactPhone   *string            `json:"organizationContactPhone"`
-	OrganizationLeaderFullName *string            `json:"organizationLeaderFullName"`
-	OrganizationLeaderPosition *string            `json:"organizationLeaderPosition"`
-	OrganizationContractPhone  *string            `json:"organizationContractPhone"`
-	OrganizationContractEmail  *string            `json:"organizationContractEmail"`
-	OrganizationActingBasis    *string            `json:"organizationActingBasis"`
-	OrganizationLaunchState    string             `json:"organizationLaunchState"`
-	OrganizationLaunchedAt     pgtype.Timestamptz `json:"organizationLaunchedAt"`
-	GrantID                    pgtype.UUID        `json:"grantId"`
-	GrantRoleTemplate          string             `json:"grantRoleTemplate"`
-	GrantScopeType             string             `json:"grantScopeType"`
-	GrantScopeID               pgtype.UUID        `json:"grantScopeId"`
+	ID                               pgtype.UUID        `json:"id"`
+	AccountID                        pgtype.UUID        `json:"accountId"`
+	MembershipID                     pgtype.UUID        `json:"membershipId"`
+	SessionToken                     string             `json:"sessionToken"`
+	ExpiresAt                        pgtype.Timestamptz `json:"expiresAt"`
+	CreatedAt                        pgtype.Timestamptz `json:"createdAt"`
+	LastSeenAt                       pgtype.Timestamptz `json:"lastSeenAt"`
+	AccountFullName                  string             `json:"accountFullName"`
+	AccountEmail                     string             `json:"accountEmail"`
+	OrganizationID                   pgtype.UUID        `json:"organizationId"`
+	MembershipStatus                 string             `json:"membershipStatus"`
+	OrganizationRoleTitle            string             `json:"organizationRoleTitle"`
+	OrganizationShellName            string             `json:"organizationShellName"`
+	OrganizationShortName            *string            `json:"organizationShortName"`
+	OrganizationPropertyType         *string            `json:"organizationPropertyType"`
+	OrganizationInn                  *string            `json:"organizationInn"`
+	OrganizationKpp                  *string            `json:"organizationKpp"`
+	OrganizationLegalAddress         *string            `json:"organizationLegalAddress"`
+	OrganizationPostalAddress        *string            `json:"organizationPostalAddress"`
+	OrganizationOgrn                 *string            `json:"organizationOgrn"`
+	OrganizationSettlementAccount    *string            `json:"organizationSettlementAccount"`
+	OrganizationBankName             *string            `json:"organizationBankName"`
+	OrganizationCorrespondentAccount *string            `json:"organizationCorrespondentAccount"`
+	OrganizationBik                  *string            `json:"organizationBik"`
+	OrganizationLogoObjectKey        *string            `json:"organizationLogoObjectKey"`
+	OrganizationLogoFileName         *string            `json:"organizationLogoFileName"`
+	OrganizationLogoContentType      *string            `json:"organizationLogoContentType"`
+	OrganizationLogoSizeBytes        *int64             `json:"organizationLogoSizeBytes"`
+	OrganizationLogoUpdatedAt        pgtype.Timestamptz `json:"organizationLogoUpdatedAt"`
+	OrganizationContactEmail         *string            `json:"organizationContactEmail"`
+	OrganizationContactPhone         *string            `json:"organizationContactPhone"`
+	OrganizationLeaderFullName       *string            `json:"organizationLeaderFullName"`
+	OrganizationLeaderPosition       *string            `json:"organizationLeaderPosition"`
+	OrganizationContractPhone        *string            `json:"organizationContractPhone"`
+	OrganizationContractEmail        *string            `json:"organizationContractEmail"`
+	OrganizationActingBasis          *string            `json:"organizationActingBasis"`
+	OrganizationLaunchState          string             `json:"organizationLaunchState"`
+	OrganizationLaunchedAt           pgtype.Timestamptz `json:"organizationLaunchedAt"`
+	GrantID                          pgtype.UUID        `json:"grantId"`
+	GrantRoleTemplate                string             `json:"grantRoleTemplate"`
+	GrantScopeType                   string             `json:"grantScopeType"`
+	GrantScopeID                     pgtype.UUID        `json:"grantScopeId"`
 }
 
 func (q *Queries) GetCurrentSession(ctx context.Context, sessionToken string) (GetCurrentSessionRow, error) {
@@ -883,6 +952,17 @@ func (q *Queries) GetCurrentSession(ctx context.Context, sessionToken string) (G
 		&i.OrganizationInn,
 		&i.OrganizationKpp,
 		&i.OrganizationLegalAddress,
+		&i.OrganizationPostalAddress,
+		&i.OrganizationOgrn,
+		&i.OrganizationSettlementAccount,
+		&i.OrganizationBankName,
+		&i.OrganizationCorrespondentAccount,
+		&i.OrganizationBik,
+		&i.OrganizationLogoObjectKey,
+		&i.OrganizationLogoFileName,
+		&i.OrganizationLogoContentType,
+		&i.OrganizationLogoSizeBytes,
+		&i.OrganizationLogoUpdatedAt,
 		&i.OrganizationContactEmail,
 		&i.OrganizationContactPhone,
 		&i.OrganizationLeaderFullName,
@@ -972,6 +1052,17 @@ SELECT
     o.inn AS organization_inn,
     o.kpp AS organization_kpp,
     o.legal_address AS organization_legal_address,
+    o.postal_address AS organization_postal_address,
+    o.ogrn AS organization_ogrn,
+    o.settlement_account AS organization_settlement_account,
+    o.bank_name AS organization_bank_name,
+    o.correspondent_account AS organization_correspondent_account,
+    o.bik AS organization_bik,
+    o.logo_object_key AS organization_logo_object_key,
+    o.logo_file_name AS organization_logo_file_name,
+    o.logo_content_type AS organization_logo_content_type,
+    o.logo_size_bytes AS organization_logo_size_bytes,
+    o.logo_updated_at AS organization_logo_updated_at,
     o.contact_email AS organization_contact_email,
     o.contact_phone AS organization_contact_phone,
     o.leader_full_name AS organization_leader_full_name,
@@ -994,29 +1085,40 @@ ORDER BY m.created_at ASC, g.created_at ASC
 `
 
 type ListAccountAccessPathsByAccountIDRow struct {
-	MembershipID               pgtype.UUID        `json:"membershipId"`
-	OrganizationID             pgtype.UUID        `json:"organizationId"`
-	MembershipStatus           string             `json:"membershipStatus"`
-	OrganizationRoleTitle      string             `json:"organizationRoleTitle"`
-	OrganizationShellName      string             `json:"organizationShellName"`
-	OrganizationShortName      *string            `json:"organizationShortName"`
-	OrganizationPropertyType   *string            `json:"organizationPropertyType"`
-	OrganizationInn            *string            `json:"organizationInn"`
-	OrganizationKpp            *string            `json:"organizationKpp"`
-	OrganizationLegalAddress   *string            `json:"organizationLegalAddress"`
-	OrganizationContactEmail   *string            `json:"organizationContactEmail"`
-	OrganizationContactPhone   *string            `json:"organizationContactPhone"`
-	OrganizationLeaderFullName *string            `json:"organizationLeaderFullName"`
-	OrganizationLeaderPosition *string            `json:"organizationLeaderPosition"`
-	OrganizationContractPhone  *string            `json:"organizationContractPhone"`
-	OrganizationContractEmail  *string            `json:"organizationContractEmail"`
-	OrganizationActingBasis    *string            `json:"organizationActingBasis"`
-	OrganizationLaunchState    string             `json:"organizationLaunchState"`
-	OrganizationLaunchedAt     pgtype.Timestamptz `json:"organizationLaunchedAt"`
-	GrantID                    pgtype.UUID        `json:"grantId"`
-	GrantRoleTemplate          string             `json:"grantRoleTemplate"`
-	GrantScopeType             string             `json:"grantScopeType"`
-	GrantScopeID               pgtype.UUID        `json:"grantScopeId"`
+	MembershipID                     pgtype.UUID        `json:"membershipId"`
+	OrganizationID                   pgtype.UUID        `json:"organizationId"`
+	MembershipStatus                 string             `json:"membershipStatus"`
+	OrganizationRoleTitle            string             `json:"organizationRoleTitle"`
+	OrganizationShellName            string             `json:"organizationShellName"`
+	OrganizationShortName            *string            `json:"organizationShortName"`
+	OrganizationPropertyType         *string            `json:"organizationPropertyType"`
+	OrganizationInn                  *string            `json:"organizationInn"`
+	OrganizationKpp                  *string            `json:"organizationKpp"`
+	OrganizationLegalAddress         *string            `json:"organizationLegalAddress"`
+	OrganizationPostalAddress        *string            `json:"organizationPostalAddress"`
+	OrganizationOgrn                 *string            `json:"organizationOgrn"`
+	OrganizationSettlementAccount    *string            `json:"organizationSettlementAccount"`
+	OrganizationBankName             *string            `json:"organizationBankName"`
+	OrganizationCorrespondentAccount *string            `json:"organizationCorrespondentAccount"`
+	OrganizationBik                  *string            `json:"organizationBik"`
+	OrganizationLogoObjectKey        *string            `json:"organizationLogoObjectKey"`
+	OrganizationLogoFileName         *string            `json:"organizationLogoFileName"`
+	OrganizationLogoContentType      *string            `json:"organizationLogoContentType"`
+	OrganizationLogoSizeBytes        *int64             `json:"organizationLogoSizeBytes"`
+	OrganizationLogoUpdatedAt        pgtype.Timestamptz `json:"organizationLogoUpdatedAt"`
+	OrganizationContactEmail         *string            `json:"organizationContactEmail"`
+	OrganizationContactPhone         *string            `json:"organizationContactPhone"`
+	OrganizationLeaderFullName       *string            `json:"organizationLeaderFullName"`
+	OrganizationLeaderPosition       *string            `json:"organizationLeaderPosition"`
+	OrganizationContractPhone        *string            `json:"organizationContractPhone"`
+	OrganizationContractEmail        *string            `json:"organizationContractEmail"`
+	OrganizationActingBasis          *string            `json:"organizationActingBasis"`
+	OrganizationLaunchState          string             `json:"organizationLaunchState"`
+	OrganizationLaunchedAt           pgtype.Timestamptz `json:"organizationLaunchedAt"`
+	GrantID                          pgtype.UUID        `json:"grantId"`
+	GrantRoleTemplate                string             `json:"grantRoleTemplate"`
+	GrantScopeType                   string             `json:"grantScopeType"`
+	GrantScopeID                     pgtype.UUID        `json:"grantScopeId"`
 }
 
 func (q *Queries) ListAccountAccessPathsByAccountID(ctx context.Context, accountID pgtype.UUID) ([]ListAccountAccessPathsByAccountIDRow, error) {
@@ -1039,6 +1141,17 @@ func (q *Queries) ListAccountAccessPathsByAccountID(ctx context.Context, account
 			&i.OrganizationInn,
 			&i.OrganizationKpp,
 			&i.OrganizationLegalAddress,
+			&i.OrganizationPostalAddress,
+			&i.OrganizationOgrn,
+			&i.OrganizationSettlementAccount,
+			&i.OrganizationBankName,
+			&i.OrganizationCorrespondentAccount,
+			&i.OrganizationBik,
+			&i.OrganizationLogoObjectKey,
+			&i.OrganizationLogoFileName,
+			&i.OrganizationLogoContentType,
+			&i.OrganizationLogoSizeBytes,
+			&i.OrganizationLogoUpdatedAt,
 			&i.OrganizationContactEmail,
 			&i.OrganizationContactPhone,
 			&i.OrganizationLeaderFullName,
@@ -1069,7 +1182,6 @@ SELECT
     organization_id,
     division_type,
     name,
-    code,
     region,
     address,
     manager_name,
@@ -1102,7 +1214,6 @@ func (q *Queries) ListAuthDivisionsByOrganization(ctx context.Context, organizat
 			&i.OrganizationID,
 			&i.DivisionType,
 			&i.Name,
-			&i.Code,
 			&i.Region,
 			&i.Address,
 			&i.ManagerName,
@@ -1133,7 +1244,6 @@ SELECT
     division_id,
     unit_type,
     name,
-    code,
     address,
     manager_name,
     contacts,
@@ -1167,7 +1277,6 @@ func (q *Queries) ListAuthUnitsByOrganization(ctx context.Context, organizationI
 			&i.DivisionID,
 			&i.UnitType,
 			&i.Name,
-			&i.Code,
 			&i.Address,
 			&i.ManagerName,
 			&i.Contacts,
@@ -1198,7 +1307,7 @@ SET
     launched_at = COALESCE(launched_at, NOW()),
     updated_at = NOW()
 WHERE id = $1
-RETURNING id, role_title, shell_name, short_name, property_type, inn, kpp, legal_address, contact_email, contact_phone, launch_state, first_admin_account_id, launched_at, created_at, updated_at, leader_full_name, leader_position, contract_phone, contract_email, acting_basis
+RETURNING id, role_title, shell_name, short_name, property_type, inn, kpp, legal_address, contact_email, contact_phone, launch_state, first_admin_account_id, launched_at, created_at, updated_at, leader_full_name, leader_position, contract_phone, contract_email, acting_basis, postal_address, ogrn, settlement_account, bank_name, correspondent_account, bik, logo_object_key, logo_file_name, logo_content_type, logo_size_bytes, logo_updated_at
 `
 
 func (q *Queries) MarkBootstrapOrganizationLaunched(ctx context.Context, id pgtype.UUID) (AuthBootstrapOrganization, error) {
@@ -1225,6 +1334,17 @@ func (q *Queries) MarkBootstrapOrganizationLaunched(ctx context.Context, id pgty
 		&i.ContractPhone,
 		&i.ContractEmail,
 		&i.ActingBasis,
+		&i.PostalAddress,
+		&i.Ogrn,
+		&i.SettlementAccount,
+		&i.BankName,
+		&i.CorrespondentAccount,
+		&i.Bik,
+		&i.LogoObjectKey,
+		&i.LogoFileName,
+		&i.LogoContentType,
+		&i.LogoSizeBytes,
+		&i.LogoUpdatedAt,
 	)
 	return i, err
 }
@@ -1305,21 +1425,20 @@ UPDATE auth_divisions
 SET
     division_type = $3,
     name = $4,
-    code = $5,
-    region = $6,
-    address = $7,
-    manager_name = $8,
-    contacts = $9,
-    leader_position = $10,
-    contract_phone = $11,
-    contract_email = $12,
-    acting_basis = $13,
-    comment = $14,
+    region = $5,
+    address = $6,
+    manager_name = $7,
+    contacts = $8,
+    leader_position = $9,
+    contract_phone = $10,
+    contract_email = $11,
+    acting_basis = $12,
+    comment = $13,
     updated_at = NOW()
 WHERE id = $1
   AND organization_id = $2
   AND status = 'active'
-RETURNING id, organization_id, division_type, name, code, region, address, manager_name, contacts, status, created_at, updated_at, leader_position, contract_phone, contract_email, acting_basis, comment
+RETURNING id, organization_id, division_type, name, region, address, manager_name, contacts, status, created_at, updated_at, leader_position, contract_phone, contract_email, acting_basis, comment
 `
 
 type UpdateAuthDivisionParams struct {
@@ -1327,7 +1446,6 @@ type UpdateAuthDivisionParams struct {
 	OrganizationID pgtype.UUID `json:"organizationId"`
 	DivisionType   string      `json:"divisionType"`
 	Name           string      `json:"name"`
-	Code           *string     `json:"code"`
 	Region         *string     `json:"region"`
 	Address        *string     `json:"address"`
 	ManagerName    *string     `json:"managerName"`
@@ -1345,7 +1463,6 @@ func (q *Queries) UpdateAuthDivision(ctx context.Context, arg UpdateAuthDivision
 		arg.OrganizationID,
 		arg.DivisionType,
 		arg.Name,
-		arg.Code,
 		arg.Region,
 		arg.Address,
 		arg.ManagerName,
@@ -1362,7 +1479,6 @@ func (q *Queries) UpdateAuthDivision(ctx context.Context, arg UpdateAuthDivision
 		&i.OrganizationID,
 		&i.DivisionType,
 		&i.Name,
-		&i.Code,
 		&i.Region,
 		&i.Address,
 		&i.ManagerName,
@@ -1385,21 +1501,20 @@ SET
     division_id = $3,
     unit_type = $4,
     name = $5,
-    code = $6,
-    region = $7,
-    address = $8,
-    manager_name = $9,
-    contacts = $10,
-    leader_position = $11,
-    contract_phone = $12,
-    contract_email = $13,
-    acting_basis = $14,
-    comment = $15,
+    region = $6,
+    address = $7,
+    manager_name = $8,
+    contacts = $9,
+    leader_position = $10,
+    contract_phone = $11,
+    contract_email = $12,
+    acting_basis = $13,
+    comment = $14,
     updated_at = NOW()
 WHERE id = $1
   AND organization_id = $2
   AND status = 'active'
-RETURNING id, organization_id, division_id, unit_type, name, code, address, manager_name, contacts, status, created_at, updated_at, region, leader_position, contract_phone, contract_email, acting_basis, comment
+RETURNING id, organization_id, division_id, unit_type, name, address, manager_name, contacts, status, created_at, updated_at, region, leader_position, contract_phone, contract_email, acting_basis, comment
 `
 
 type UpdateAuthUnitParams struct {
@@ -1408,7 +1523,6 @@ type UpdateAuthUnitParams struct {
 	DivisionID     pgtype.UUID `json:"divisionId"`
 	UnitType       string      `json:"unitType"`
 	Name           string      `json:"name"`
-	Code           *string     `json:"code"`
 	Region         *string     `json:"region"`
 	Address        *string     `json:"address"`
 	ManagerName    *string     `json:"managerName"`
@@ -1427,7 +1541,6 @@ func (q *Queries) UpdateAuthUnit(ctx context.Context, arg UpdateAuthUnitParams) 
 		arg.DivisionID,
 		arg.UnitType,
 		arg.Name,
-		arg.Code,
 		arg.Region,
 		arg.Address,
 		arg.ManagerName,
@@ -1445,7 +1558,6 @@ func (q *Queries) UpdateAuthUnit(ctx context.Context, arg UpdateAuthUnitParams) 
 		&i.DivisionID,
 		&i.UnitType,
 		&i.Name,
-		&i.Code,
 		&i.Address,
 		&i.ManagerName,
 		&i.Contacts,
@@ -1478,26 +1590,38 @@ SET
     contract_phone = $12,
     contract_email = $13,
     acting_basis = $14,
+    postal_address = $15,
+    ogrn = $16,
+    settlement_account = $17,
+    bank_name = $18,
+    correspondent_account = $19,
+    bik = $20,
     updated_at = NOW()
 WHERE id = $1
-RETURNING id, role_title, shell_name, short_name, property_type, inn, kpp, legal_address, contact_email, contact_phone, launch_state, first_admin_account_id, launched_at, created_at, updated_at, leader_full_name, leader_position, contract_phone, contract_email, acting_basis
+RETURNING id, role_title, shell_name, short_name, property_type, inn, kpp, legal_address, contact_email, contact_phone, launch_state, first_admin_account_id, launched_at, created_at, updated_at, leader_full_name, leader_position, contract_phone, contract_email, acting_basis, postal_address, ogrn, settlement_account, bank_name, correspondent_account, bik, logo_object_key, logo_file_name, logo_content_type, logo_size_bytes, logo_updated_at
 `
 
 type UpdateBootstrapOrganizationCoreParams struct {
-	ID             pgtype.UUID `json:"id"`
-	ShellName      string      `json:"shellName"`
-	ShortName      *string     `json:"shortName"`
-	PropertyType   *string     `json:"propertyType"`
-	Inn            *string     `json:"inn"`
-	Kpp            *string     `json:"kpp"`
-	LegalAddress   *string     `json:"legalAddress"`
-	ContactEmail   *string     `json:"contactEmail"`
-	ContactPhone   *string     `json:"contactPhone"`
-	LeaderFullName *string     `json:"leaderFullName"`
-	LeaderPosition *string     `json:"leaderPosition"`
-	ContractPhone  *string     `json:"contractPhone"`
-	ContractEmail  *string     `json:"contractEmail"`
-	ActingBasis    *string     `json:"actingBasis"`
+	ID                   pgtype.UUID `json:"id"`
+	ShellName            string      `json:"shellName"`
+	ShortName            *string     `json:"shortName"`
+	PropertyType         *string     `json:"propertyType"`
+	Inn                  *string     `json:"inn"`
+	Kpp                  *string     `json:"kpp"`
+	LegalAddress         *string     `json:"legalAddress"`
+	ContactEmail         *string     `json:"contactEmail"`
+	ContactPhone         *string     `json:"contactPhone"`
+	LeaderFullName       *string     `json:"leaderFullName"`
+	LeaderPosition       *string     `json:"leaderPosition"`
+	ContractPhone        *string     `json:"contractPhone"`
+	ContractEmail        *string     `json:"contractEmail"`
+	ActingBasis          *string     `json:"actingBasis"`
+	PostalAddress        *string     `json:"postalAddress"`
+	Ogrn                 *string     `json:"ogrn"`
+	SettlementAccount    *string     `json:"settlementAccount"`
+	BankName             *string     `json:"bankName"`
+	CorrespondentAccount *string     `json:"correspondentAccount"`
+	Bik                  *string     `json:"bik"`
 }
 
 func (q *Queries) UpdateBootstrapOrganizationCore(ctx context.Context, arg UpdateBootstrapOrganizationCoreParams) (AuthBootstrapOrganization, error) {
@@ -1516,6 +1640,12 @@ func (q *Queries) UpdateBootstrapOrganizationCore(ctx context.Context, arg Updat
 		arg.ContractPhone,
 		arg.ContractEmail,
 		arg.ActingBasis,
+		arg.PostalAddress,
+		arg.Ogrn,
+		arg.SettlementAccount,
+		arg.BankName,
+		arg.CorrespondentAccount,
+		arg.Bik,
 	)
 	var i AuthBootstrapOrganization
 	err := row.Scan(
@@ -1539,6 +1669,17 @@ func (q *Queries) UpdateBootstrapOrganizationCore(ctx context.Context, arg Updat
 		&i.ContractPhone,
 		&i.ContractEmail,
 		&i.ActingBasis,
+		&i.PostalAddress,
+		&i.Ogrn,
+		&i.SettlementAccount,
+		&i.BankName,
+		&i.CorrespondentAccount,
+		&i.Bik,
+		&i.LogoObjectKey,
+		&i.LogoFileName,
+		&i.LogoContentType,
+		&i.LogoSizeBytes,
+		&i.LogoUpdatedAt,
 	)
 	return i, err
 }
@@ -1559,6 +1700,72 @@ type UpdateBootstrapOrganizationFirstAdminParams struct {
 func (q *Queries) UpdateBootstrapOrganizationFirstAdmin(ctx context.Context, arg UpdateBootstrapOrganizationFirstAdminParams) error {
 	_, err := q.db.Exec(ctx, updateBootstrapOrganizationFirstAdmin, arg.ID, arg.FirstAdminAccountID)
 	return err
+}
+
+const updateBootstrapOrganizationLogo = `-- name: UpdateBootstrapOrganizationLogo :one
+UPDATE auth_bootstrap_organizations
+SET
+    logo_object_key = $2,
+    logo_file_name = $3,
+    logo_content_type = $4,
+    logo_size_bytes = $5,
+    logo_updated_at = NOW(),
+    updated_at = NOW()
+WHERE id = $1
+RETURNING id, role_title, shell_name, short_name, property_type, inn, kpp, legal_address, contact_email, contact_phone, launch_state, first_admin_account_id, launched_at, created_at, updated_at, leader_full_name, leader_position, contract_phone, contract_email, acting_basis, postal_address, ogrn, settlement_account, bank_name, correspondent_account, bik, logo_object_key, logo_file_name, logo_content_type, logo_size_bytes, logo_updated_at
+`
+
+type UpdateBootstrapOrganizationLogoParams struct {
+	ID              pgtype.UUID `json:"id"`
+	LogoObjectKey   *string     `json:"logoObjectKey"`
+	LogoFileName    *string     `json:"logoFileName"`
+	LogoContentType *string     `json:"logoContentType"`
+	LogoSizeBytes   *int64      `json:"logoSizeBytes"`
+}
+
+func (q *Queries) UpdateBootstrapOrganizationLogo(ctx context.Context, arg UpdateBootstrapOrganizationLogoParams) (AuthBootstrapOrganization, error) {
+	row := q.db.QueryRow(ctx, updateBootstrapOrganizationLogo,
+		arg.ID,
+		arg.LogoObjectKey,
+		arg.LogoFileName,
+		arg.LogoContentType,
+		arg.LogoSizeBytes,
+	)
+	var i AuthBootstrapOrganization
+	err := row.Scan(
+		&i.ID,
+		&i.RoleTitle,
+		&i.ShellName,
+		&i.ShortName,
+		&i.PropertyType,
+		&i.Inn,
+		&i.Kpp,
+		&i.LegalAddress,
+		&i.ContactEmail,
+		&i.ContactPhone,
+		&i.LaunchState,
+		&i.FirstAdminAccountID,
+		&i.LaunchedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.LeaderFullName,
+		&i.LeaderPosition,
+		&i.ContractPhone,
+		&i.ContractEmail,
+		&i.ActingBasis,
+		&i.PostalAddress,
+		&i.Ogrn,
+		&i.SettlementAccount,
+		&i.BankName,
+		&i.CorrespondentAccount,
+		&i.Bik,
+		&i.LogoObjectKey,
+		&i.LogoFileName,
+		&i.LogoContentType,
+		&i.LogoSizeBytes,
+		&i.LogoUpdatedAt,
+	)
+	return i, err
 }
 
 const updateFirstAdminInviteOpened = `-- name: UpdateFirstAdminInviteOpened :one

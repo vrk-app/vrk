@@ -1,5 +1,7 @@
 package bootstrap
 
+import "io"
+
 type CreateOrganizationShellRequest struct {
 	OrganizationName string `json:"organizationName"`
 	OrganizationRole string `json:"organizationRole"`
@@ -19,7 +21,6 @@ type CreateSessionRequest struct {
 type LaunchDivisionInput struct {
 	Type        string  `json:"type,omitempty"`
 	Name        string  `json:"name"`
-	Code        *string `json:"code,omitempty"`
 	Region      *string `json:"region,omitempty"`
 	Address     *string `json:"address,omitempty"`
 	ManagerName *string `json:"managerName,omitempty"`
@@ -29,7 +30,6 @@ type LaunchDivisionInput struct {
 type LaunchUnitInput struct {
 	Type        string  `json:"type"`
 	Name        string  `json:"name"`
-	Code        *string `json:"code,omitempty"`
 	Address     *string `json:"address,omitempty"`
 	ManagerName *string `json:"managerName,omitempty"`
 	Contacts    *string `json:"contacts,omitempty"`
@@ -50,26 +50,31 @@ type CompleteLaunchRequest struct {
 }
 
 type CompanyProfileRequest struct {
-	Type              string  `json:"type"`
-	PropertyType      *string `json:"propertyType,omitempty"`
-	Name              string  `json:"name"`
-	ShortName         *string `json:"shortName,omitempty"`
-	Inn               *string `json:"inn,omitempty"`
-	Kpp               *string `json:"kpp,omitempty"`
-	RegisteredAddress *string `json:"registeredAddress,omitempty"`
-	Address           *string `json:"address,omitempty"`
-	LeaderFullName    *string `json:"leaderFullName,omitempty"`
-	ManagerName       *string `json:"managerName,omitempty"`
-	LeaderPosition    *string `json:"leaderPosition,omitempty"`
-	ContractPhone     *string `json:"contractPhone,omitempty"`
-	ContractEmail     *string `json:"contractEmail,omitempty"`
-	ActingBasis       *string `json:"actingBasis,omitempty"`
+	Type                 string  `json:"type"`
+	PropertyType         *string `json:"propertyType,omitempty"`
+	Name                 string  `json:"name"`
+	ShortName            *string `json:"shortName,omitempty"`
+	Inn                  *string `json:"inn,omitempty"`
+	Kpp                  *string `json:"kpp,omitempty"`
+	PostalAddress        *string `json:"postalAddress,omitempty"`
+	RegisteredAddress    *string `json:"registeredAddress,omitempty"`
+	Address              *string `json:"address,omitempty"`
+	Ogrn                 *string `json:"ogrn,omitempty"`
+	SettlementAccount    *string `json:"settlementAccount,omitempty"`
+	BankName             *string `json:"bankName,omitempty"`
+	CorrespondentAccount *string `json:"correspondentAccount,omitempty"`
+	Bik                  *string `json:"bik,omitempty"`
+	LeaderFullName       *string `json:"leaderFullName,omitempty"`
+	ManagerName          *string `json:"managerName,omitempty"`
+	LeaderPosition       *string `json:"leaderPosition,omitempty"`
+	ContractPhone        *string `json:"contractPhone,omitempty"`
+	ContractEmail        *string `json:"contractEmail,omitempty"`
+	ActingBasis          *string `json:"actingBasis,omitempty"`
 }
 
 type StructureNodeRequest struct {
 	Type              string  `json:"type,omitempty"`
 	Name              string  `json:"name"`
-	Code              *string `json:"code,omitempty"`
 	Region            *string `json:"region,omitempty"`
 	Address           *string `json:"address,omitempty"`
 	RegisteredAddress *string `json:"registeredAddress,omitempty"`
@@ -193,33 +198,54 @@ type SessionWorkspaceResponse struct {
 }
 
 type SessionOrganizationResponse struct {
-	ID                string  `json:"id"`
-	RoleTitle         string  `json:"roleTitle"`
-	Type              *string `json:"type,omitempty"`
-	Name              string  `json:"name"`
-	ShortName         *string `json:"shortName,omitempty"`
-	PropertyType      *string `json:"propertyType,omitempty"`
-	Inn               *string `json:"inn,omitempty"`
-	Kpp               *string `json:"kpp,omitempty"`
-	LegalAddress      *string `json:"legalAddress,omitempty"`
-	RegisteredAddress *string `json:"registeredAddress,omitempty"`
-	Address           *string `json:"address,omitempty"`
-	ContactEmail      *string `json:"contactEmail,omitempty"`
-	ContactPhone      *string `json:"contactPhone,omitempty"`
-	LeaderFullName    *string `json:"leaderFullName,omitempty"`
-	ManagerName       *string `json:"managerName,omitempty"`
-	LeaderPosition    *string `json:"leaderPosition,omitempty"`
-	ContractPhone     *string `json:"contractPhone,omitempty"`
-	ContractEmail     *string `json:"contractEmail,omitempty"`
-	ActingBasis       *string `json:"actingBasis,omitempty"`
-	LaunchState       string  `json:"launchState"`
+	ID                   string               `json:"id"`
+	RoleTitle            string               `json:"roleTitle"`
+	Type                 *string              `json:"type,omitempty"`
+	Name                 string               `json:"name"`
+	ShortName            *string              `json:"shortName,omitempty"`
+	PropertyType         *string              `json:"propertyType,omitempty"`
+	Logo                 *CompanyLogoResponse `json:"logo,omitempty"`
+	Inn                  *string              `json:"inn,omitempty"`
+	Kpp                  *string              `json:"kpp,omitempty"`
+	LegalAddress         *string              `json:"legalAddress,omitempty"`
+	PostalAddress        *string              `json:"postalAddress,omitempty"`
+	RegisteredAddress    *string              `json:"registeredAddress,omitempty"`
+	Address              *string              `json:"address,omitempty"`
+	Ogrn                 *string              `json:"ogrn,omitempty"`
+	SettlementAccount    *string              `json:"settlementAccount,omitempty"`
+	BankName             *string              `json:"bankName,omitempty"`
+	CorrespondentAccount *string              `json:"correspondentAccount,omitempty"`
+	Bik                  *string              `json:"bik,omitempty"`
+	ContactEmail         *string              `json:"contactEmail,omitempty"`
+	ContactPhone         *string              `json:"contactPhone,omitempty"`
+	LeaderFullName       *string              `json:"leaderFullName,omitempty"`
+	ManagerName          *string              `json:"managerName,omitempty"`
+	LeaderPosition       *string              `json:"leaderPosition,omitempty"`
+	ContractPhone        *string              `json:"contractPhone,omitempty"`
+	ContractEmail        *string              `json:"contractEmail,omitempty"`
+	ActingBasis          *string              `json:"actingBasis,omitempty"`
+	LaunchState          string               `json:"launchState"`
+}
+
+type CompanyLogoResponse struct {
+	FileName    string `json:"fileName"`
+	ContentType string `json:"contentType"`
+	SizeBytes   int64  `json:"sizeBytes"`
+	UpdatedAt   string `json:"updatedAt"`
+	URL         string `json:"url"`
+}
+
+type CompanyLogoObject struct {
+	Body        io.ReadCloser
+	ContentType string
+	Size        int64
+	FileName    string
 }
 
 type DivisionResponse struct {
 	ID                string  `json:"id"`
 	Type              string  `json:"type"`
 	Name              string  `json:"name"`
-	Code              *string `json:"code,omitempty"`
 	Region            *string `json:"region,omitempty"`
 	Address           *string `json:"address,omitempty"`
 	RegisteredAddress *string `json:"registeredAddress,omitempty"`
@@ -238,7 +264,6 @@ type UnitResponse struct {
 	ID                string  `json:"id"`
 	Type              string  `json:"type"`
 	Name              string  `json:"name"`
-	Code              *string `json:"code,omitempty"`
 	Region            *string `json:"region,omitempty"`
 	DivisionID        *string `json:"divisionId,omitempty"`
 	Address           *string `json:"address,omitempty"`

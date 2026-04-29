@@ -205,7 +205,6 @@ const tabItems = [
   { key: "units", label: "Юниты", icon: MapPinned },
 
 $ sed -n "168,186p" apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
-  const parts = [item.code, item.region, item.contractEmail].filter(Boolean);
   return parts.length ? parts.join(" / ") : "Дополнительные поля не заполнены";
 }
 

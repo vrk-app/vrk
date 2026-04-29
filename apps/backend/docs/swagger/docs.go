@@ -593,6 +593,155 @@ const docTemplate = `{
                 }
             }
         },
+        "/company/logo": {
+            "get": {
+                "description": "Streams the private object-storage-backed logo for the authenticated current organization.",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "company"
+                ],
+                "summary": "Stream company logo",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Stores the current organization logo in private object storage and keeps only object metadata in Postgres.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "company"
+                ],
+                "summary": "Upload company logo",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Logo file",
+                        "name": "logo",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.SessionSummaryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Removes logo object metadata from Postgres and deletes the private object when present.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "company"
+                ],
+                "summary": "Delete company logo",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.SessionSummaryResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/company/profile": {
             "patch": {
                 "description": "Updates the persistent Stage 03 company profile for an active organization-scope admin.",
@@ -3660,6 +3809,26 @@ const docTemplate = `{
                 }
             }
         },
+        "bootstrap.CompanyLogoResponse": {
+            "type": "object",
+            "properties": {
+                "contentType": {
+                    "type": "string"
+                },
+                "fileName": {
+                    "type": "string"
+                },
+                "sizeBytes": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
         "bootstrap.CompanyProfileRequest": {
             "type": "object",
             "properties": {
@@ -3669,10 +3838,19 @@ const docTemplate = `{
                 "address": {
                     "type": "string"
                 },
+                "bankName": {
+                    "type": "string"
+                },
+                "bik": {
+                    "type": "string"
+                },
                 "contractEmail": {
                     "type": "string"
                 },
                 "contractPhone": {
+                    "type": "string"
+                },
+                "correspondentAccount": {
                     "type": "string"
                 },
                 "inn": {
@@ -3693,10 +3871,19 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "ogrn": {
+                    "type": "string"
+                },
+                "postalAddress": {
+                    "type": "string"
+                },
                 "propertyType": {
                     "type": "string"
                 },
                 "registeredAddress": {
+                    "type": "string"
+                },
+                "settlementAccount": {
                     "type": "string"
                 },
                 "shortName": {
@@ -3803,9 +3990,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "address": {
-                    "type": "string"
-                },
-                "code": {
                     "type": "string"
                 },
                 "comment": {
@@ -3969,9 +4153,6 @@ const docTemplate = `{
                 "address": {
                     "type": "string"
                 },
-                "code": {
-                    "type": "string"
-                },
                 "contacts": {
                     "type": "string"
                 },
@@ -3993,9 +4174,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "address": {
-                    "type": "string"
-                },
-                "code": {
                     "type": "string"
                 },
                 "contacts": {
@@ -4134,6 +4312,12 @@ const docTemplate = `{
                 "address": {
                     "type": "string"
                 },
+                "bankName": {
+                    "type": "string"
+                },
+                "bik": {
+                    "type": "string"
+                },
                 "contactEmail": {
                     "type": "string"
                 },
@@ -4144,6 +4328,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "contractPhone": {
+                    "type": "string"
+                },
+                "correspondentAccount": {
                     "type": "string"
                 },
                 "id": {
@@ -4167,10 +4354,19 @@ const docTemplate = `{
                 "legalAddress": {
                     "type": "string"
                 },
+                "logo": {
+                    "$ref": "#/definitions/bootstrap.CompanyLogoResponse"
+                },
                 "managerName": {
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "ogrn": {
+                    "type": "string"
+                },
+                "postalAddress": {
                     "type": "string"
                 },
                 "propertyType": {
@@ -4180,6 +4376,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "roleTitle": {
+                    "type": "string"
+                },
+                "settlementAccount": {
                     "type": "string"
                 },
                 "shortName": {
@@ -4272,9 +4471,6 @@ const docTemplate = `{
                 "address": {
                     "type": "string"
                 },
-                "code": {
-                    "type": "string"
-                },
                 "comment": {
                     "type": "string"
                 },
@@ -4320,9 +4516,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "address": {
-                    "type": "string"
-                },
-                "code": {
                     "type": "string"
                 },
                 "comment": {

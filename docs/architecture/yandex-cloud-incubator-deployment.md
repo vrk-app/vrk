@@ -18,8 +18,10 @@
 | PostgreSQL database/user | `vrk` / `vrk_app` |
 | PostgreSQL host | `rc1a-u2rouaenldfmev02.mdb.yandexcloud.net:6432` |
 | Runtime secrets | Lockbox `vrk-incubator-secrets` |
+| Object Storage | private S3-compatible bucket for organization logos; bucket name is stored as Lockbox `OBJECT_STORAGE_BUCKET` |
 | Backend container | `vrk-backend`, public URL `https://bbann5sjkg8iha0mmsl3.containers.yandexcloud.net` |
 | Web container | `vrk-web`, public URL `https://bbamk7b1htc1ilji6l7v.containers.yandexcloud.net` |
+| Storybook | Public web route `https://bbamk7b1htc1ilji6l7v.containers.yandexcloud.net/storybook/` |
 | CI deployer SA | `vrk-deployer` |
 | Runtime container SA | `vrk-container-sa` |
 
@@ -66,6 +68,9 @@ Lockbox owns the runtime secret payload:
 - `DB_PASSWORD`
 - `DB_SSL_MODE`
 - `PLATFORM_ADMIN_SHARED_SECRET`
+- `OBJECT_STORAGE_BUCKET`
+- `OBJECT_STORAGE_ACCESS_KEY_ID`
+- `OBJECT_STORAGE_SECRET_ACCESS_KEY`
 
 The `YC_*_ID` values are identifiers, not secret payload. They are repository variables so workflow YAML can reference the correct folder, registry, runtime service account, and Lockbox version without duplicating runtime secrets in GitHub.
 
@@ -84,15 +89,16 @@ flowchart LR
     F --> H
     G --> I["deploy vrk-web revision"]
     H --> I
-    I --> J["health check: backend /healthz + /readyz, web /login"]
+    I --> J["health check: backend /healthz + /readyz,<br/>web /login + /storybook/index.json"]
     F --> K["Yandex Container Registry"]
     G --> K
     H --> L["Yandex Lockbox secrets"]
     I --> L
     H --> M["Managed PostgreSQL"]
+    H --> N["Yandex Object Storage<br/>private logos bucket"]
 ```
 
-The workflow is intentionally ordered so migrations complete before the backend revision is deployed, and the web revision is deployed only after the backend revision succeeds. The web container receives `INTERNAL_API_BASE_URL` and `NEXT_PUBLIC_API_BASE_URL` from `VRK_BACKEND_URL`.
+The workflow is intentionally ordered so migrations complete before the backend revision is deployed, and the web revision is deployed only after the backend revision succeeds. The backend container receives S3-compatible Yandex Object Storage settings for organization logos. The web container receives `INTERNAL_API_BASE_URL` and `NEXT_PUBLIC_API_BASE_URL` from `VRK_BACKEND_URL`; it also receives a derived `NEXT_PUBLIC_STORYBOOK_URL=${VRK_WEB_URL}/storybook/` and serves the static Storybook build from the same public endpoint.
 
 Do not set `PORT` in Serverless Container revision env. Yandex Cloud reserves this environment variable and rejects web revision deployment with `INVALID_ARGUMENT: Environment variable PORT is forbidden`. The incubator web image starts Next.js on `${PORT:-8080}` through `apps/web/Dockerfile`; local Compose sets `PORT=3000`, while Yandex Cloud reaches the container on `127.0.0.1:8080`.
 
@@ -109,6 +115,7 @@ All GitHub Actions workflows set top-level `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=t
 ## Operational Notes
 
 - Direct public invocation is enabled for both incubator containers. This keeps the first incubator pipeline simple and cheap, but backend URL access should move behind API Gateway/custom domains before production hardening.
+- Storybook is intentionally public in the incubator web container at `/storybook/`; it has no separate auth gate, container, bucket, or CDN. The Object Storage bucket in this baseline is private and used only for organization logos served through authenticated backend/web proxy routes.
 - The backend accepts both `Authorization: Bearer <token>` and `X-VRK-Session-Token: <token>` for application sessions. Incubator web-to-backend calls use the latter to avoid cloud-front interception of the standard authorization header.
 - The PostgreSQL host has a public IP so GitHub Actions can run migrations. If the database is later made private, the migration step must move into a Yandex-side runner or a dedicated migration container flow.
 - The VPC network currently lives in the `ncfg` folder only because the cloud-level VPC network quota blocked a new `vrk` network. If quota is increased, create `vrk-network` / `vrk-subnet-a`, move `vrk-db`, and update this document.

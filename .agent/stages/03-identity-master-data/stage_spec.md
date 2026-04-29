@@ -60,7 +60,7 @@ Historical Stage 03 evidence proves the older launch-wizard implementation. The 
 - first-admin invite acceptance should land on `/company`;
 - `/company` must support empty, partial, and populated organization states;
 - organization-scope admins must be able to create first and later divisions/branches and units from the same persistent management surface;
-- division/unit scoped users remain read-only within their visible subtree;
+- scoped admins can manage allowed access, employees, contracts, equipment, and structure inside their visible scope/subtree, while non-admin scoped users remain read-only;
 - employee invite creation must not depend on a completed wizard, but division/unit-scoped invites still require an existing visible active target scope.
 
 Treat this as a bounded follow-up Stage 03 correction before claiming product-complete org-structure management.
@@ -120,7 +120,7 @@ The diagram fixes the execution order after Stage 02 closure and after the later
   - empty / partial / populated states оргструктуры;
   - создание первого и последующих подразделений/филиалов;
   - создание первого и последующих юнитов, включая direct `organization -> unit`;
-  - редактирование business fields: organization `propertyType`/`type` alias as legal-form selector `ООО` / `АО` / `ПАО` with legacy `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО`; division/branch has no selectable type and stores hidden internal default only for compatibility; unit keeps operational type selector `ВРД` / `ВРЗ` / `ВУ` / `ВРП`; name, registeredAddress/address alias, leaderFullName with managerName migration/display compatibility, leaderPosition, contractPhone, contractEmail, actingBasis, plus code/region/status/comment where those fields still exist in the model;
+  - редактирование business fields: organization `propertyType`/`type` alias as legal-form selector `ООО` / `ПАО` / `НАО` / `ИП` with legacy `АО -> НАО`, `ЗАО -> НАО`, `ОАО -> ПАО`, `LLC -> ООО`; division/branch has no selectable type and stores hidden internal default only for compatibility; unit keeps operational type selector `ВРД` / `ВРЗ` / `ВУ` / `ВРП`; logo metadata and optional requisites are persisted; name, registeredAddress/address alias, leaderFullName with managerName migration/display compatibility, leaderPosition, contractPhone, contractEmail, actingBasis, plus region/status/comment where those fields still exist in the model;
   - архивирование подразделений/юнитов вместо удаления;
   - приглашение сотрудников с проверкой существующего target scope для division/unit invites;
   - entry points к добавлению оборудования после появления юнита;
@@ -128,7 +128,7 @@ The diagram fixes the execution order after Stage 02 closure and after the later
 - user account, membership и scoped grant разделены и доказаны сценариями доступа;
 - organization-scope права наследуются вниз, division-scope права наследуются на дочерние unit, deny-layer отсутствует;
 - canonical roles are enforced by scope: organization roles only on organization scope, division roles only on division scope, unit roles only on unit scope, and `auditor` on any organization/division/unit scope;
-- Stage 03 v1 mutate capabilities are limited to active customer `organization_admin` on organization scope; `organization_head`, `division_head`, `division_operator`, `unit_head`, `unit_operator`, and `auditor` remain scope-aware read-only roles until later stages enable more capability-map entries;
+- Stage 03 v1 mutate capabilities are enabled for active customer `organization_admin`, `division_admin`, and `unit_admin`; profile actions stay organization-admin-only, while scoped admins are constrained to their visible scope/subtree;
 - invitation statuses `draft`, `sent`, `opened`, `accepted`, `expired`, `revoked` видимы и воспроизводимы;
 - login/session restore возвращает contour, привязанный к explicit active membership/grant: customer contour на `/company`, active contractor contour на `/contracts`;
 - direct login с несколькими eligible memberships/grants truthfully возвращает `409`, а не silently выбирает один workspace;

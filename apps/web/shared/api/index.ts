@@ -23,6 +23,7 @@ export type {
   ApiEnvelope,
   ApiMeta,
   Capability,
+  CompanyLogoResponse,
   CompanyProfilePayload,
   CreateEmployeeInvitePayload,
   EmployeeAccessResponse,

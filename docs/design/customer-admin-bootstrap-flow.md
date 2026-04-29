@@ -25,7 +25,7 @@
 Схема объединяет несколько разных слоев продукта:
 
 - регистрация и вход;
-- onboarding организации, подразделений и юнитов;
+- onboarding организации, дивизионов и юнитов;
 - оборудование и метрологические поля;
 - сотрудники, приглашения и доступы;
 - договоры, выбор подрядчика и приглашение подрядчика;
@@ -107,7 +107,7 @@ flowchart LR
 - metrology operation journals;
 - access boundaries for customer / contractor contours.
 
-Именно здесь onboarding flow перестает быть shell и становится реальным master-data контуром: первый запуск, редактирование профиля, добавление филиалов/подразделений и добавление юнитов выполняются через один постоянный UI.
+Именно здесь onboarding flow перестает быть shell и становится реальным master-data контуром: первый запуск, редактирование профиля, добавление дивизионов и добавление юнитов выполняются через один постоянный UI.
 
 ### Реализованный route contour для slice-001
 
@@ -117,8 +117,8 @@ flowchart LR
 - `/register/[token]` используется приглашенным администратором для password setup и accept;
 - после accept пользователь попадает в `/company`; empty state и первые действия по настройке организации живут в том же постоянном route;
 - `/company/setup` и launch wizard больше не являются целевым UX для Stage 03, даже если текущая historical implementation еще содержит этот route;
-- профиль организации в `/company` использует selector `Тип` как ОПФ `ООО` / `АО` / `ПАО`; legacy aliases `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО` поддерживаются только как входная совместимость и не показываются в UI;
-- форма подразделения/филиала не содержит selector `Тип`; форма юнита сохраняет selector operational type `ВРД` / `ВРЗ` / `ВУ` / `ВРП`;
+- профиль организации в `/company` использует selector `Тип` как ОПФ `ООО` / `ПАО` / `НАО` / `ИП`; legacy aliases `АО -> НАО`, `ЗАО -> НАО`, `ОАО -> ПАО`, `LLC -> ООО` поддерживаются только как входная совместимость и не показываются в UI;
+- форма дивизиона не содержит selector `Тип`; форма юнита сохраняет selector operational type `ВРД` / `ВРЗ` / `ВУ` / `ВРП`;
 - повторный переход по использованной одноразовой ссылке показывает состояние `Одноразовая ссылка больше не активна`;
 - анонимный `/company` shell из `Stage 02` сохраняется как truthful public state до появления активной session.
 
@@ -138,10 +138,10 @@ flowchart LR
 - employee invite выдается из `/company`, а одноразовая ссылка снова ведет в `/register/[token]`;
 - после employee acceptance и последующего login тот же `/company` route становится scope-aware landing:
   - organization scope показывает полный org graph и, при `view_employees`, вкладку `Сотрудники`;
-  - division scope показывает только свое поддерево и read-only employees registry для `division_head` / scoped `auditor`;
-  - unit scope показывает только один юнит без расширения вверх и read-only employees registry для `unit_head` / scoped `auditor`;
+  - division scope показывает только свое поддерево; `division_admin` получает scoped access controls, а `division_head` / scoped `auditor` остаются read-only;
+  - unit scope показывает только один юнит без расширения вверх; `unit_admin` получает scoped access controls, а `unit_head` / scoped `auditor` остаются read-only;
   - `division_operator` и `unit_operator` не получают вкладку `Сотрудники`;
-- edit/deactivate controls и приглашения остаются только у active customer `organization_admin`;
+- edit/deactivate controls и приглашения доступны active customer admins только в пределах их scope/subtree;
 - replay, expired и revoked employee links возвращают пользователя в состояние `Одноразовая ссылка больше не активна`, а не в ложный success flow.
 
 ```mermaid
@@ -187,7 +187,7 @@ flowchart LR
   - `/equipment?tab=mi`
   - `/equipment?tab=standards`
 - organization-scope `organization_admin` получает create/list surface для equipment, measuring instruments и standards;
-- division-scope и unit-scope пользователи видят тот же route, но только в read-only режиме и только в рамках разрешенного subtree;
+- division-scope и unit-scope пользователи видят тот же route; scoped admins получают действия только в рамках разрешенного subtree, read-only роли не получают mutate controls;
 - contractor contour по-прежнему не расширяется в `/equipment` и остается на договорном `/contracts` boundary.
 
 ```mermaid
@@ -217,7 +217,7 @@ flowchart LR
 - archive visibility тоже становится query-backed и воспроизводится через `?archived=1`;
 - journal history для СИ и эталонов открывается на том же contour, без выноса в отдельный `/journals` route family;
 - archive action для equipment / MI / standards сохраняет record и убирает его из default active view, а не делает hard delete;
-- division/unit users по-прежнему видят тот же route, но только в read-only scope-filtered contour, включая allowed journal/archive state;
+- division/unit users по-прежнему видят тот же route в scope-filtered contour; scoped admins могут менять разрешенные records, read-only роли остаются без mutate controls;
 - contractor contour не расширяется в journal/archive master-data surface и остается на `/contracts`.
 
 ```mermaid
@@ -238,7 +238,7 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    A["Организация"] --> B["Подразделение (optional)"]
+    A["Организация"] --> B["Дивизион (optional)"]
     A --> C["Юнит"]
     B --> C
     C --> D["Оборудование"]
@@ -266,7 +266,7 @@ flowchart TD
 
 Следующие куски Draw.io не тянут `Stage 02` вперед и должны оставаться в более позднем operational contour:
 
-- согласование графиков ТО/МО между причастными подразделениями и юнитами;
+- согласование графиков ТО/МО между причастными дивизионами и юнитами;
 - выбор стороны материалов и работа со справочником материалов;
 - более поздние execution branches, где нужны assignment, evidence и contractor-side processing.
 

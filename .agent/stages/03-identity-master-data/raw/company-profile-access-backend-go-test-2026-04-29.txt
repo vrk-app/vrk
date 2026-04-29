@@ -1,0 +1,64 @@
+go: downloading github.com/google/uuid v1.6.0
+go: downloading github.com/joho/godotenv v1.5.1
+go: downloading github.com/jackc/pgx/v5 v5.9.1
+go: downloading github.com/go-chi/chi/v5 v5.2.5
+go: downloading github.com/aws/aws-sdk-go-v2 v1.40.0
+go: downloading golang.org/x/crypto v0.50.0
+go: downloading github.com/aws/aws-sdk-go-v2/config v1.32.2
+go: downloading github.com/aws/aws-sdk-go-v2/credentials v1.19.2
+go: downloading github.com/aws/aws-sdk-go-v2/service/s3 v1.92.0
+go: downloading github.com/aws/smithy-go v1.23.2
+go: downloading github.com/swaggo/http-swagger v1.3.4
+go: downloading github.com/swaggo/swag v1.16.6
+go: downloading github.com/jackc/puddle/v2 v2.2.2
+go: downloading github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.3
+go: downloading github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.14
+go: downloading github.com/aws/aws-sdk-go-v2/internal/v4a v1.4.14
+go: downloading github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.3
+go: downloading github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.9.5
+go: downloading github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.14
+go: downloading github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.14
+go: downloading github.com/jackc/pgpassfile v1.0.0
+go: downloading github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761
+go: downloading golang.org/x/text v0.36.0
+go: downloading github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.14
+go: downloading github.com/aws/aws-sdk-go-v2/internal/ini v1.8.4
+go: downloading github.com/aws/aws-sdk-go-v2/service/signin v1.0.2
+go: downloading github.com/aws/aws-sdk-go-v2/service/sso v1.30.5
+go: downloading github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.10
+go: downloading github.com/aws/aws-sdk-go-v2/service/sts v1.41.2
+go: downloading github.com/swaggo/files v1.0.1
+go: downloading github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.14
+go: downloading github.com/KyleBanks/depth v1.2.1
+go: downloading github.com/go-openapi/spec v0.22.4
+go: downloading golang.org/x/tools v0.43.0
+go: downloading golang.org/x/sync v0.20.0
+go: downloading github.com/go-openapi/jsonpointer v0.22.5
+go: downloading github.com/go-openapi/jsonreference v0.21.5
+go: downloading github.com/go-openapi/swag/jsonname v0.25.5
+go: downloading github.com/go-openapi/swag/jsonutils v0.25.5
+go: downloading github.com/go-openapi/swag/loading v0.25.5
+go: downloading github.com/go-openapi/swag/stringutils v0.25.5
+go: downloading golang.org/x/net v0.52.0
+go: downloading github.com/go-openapi/swag/yamlutils v0.25.5
+go: downloading github.com/go-openapi/swag/typeutils v0.25.5
+go: downloading github.com/go-openapi/swag/conv v0.25.5
+go: downloading go.yaml.in/yaml/v3 v3.0.4
+go: downloading golang.org/x/mod v0.34.0
+?   	backend/cmd/api	[no test files]
+?   	backend/docs/swagger	[no test files]
+ok  	backend/internal/app	0.014s
+ok  	backend/internal/application/agreement	0.005s
+?   	backend/internal/application/application	[no test files]
+ok  	backend/internal/auth/bootstrap	0.071s
+ok  	backend/internal/auth/organization	0.004s
+?   	backend/internal/auth/user	[no test files]
+?   	backend/internal/db/generated	[no test files]
+ok  	backend/internal/equipment/equipment	0.005s
+?   	backend/internal/equipment/measuringinstrument	[no test files]
+?   	backend/internal/equipment/metrologyjournal	[no test files]
+?   	backend/internal/equipment/registryaccess	[no test files]
+?   	backend/internal/equipment/standard	[no test files]
+?   	backend/internal/infrastructure/config	[no test files]
+?   	backend/internal/infrastructure/db	[no test files]
+?   	backend/internal/infrastructure/objectstorage	[no test files]

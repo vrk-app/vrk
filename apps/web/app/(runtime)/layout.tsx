@@ -18,11 +18,11 @@ export default async function RuntimeLayout({
       viewer={
         session
           ? {
-	              name: session.account.fullName,
-	              role: session.requiresLaunchWizard
-	                ? "организация запускается"
-	                : `${roleTemplateLabel(session.grant?.roleTemplate ?? "organization_admin").toLocaleLowerCase("ru-RU")} / ${session.workspace.scopeName}`,
-	            }
+              name: session.account.fullName,
+              role: session.requiresLaunchWizard
+                ? "организация запускается"
+                : roleTemplateLabel(session.grant?.roleTemplate ?? "organization_admin").toLocaleLowerCase("ru-RU"),
+            }
           : undefined
       }
     >

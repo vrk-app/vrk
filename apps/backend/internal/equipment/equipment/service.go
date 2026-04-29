@@ -326,8 +326,8 @@ func toResponse(item *Equipment) *EquipmentResponse {
 		ID:             item.ID,
 		OrganizationID: item.OrganizationID,
 		Unit: UnitSummary{
-			ID:              item.UnitID,
-			Name:            item.UnitName,
+			ID:           item.UnitID,
+			Name:         item.UnitName,
 			DivisionID:   item.DivisionID,
 			DivisionName: item.DivisionName,
 		},

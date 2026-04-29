@@ -1,6 +1,6 @@
 # Problems
 
-Current verifier verdict for `slice-010-stage03-org-structure-management`: `PASS`.
+Current verifier verdict for `slice-010-stage03-org-structure-management`: `PASS` after the company profile/access policy continuation.
 
 ## Failed Criteria
 
@@ -13,24 +13,34 @@ Current verifier verdict for `slice-010-stage03-org-structure-management`: `PASS
 ## Exact Reproduction
 
 ```bash
-python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data
-python3 -m py_compile .agent/stages/03-identity-master-data/proof_slice010_org_structure.py
-VRK_API_BASE_URL=http://127.0.0.1:18180 VRK_WEB_BASE_URL=http://127.0.0.1:3110 VRK_STAGE03_SLICE010_SEED=20260429099 python3 .agent/stages/03-identity-master-data/proof_slice010_org_structure.py
-curl -fsSL https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md > .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-29-division-current-fresh-verifier.md
-python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query "slice-010 organization profile structure management company divisions units archive employee invite controls"
-python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query "Button Card InputField SelectField TextareaField InlineAlert Tabs company structure management"
+docker run --rm -v "$PWD/apps/backend":/app -w /app golang:1.26-alpine sh -lc "export PATH=/usr/local/go/bin:$PATH; go test ./..."
+docker run --rm -v "$PWD/apps/backend":/app -w /app golang:1.26-alpine sh -lc "export PATH=/usr/local/go/bin:$PATH; go build -buildvcs=false ./..."
+PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run lint
+PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run typecheck
+PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run build
+PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run build-storybook
+docker compose -f compose.platform.yml config --quiet
+make smoke
+python3 -m py_compile .agent/stages/03-identity-master-data/proof_slice010_org_structure.py .agent/stages/03-identity-master-data/proof_slice004_equipment_registries.py .agent/stages/03-identity-master-data/proof_slice005_metrology_archive.py
+xmllint --noout docs/design/diagrams/customer-admin-bootstrap-flow.drawio
+jq empty .agent/stages/03-identity-master-data/evidence.json .agent/stages/03-identity-master-data/feature_list.json .agent/stages/03-identity-master-data/verdict.json
+git diff --check
 ```
 
 Saved raw artifacts:
 
-- `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-harness-2026-04-29.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-proof-run-2026-04-29.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-summary-2026-04-29.json`
-- `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-contract-audit-2026-04-29.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-terminology-audit-2026-04-29.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-doc-sync-audit-2026-04-29.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-ui-review-2026-04-29.txt`
-- `.agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-ui-evidence-audit-2026-04-29.txt`
+- `.agent/stages/03-identity-master-data/raw/company-profile-access-backend-go-test-2026-04-29.txt`
+- `.agent/stages/03-identity-master-data/raw/company-profile-access-backend-go-build-2026-04-29.txt`
+- `.agent/stages/03-identity-master-data/raw/company-profile-access-web-lint-2026-04-29.txt`
+- `.agent/stages/03-identity-master-data/raw/company-profile-access-web-typecheck-2026-04-29.txt`
+- `.agent/stages/03-identity-master-data/raw/company-profile-access-web-build-2026-04-29.txt`
+- `.agent/stages/03-identity-master-data/raw/company-profile-access-storybook-build-2026-04-29.txt`
+- `.agent/stages/03-identity-master-data/raw/company-profile-access-compose-config-2026-04-29.txt`
+- `.agent/stages/03-identity-master-data/raw/company-profile-access-platform-smoke-2026-04-29.txt`
+- `.agent/stages/03-identity-master-data/raw/company-profile-access-proof-pycompile-2026-04-29.txt`
+- `.agent/stages/03-identity-master-data/raw/company-profile-access-ui-review-2026-04-29.txt`
+- `.agent/stages/03-identity-master-data/raw/company-profile-access-json-audit-2026-04-29.txt`
+- `.agent/stages/03-identity-master-data/raw/company-profile-access-diff-check-2026-04-29.txt`
 
 ## Smallest Safe Fix Direction
 

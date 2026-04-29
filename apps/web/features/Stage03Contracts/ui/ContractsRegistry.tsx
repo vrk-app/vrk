@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { Building2, ClipboardCheck, Route, ShieldAlert, UserRoundCheck } from "lucide-react";
 import { Badge, Button, Card, InputField, SelectField } from "@/shared/ui";
 import { sessionHasCapability } from "@/shared/api";
@@ -11,6 +11,7 @@ import type {
   ContractorOption,
   RoutingResolveResult,
   SessionSummaryResponse,
+  ScopeType,
   WorkType,
 } from "@/shared/api";
 
@@ -34,9 +35,11 @@ const contractStatusOptions = [
 
 const scopeTypeOptions = [
   { label: "Вся организация", value: "organization" },
-  { label: "Подразделение", value: "division" },
+  { label: "Дивизион", value: "division" },
   { label: "Юнит", value: "unit" },
 ] as const;
+
+const scopeTypeOrder: ScopeType[] = ["organization", "division", "unit"];
 
 const statusTones: Record<ContractStatus, "neutral" | "success" | "warning"> = {
   inactive: "neutral",
@@ -55,7 +58,16 @@ type Props = {
   contractorOptions: ContractorOption[];
 };
 
-function resolveScopeLabel(session: SessionSummaryResponse, scopeType: "organization" | "division" | "unit", scopeId: string) {
+type ScopeOption = {
+  value: string;
+  label: string;
+};
+
+function getDefaultScopeType(scopeOptions: Record<ScopeType, ScopeOption[]>) {
+  return scopeTypeOrder.find((scopeType) => scopeOptions[scopeType].length > 0) ?? "organization";
+}
+
+function resolveScopeLabel(session: SessionSummaryResponse, scopeType: ScopeType, scopeId: string) {
   if (scopeType === "organization") {
     return session.organization.name;
   }
@@ -70,7 +82,7 @@ function formatScopeType(scopeType: ContractRecord["locationScope"]["scopeType"]
     case "organization":
       return "Организация";
     case "division":
-      return "Подразделение";
+      return "Дивизион";
     default:
       return "Юнит";
   }
@@ -89,6 +101,19 @@ function formatContractDate(date: string) {
 export function ContractsRegistry({ contractorOptions, initialContracts, session }: Props) {
   const isCustomerContour = session.organization.roleTitle === "customer";
   const canManageContracts = isCustomerContour && sessionHasCapability(session, "manage_contracts");
+  const scopeOptions = useMemo<Record<ScopeType, ScopeOption[]>>(
+    () => ({
+      organization:
+        session.workspace.scopeType === "organization"
+          ? [{ value: session.organization.id, label: session.organization.name }]
+          : [],
+      division: session.divisions.map((item) => ({ value: item.id, label: item.name })),
+      unit: session.units.map((item) => ({ value: item.id, label: item.name })),
+    }),
+    [session.divisions, session.organization.id, session.organization.name, session.units, session.workspace.scopeType],
+  );
+  const defaultScopeType = getDefaultScopeType(scopeOptions);
+  const availableScopeTypeOptions = scopeTypeOptions.filter((option) => scopeOptions[option.value].length > 0);
   const [contracts, setContracts] = useState(initialContracts);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -103,13 +128,41 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
   const [equipmentType, setEquipmentType] = useState("");
   const [region, setRegion] = useState("");
   const [subjectOfAgreement, setSubjectOfAgreement] = useState("");
-  const [scopeType, setScopeType] = useState<"organization" | "division" | "unit">("organization");
-  const [scopeId, setScopeId] = useState("");
+  const [scopeType, setScopeType] = useState<ScopeType>(defaultScopeType);
+  const [scopeId, setScopeId] = useState(scopeOptions[defaultScopeType][0]?.value ?? "");
   const [routingUnitId, setRoutingUnitId] = useState(session.units[0]?.id ?? "");
   const [routingWorkType, setRoutingWorkType] = useState<WorkType>("repair");
   const [routingEquipmentType, setRoutingEquipmentType] = useState("");
   const [routingRegion, setRoutingRegion] = useState("");
-  const isScopeSelectionMissing = scopeType !== "organization" && scopeId === "";
+  const isScopeSelectionMissing =
+    scopeOptions[scopeType].length === 0 ||
+    (scopeType !== "organization" && !scopeOptions[scopeType].some((option) => option.value === scopeId));
+
+  useEffect(() => {
+    const options = scopeOptions[scopeType];
+    if (options.length > 0) {
+      if (scopeType !== "organization" && !options.some((option) => option.value === scopeId)) {
+        setScopeId(options[0].value);
+      }
+      return;
+    }
+
+    setScopeType(defaultScopeType);
+    setScopeId(scopeOptions[defaultScopeType][0]?.value ?? "");
+  }, [defaultScopeType, scopeId, scopeOptions, scopeType]);
+
+  useEffect(() => {
+    if (routingUnitId && session.units.some((unit) => unit.id === routingUnitId)) {
+      return;
+    }
+    setRoutingUnitId(session.units[0]?.id ?? "");
+  }, [routingUnitId, session.units]);
+
+  function resetScopeSelection() {
+    const nextScopeType = getDefaultScopeType(scopeOptions);
+    setScopeType(nextScopeType);
+    setScopeId(scopeOptions[nextScopeType][0]?.value ?? "");
+  }
 
   const handleCreate = async () => {
     const locationScopeLabel = resolveScopeLabel(session, scopeType, scopeId);
@@ -146,8 +199,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
     setEquipmentType("");
     setRegion("");
     setSubjectOfAgreement("");
-    setScopeType("organization");
-    setScopeId("");
+    resetScopeSelection();
   };
 
   const updateContractStatus = async (contractId: string, nextStatus: ContractStatus) => {
@@ -208,9 +260,9 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
               {contracts.map((contract) => (
                 <Card className="gap-3" key={contract.id} padding="md">
                   <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="space-y-1">
-                      <p className="font-semibold text-foreground">{contract.contractNumber}</p>
-                      <p className="text-sm text-muted-foreground">{contract.customerOrganizationName}</p>
+                    <div className="min-w-0 space-y-1">
+                      <p className="break-words font-semibold text-foreground">{contract.contractNumber}</p>
+                      <p className="break-words text-sm text-muted-foreground">{contract.customerOrganizationName}</p>
                     </div>
                     <Badge tone={statusTones[contract.contractStatus]}>
                       {contractStatusLabels[contract.contractStatus]}
@@ -242,7 +294,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
               <div>
               <h2 className="text-xl font-semibold text-foreground">Контур договоров ограничен</h2>
               <p className="text-sm leading-6 text-muted-foreground">
-                Управлять реестром договоров может только администратор заказчика на уровне всей организации.
+                Управлять реестром договоров может администратор заказчика в пределах видимой области.
               </p>
             </div>
           </div>
@@ -263,6 +315,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
 
               <div className="grid gap-4 md:grid-cols-2">
                 <InputField
+                  autoComplete="off"
                   label="Номер договора"
                   name="contractNumber"
                   onChange={(event) => setContractNumber(event.target.value)}
@@ -294,6 +347,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   value={workType}
                 />
                 <InputField
+                  autoComplete="off"
                   label="Дата начала"
                   name="startDate"
                   onChange={(event) => setStartDate(event.target.value)}
@@ -301,6 +355,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   value={startDate}
                 />
                 <InputField
+                  autoComplete="off"
                   label="Дата окончания"
                   name="endDate"
                   onChange={(event) => setEndDate(event.target.value)}
@@ -308,18 +363,21 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   value={endDate}
                 />
                 <InputField
+                  autoComplete="off"
                   label="Тип оборудования"
                   name="equipmentType"
                   onChange={(event) => setEquipmentType(event.target.value)}
                   value={equipmentType}
                 />
                 <InputField
+                  autoComplete="off"
                   label="Регион"
                   name="region"
                   onChange={(event) => setRegion(event.target.value)}
                   value={region}
                 />
                 <InputField
+                  autoComplete="off"
                   label="Предмет договора"
                   name="subject"
                   onChange={(event) => setSubjectOfAgreement(event.target.value)}
@@ -329,11 +387,11 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   label="Область действия заказчика"
                   name="scopeType"
                   onChange={(event) => {
-                    const value = event.target.value as "organization" | "division" | "unit";
+                    const value = event.target.value as ScopeType;
                     setScopeType(value);
-                    setScopeId("");
+                    setScopeId(scopeOptions[value][0]?.value ?? "");
                   }}
-                  options={scopeTypeOptions}
+                  options={availableScopeTypeOptions}
                   value={scopeType}
                 />
               </div>
@@ -343,10 +401,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   label="Точка привязки"
                   name="scopeId"
                   onChange={(event) => setScopeId(event.target.value)}
-                  options={(scopeType === "division" ? session.divisions : session.units).map((option) => ({
-                    label: option.name,
-                    value: option.id,
-                  }))}
+                  options={scopeOptions[scopeType]}
                   placeholder="Выберите объект"
                   value={scopeId}
                 />
@@ -355,7 +410,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
               <div className="flex flex-wrap gap-3">
                 <Button
                   disabled={isPending || isScopeSelectionMissing}
-                  leftIcon={<ClipboardCheck className="size-4" />}
+                  leftIcon={<ClipboardCheck aria-hidden="true" className="size-4" />}
                   loading={isPending}
                   onClick={() => {
                     startTransition(() => {
@@ -396,19 +451,21 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   value={routingWorkType}
                 />
                 <InputField
+                  autoComplete="off"
                   label="Тип оборудования"
                   name="routingEquipmentType"
                   onChange={(event) => setRoutingEquipmentType(event.target.value)}
                   value={routingEquipmentType}
                 />
                 <InputField
+                  autoComplete="off"
                   label="Регион"
                   name="routingRegion"
                   onChange={(event) => setRoutingRegion(event.target.value)}
                   value={routingRegion}
                 />
                 <Button
-                  leftIcon={<Route className="size-4" />}
+                  leftIcon={<Route aria-hidden="true" className="size-4" />}
                   loading={isPending}
                   onClick={() => {
                     startTransition(() => {
@@ -440,7 +497,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                     routingPreview.matches.map((match) => (
                       <div className="rounded-[var(--radius-lg)] border border-border bg-card px-4 py-3" key={match.contract.id}>
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="font-semibold text-foreground">{match.contract.contractNumber}</p>
+                          <p className="break-words font-semibold text-foreground">{match.contract.contractNumber}</p>
                           <Badge tone="success">Подходит</Badge>
                         </div>
                         <p className="mt-2 text-sm text-muted-foreground">
@@ -472,9 +529,9 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                 {contracts.map((contract) => (
                   <Card className="gap-4" key={contract.id} padding="md">
                     <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="space-y-1">
-                        <p className="font-semibold text-foreground">{contract.contractNumber}</p>
-                        <p className="text-sm text-muted-foreground">{contract.contractorOrganizationName}</p>
+                      <div className="min-w-0 space-y-1">
+                        <p className="break-words font-semibold text-foreground">{contract.contractNumber}</p>
+                        <p className="break-words text-sm text-muted-foreground">{contract.contractorOrganizationName}</p>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge tone={statusTones[contract.contractStatus]}>

@@ -42,7 +42,7 @@ Canonical doc hits now include:
 - docs/architecture/identity-master-data.md:120 contractPhone.
 - docs/architecture/identity-master-data.md:121 contractEmail.
 - docs/architecture/identity-master-data.md:122 actingBasis.
-- docs/architecture/identity-master-data.md:123 preserved code, region, status, comment.
+- docs/architecture/identity-master-data.md:123 preserved region, status, comment.
 - docs/architecture/identity-master-data.md:125 active create/select flows and archive blocking constraints.
 
 Fresh verifier required:

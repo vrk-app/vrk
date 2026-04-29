@@ -5,8 +5,10 @@ type Capability string
 const (
 	RoleOrganizationAdmin = "organization_admin"
 	RoleOrganizationHead  = "organization_head"
+	RoleDivisionAdmin     = "division_admin"
 	RoleDivisionHead      = "division_head"
 	RoleDivisionOperator  = "division_operator"
+	RoleUnitAdmin         = "unit_admin"
 	RoleUnitHead          = "unit_head"
 	RoleUnitOperator      = "unit_operator"
 	RoleAuditor           = "auditor"
@@ -53,13 +55,26 @@ var roleCatalog = map[string]RoleDefinition{
 	},
 	RoleDivisionHead: {
 		Template:      RoleDivisionHead,
-		Label:         "Руководитель подразделения",
+		Label:         "Руководитель дивизиона",
 		AllowedScopes: []string{ScopeDivision},
 		Capabilities:  []Capability{CapabilityViewEmployees},
 	},
+	RoleDivisionAdmin: {
+		Template:      RoleDivisionAdmin,
+		Label:         "Администратор дивизиона",
+		AllowedScopes: []string{ScopeDivision},
+		Capabilities: []Capability{
+			CapabilityManageStructure,
+			CapabilityManageAccess,
+			CapabilityManageContracts,
+			CapabilityManageEquipment,
+			CapabilityViewEmployees,
+			CapabilityManageEmployees,
+		},
+	},
 	RoleDivisionOperator: {
 		Template:      RoleDivisionOperator,
-		Label:         "Сотрудник подразделения",
+		Label:         "Сотрудник дивизиона",
 		AllowedScopes: []string{ScopeDivision},
 	},
 	RoleUnitHead: {
@@ -67,6 +82,19 @@ var roleCatalog = map[string]RoleDefinition{
 		Label:         "Руководитель юнита",
 		AllowedScopes: []string{ScopeUnit},
 		Capabilities:  []Capability{CapabilityViewEmployees},
+	},
+	RoleUnitAdmin: {
+		Template:      RoleUnitAdmin,
+		Label:         "Администратор юнита",
+		AllowedScopes: []string{ScopeUnit},
+		Capabilities: []Capability{
+			CapabilityManageStructure,
+			CapabilityManageAccess,
+			CapabilityManageContracts,
+			CapabilityManageEquipment,
+			CapabilityViewEmployees,
+			CapabilityManageEmployees,
+		},
 	},
 	RoleUnitOperator: {
 		Template:      RoleUnitOperator,
@@ -85,8 +113,10 @@ var roleCatalog = map[string]RoleDefinition{
 var allowedRoleTemplates = map[string]string{
 	RoleOrganizationAdmin: roleCatalog[RoleOrganizationAdmin].Label,
 	RoleOrganizationHead:  roleCatalog[RoleOrganizationHead].Label,
+	RoleDivisionAdmin:     roleCatalog[RoleDivisionAdmin].Label,
 	RoleDivisionHead:      roleCatalog[RoleDivisionHead].Label,
 	RoleDivisionOperator:  roleCatalog[RoleDivisionOperator].Label,
+	RoleUnitAdmin:         roleCatalog[RoleUnitAdmin].Label,
 	RoleUnitHead:          roleCatalog[RoleUnitHead].Label,
 	RoleUnitOperator:      roleCatalog[RoleUnitOperator].Label,
 	RoleAuditor:           roleCatalog[RoleAuditor].Label,

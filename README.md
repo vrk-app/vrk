@@ -24,19 +24,23 @@ VRK Platform - это единая цифровая платформа для у
 
 - текущий baseline репозитория состоит из backend-контура в `apps/backend`, product-shaped web runtime shell в `apps/web` и PWA-first scaffold в `apps/field`;
 - root runtime contract теперь поднимается через `make dev` c compose `--wait`, после чего запускается one-shot `dev-seed`; proof-floor проверяется через `make smoke`, который выдерживает короткое host-port stabilization window сразу после свежего compose startup;
-- production-like web contour остается в `compose.platform.yml`: `apps/web/Dockerfile` делает `pnpm install`, `pnpm --filter @vrk/web build`, затем запускает `pnpm --filter @vrk/web start`;
+- production-like web contour остается в `compose.platform.yml`: `apps/web/Dockerfile` делает `pnpm install`, собирает Storybook в `public/storybook`, выполняет `pnpm --filter @vrk/web build`, затем запускает `pnpm --filter @vrk/web start`;
 - официальный hot reload contour для UI-разработки живет в `compose.dev.yml` и накладывается поверх platform compose: `docker compose -f compose.platform.yml -f compose.dev.yml up web`; он запускает `pnpm --filter @vrk/web dev --hostname 0.0.0.0 --port 3000` внутри compose-сети и сохраняет внешний web runtime на `http://localhost:3100`;
-- локальный dev seed создает customer organization, organization-scope admin, 3 филиала и 9 юнитов через backend API; логин/пароль печатаются в stdout и сохраняются в `.local/dev-seed.json`;
+- локальный dev seed создает customer organization, organization-scope admin, 3 дивизиона и 9 юнитов через backend API; логин/пароль печатаются в stdout и сохраняются в `.local/dev-seed.json`;
+- локальный compose stack поднимает MinIO-compatible object storage для приватных логотипов организаций; backend хранит в Postgres только object key и metadata;
 - `make smoke` использует `python3`, поэтому этот runtime contract не сводится только к `Docker` и `make`;
 - `make down` останавливает stack, но сохраняет volume базы; для clean-room seeded baseline и повторного dev seed используйте `make clean` перед новым `make dev`;
-- Stage 01 Storybook foundation остаётся source of truth для reusable UI; `pnpm storybook` продолжает собирать component inventory, а `pnpm run web:smoke` теперь дополнительно прогоняет headless browser-smoke для public auth submit flow `/login` и `/register` -> `/company`;
+- Stage 01 Storybook foundation остаётся source of truth для reusable UI; `pnpm storybook` продолжает запускать локальный UI harness, production-like web image публично отдает собранный Storybook на `/storybook/`, а `pnpm run web:smoke` дополнительно прогоняет headless browser-smoke для public auth submit flow `/login` и `/register` -> `/company`;
 - Node.js в репозитории зафиксирован на `v24.14.1` через `.nvmrc`, root `package.json`, root `.npmrc`, `apps/web/package.json` и `apps/field/package.json`;
 - `pnpm` в репозитории зафиксирован на `10.33.0` через `packageManager`; локальная установка должна синхронизироваться командой `corepack use pnpm@10.33.0`, а workspace policy по-прежнему задается через `pnpm-workspace.yaml` и `pnpm-lock.yaml`;
 - host ports по умолчанию:
   - backend: `http://localhost:18080`
   - web runtime: `http://localhost:3100`
   - field scaffold: `http://localhost:3102`
-  - Storybook: `http://localhost:6006`
+  - object storage API: `http://localhost:19000`
+  - object storage console: `http://localhost:19001`
+  - Storybook dev harness: `http://localhost:6006`
+  - Storybook через production-like web runtime: `http://localhost:3100/storybook/`
 - подробный runtime/platform contract описан в `docs/architecture/platform-runtime-baseline.md`.
 
 ## Onboarding / Local Setup
@@ -70,7 +74,7 @@ docker compose -f compose.platform.yml up -d --build web
 
 ## Incubator CI/CD
 
-Деплой ветки `Incubator` в Yandex Cloud описан в [`docs/architecture/yandex-cloud-incubator-deployment.md`](docs/architecture/yandex-cloud-incubator-deployment.md). Workflow `.github/workflows/incubator-deploy.yml` запускает checks, миграции, сборку Docker-образов и деплой backend/web Serverless Containers по каждому push в `Incubator`.
+Деплой ветки `Incubator` в Yandex Cloud описан в [`docs/architecture/yandex-cloud-incubator-deployment.md`](docs/architecture/yandex-cloud-incubator-deployment.md). Workflow `.github/workflows/incubator-deploy.yml` запускает checks, миграции, сборку Docker-образов и деплой backend/web Serverless Containers по каждому push в `Incubator`. Собранный Storybook публикуется тем же web container на `${VRK_WEB_URL}/storybook/`.
 
 ## Для кого создается продукт
 
@@ -245,7 +249,7 @@ docker compose -f compose.platform.yml up -d --build web
 - карточка оборудования с основными техническими параметрами;
 - история ремонтов, ТО и поверок;
 - журнал неисправностей, отказов и вмешательств;
-- привязка оборудования к депо, подразделениям и регионам;
+- привязка оборудования к депо, дивизионам и регионам;
 - накопление полной сервисной истории по каждой единице оборудования.
 
 #### 2. Планирование обслуживания и прогнозирование
@@ -283,7 +287,7 @@ docker compose -f compose.platform.yml up -d --build web
 #### 6. Склад заказчика и обеспечение заявок материалами
 
 - учет собственных складов, кладовых и точек хранения заказчика;
-- привязка материалов и запчастей к депо, подразделениям и объектам;
+- привязка материалов и запчастей к депо, дивизионам и объектам;
 - резервирование собственных материалов под ремонтные заявки;
 - передача материалов подрядчику или конкретной бригаде под выполнение работ;
 - контроль фактического расхода материалов заказчика в разрезе заявок и оборудования;
@@ -314,7 +318,7 @@ docker compose -f compose.platform.yml up -d --build web
 - списание по заявкам и видам работ;
 - резервирование материалов под будущие заявки;
 - перемещение между складами, сервисными центрами и бригадами;
-- контроль остатков на складе и в разрезе подразделений;
+- контроль остатков на складе и в разрезе дивизионов;
 - связь материалов с фактически выполненными работами и конкретными заявками;
 - подготовка данных для прозрачного отчета перед заказчиком.
 
@@ -458,7 +462,7 @@ docker compose -f compose.platform.yml up -d --build web
 
 - бригадами и их загрузкой;
 - составом бригад, ролями, допусками и компетенциями инженеров;
-- сервисными центрами и региональными подразделениями;
+- сервисными центрами и региональными дивизионами;
 - календарем выездов, смен и командировок;
 - назначением заявок на доступные бригады;
 - исполнителями и их квалификацией;

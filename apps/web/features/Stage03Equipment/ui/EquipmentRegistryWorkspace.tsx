@@ -11,7 +11,6 @@ import {
   RefreshCw,
   Ruler,
   Save,
-  ShieldCheck,
   Wrench,
   X,
 } from "lucide-react";
@@ -48,6 +47,7 @@ type EquipmentFormState = {
   inventoryNumber: string;
   manufactureYear: string;
   status: RegistryStatus;
+  measuringInstrumentIds: string[];
   comment: string;
   documentUrl: string;
 };
@@ -105,7 +105,6 @@ type EditDialogState =
     }
   | {
       kind: "measuringInstrument";
-      currentEquipment?: MeasuringInstrumentRecord["equipment"];
       linkedStandards: LinkedStandardRecord[];
       recordId: string;
       recordLabel: string;
@@ -150,11 +149,6 @@ const registryStatusOptions: Array<{ value: RegistryStatus; label: string }> = [
   { value: "retired", label: "Выведено" },
 ];
 
-const placementKindOptions: Array<{ value: MeasuringInstrumentPlacement; label: string }> = [
-  { value: "standalone", label: "Отдельное СИ" },
-  { value: "built_in", label: "Встроено в оборудование" },
-];
-
 const journalOperationOptions: Array<{ value: JournalRecord["operationType"]; label: string }> = [
   { value: "verification", label: "Поверка" },
   { value: "calibration", label: "Калибровка" },
@@ -186,6 +180,7 @@ function defaultEquipmentForm(session: SessionSummaryResponse): EquipmentFormSta
     inventoryNumber: "",
     manufactureYear: String(new Date().getFullYear()),
     status: "active",
+    measuringInstrumentIds: [],
     comment: "",
     documentUrl: "",
   };
@@ -245,6 +240,7 @@ function equipmentFormFromRecord(record: EquipmentRecord): EquipmentFormState {
     inventoryNumber: record.inventoryNumber ?? "",
     manufactureYear: String(record.manufactureYear),
     status: record.status,
+    measuringInstrumentIds: [],
     comment: record.comment ?? "",
     documentUrl: record.documentUrl ?? "",
   };
@@ -458,7 +454,7 @@ function formatScopeType(value: StandardRecord["ownershipScope"]["scopeType"] | 
     case "organization":
       return "Организация";
     case "division":
-      return "Подразделение";
+      return "Дивизион";
     default:
       return "Юнит";
   }
@@ -499,20 +495,14 @@ function standardLinkOptions(standards: StandardRecord[], linkedStandards: Linke
   return options;
 }
 
-function equipmentLinkOptions(
-  equipmentRecords: EquipmentRecord[],
-  unitId: string,
-  currentEquipment?: MeasuringInstrumentRecord["equipment"],
-) {
-  const options = equipmentRecords
-    .filter((item) => item.unit.id === unitId)
-    .map((item) => ({ label: item.fullName, value: item.id }));
-
-  if (currentEquipment && !options.some((item) => item.value === currentEquipment.id)) {
-    options.push({ label: currentEquipment.fullName, value: currentEquipment.id });
-  }
-
-  return options;
+function measuringInstrumentLinkOptions(measuringInstruments: MeasuringInstrumentRecord[], unitId: string) {
+  return measuringInstruments
+    .filter((item) => !item.archivedAt && item.unit.id === unitId && item.placementKind === "standalone" && !item.equipment)
+    .map((item) => ({
+      id: item.id,
+      label: `${item.name} • ${item.registrationNumber}`,
+      detail: `${item.instrumentType} • ${item.model}`,
+    }));
 }
 
 function buildEquipmentRoute(tab: RegistryTab, showArchived: boolean) {
@@ -682,7 +672,6 @@ function ArchiveConfirmDialog({
 }
 
 function EditRegistryDialog({
-  activeEquipmentRecords,
   activeStandards,
   editor,
   loading,
@@ -691,7 +680,6 @@ function EditRegistryDialog({
   onSubmit,
   session,
 }: {
-  activeEquipmentRecords: EquipmentRecord[];
   activeStandards: StandardRecord[];
   editor: EditDialogState | null;
   loading: boolean;
@@ -893,37 +881,21 @@ function EditRegistryDialog({
   const renderMeasuringInstrumentForm = (
     state: Extract<EditDialogState, { kind: "measuringInstrument" }>,
   ) => {
-    const equipmentOptions = equipmentLinkOptions(activeEquipmentRecords, state.form.unitId, state.currentEquipment);
     const linkedStandardOptions = standardLinkOptions(activeStandards, state.linkedStandards);
 
     return (
       <div className="grid gap-4">
-        <div className="grid gap-4 md:grid-cols-2">
-          <SelectField
-            label="Юнит"
-            name="edit-measuring-instrument-unit-id"
-            onChange={(event) =>
-              updateMeasuringInstrumentForm({
-                equipmentId: "",
-                unitId: event.target.value,
-              })
-            }
-            options={session.units.map((unit) => ({ label: unit.name, value: unit.id }))}
-            value={state.form.unitId}
-          />
-          <SelectField
-            label="Размещение"
-            name="edit-measuring-instrument-placement-kind"
-            onChange={(event) =>
-              updateMeasuringInstrumentForm({
-                placementKind: event.target.value as MeasuringInstrumentPlacement,
-                equipmentId: event.target.value === "built_in" ? state.form.equipmentId : "",
-              })
-            }
-            options={placementKindOptions}
-            value={state.form.placementKind}
-          />
-        </div>
+        <SelectField
+          label="Юнит"
+          name="edit-measuring-instrument-unit-id"
+          onChange={(event) =>
+            updateMeasuringInstrumentForm({
+              unitId: event.target.value,
+            })
+          }
+          options={session.units.map((unit) => ({ label: unit.name, value: unit.id }))}
+          value={state.form.unitId}
+        />
         <div className="grid gap-4 md:grid-cols-2">
           <InputField
             autoComplete={defaultAutoComplete("text")}
@@ -948,7 +920,7 @@ function EditRegistryDialog({
           />
           <InputField
             autoComplete={defaultAutoComplete("text")}
-            label="Регистрационный номер"
+            label="ФИФ"
             name="edit-measuring-instrument-registration-number"
             onChange={(event) => updateMeasuringInstrumentForm({ registrationNumber: event.target.value })}
             spellCheck={false}
@@ -964,19 +936,7 @@ function EditRegistryDialog({
             translate="no"
             value={state.form.serialNumber}
           />
-          <div className="rounded-[var(--radius-lg)] border border-border bg-muted/60 px-4 py-3 text-sm leading-6 text-muted-foreground">
-            Метрологический статус и срок действия не редактируются вручную, они пересчитываются через журнал.
-          </div>
         </div>
-        <SelectField
-          disabled={state.form.placementKind !== "built_in" || !equipmentOptions.length}
-          label="Привязка к оборудованию"
-          name="edit-measuring-instrument-equipment-id"
-          onChange={(event) => updateMeasuringInstrumentForm({ equipmentId: event.target.value })}
-          options={equipmentOptions}
-          placeholder={equipmentOptions.length ? "Выберите оборудование" : "Нет активного оборудования в выбранном юните"}
-          value={state.form.equipmentId}
-        />
         <label className="grid gap-2.5">
           <span className="text-sm font-medium text-foreground">Связанные эталоны</span>
           <div className="grid gap-2 rounded-[var(--radius-lg)] border border-border bg-muted/40 p-3">
@@ -1001,11 +961,11 @@ function EditRegistryDialog({
                     translate="no"
                     type="checkbox"
                   />
-                  <span className="space-y-1 text-sm">
-                    <span className="block font-medium text-foreground" translate="no">
+                  <span className="min-w-0 space-y-1 text-sm">
+                    <span className="block break-words font-medium text-foreground" translate="no">
                       {option.label}
                     </span>
-                    <span className="block text-muted-foreground">{option.detail}</span>
+                    <span className="block break-words text-muted-foreground">{option.detail}</span>
                   </span>
                 </label>
               ))
@@ -1023,9 +983,6 @@ function EditRegistryDialog({
             type="url"
             value={state.form.documentUrl}
           />
-          <div className="rounded-[var(--radius-lg)] border border-border bg-muted/60 px-4 py-3 text-sm leading-6 text-muted-foreground">
-            Встроенное СИ требует оборудование из того же юнита. Отдельное СИ сохраняется без привязки.
-          </div>
         </div>
         <TextareaField
           label="Комментарий"
@@ -1068,7 +1025,7 @@ function EditRegistryDialog({
             }}
             options={[
               { label: "Организация", value: "organization" },
-              { disabled: !session.divisions.length, label: "Подразделение", value: "division" },
+              { disabled: !session.divisions.length, label: "Дивизион", value: "division" },
               { disabled: !session.units.length, label: "Юнит", value: "unit" },
             ]}
             value={state.form.ownershipScopeType}
@@ -1297,16 +1254,11 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
 
   const canManageRegistry = sessionHasCapability(session, "manage_equipment");
 
-  const activeEquipmentRecords = equipmentRecords.filter((item) => !item.archivedAt);
   const activeStandards = standards.filter((item) => !item.archivedAt);
-  const availableEquipmentOptions = activeEquipmentRecords.filter(
-    (item) => item.unit.id === measuringInstrumentForm.unitId,
-  );
+  const linkableMeasuringInstrumentOptions = measuringInstrumentLinkOptions(measuringInstruments, equipmentForm.unitId);
   const selectedMeasuringInstrument =
     measuringInstruments.find((item) => item.id === selectedMeasuringInstrumentId) ?? null;
   const selectedStandard = standards.find((item) => item.id === selectedStandardId) ?? null;
-  const canSubmitMeasuringInstrument =
-    measuringInstrumentForm.placementKind !== "built_in" || measuringInstrumentForm.equipmentId !== "";
   const isMutating = isPending || mutationInFlight;
 
   const showSuccessToast = useCallback((title: string, dedupeKey: string) => {
@@ -1448,30 +1400,6 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
   }, [standards, selectedStandardId]);
 
   useEffect(() => {
-    setMeasuringInstrumentForm((current) => {
-      if (current.placementKind !== "built_in") {
-        if (current.equipmentId === "") {
-          return current;
-        }
-
-        return {
-          ...current,
-          equipmentId: "",
-        };
-      }
-
-      if (current.equipmentId === "" || availableEquipmentOptions.some((item) => item.id === current.equipmentId)) {
-        return current;
-      }
-
-      return {
-        ...current,
-        equipmentId: "",
-      };
-    });
-  }, [availableEquipmentOptions, measuringInstrumentForm.placementKind]);
-
-  useEffect(() => {
     const activeStandardIDs = new Set(activeStandards.map((item) => item.id));
 
     setMeasuringInstrumentForm((current) => {
@@ -1486,6 +1414,32 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
       };
     });
   }, [activeStandards]);
+
+  useEffect(() => {
+    const linkableIDs = new Set(
+      measuringInstruments
+        .filter(
+          (item) =>
+            !item.archivedAt &&
+            item.unit.id === equipmentForm.unitId &&
+            item.placementKind === "standalone" &&
+            !item.equipment,
+        )
+        .map((item) => item.id),
+    );
+
+    setEquipmentForm((current) => {
+      const nextIDs = current.measuringInstrumentIds.filter((id) => linkableIDs.has(id));
+      if (nextIDs.length === current.measuringInstrumentIds.length) {
+        return current;
+      }
+
+      return {
+        ...current,
+        measuringInstrumentIds: nextIDs,
+      };
+    });
+  }, [equipmentForm.unitId, measuringInstruments]);
 
   useEffect(() => {
     if (selectedMeasuringInstrumentId) {
@@ -1525,10 +1479,41 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
       body: JSON.stringify(equipmentPayload(equipmentForm)),
     });
 
-    await parseEnvelope<EquipmentRecord>(response, "Не удалось создать карточку оборудования.");
+    const created = await parseEnvelope<EquipmentRecord>(response, "Не удалось создать карточку оборудования.");
+    await Promise.all(
+      equipmentForm.measuringInstrumentIds.map(async (id) => {
+        const instrument = measuringInstruments.find((item) => item.id === id);
+        if (!instrument) {
+          return;
+        }
+
+        const linkResponse = await fetch(`/api/equipment/measuring-instruments/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(
+            measuringInstrumentPayload({
+              ...measuringInstrumentFormFromRecord(instrument),
+              equipmentId: created.id,
+              placementKind: "built_in",
+              unitId: created.unit.id,
+            }),
+          ),
+        });
+
+        await parseEnvelope<MeasuringInstrumentRecord>(
+          linkResponse,
+          "Не удалось связать средство измерения с оборудованием.",
+        );
+      }),
+    );
     setEquipmentForm(defaultEquipmentForm(session));
     await loadRegistries();
-    showSuccessToast("Оборудование создано и появилось в учете.", "equipment-create-success");
+    showSuccessToast(
+      equipmentForm.measuringInstrumentIds.length
+        ? "Оборудование создано. Связанные СИ добавлены в карточку."
+        : "Оборудование создано и появилось в учете.",
+      "equipment-create-success",
+    );
   }
 
   async function createMeasuringInstrument() {
@@ -1580,7 +1565,6 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
   function openMeasuringInstrumentEditor(record: MeasuringInstrumentRecord) {
     setEditDialog({
       kind: "measuringInstrument",
-      currentEquipment: record.equipment,
       linkedStandards: record.standards,
       recordId: record.id,
       recordLabel: record.name,
@@ -1750,6 +1734,15 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
     }));
   }
 
+  function toggleEquipmentMeasuringInstrument(id: string) {
+    setEquipmentForm((current) => ({
+      ...current,
+      measuringInstrumentIds: current.measuringInstrumentIds.includes(id)
+        ? current.measuringInstrumentIds.filter((item) => item !== id)
+        : [...current.measuringInstrumentIds, id],
+    }));
+  }
+
   function runMutation(task: () => Promise<void>, fallbackMessage: string, dedupeKey: string) {
     setMutationInFlight(true);
     startTransition(() => {
@@ -1803,7 +1796,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
             <div className="space-y-1">
               <h2 className="text-xl font-semibold text-foreground">Новое оборудование</h2>
               <p className="text-sm leading-6 text-muted-foreground">
-                Добавьте оборудование, владельца, статус и основные идентификаторы.
+                Добавьте оборудование, владельца, статус, основные идентификаторы и связанные СИ.
               </p>
             </div>
           </div>
@@ -1914,6 +1907,40 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                   value={equipmentForm.documentUrl}
                 />
               </div>
+              <label className="grid gap-2.5">
+                <span className="text-sm font-medium text-foreground">Связанные средства измерения</span>
+                <div className="grid gap-2 rounded-[var(--radius-lg)] border border-border bg-muted/40 p-3">
+                  {linkableMeasuringInstrumentOptions.length ? (
+                    linkableMeasuringInstrumentOptions.map((item) => (
+                      <label
+                        className="flex items-start gap-3 rounded-[var(--radius-md)] border border-transparent px-2 py-2 hover:border-border"
+                        key={item.id}
+                      >
+                        <input
+                          aria-label={item.label}
+                          checked={equipmentForm.measuringInstrumentIds.includes(item.id)}
+                          className="mt-0.5"
+                          name={`equipment-measuring-instrument-${item.id}`}
+                          onChange={() => toggleEquipmentMeasuringInstrument(item.id)}
+                          translate="no"
+                          type="checkbox"
+                        />
+                        <span className="min-w-0 space-y-1 text-sm">
+                          <span className="block break-words font-medium text-foreground" translate="no">
+                            {item.label}
+                          </span>
+                          <span className="block break-words text-muted-foreground">{item.detail}</span>
+                        </span>
+                      </label>
+                    ))
+                  ) : (
+                    <EmptyState
+                      detail="Активные отдельные СИ в выбранном юните отсутствуют. Связи можно оставить пустыми."
+                      title="Связи недоступны"
+                    />
+                  )}
+                </div>
+              </label>
               <TextareaField
                 label="Комментарий"
                 name="equipment-comment"
@@ -1927,7 +1954,11 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                 fullWidth
                 loading={isMutating}
                 onClick={() =>
-                  runMutation(createEquipment, "Не удалось создать карточку оборудования.", "equipment-create-error")
+                  runMutation(
+                    createEquipment,
+                    "Не удалось создать оборудование или связать выбранные СИ.",
+                    "equipment-create-error",
+                  )
                 }
                 type="button"
               >
@@ -1988,7 +2019,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                   {fieldDetail("Инвентарный номер", item.inventoryNumber, true)}
                   {fieldDetail("Год выпуска", item.manufactureYear)}
                   {fieldDetail("Юнит", item.unit.name)}
-                  {fieldDetail("Подразделение", item.unit.divisionName)}
+                  {fieldDetail("Дивизион", item.unit.divisionName)}
                   {fieldDetail("Архивирован", item.archivedAt ? formatTimestamp(item.archivedAt) : undefined)}
                 </div>
                 {item.comment || item.documentUrl ? (
@@ -2062,21 +2093,6 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                     options={session.units.map((unit) => ({ label: unit.name, value: unit.id }))}
                     value={measuringInstrumentForm.unitId}
                   />
-                  <SelectField
-                    label="Размещение"
-                    name="measuring-instrument-placement-kind"
-                    onChange={(event) =>
-                      setMeasuringInstrumentForm((current) => ({
-                        ...current,
-                        placementKind: event.target.value as MeasuringInstrumentPlacement,
-                        equipmentId: event.target.value === "built_in" ? current.equipmentId : "",
-                      }))
-                    }
-                    options={placementKindOptions}
-                    value={measuringInstrumentForm.placementKind}
-                  />
-                </div>
-                <div className="grid gap-4 md:grid-cols-2">
                   <InputField
                     autoComplete={defaultAutoComplete("text")}
                     label="Наименование"
@@ -2109,7 +2125,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                   />
                   <InputField
                     autoComplete={defaultAutoComplete("text")}
-                    label="Регистрационный номер"
+                    label="ФИФ"
                     name="measuring-instrument-registration-number"
                     onChange={(event) =>
                       setMeasuringInstrumentForm((current) => ({
@@ -2132,26 +2148,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                     translate="no"
                     value={measuringInstrumentForm.serialNumber}
                   />
-                  <div className="rounded-[var(--radius-lg)] border border-border bg-muted/60 px-4 py-3 text-sm text-muted-foreground">
-                    До первой записи журнала статус и ближайшая дата не считаются вручную. После записи они
-                    рассчитываются автоматически.
-                  </div>
                 </div>
-                <SelectField
-                  disabled={measuringInstrumentForm.placementKind !== "built_in" || !availableEquipmentOptions.length}
-                  label="Привязка к оборудованию"
-                  name="measuring-instrument-equipment-id"
-                  onChange={(event) =>
-                    setMeasuringInstrumentForm((current) => ({ ...current, equipmentId: event.target.value }))
-                  }
-                  options={availableEquipmentOptions.map((item) => ({ label: item.fullName, value: item.id }))}
-                  placeholder={
-                    availableEquipmentOptions.length
-                      ? "Выберите оборудование"
-                      : "Нет активного оборудования в выбранном юните"
-                  }
-                  value={measuringInstrumentForm.equipmentId}
-                />
                 <label className="grid gap-2.5">
                   <span className="text-sm font-medium text-foreground">Связанные эталоны</span>
                   <div className="grid gap-2 rounded-[var(--radius-lg)] border border-border bg-muted/40 p-3">
@@ -2170,11 +2167,11 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                             translate="no"
                             type="checkbox"
                           />
-                          <span className="space-y-1 text-sm">
-                            <span className="block font-medium text-foreground" translate="no">
+                          <span className="min-w-0 space-y-1 text-sm">
+                            <span className="block break-words font-medium text-foreground" translate="no">
                               {item.standardType} • {item.identifier}
                             </span>
-                            <span className="block text-muted-foreground">
+                            <span className="block break-words text-muted-foreground">
                               {item.model} • {item.ownershipScope.label}
                             </span>
                           </span>
@@ -2202,14 +2199,6 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                     type="url"
                     value={measuringInstrumentForm.documentUrl}
                   />
-                  <div className="rounded-[var(--radius-lg)] border border-border bg-muted/60 px-4 py-3 text-sm text-muted-foreground">
-                    <div className="flex items-start gap-2">
-                      <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-accent" />
-                      <p>
-                        Встроенное СИ требует оборудование из того же юнита. Отдельное СИ сохраняется без привязки.
-                      </p>
-                    </div>
-                  </div>
                 </div>
                 <TextareaField
                   label="Комментарий"
@@ -2220,7 +2209,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                   value={measuringInstrumentForm.comment}
                 />
                 <Button
-                  disabled={!canSubmitMeasuringInstrument || !isMeasuringInstrumentFormReady(measuringInstrumentForm)}
+                  disabled={!isMeasuringInstrumentFormReady(measuringInstrumentForm)}
                   fullWidth
                   loading={isMutating}
                   onClick={() =>
@@ -2288,7 +2277,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                     </div>
                   </div>
                   <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                    {fieldDetail("Регистрационный номер", item.registrationNumber, true)}
+                    {fieldDetail("ФИФ", item.registrationNumber, true)}
                     {fieldDetail("Серийный номер", item.serialNumber, true)}
                     {fieldDetail("Юнит", item.unit.name)}
                     {fieldDetail("Связано с оборудованием", item.equipment?.fullName)}
@@ -2607,7 +2596,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                     }
                     options={[
                       { label: "Организация", value: "organization" },
-                      { disabled: !session.divisions.length, label: "Подразделение", value: "division" },
+                      { disabled: !session.divisions.length, label: "Дивизион", value: "division" },
                       { disabled: !session.units.length, label: "Юнит", value: "unit" },
                     ]}
                     value={standardForm.ownershipScopeType}
@@ -2678,10 +2667,6 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                     }
                     value={standardForm.ownerLabel}
                   />
-                  <div className="rounded-[var(--radius-lg)] border border-border bg-muted/60 px-4 py-3 text-sm text-muted-foreground">
-                    Статус эталона вводить вручную не нужно. После первой записи журнала статус и срок действия
-                    рассчитаются автоматически.
-                  </div>
                   <InputField
                     autoComplete={defaultAutoComplete("url")}
                     label="Документ / ссылка"
@@ -3063,7 +3048,6 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
   return (
     <>
       <EditRegistryDialog
-        activeEquipmentRecords={activeEquipmentRecords}
         activeStandards={activeStandards}
         editor={editDialog}
         loading={isMutating}
@@ -3108,7 +3092,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
           </Card>
           <Card className="gap-3" padding="md">
             <Badge icon={<Building2 className="size-4" />} tone={canManageRegistry ? "success" : "warning"}>
-              {canManageRegistry ? "Управление организацией" : "Только просмотр"}
+              {canManageRegistry ? "Управление областью" : "Только просмотр"}
             </Badge>
             <div className="text-lg font-semibold text-foreground">{session.workspace.scopeName}</div>
             <p className="text-sm text-muted-foreground">Данные показаны для текущей области доступа.</p>

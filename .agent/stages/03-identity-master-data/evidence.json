@@ -2,8 +2,8 @@
   "stage_id": "03-identity-master-data",
   "sprint_contract_id": "slice-010-stage03-org-structure-management",
   "builder_state": "COMPLETE",
-  "verifier_state": "PASS_AFTER_DIVISION_ROLE_MODEL_V1_PLUS_LOCAL_DEV_SEED_PROOF",
-  "updated_at": "2026-04-29T06:22:00Z",
+  "verifier_state": "PASS_AFTER_COMPANY_PROFILE_ACCESS_POLICY_CONTINUATION",
+  "updated_at": "2026-04-29T20:46:14Z",
   "commands": [
     "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data",
     "PATH=/Users/yura-posledov/cursor/vrk/.agent/tmp-tools/go/bin:$PATH /Users/yura-posledov/cursor/vrk/.agent/tmp-tools/sqlc generate -f apps/backend/sqlc.yaml",
@@ -25,7 +25,7 @@
     "VRK_STAGE03_SLICE010_SEED=1777434591 python3 .agent/stages/03-identity-master-data/proof_slice010_org_structure.py",
     "rg legal type contract audit across canonical docs and stage artifacts",
     "rg -n \"LLC -> ООО\" docs/roadmap.md docs/design/customer-admin-bootstrap-flow.md",
-    "rg -n \"Организационно-правовая.*ООО, АО, ПАО\" docs/design/diagrams/customer-admin-bootstrap-flow.drawio",
+    "rg -n \"Организационно-правовая.*ООО, ПАО, НАО, ИП\" docs/design/diagrams/customer-admin-bootstrap-flow.drawio",
     "drawio stale option/alias absence audit",
     "xmllint --noout docs/design/diagrams/customer-admin-bootstrap-flow.drawio",
     "jq empty .agent/stages/03-identity-master-data/evidence.json",
@@ -55,7 +55,29 @@
     "backend login proof for dev seed admin returns organization workspace with 3 divisions and 9 units",
     "docker compose -f compose.platform.yml exec -T db psql -U postgres -d db -c \"SELECT seed_key, version, status, result_json::text LIKE '%password%' AS contains_password FROM dev_seed_runs ORDER BY started_at;\"",
     "stat -f '%Lp %N' .local/dev-seed.json",
-    "git diff --check"
+    "git diff --check",
+    "docker run --rm -v \"$PWD/apps/backend\":/app -w /app golang:1.26-alpine sh -lc \"export PATH=/usr/local/go/bin:/go/bin:$PATH; apk add --no-cache git ca-certificates >/dev/null && go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0 && sqlc generate && go install github.com/swaggo/swag/cmd/swag@v1.16.6 && swag init -g cmd/api/main.go -o docs/swagger\"",
+    "docker run --rm -v \"$PWD/apps/backend\":/app -w /app golang:1.26-alpine sh -lc \"export PATH=/usr/local/go/bin:$PATH; gofmt -w internal/auth/bootstrap/models.go internal/auth/bootstrap/repository.go internal/auth/bootstrap/service.go\"",
+    "docker run --rm -v \"$PWD/apps/backend\":/app -w /app golang:1.26-alpine sh -lc \"export PATH=/usr/local/go/bin:$PATH; go test ./...\"",
+    "docker run --rm -v \"$PWD/apps/backend\":/app -w /app golang:1.26-alpine sh -lc \"export PATH=/usr/local/go/bin:$PATH; go build -buildvcs=false ./...\"",
+    "PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run lint",
+    "PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run typecheck",
+    "PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run build",
+    "PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run build-storybook",
+    "python3 -m py_compile .agent/stages/03-identity-master-data/proof_slice010_org_structure.py .agent/stages/03-identity-master-data/proof_slice004_equipment_registries.py .agent/stages/03-identity-master-data/proof_slice005_metrology_archive.py",
+    "targeted obsolete-field rg guard",
+    "docker go test ./... > .agent/stages/03-identity-master-data/raw/company-profile-access-backend-go-test-2026-04-29.txt",
+    "docker go build -buildvcs=false ./... > .agent/stages/03-identity-master-data/raw/company-profile-access-backend-go-build-2026-04-29.txt",
+    "PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run lint > .agent/stages/03-identity-master-data/raw/company-profile-access-web-lint-2026-04-29.txt",
+    "PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run typecheck > .agent/stages/03-identity-master-data/raw/company-profile-access-web-typecheck-2026-04-29.txt",
+    "PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run build > .agent/stages/03-identity-master-data/raw/company-profile-access-web-build-2026-04-29.txt",
+    "PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run build-storybook > .agent/stages/03-identity-master-data/raw/company-profile-access-storybook-build-2026-04-29.txt",
+    "docker compose -f compose.platform.yml config --quiet > .agent/stages/03-identity-master-data/raw/company-profile-access-compose-config-2026-04-29.txt",
+    "make smoke > .agent/stages/03-identity-master-data/raw/company-profile-access-platform-smoke-2026-04-29.txt",
+    "python3 -m py_compile .agent/stages/03-identity-master-data/proof_slice010_org_structure.py .agent/stages/03-identity-master-data/proof_slice004_equipment_registries.py .agent/stages/03-identity-master-data/proof_slice005_metrology_archive.py > .agent/stages/03-identity-master-data/raw/company-profile-access-proof-pycompile-2026-04-29.txt",
+    "xmllint --noout docs/design/diagrams/customer-admin-bootstrap-flow.drawio > .agent/stages/03-identity-master-data/raw/company-profile-access-drawio-xml-audit-2026-04-29.txt",
+    "manual Web Interface Guidelines review saved .agent/stages/03-identity-master-data/raw/company-profile-access-ui-review-2026-04-29.txt",
+    "targeted legal-form, doc-sync, registration-label, stale-role, and git diff --check audits saved under raw/company-profile-access-*"
   ],
   "tests": [
     "verify_harness: PASS",
@@ -130,7 +152,33 @@
     "local dev seed file mode audit: PASS; .local/dev-seed.json mode is 600",
     "local dev seed stage JSON audit: PASS",
     "local dev seed stage harness self-check: PASS",
-    "local dev seed git diff --check: PASS"
+    "local dev seed git diff --check: PASS",
+    "structure identifier removal sqlc Docker generation: PASS",
+    "structure identifier removal Swagger Docker generation: PASS",
+    "structure identifier removal backend go test ./... via Docker: PASS",
+    "structure identifier removal backend go build -buildvcs=false ./... via Docker: PASS",
+    "structure identifier removal web lint: PASS",
+    "structure identifier removal web typecheck: PASS",
+    "structure identifier removal web build: PASS",
+    "structure identifier removal Storybook build: PASS",
+    "structure identifier removal proof scripts py_compile: PASS",
+    "structure identifier removal harness self-check: PASS",
+    "structure identifier removal obsolete-field guard: PASS",
+    "structure identifier removal git diff --check: PASS",
+    "company profile/access backend go test ./... via Docker: PASS",
+    "company profile/access backend go build -buildvcs=false ./... via Docker: PASS",
+    "company profile/access web lint: PASS",
+    "company profile/access web typecheck: PASS after sequential rerun",
+    "company profile/access web build: PASS",
+    "company profile/access Storybook build: PASS with existing warnings only",
+    "company profile/access compose config: PASS",
+    "company profile/access existing compose make smoke: PASS",
+    "company profile/access proof scripts py_compile: PASS",
+    "company profile/access Web Interface Guidelines review: PASS",
+    "company profile/access Draw.io XML audit: PASS",
+    "company profile/access legal-form/doc-sync/ФИФ/stale-role audits: PASS",
+    "company profile/access stage harness self-check: PASS",
+    "company profile/access git diff --check: PASS"
   ],
   "artifacts": [
     ".agent/stages/03-identity-master-data/evidence.md",
@@ -291,7 +339,7 @@
     "status": "FIXED_VERIFIED",
     "canonical_doc": "docs/architecture/identity-master-data.md",
     "section": "1.2.1 /company business-field contract",
-    "summary": "Canonical docs now record differentiated type semantics: organization propertyType/type alias is ОПФ ООО/АО/ПАО with legacy alias normalization, division has no selectable type and keeps hidden storage default, unit type remains ВРД/ВРЗ/ВУ/ВРП, with address/leader aliases and archive constraints preserved.",
+    "summary": "Canonical docs now record differentiated type semantics: organization propertyType/type alias is ОПФ ООО/ПАО/НАО/ИП with legacy alias normalization, division has no selectable type and keeps hidden storage default, unit type remains ВРД/ВРЗ/ВУ/ВРП, with address/leader aliases and archive constraints preserved.",
     "artifact": ".agent/stages/03-identity-master-data/raw/slice-010-fixer-doc-sync-2026-04-29.txt",
     "verified_by": [
       "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data: PASS",
@@ -346,8 +394,8 @@
       "first-admin web acceptance issues active session and lands on /company",
       "/company/setup redirects to /company",
       "organization profile PATCH preserves legal-form propertyType/type alias",
-      "organization legal forms accepted: ООО, АО, ПАО",
-      "legacy legal form aliases normalize: ОАО -> ПАО, ЗАО -> АО, LLC -> ООО",
+      "organization legal forms accepted: ООО, ПАО, НАО, ИП",
+      "legacy legal form aliases normalize: АО -> НАО, ОАО -> ПАО, ЗАО -> НАО, LLC -> ООО",
       "organization profile rejects operational unit type values such as ВРД",
       "division create/edit works without user-facing type and stores hidden internal default",
       "unit create/update still requires bounded operational type ВРД/ВРЗ/ВУ/ВРП",
@@ -426,7 +474,7 @@
     "changes": [
       "roadmap legacy legal-form compatibility sentence includes LLC -> ООО",
       "customer-admin bootstrap flow legacy legal-form compatibility sentence includes LLC -> ООО",
-      "drawio legal-form examples show visible options ООО, АО, ПАО and do not expose legacy aliases as visible options"
+      "drawio legal-form examples show visible options ООО, ПАО, НАО, ИП and do not expose legacy aliases as visible options"
     ],
     "checks": [
       "rg LLC -> ООО audit: PASS",
@@ -598,6 +646,73 @@
     "docs_synced": [
       "docs/architecture/platform-runtime-baseline.md",
       "docs/architecture/yandex-cloud-incubator-deployment.md"
+    ]
+  },
+  "structure_identifier_removal": {
+    "status": "SELF_VERIFIED",
+    "migration": "apps/backend/migrations/000014_remove_structure_code.up.sql",
+    "docs_synced": [
+      "docs/architecture/identity-master-data.md",
+      ".agent/stages/03-identity-master-data/stage_spec.md",
+      ".agent/stages/03-identity-master-data/sprint_contract.md"
+    ],
+    "ui_workflow": {
+      "skill": "$vrk-web-ui-workflow",
+      "reusable_component_decision": "not_applicable_existing_field_removal",
+      "review": "PASS",
+      "raw": ".agent/stages/03-identity-master-data/raw/structure-identifier-removal-ui-review-2026-04-29.txt"
+    }
+  },
+  "company_profile_access_continuation": {
+    "status": "PASS",
+    "checked_at": "2026-04-29T20:45:00Z",
+    "summary": "Expanded company profile/access policy continuation is implemented and verified: contract updates are visibility-scoped, contract UI scope options follow the current workspace, Storybook covers scoped contract admins, active legal-form artifacts use ООО/ПАО/НАО/ИП with legacy aliases normalized, and measuring-instrument UI label is ФИФ.",
+    "code_changes": [
+      "agreementService.Update rejects contracts outside the current session visible scope",
+      "focused backend test covers division admin rejecting organization-scope contract update",
+      "ContractsRegistry derives scope options from session-visible organization/division/unit data",
+      "Storybook fixtures/stories cover division_admin and unit_admin contract management",
+      "Storybook contract mock derives locationScope from divisionId/unitId production payloads",
+      "platform_smoke.sh type hint is compatible with the Python used by make smoke"
+    ],
+    "ui_workflow": {
+      "skill": "$vrk-web-ui-workflow",
+      "lookup": ".agent/stages/03-identity-master-data/raw/storybook-lookup-company-profile-access-contracts-2026-04-29.txt",
+      "decision": "reuse",
+      "review": ".agent/stages/03-identity-master-data/raw/company-profile-access-ui-review-2026-04-29.txt",
+      "guidelines_source": ".agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-29-company-profile-access.md"
+    },
+    "checks": [
+      "docker go test ./...: PASS",
+      "docker go build -buildvcs=false ./...: PASS",
+      "web pnpm run lint: PASS",
+      "web pnpm run typecheck: PASS after sequential rerun",
+      "web pnpm run build: PASS",
+      "web pnpm run build-storybook: PASS",
+      "docker compose -f compose.platform.yml config: PASS",
+      "make smoke on existing compose stack: PASS",
+      "proof_slice010_org_structure.py py_compile: PASS",
+      "xmllint drawio: PASS",
+      "jq evidence/feature/verdict: PASS",
+      "stale legal-form and registration label audits over active docs/stage artifacts: PASS"
+    ],
+    "artifacts": [
+      ".agent/stages/03-identity-master-data/raw/company-profile-access-backend-go-test-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/company-profile-access-backend-go-build-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/company-profile-access-web-lint-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/company-profile-access-web-typecheck-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/company-profile-access-web-build-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/company-profile-access-storybook-build-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/company-profile-access-compose-config-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/company-profile-access-platform-smoke-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/company-profile-access-proof-pycompile-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/company-profile-access-json-audit-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/company-profile-access-drawio-xml-audit-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/company-profile-access-stale-doc-audit-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/company-profile-access-registration-label-audit-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/company-profile-access-doc-sync-audit-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/company-profile-access-harness-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/company-profile-access-diff-check-2026-04-29.txt"
     ]
   }
 }

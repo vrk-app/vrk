@@ -157,15 +157,34 @@ definitions:
       password:
         type: string
     type: object
+  bootstrap.CompanyLogoResponse:
+    properties:
+      contentType:
+        type: string
+      fileName:
+        type: string
+      sizeBytes:
+        type: integer
+      updatedAt:
+        type: string
+      url:
+        type: string
+    type: object
   bootstrap.CompanyProfileRequest:
     properties:
       actingBasis:
         type: string
       address:
         type: string
+      bankName:
+        type: string
+      bik:
+        type: string
       contractEmail:
         type: string
       contractPhone:
+        type: string
+      correspondentAccount:
         type: string
       inn:
         type: string
@@ -179,9 +198,15 @@ definitions:
         type: string
       name:
         type: string
+      ogrn:
+        type: string
+      postalAddress:
+        type: string
       propertyType:
         type: string
       registeredAddress:
+        type: string
+      settlementAccount:
         type: string
       shortName:
         type: string
@@ -251,8 +276,6 @@ definitions:
       actingBasis:
         type: string
       address:
-        type: string
-      code:
         type: string
       comment:
         type: string
@@ -360,8 +383,6 @@ definitions:
     properties:
       address:
         type: string
-      code:
-        type: string
       contacts:
         type: string
       managerName:
@@ -376,8 +397,6 @@ definitions:
   bootstrap.LaunchUnitInput:
     properties:
       address:
-        type: string
-      code:
         type: string
       contacts:
         type: string
@@ -468,6 +487,10 @@ definitions:
         type: string
       address:
         type: string
+      bankName:
+        type: string
+      bik:
+        type: string
       contactEmail:
         type: string
       contactPhone:
@@ -475,6 +498,8 @@ definitions:
       contractEmail:
         type: string
       contractPhone:
+        type: string
+      correspondentAccount:
         type: string
       id:
         type: string
@@ -490,15 +515,23 @@ definitions:
         type: string
       legalAddress:
         type: string
+      logo:
+        $ref: '#/definitions/bootstrap.CompanyLogoResponse'
       managerName:
         type: string
       name:
+        type: string
+      ogrn:
+        type: string
+      postalAddress:
         type: string
       propertyType:
         type: string
       registeredAddress:
         type: string
       roleTitle:
+        type: string
+      settlementAccount:
         type: string
       shortName:
         type: string
@@ -559,8 +592,6 @@ definitions:
         type: string
       address:
         type: string
-      code:
-        type: string
       comment:
         type: string
       contacts:
@@ -591,8 +622,6 @@ definitions:
       actingBasis:
         type: string
       address:
-        type: string
-      code:
         type: string
       comment:
         type: string
@@ -1573,6 +1602,102 @@ paths:
           schema:
             $ref: '#/definitions/bootstrap.Response'
       summary: Archive company division
+      tags:
+      - company
+  /company/logo:
+    delete:
+      description: Removes logo object metadata from Postgres and deletes the private
+        object when present.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.SessionSummaryResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Delete company logo
+      tags:
+      - company
+    get:
+      description: Streams the private object-storage-backed logo for the authenticated
+        current organization.
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Stream company logo
+      tags:
+      - company
+    post:
+      consumes:
+      - multipart/form-data
+      description: Stores the current organization logo in private object storage
+        and keeps only object metadata in Postgres.
+      parameters:
+      - description: Logo file
+        in: formData
+        name: logo
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.SessionSummaryResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Upload company logo
       tags:
       - company
   /company/profile:

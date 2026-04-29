@@ -86,26 +86,37 @@ type AuthAccount struct {
 }
 
 type AuthBootstrapOrganization struct {
-	ID                  pgtype.UUID        `json:"id"`
-	RoleTitle           string             `json:"roleTitle"`
-	ShellName           string             `json:"shellName"`
-	ShortName           *string            `json:"shortName"`
-	PropertyType        *string            `json:"propertyType"`
-	Inn                 *string            `json:"inn"`
-	Kpp                 *string            `json:"kpp"`
-	LegalAddress        *string            `json:"legalAddress"`
-	ContactEmail        *string            `json:"contactEmail"`
-	ContactPhone        *string            `json:"contactPhone"`
-	LaunchState         string             `json:"launchState"`
-	FirstAdminAccountID pgtype.UUID        `json:"firstAdminAccountId"`
-	LaunchedAt          pgtype.Timestamptz `json:"launchedAt"`
-	CreatedAt           pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt           pgtype.Timestamptz `json:"updatedAt"`
-	LeaderFullName      *string            `json:"leaderFullName"`
-	LeaderPosition      *string            `json:"leaderPosition"`
-	ContractPhone       *string            `json:"contractPhone"`
-	ContractEmail       *string            `json:"contractEmail"`
-	ActingBasis         *string            `json:"actingBasis"`
+	ID                   pgtype.UUID        `json:"id"`
+	RoleTitle            string             `json:"roleTitle"`
+	ShellName            string             `json:"shellName"`
+	ShortName            *string            `json:"shortName"`
+	PropertyType         *string            `json:"propertyType"`
+	Inn                  *string            `json:"inn"`
+	Kpp                  *string            `json:"kpp"`
+	LegalAddress         *string            `json:"legalAddress"`
+	ContactEmail         *string            `json:"contactEmail"`
+	ContactPhone         *string            `json:"contactPhone"`
+	LaunchState          string             `json:"launchState"`
+	FirstAdminAccountID  pgtype.UUID        `json:"firstAdminAccountId"`
+	LaunchedAt           pgtype.Timestamptz `json:"launchedAt"`
+	CreatedAt            pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt            pgtype.Timestamptz `json:"updatedAt"`
+	LeaderFullName       *string            `json:"leaderFullName"`
+	LeaderPosition       *string            `json:"leaderPosition"`
+	ContractPhone        *string            `json:"contractPhone"`
+	ContractEmail        *string            `json:"contractEmail"`
+	ActingBasis          *string            `json:"actingBasis"`
+	PostalAddress        *string            `json:"postalAddress"`
+	Ogrn                 *string            `json:"ogrn"`
+	SettlementAccount    *string            `json:"settlementAccount"`
+	BankName             *string            `json:"bankName"`
+	CorrespondentAccount *string            `json:"correspondentAccount"`
+	Bik                  *string            `json:"bik"`
+	LogoObjectKey        *string            `json:"logoObjectKey"`
+	LogoFileName         *string            `json:"logoFileName"`
+	LogoContentType      *string            `json:"logoContentType"`
+	LogoSizeBytes        *int64             `json:"logoSizeBytes"`
+	LogoUpdatedAt        pgtype.Timestamptz `json:"logoUpdatedAt"`
 }
 
 type AuthDivision struct {
@@ -113,7 +124,6 @@ type AuthDivision struct {
 	OrganizationID pgtype.UUID        `json:"organizationId"`
 	DivisionType   string             `json:"divisionType"`
 	Name           string             `json:"name"`
-	Code           *string            `json:"code"`
 	Region         *string            `json:"region"`
 	Address        *string            `json:"address"`
 	ManagerName    *string            `json:"managerName"`
@@ -197,7 +207,6 @@ type AuthUnit struct {
 	DivisionID     pgtype.UUID        `json:"divisionId"`
 	UnitType       string             `json:"unitType"`
 	Name           string             `json:"name"`
-	Code           *string            `json:"code"`
 	Address        *string            `json:"address"`
 	ManagerName    *string            `json:"managerName"`
 	Contacts       *string            `json:"contacts"`

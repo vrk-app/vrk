@@ -28,8 +28,10 @@ type ScopeOption = {
 const roleTemplates = [
   { value: "organization_admin", label: roleTemplateLabels.organization_admin },
   { value: "organization_head", label: roleTemplateLabels.organization_head },
+  { value: "division_admin", label: roleTemplateLabels.division_admin },
   { value: "division_head", label: roleTemplateLabels.division_head },
   { value: "division_operator", label: roleTemplateLabels.division_operator },
+  { value: "unit_admin", label: roleTemplateLabels.unit_admin },
   { value: "unit_head", label: roleTemplateLabels.unit_head },
   { value: "unit_operator", label: roleTemplateLabels.unit_operator },
   { value: "auditor", label: roleTemplateLabels.auditor },
@@ -37,7 +39,7 @@ const roleTemplates = [
 
 const scopeTypeLabels: Record<ScopeType, string> = {
   organization: "Вся организация",
-  division: "Подразделение",
+  division: "Дивизион",
   unit: "Юнит",
 };
 
@@ -106,11 +108,14 @@ export function EmployeeInviteManager({ session }: Props) {
 
   const scopeOptions = useMemo<Record<ScopeType, ScopeOption[]>>(
     () => ({
-      organization: [{ value: session.organization.id, label: session.organization.name }],
+      organization:
+        session.workspace.scopeType === "organization"
+          ? [{ value: session.organization.id, label: session.organization.name }]
+          : [],
       division: session.divisions.map((item) => ({ value: item.id, label: item.name })),
       unit: session.units.map((item) => ({ value: item.id, label: item.name })),
     }),
-    [session.organization.id, session.organization.name, session.divisions, session.units],
+    [session.organization.id, session.organization.name, session.divisions, session.units, session.workspace.scopeType],
   );
 
   useEffect(() => {
@@ -185,8 +190,11 @@ export function EmployeeInviteManager({ session }: Props) {
       setFullName("");
       setEmail("");
       setRoleTemplate("auditor");
-      setScopeType("organization");
-      setScopeId(session.organization.id);
+      {
+        const nextScopeType = defaultScopeForRole("auditor", scopeOptions);
+        setScopeType(nextScopeType);
+        setScopeId(scopeOptions[nextScopeType][0]?.value ?? "");
+      }
       setExpiresAt(toLocalDateTimeInput(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)));
       setInvites((current) => [createdInvite, ...current]);
     } catch (error) {
@@ -222,13 +230,6 @@ export function EmployeeInviteManager({ session }: Props) {
           </div>
         </div>
 
-        <div className="rounded-[var(--radius-lg)] bg-muted/70 px-4 py-3 text-sm leading-6 text-muted-foreground">
-          <div className="flex items-start gap-2">
-            <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-accent" />
-            <p>Проверьте параметры доступа перед отправкой приглашения.</p>
-          </div>
-        </div>
-
         <div className="grid gap-4">
           <InputField
             autoComplete="off"
@@ -250,36 +251,36 @@ export function EmployeeInviteManager({ session }: Props) {
             type="email"
             value={email}
           />
-              <SelectField
-                label="Роль доступа"
-                name="roleTemplate"
-                onChange={(event) => setRoleTemplate(event.target.value as RoleTemplate)}
-                options={roleTemplates}
-                value={roleTemplate}
-              />
+          <SelectField
+            label="Роль доступа"
+            name="roleTemplate"
+            onChange={(event) => setRoleTemplate(event.target.value as RoleTemplate)}
+            options={roleTemplates}
+            value={roleTemplate}
+          />
           <div className="grid gap-4 md:grid-cols-2">
             <SelectField
-                label="Уровень доступа"
-                name="scopeType"
-                onChange={(event) => setScopeType(event.target.value as ScopeType)}
-                options={[
-                  {
-                    disabled: !isRoleScopeCompatible(roleTemplate, "organization"),
-                    label: "Вся организация",
-                    value: "organization",
-                  },
-                  {
-                    disabled: !isRoleScopeCompatible(roleTemplate, "division") || !scopeOptions.division.length,
-                    label: "Подразделение",
-                    value: "division",
-                  },
-                  {
-                    disabled: !isRoleScopeCompatible(roleTemplate, "unit") || !scopeOptions.unit.length,
-                    label: "Юнит",
-                    value: "unit",
-                  },
-                ]}
-                value={scopeType}
+              label="Уровень доступа"
+              name="scopeType"
+              onChange={(event) => setScopeType(event.target.value as ScopeType)}
+              options={[
+                {
+                  disabled: !isRoleScopeCompatible(roleTemplate, "organization"),
+                  label: "Вся организация",
+                  value: "organization",
+                },
+                {
+                  disabled: !isRoleScopeCompatible(roleTemplate, "division") || !scopeOptions.division.length,
+                  label: "Дивизион",
+                  value: "division",
+                },
+                {
+                  disabled: !isRoleScopeCompatible(roleTemplate, "unit") || !scopeOptions.unit.length,
+                  label: "Юнит",
+                  value: "unit",
+                },
+              ]}
+              value={scopeType}
             />
             <SelectField
               disabled={!scopeOptions[scopeType].length}
@@ -312,6 +313,13 @@ export function EmployeeInviteManager({ session }: Props) {
           </div>
         ) : null}
 
+        <div className="rounded-[var(--radius-lg)] bg-muted/70 px-4 py-3 text-sm leading-6 text-muted-foreground">
+          <div className="flex items-start gap-2">
+            <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-accent" />
+            <p>Проверьте параметры доступа перед отправкой приглашения.</p>
+          </div>
+        </div>
+
         <Button
           fullWidth
           loading={isPending}
@@ -332,9 +340,6 @@ export function EmployeeInviteManager({ session }: Props) {
             <Badge tone="info">История приглашений</Badge>
             <div className="space-y-1">
               <h2 className="text-xl font-semibold text-foreground">Статусы приглашений</h2>
-              <p className="text-sm leading-6 text-muted-foreground">
-                Черновики, отправленные, принятые и отозванные приглашения собраны в одном списке.
-              </p>
             </div>
           </div>
           <Button onClick={() => void loadInvites()} type="button" variant="secondary">

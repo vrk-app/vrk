@@ -30,7 +30,7 @@ Canonical section excerpt: docs/architecture/identity-master-data.md:95-126
 | `contractPhone` | Договорной/контактный телефон record-а, где он нужен текущему `/company` management surface. |
 | `contractEmail` | Договорной/контактный email record-а, где он нужен текущему `/company` management surface. |
 | `actingBasis` | Основание полномочий руководителя для record-а, где это поле применимо. |
-| `code`, `region`, `status`, `comment` | Сохраняются и отображаются там, где текущие backend/session/UI contracts продолжают их использовать. |
+| `region`, `status`, `comment` | Сохраняются и отображаются там, где текущие backend/session/UI contracts продолжают их использовать. |
 
 Active create/select flows должны выбирать только visible active scopes. Archived подразделения и юниты скрываются из default selection, не удаляются физически и могут вернуть truthful blocking error, если active equipment, active scoped grants или другие Stage 03 references не позволяют безопасно архивировать узел.
 
@@ -45,7 +45,7 @@ PASS `leaderPosition`
 PASS `contractPhone`
 PASS `contractEmail`
 PASS `actingBasis`
-PASS `code`, `region`, `status`, `comment`
+PASS `region`, `status`, `comment`
 PASS Active create/select flows.*visible active scopes
 PASS Archived.*скрываются.*default selection
 PASS blocking error.*active equipment.*active scoped grants

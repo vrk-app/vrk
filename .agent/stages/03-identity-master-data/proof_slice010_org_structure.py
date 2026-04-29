@@ -178,9 +178,12 @@ def assert_company_ui_field_contract() -> dict[str, Any]:
     workspace_source = (REPO_ROOT / "apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx").read_text(encoding="utf-8")
     launch_wizard_source = (REPO_ROOT / "apps/web/features/Stage03Bootstrap/ui/LaunchWizardForm.tsx").read_text(encoding="utf-8")
 
-    for option in ("ООО", "АО", "ПАО"):
+    for option in ("ООО", "ПАО", "НАО", "ИП"):
         assert_true(option in workspace_source, f"/company profile legal-form option {option} is missing from source")
-    assert_true('{ label: "ОАО"' not in workspace_source and '{ label: "ЗАО"' not in workspace_source, "/company source must not expose legacy ОАО/ЗАО options")
+    assert_true(
+        '{ label: "АО"' not in workspace_source and '{ label: "ОАО"' not in workspace_source and '{ label: "ЗАО"' not in workspace_source,
+        "/company source must not expose legacy АО/ОАО/ЗАО options",
+    )
     assert_true("showType={false}" in workspace_source, "division form must hide type selector")
     assert_true("type={division.type}" not in workspace_source, "division storage type must not be displayed")
     for option in ("ВРД", "ВРЗ", "ВУ", "ВРП"):
@@ -189,7 +192,7 @@ def assert_company_ui_field_contract() -> dict[str, Any]:
     assert_true("Производственный юнит" not in launch_wizard_source, "historical launch wizard must not use obsolete unit type default")
 
     return {
-        "profileLegalForms": ["ООО", "АО", "ПАО"],
+        "profileLegalForms": ["ООО", "ПАО", "НАО", "ИП"],
         "divisionTypeSelector": "hidden",
         "unitTypes": ["ВРД", "ВРЗ", "ВУ", "ВРП"],
     }
@@ -298,6 +301,12 @@ def company_profile_payload(label: str, property_type: str = "ООО", *, legacy
         "contractEmail": f"{label.lower()}-{SEED}@vrk.local",
         "actingBasis": "Устав",
     }
+    if property_type == "ИП":
+        payload["inn"] = f"{SEED[:12]:0<12}"
+        payload["kpp"] = ""
+        payload["ogrn"] = f"{SEED[:15]:0<15}"
+    else:
+        payload["ogrn"] = f"{SEED[:13]:0<13}"
     if legacy_type is not None:
         payload.pop("propertyType")
         payload["type"] = legacy_type
@@ -307,7 +316,6 @@ def company_profile_payload(label: str, property_type: str = "ООО", *, legacy
 def division_payload(label: str) -> dict[str, Any]:
     return {
         "name": f"{label} подразделение {SEED}",
-        "code": f"{label[:3].upper()}-DIV",
         "region": "Москва",
         "registeredAddress": f"{label}, Заводская 2",
         "leaderFullName": f"{label} Начальник",
@@ -323,7 +331,6 @@ def unit_payload(label: str, division_id: str | None = None) -> dict[str, Any]:
     payload = {
         "type": "ВУ",
         "name": f"{label} юнит {SEED}",
-        "code": f"{label[:3].upper()}-UNIT",
         "region": "Москва",
         "registeredAddress": f"{label}, Лабораторная 3",
         "leaderFullName": f"{label} Ответственный",
@@ -392,13 +399,13 @@ def run_primary_org_proof() -> dict[str, Any]:
     assert_true(profiled["data"]["organization"]["leaderFullName"] == "primary Руководитель", "profile leaderFullName was not preserved")
     assert_true(profiled["data"]["organization"]["actingBasis"] == "Устав", "profile actingBasis was not preserved")
 
-    accepted_ao, _ = expect_ok(
+    accepted_nao, _ = expect_ok(
         BACKEND_BASE,
         "PATCH",
         "/api/v1/company/profile",
         expected_status=200,
         token=admin.token,
-        body=company_profile_payload("accepted-ao", "АО"),
+        body=company_profile_payload("accepted-nao", "НАО"),
     )
     accepted_pao, _ = expect_ok(
         BACKEND_BASE,
@@ -407,6 +414,22 @@ def run_primary_org_proof() -> dict[str, Any]:
         expected_status=200,
         token=admin.token,
         body=company_profile_payload("accepted-pao", "ПАО"),
+    )
+    accepted_ip, _ = expect_ok(
+        BACKEND_BASE,
+        "PATCH",
+        "/api/v1/company/profile",
+        expected_status=200,
+        token=admin.token,
+        body=company_profile_payload("accepted-ip", "ИП"),
+    )
+    legacy_ao, _ = expect_ok(
+        BACKEND_BASE,
+        "PATCH",
+        "/api/v1/company/profile",
+        expected_status=200,
+        token=admin.token,
+        body=company_profile_payload("legacy-ao", legacy_type="АО"),
     )
     legacy_oao, _ = expect_ok(
         BACKEND_BASE,
@@ -432,10 +455,13 @@ def run_primary_org_proof() -> dict[str, Any]:
         token=admin.token,
         body=company_profile_payload("legacy-llc", legacy_type="LLC"),
     )
-    assert_true(accepted_ao["data"]["organization"]["propertyType"] == "АО", "organization profile rejected АО")
+    assert_true(accepted_nao["data"]["organization"]["propertyType"] == "НАО", "organization profile rejected НАО")
     assert_true(accepted_pao["data"]["organization"]["propertyType"] == "ПАО", "organization profile rejected ПАО")
+    assert_true(accepted_ip["data"]["organization"]["propertyType"] == "ИП", "organization profile rejected ИП")
+    assert_true(accepted_ip["data"]["organization"].get("kpp") is None, "ИП organization profile did not clear КПП")
+    assert_true(legacy_ao["data"]["organization"]["propertyType"] == "НАО", "legacy АО did not normalize to НАО")
     assert_true(legacy_oao["data"]["organization"]["propertyType"] == "ПАО", "legacy ОАО did not normalize to ПАО")
-    assert_true(legacy_zao["data"]["organization"]["propertyType"] == "АО", "legacy ЗАО did not normalize to АО")
+    assert_true(legacy_zao["data"]["organization"]["propertyType"] == "НАО", "legacy ЗАО did not normalize to НАО")
     assert_true(legacy_llc["data"]["organization"]["propertyType"] == "ООО", "legacy LLC did not normalize to ООО")
 
     invalid_profile = expect_error(
@@ -685,8 +711,9 @@ def run_primary_org_proof() -> dict[str, Any]:
         "archivedUnitInvite": archived_unit_target,
         "archivedDivisionInvite": archived_division_target,
         "legalFormProof": {
-            "accepted": ["ООО", "АО", "ПАО"],
+            "accepted": ["ООО", "ПАО", "НАО", "ИП"],
             "legacyAliases": {
+                "АО": legacy_ao["data"]["organization"]["propertyType"],
                 "ОАО": legacy_oao["data"]["organization"]["propertyType"],
                 "ЗАО": legacy_zao["data"]["organization"]["propertyType"],
                 "LLC": legacy_llc["data"]["organization"]["propertyType"],
@@ -746,7 +773,7 @@ def main() -> None:
             [
                 f"slice-010 proof PASS seed={SEED}",
                 "first-admin web acceptance issued active session and /company landing",
-                "organization profile legal-form contract accepted ООО/АО/ПАО and normalized legacy aliases",
+                "organization profile legal-form contract accepted ООО/ПАО/НАО/ИП and normalized legacy aliases",
                 "division create/update omitted user-facing type while unit type remained required",
                 "persistent /company APIs created/edited/archived divisions and units",
                 "archive blockers and hidden archived invite-target validation returned expected errors",

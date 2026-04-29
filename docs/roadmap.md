@@ -134,7 +134,7 @@
 - веб-кабинет подрядчика
 - инженерный мобильный контур с offline-first UX
 - invite-based активация первого администратора организации
-- иерархия `организация -> подразделение -> юнит` с scoped access
+- иерархия `организация -> дивизион -> юнит` с scoped access
 - заявка как центральный объект
 - три типа работ: ремонт / ТО / поверка
 - один подрядчик на заявку
@@ -343,7 +343,7 @@
 
 ### Цель
 
-Реализовать invite-based identity, scoped access и базовый контур master data, на котором стоит весь MVP: активация первого администратора, постоянный UI управления организацией/подразделениями/юнитами, сотрудники и приглашения, договоры, оборудование, СИ и эталоны.
+Реализовать invite-based identity, scoped access и базовый контур master data, на котором стоит весь MVP: активация первого администратора, постоянный UI управления организацией/дивизионами/юнитами, сотрудники и приглашения, договоры, оборудование, СИ и эталоны.
 
 ### Основные результаты
 
@@ -360,17 +360,19 @@
   - role-aware access
 - org model:
   - customer / contractor organizations
-  - organization profile с разделением на launch-critical и optional requisites; поле `Тип` в профиле хранит ОПФ `ООО` / `АО` / `ПАО`, а legacy `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО` принимаются только как compatibility input и нормализуются
+  - organization profile с разделением на launch-critical и optional requisites; поле `Тип` в профиле хранит ОПФ `ООО` / `ПАО` / `НАО` / `ИП`, а legacy `АО -> НАО`, `ЗАО -> НАО`, `ОАО -> ПАО`, `LLC -> ООО` принимаются только как compatibility input и нормализуются
+  - логотип организации хранится в приватном S3-compatible object storage, а Postgres хранит только object key и metadata
+  - реквизиты валидируются по цифрам: `ИНН` 10 для юрлиц и 12 для `ИП`, `КПП` 9 только для юрлиц, `ОГРН` 13 / `ОГРНИП` 15, счета 20, `БИК` 9
   - divisions без пользовательского selector-а типа; storage compatibility type остается скрытым internal default
   - units как primary operational scope для оборудования с selector-ом типа `ВРД` / `ВРЗ` / `ВУ` / `ВРП`
-  - persistent organization-structure management UI для создания первого и последующих подразделений/филиалов и юнитов в любое время
-  - division/unit create/edit/archive flows доступны только organization-scope администраторам; narrower scopes остаются read-only в пределах своего subtree
+  - persistent organization-structure management UI для создания первого и последующих дивизионов и юнитов в любое время
+  - profile actions доступны только organization-scope admin; `division_admin` управляет своим дивизионом и дочерними юнитами, `unit_admin` управляет своим юнитом
 - people and access model:
   - user account, organization membership и scoped grants разделены
   - grant scope: organization / division / unit
-  - canonical role templates: `organization_admin`, `organization_head`, `division_head`, `division_operator`, `unit_head`, `unit_operator`, `auditor`
+  - canonical role templates: `organization_admin`, `organization_head`, `division_admin`, `division_head`, `division_operator`, `unit_admin`, `unit_head`, `unit_operator`, `auditor`
   - role/scope compatibility enforced: organization roles only on organization scope, division roles only on division scope, unit roles only on unit scope, `auditor` on any scope
-  - Stage 03 v1 mutate capabilities остаются только у `organization_admin`; остальные роли получают scope-aware read-only visibility и готовую capability-map для следующих stage-ов
+  - Stage 03 v1 mutate capabilities есть у `organization_admin`, `division_admin` и `unit_admin`, но каждый scoped admin ограничен своим visible scope/subtree
   - employee invitation statuses: draft / sent / opened / accepted / expired / revoked
 - contractor/customer relation layer
 - contracts registry
@@ -380,7 +382,7 @@
 - standards registry
 - metrology operation journals, URL/reference attachment baseline и derived status for MI / standards
 - bounded ownership-scope labels for standards; standalone org-scoped dictionary/local-draft CRUD остается вне proven Stage 03 contract
-- archive baseline для организаций, подразделений, юнитов, пользователей, договоров, оборудования, СИ и эталонов
+- archive baseline для организаций, дивизионов, юнитов, пользователей, договоров, оборудования, СИ и эталонов
 - audit baseline для auth + CRUD changes
 - web UI:
   - route contour `/register -> /register/{token} -> /company`
@@ -395,9 +397,9 @@
 - company onboarding shell из Stage 02 backed реальной org/division/unit моделью и превращен в постоянный management surface
 - анонимный `/company` shell из Stage 02 сохраняется как truthful public contour до появления сессии
 - first-admin activation начинается по invite link, а не с заранее выданного логина/пароля
-- после invite acceptance пользователь получает session и попадает в `/company`, где видит состояние организации и доступные действия по управлению профилем, подразделениями и юнитами
-- администратор может создать первый и последующие подразделения/филиалы и юниты из постоянного `/company` UI, а не только во время первичного запуска
-- юнит может существовать напрямую под организацией без обязательного промежуточного подразделения
+- после invite acceptance пользователь получает session и попадает в `/company`, где видит состояние организации и доступные действия по управлению профилем, дивизионами и юнитами
+- администратор может создать первый и последующие дивизионы и юниты из постоянного `/company` UI, а не только во время первичного запуска
+- юнит может существовать напрямую под организацией без обязательного промежуточного дивизиона
 - создание scoped employee invite не зависит от "завершенного wizard"; organization-scope invite доступен active organization admin, а division/unit-scope invite требует существующий visible target scope
 - user account, membership и scoped grants существуют как отдельные сущности
 - права уровня organization наследуются вниз на division и unit; права division наследуются на дочерние unit; deny-layer в MVP отсутствует
@@ -431,7 +433,7 @@
 
 ### Exit gate
 
-- customer admin активируется по invite и управляет организацией, подразделениями и юнитами из постоянного `/company` UI, включая first-empty state и повторное добавление структурных узлов
+- customer admin активируется по invite и управляет организацией, дивизионами и юнитами из постоянного `/company` UI, включая first-empty state и повторное добавление структурных узлов
 - сотрудники приглашаются по email и получают только scoped access своего уровня
 - contracts + equipment + measuring instruments + standards CRUD, journal и archive flows работают end-to-end
 - contractor user видит только свой релевантный контур в рамках договоров и выданных грантов

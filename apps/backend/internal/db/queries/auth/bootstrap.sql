@@ -93,6 +93,17 @@ SELECT
     o.inn AS organization_inn,
     o.kpp AS organization_kpp,
     o.legal_address AS organization_legal_address,
+    o.postal_address AS organization_postal_address,
+    o.ogrn AS organization_ogrn,
+    o.settlement_account AS organization_settlement_account,
+    o.bank_name AS organization_bank_name,
+    o.correspondent_account AS organization_correspondent_account,
+    o.bik AS organization_bik,
+    o.logo_object_key AS organization_logo_object_key,
+    o.logo_file_name AS organization_logo_file_name,
+    o.logo_content_type AS organization_logo_content_type,
+    o.logo_size_bytes AS organization_logo_size_bytes,
+    o.logo_updated_at AS organization_logo_updated_at,
     o.contact_email AS organization_contact_email,
     o.contact_phone AS organization_contact_phone,
     o.leader_full_name AS organization_leader_full_name,
@@ -189,6 +200,17 @@ SELECT
     o.inn AS organization_inn,
     o.kpp AS organization_kpp,
     o.legal_address AS organization_legal_address,
+    o.postal_address AS organization_postal_address,
+    o.ogrn AS organization_ogrn,
+    o.settlement_account AS organization_settlement_account,
+    o.bank_name AS organization_bank_name,
+    o.correspondent_account AS organization_correspondent_account,
+    o.bik AS organization_bik,
+    o.logo_object_key AS organization_logo_object_key,
+    o.logo_file_name AS organization_logo_file_name,
+    o.logo_content_type AS organization_logo_content_type,
+    o.logo_size_bytes AS organization_logo_size_bytes,
+    o.logo_updated_at AS organization_logo_updated_at,
     o.contact_email AS organization_contact_email,
     o.contact_phone AS organization_contact_phone,
     o.leader_full_name AS organization_leader_full_name,
@@ -236,6 +258,36 @@ SET
     contract_phone = $12,
     contract_email = $13,
     acting_basis = $14,
+    postal_address = $15,
+    ogrn = $16,
+    settlement_account = $17,
+    bank_name = $18,
+    correspondent_account = $19,
+    bik = $20,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING *;
+
+-- name: UpdateBootstrapOrganizationLogo :one
+UPDATE auth_bootstrap_organizations
+SET
+    logo_object_key = $2,
+    logo_file_name = $3,
+    logo_content_type = $4,
+    logo_size_bytes = $5,
+    logo_updated_at = NOW(),
+    updated_at = NOW()
+WHERE id = $1
+RETURNING *;
+
+-- name: ClearBootstrapOrganizationLogo :one
+UPDATE auth_bootstrap_organizations
+SET
+    logo_object_key = NULL,
+    logo_file_name = NULL,
+    logo_content_type = NULL,
+    logo_size_bytes = NULL,
+    logo_updated_at = NULL,
     updated_at = NOW()
 WHERE id = $1
 RETURNING *;
@@ -254,7 +306,37 @@ INSERT INTO auth_divisions (
     organization_id,
     division_type,
     name,
-    code,
+    region,
+    address,
+    manager_name,
+    contacts,
+    leader_position,
+    contract_phone,
+    contract_email,
+    acting_basis,
+    comment
+) VALUES (
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $6,
+    $7,
+    $8,
+    $9,
+    $10,
+    $11,
+    $12
+)
+RETURNING *;
+
+-- name: CreateAuthUnit :one
+INSERT INTO auth_units (
+    organization_id,
+    division_id,
+    unit_type,
+    name,
     region,
     address,
     manager_name,
@@ -281,47 +363,12 @@ INSERT INTO auth_divisions (
 )
 RETURNING *;
 
--- name: CreateAuthUnit :one
-INSERT INTO auth_units (
-    organization_id,
-    division_id,
-    unit_type,
-    name,
-    code,
-    region,
-    address,
-    manager_name,
-    contacts,
-    leader_position,
-    contract_phone,
-    contract_email,
-    acting_basis,
-    comment
-) VALUES (
-    $1,
-    $2,
-    $3,
-    $4,
-    $5,
-    $6,
-    $7,
-    $8,
-    $9,
-    $10,
-    $11,
-    $12,
-    $13,
-    $14
-)
-RETURNING *;
-
 -- name: ListAuthDivisionsByOrganization :many
 SELECT
     id,
     organization_id,
     division_type,
     name,
-    code,
     region,
     address,
     manager_name,
@@ -346,7 +393,6 @@ SELECT
     division_id,
     unit_type,
     name,
-    code,
     address,
     manager_name,
     contacts,
@@ -369,7 +415,27 @@ UPDATE auth_divisions
 SET
     division_type = $3,
     name = $4,
-    code = $5,
+    region = $5,
+    address = $6,
+    manager_name = $7,
+    contacts = $8,
+    leader_position = $9,
+    contract_phone = $10,
+    contract_email = $11,
+    acting_basis = $12,
+    comment = $13,
+    updated_at = NOW()
+WHERE id = $1
+  AND organization_id = $2
+  AND status = 'active'
+RETURNING *;
+
+-- name: UpdateAuthUnit :one
+UPDATE auth_units
+SET
+    division_id = $3,
+    unit_type = $4,
+    name = $5,
     region = $6,
     address = $7,
     manager_name = $8,
@@ -385,35 +451,12 @@ WHERE id = $1
   AND status = 'active'
 RETURNING *;
 
--- name: UpdateAuthUnit :one
-UPDATE auth_units
-SET
-    division_id = $3,
-    unit_type = $4,
-    name = $5,
-    code = $6,
-    region = $7,
-    address = $8,
-    manager_name = $9,
-    contacts = $10,
-    leader_position = $11,
-    contract_phone = $12,
-    contract_email = $13,
-    acting_basis = $14,
-    comment = $15,
-    updated_at = NOW()
-WHERE id = $1
-  AND organization_id = $2
-  AND status = 'active'
-RETURNING *;
-
 -- name: GetAuthDivisionByID :one
 SELECT
     id,
     organization_id,
     division_type,
     name,
-    code,
     region,
     address,
     manager_name,
@@ -436,7 +479,6 @@ SELECT
     division_id,
     unit_type,
     name,
-    code,
     address,
     manager_name,
     contacts,

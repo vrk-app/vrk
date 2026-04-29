@@ -7,8 +7,8 @@ type Equipment struct {
 	OrganizationID           string
 	UnitID                   string
 	UnitName                 string
-	DivisionID            *string
-	DivisionName          *string
+	DivisionID               *string
+	DivisionName             *string
 	Manufacturer             string
 	Classification           string
 	Model                    string
@@ -54,8 +54,8 @@ type UpdateRequest struct {
 }
 
 type UnitSummary struct {
-	ID              string  `json:"id"`
-	Name            string  `json:"name"`
+	ID           string  `json:"id"`
+	Name         string  `json:"name"`
 	DivisionID   *string `json:"divisionId,omitempty"`
 	DivisionName *string `json:"divisionName,omitempty"`
 }

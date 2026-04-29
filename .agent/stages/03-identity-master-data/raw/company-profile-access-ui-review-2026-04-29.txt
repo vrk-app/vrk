@@ -1,0 +1,25 @@
+Web Interface Guidelines review: PASS
+
+Guidelines source:
+- .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-29-company-profile-access.md
+
+Reviewed changed UI/story files:
+- apps/web/features/Stage03Contracts/ui/ContractsRegistry.tsx
+- apps/web/stories/contracts/ContractsRegistry.stories.tsx
+- apps/web/shared/storybook/runtime-fixtures.ts
+- apps/web/shared/storybook/runtime-api-mock.tsx
+- apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+- apps/web/features/Stage03Access/ui/EmployeeAccessWorkspace.tsx
+- apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx
+- apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx
+- apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+
+Findings fixed in this continuation:
+- Decorative left icons in the contract actions are aria-hidden.
+- Contract form and routing preview text fields use stable names and autocomplete="off".
+- Long contract/customer/contractor text now has explicit wrapping in flex card rows.
+- Storybook mock contract creation derives scope from divisionId/unitId, matching the production API payload.
+
+Remaining notes:
+- No new reusable UI family was introduced; ContractsRegistry and shared primitives were reused.
+- Storybook build passes. The Vite "use client" and chunk-size messages are existing build warnings, not blocking UI guideline findings.

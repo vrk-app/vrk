@@ -23,6 +23,7 @@ import (
 	"backend/internal/equipment/standard"
 	"backend/internal/infrastructure/config"
 	"backend/internal/infrastructure/db"
+	"backend/internal/infrastructure/objectstorage"
 )
 
 type App struct {
@@ -62,7 +63,11 @@ func New(cfg *config.Config) (*App, error) {
 	orgHandler := organization.NewHandler(orgService)
 
 	bootstrapRepo := bootstrap.NewRepository(database, queries)
-	bootstrapService := bootstrap.NewService(bootstrapRepo, queries)
+	logoStorage, err := objectstorage.New(ctx, cfg.ObjectStorage)
+	if err != nil {
+		return nil, err
+	}
+	bootstrapService := bootstrap.NewService(bootstrapRepo, queries, logoStorage)
 	bootstrapHandler := bootstrap.NewHandler(bootstrapService)
 
 	// Equipment
@@ -177,6 +182,9 @@ func (a *App) registerRoutes(
 
 		r.Route("/company", func(r chi.Router) {
 			r.Patch("/profile", bootstrapHandler.UpdateCompanyProfile)
+			r.Get("/logo", bootstrapHandler.GetCompanyLogo)
+			r.Post("/logo", bootstrapHandler.UploadCompanyLogo)
+			r.Delete("/logo", bootstrapHandler.DeleteCompanyLogo)
 			r.Post("/divisions", bootstrapHandler.CreateDivision)
 			r.Patch("/divisions/{divisionID}", bootstrapHandler.UpdateDivision)
 			r.Post("/divisions/{divisionID}/archive", bootstrapHandler.ArchiveDivision)

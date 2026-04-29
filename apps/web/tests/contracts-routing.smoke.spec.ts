@@ -104,7 +104,7 @@ async function bootstrapOrg(
       contactPhone: "+7 (999) 123-45-67",
       structureMode: "division",
       division: {
-        type: "Филиал",
+        type: "Дивизион",
         name: `${options.label} division`,
       },
       unit: {

@@ -538,14 +538,14 @@
 
 ### RUN-01 CompanyStructureWorkspace [P1]
 
-- Назначение: управление профилем организации, подразделениями, юнитами, доступным scope и conditional вкладкой сотрудников.
-- Состояния: `organization admin`, `empty structure`, `scoped read-only`, `organization head employees`, `division head employees`, `unit head employees`.
+- Назначение: управление профилем организации, дивизионами, юнитами, доступным scope и conditional вкладкой сотрудников.
+- Состояния: `organization admin`, `empty structure`, `division admin`, `unit admin`, `scoped read-only`, `organization head employees`, `division head employees`, `unit head employees`.
 - Stories: `OrganizationAdmin`, `EmptyStructure`, `ScopedReadonly`, `OrganizationHeadEmployees`, `DivisionHeadEmployees`, `UnitHeadEmployees`.
 
 ### RUN-02 EmployeeAccessWorkspace [P1]
 
-- Назначение: scoped registry активных сотрудников на вкладке `/company` → `Сотрудники`, с admin edit/deactivate controls и embedded invite manager только для `organization_admin`.
-- Состояния: `admin editable`, `organization head read-only`, `division head read-only`, `unit head read-only`, `empty`, `loading`, `error`.
+- Назначение: scoped registry активных сотрудников на вкладке `/company` → `Сотрудники`, с admin edit/deactivate controls и embedded invite manager для `organization_admin`, `division_admin` и `unit_admin` в пределах их области.
+- Состояния: `admin editable`, `division admin editable`, `unit admin editable`, `organization head read-only`, `division head read-only`, `unit head read-only`, `empty`, `loading`, `error`.
 - Stories: `AdminEditable`, `OrganizationHeadReadonly`, `DivisionHeadReadonly`, `UnitHeadReadonly`, `Empty`, `Loading`, `Error`.
 
 ### RUN-03 EmployeeInviteManager [P1]
@@ -557,13 +557,13 @@
 ### RUN-04 ContractsRegistry [P1]
 
 - Назначение: реестр договоров заказчика, read-only договоры подрядчика и проверка маршрутизации.
-- Состояния: `customer admin`, `customer empty`, `customer restricted`, `contractor read-only`.
+- Состояния: `customer admin`, `division admin`, `unit admin`, `customer empty`, `customer restricted`, `contractor read-only`.
 - Stories: `CustomerAdmin`, `CustomerEmpty`, `CustomerRestricted`, `ContractorReadonly`.
 
 ### RUN-05 EquipmentRegistryWorkspace [P1]
 
 - Назначение: единый workspace реестров оборудования, СИ, эталонов, журналов и архива.
-- Состояния: `equipment tab`, `measuring instruments tab`, `standards tab`, `archive visible`, `scoped read-only`, `load error`.
+- Состояния: `equipment tab`, `measuring instruments tab`, `standards tab`, `archive visible`, `scoped admin`, `scoped read-only`, `load error`.
 - Stories: `EquipmentTab`, `MeasuringInstrumentsTab`, `StandardsTab`, `WithArchiveVisible`, `ScopedReadonly`, `LoadError`.
 
 ## 10. P1: шаблоны реестров и отчетов
@@ -631,14 +631,14 @@
 
 #### FORM-02 `AsyncEntityPicker` [P0]
 
-- Назначение: поисковый выбор сущностей с асинхронной подгрузкой: договор, оборудование, подрядчик, исполнитель, подразделение.
+- Назначение: поисковый выбор сущностей с асинхронной подгрузкой: договор, оборудование, подрядчик, исполнитель, дивизион.
 - Обязательные props: `label`, `value`, `placeholder`, `items`, `loading`, `emptyText`, `onSearch`, `onSelect`, `renderOption`, `renderValue`, `disabled`.
 - Состояния: `idle`, `searching`, `result list`, `empty result`, `selected`, `disabled`.
 - Stories: `ContractPicker`, `DevicePicker`, `UserPicker`, `Searching`, `NoResults`, `LongOptionMeta`.
 
 #### FORM-03 `MultiSelectField` [P0]
 
-- Назначение: множественный выбор для фильтров по статусам, подрядчикам, подразделениям, типам оборудования, видам работ.
+- Назначение: множественный выбор для фильтров по статусам, подрядчикам, дивизионам, типам оборудования, видам работ.
 - Обязательные props: `label`, `value`, `options`, `placeholder`, `searchable`, `maxVisibleTags`, `clearable`, `disabled`.
 - Состояния: `empty`, `selected few`, `selected many`, `searchable`, `disabled`.
 - Stories: `Statuses`, `Contractors`, `ManySelected`, `Searchable`, `Disabled`.

@@ -9,22 +9,25 @@
 
 ## Что входит в baseline
 
-- root `make dev` поднимает `db`, `migrate`, backend, `apps/web`, `apps/field`, дожидается container health через compose `--wait`, а затем запускает one-shot `dev-seed`;
+- root `make dev` поднимает `db`, `migrate`, MinIO-compatible `object-storage`, backend, `apps/web`, `apps/field`, дожидается container health через compose `--wait`, а затем запускает one-shot `dev-seed`;
 - `dev-seed` создает локальную demo organization через backend API, а не через бизнес-данные в миграциях: first-admin invite, accept, `/company/profile`, `/company/divisions`, `/company/units`;
 - session-authenticated API calls accept both local `Authorization: Bearer <token>` and deployment-safe `X-VRK-Session-Token: <token>`; web server proxies and `dev-seed` use the latter so the same flow works behind Yandex Serverless Container public endpoints;
-- `dev-seed` печатает URL, email/password, organization id, 3 филиала и 9 юнитов в stdout, а полный локальный результат сохраняет в gitignored `.local/dev-seed.json` с правами `0600`;
+- `dev-seed` печатает URL, email/password, organization id, 3 дивизиона и 9 юнитов в stdout, а полный локальный результат сохраняет в gitignored `.local/dev-seed.json` с правами `0600`;
 - таблица `dev_seed_runs` хранит только marker/idempotency metadata и non-secret result JSON; пароль не пишется в БД;
 - root `make smoke` проверяет:
   - backend `healthz` и `readyz`;
   - seeded API read smoke;
   - `apps/web` runtime routes `/login`, `/register`, `/company`, `/equipment`, `/contracts`, `/requests`;
+  - собранный Storybook в production-like web container через `/storybook/index.html` и `/storybook/index.json`;
   - `apps/field` root page и `/manifest.webmanifest`;
   - допускает короткое bounded ожидание host-портов сразу после свежего `make dev`, чтобы не падать на transient `Connection refused`, пока published ports догоняют container health;
 - host ports по умолчанию:
   - backend: `18080`
   - web: `3100`
   - field: `3102`
-- host ports можно переопределить через `BACKEND_HOST_PORT`, `WEB_HOST_PORT`, `FIELD_HOST_PORT`;
+  - object storage API: `19000`
+  - object storage console: `19001`
+- host ports можно переопределить через `BACKEND_HOST_PORT`, `WEB_HOST_PORT`, `FIELD_HOST_PORT`, `OBJECT_STORAGE_HOST_PORT`, `OBJECT_STORAGE_CONSOLE_HOST_PORT`;
 - `make smoke` требует доступный `python3` в локальном shell;
 - `make down` сохраняет named Postgres volume и marker успешного dev seed, а `make clean` пересоздает clean-room baseline для повторного seeded proof;
 - backend build/test path доступен через контейнерные scripts и не требует локального `go`.
@@ -44,8 +47,10 @@
 flowchart LR
     A["make dev"] --> B["docker compose"]
     B --> C["db (PostgreSQL 17)"]
+    B --> Q["object-storage<br/>MinIO-compatible"]
     C --> D["migrate"]
     D --> E["backend"]
+    Q --> E
     E --> F["healthz / readyz"]
     E --> G["dev-seed<br/>backend API"]
     G --> H[".local/dev-seed.json"]
@@ -54,10 +59,12 @@ flowchart LR
     B --> K["apps/field scaffold"]
     G --> O["stdout credentials"]
     J --> M["/login /register /company /equipment /contracts /requests"]
+    J --> P["/storybook<br/>static Storybook"]
     K --> N["/ and /manifest.webmanifest"]
     S["make smoke"] --> F
     S --> I
     S --> M
+    S --> P
     S --> N
 ```
 
@@ -79,7 +86,7 @@ docker compose -f compose.platform.yml -f compose.dev.yml up web
 
 Он сохраняет тот же внешний URL `http://localhost:3100`, потому что port mapping наследуется из базового `web` service. Отличается только способ запуска контейнера:
 
-- production-like: `apps/web/Dockerfile` устанавливает зависимости, выполняет `pnpm --filter @vrk/web build`, затем запускает `pnpm --filter @vrk/web start`;
+- production-like: `apps/web/Dockerfile` устанавливает зависимости, выполняет `pnpm --filter @vrk/web build-storybook`, копирует результат в `apps/web/public/storybook`, выполняет `pnpm --filter @vrk/web build`, затем запускает `pnpm --filter @vrk/web start`;
 - dev hot reload: `compose.dev.yml` монтирует repo в `/workspace`, держит `node_modules`, pnpm store и `apps/web/.next` в named volumes, затем запускает `pnpm --filter @vrk/web dev --hostname 0.0.0.0 --port 3000`;
 - polling flags `CHOKIDAR_USEPOLLING=true` и `WATCHPACK_POLLING=true` включены для Docker Desktop на macOS.
 
@@ -103,7 +110,7 @@ flowchart LR
 - workflow `.github/workflows/platform-baseline.yml` wired так, чтобы `frontend-workspaces` запускал `pnpm run web:smoke` и `pnpm run field:smoke`;
 - `pnpm run web:smoke` покрывает не только lint/typecheck/build/storybook, но и headless browser-smoke для client-side submit path `/login` и `/register` -> `/company`;
 - тот же workflow wired так, чтобы `backend-container-checks` запускал container-backed `go test ./...` и `go build ./...`;
-- `platform-stack-smoke` в workflow wired к тому же compose stack и `make smoke`;
+- `platform-stack-smoke` в workflow wired к тому же compose stack и `make smoke`, включая проверку published Storybook статики в web container;
 - authoritative Stage 02 PASS bundle доказывает локальное воспроизведение этих команд, но не включает GitHub Actions run artifact.
 
 ## Операционные заметки

@@ -8,7 +8,7 @@
 Этот документ фиксирует каноническую доменную модель для `Stage 03` в VRK:
 
 - активация первого администратора организации;
-- иерархия `организация -> подразделение -> юнит`;
+- иерархия `организация -> дивизион -> юнит`;
 - сотрудники, приглашения, membership и scoped access;
 - master-data контур для договоров, оборудования, СИ и эталонов;
 - правила архивирования и bounded ownership labels.
@@ -52,8 +52,9 @@ flowchart LR
 - ручная раздача логина/пароля не используется как основной сценарий;
 - внешний вход вроде Яндекс ID допустим позже как дополнительный путь после открытия приглашения, но не как замена invite acceptance в MVP;
 - `invite code` допустим только как резервный offline-friendly сценарий;
+- пароль при активации first-admin и employee invite должен содержать минимум 8 символов, хотя бы одну букву, одну цифру и один non-space символ;
 - после активации пользователь не попадает в пустой кабинет или одноразовый wizard, а в рабочий кабинет организации с management actions;
-- создание первого подразделения/филиала и первого юнита является частным случаем постоянного UI управления оргструктурой.
+- создание первого дивизиона и первого юнита является частным случаем постоянного UI управления оргструктурой.
 
 ```mermaid
 flowchart TD
@@ -63,7 +64,7 @@ flowchart TD
     D --> E["Задает пароль"]
     E --> F["Попадает в /company"]
     F --> G["Редактирует профиль организации"]
-    F --> H["Создает подразделения / филиалы"]
+    F --> H["Создает дивизионы"]
     F --> I["Создает юниты"]
     F --> J["Приглашает сотрудников"]
     I --> K["Добавляет оборудование"]
@@ -98,35 +99,37 @@ flowchart LR
 
 - first-admin invite acceptance сразу выпускает session и ведет администратора на `/company`;
 - `/company` показывает empty / partial / populated states организации и не требует отдельного `/company/setup`;
-- organization-scope admin может в любое время создавать, редактировать и архивировать подразделения/филиалы и юниты;
-- создание первого подразделения и первого юнита использует те же API и UI, что и создание последующих узлов;
-- юнит может быть создан под подразделением или напрямую под организацией;
+- organization-scope admin может в любое время создавать, редактировать и архивировать дивизионы и юниты;
+- создание первого дивизиона и первого юнита использует те же API и UI, что и создание последующих узлов;
+- юнит может быть создан под дивизионом или напрямую под организацией;
 - organization-scope employee invite доступен active organization admin без wizard gate;
 - division/unit-scope employee invite требует существующий visible target scope.
 
 #### 1.2.1. `/company` business-field contract
 
-Для correction slice `slice-010-stage03-org-structure-management` формы профиля организации, подразделения/филиала и юнита используют разделенный field contract:
+Для correction slice `slice-010-stage03-org-structure-management` формы профиля организации, дивизиона и юнита используют разделенный field contract:
 
 | Поле | Канонический контракт |
 | --- | --- |
-| `propertyType` / organization `type` alias | В профиле организации visible selector `Тип` хранит юридическую форму: `ООО`, `АО`, `ПАО`. `type` остается compatibility alias в API/session там, где старые клиенты уже читают это поле. Legacy input `ОАО` нормализуется в `ПАО`, `ЗАО` в `АО`, `LLC` в `ООО`; `ОАО` и `ЗАО` не показываются как актуальные options, потому что модель ОАО/ЗАО заменена публичными/непубличными АО. |
+| `propertyType` / organization `type` alias | В профиле организации visible selector `Тип` хранит юридическую форму: `ООО`, `ПАО`, `НАО`, `ИП`. `type` остается compatibility alias в API/session там, где старые клиенты уже читают это поле. Legacy input `АО` и `ЗАО` нормализуется в `НАО`, `ОАО` в `ПАО`, `LLC` в `ООО`; legacy aliases не показываются как актуальные options. `НАО` является продуктовым user-facing значением для непубличного АО. |
+| `logo` | В session/API хранится только metadata (`fileName`, `contentType`, `sizeBytes`, `updatedAt`, `url`). Бинарный файл живет в приватном S3-compatible object storage и читается через authenticated backend/web proxy route. |
+| requisites | Optional until filled: `postalAddress`, `ogrn`, `settlementAccount`, `bankName`, `correspondentAccount`, `bik`. Для `ООО`/`ПАО`/`НАО` `ИНН` = 10 цифр, `КПП` = 9 цифр, `ОГРН` = 13 цифр. Для `ИП` `ИНН` = 12 цифр, `КПП` очищается/не применяется, `ОГРНИП` = 15 цифр. Счета = 20 цифр, `БИК` = 9 цифр, если поле заполнено. |
 | division `type` | Не является user-facing бизнес-полем и не показывается selector-ом в `/company`. Storage column `auth_divisions.division_type` остается `NOT NULL` для совместимости с sqlc/generated response shape; новые create/update writes используют скрытый internal default `division`. |
 | unit `type` | Selector frozen for this slice: `ВРД`, `ВРЗ`, `ВУ`, `ВРП`. Эти значения применяются только к unit create/edit forms; Stage 04 не добавляет сюда request-типы. |
-| `name` | Каноническое отображаемое имя организации, подразделения/филиала или юнита. |
+| `name` | Каноническое отображаемое имя организации, дивизиона или юнита. |
 | `registeredAddress` | Канонический адрес организации. Для organization profile новые записи и редактирование должны опираться на это поле. |
 | `address` | Compatibility/display alias там, где division/unit storage, API payload или старые данные все еще используют `address`; не заменяет `registeredAddress` как канонический адрес организации. |
 | `leaderFullName` | Каноническое display-поле руководителя. |
 | `managerName` | Migration/read-display compatibility alias для старых stored/session payloads; новые leader semantics должны мапиться в `leaderFullName`. |
-| `leaderPosition` | Должность руководителя для карточек организации, подразделения/филиала и юнита, где этот record type ее несет. |
+| `leaderPosition` | Должность руководителя для карточек организации, дивизиона и юнита, где этот record type ее несет. |
 | `contractPhone` | Договорной/контактный телефон record-а, где он нужен текущему `/company` management surface. |
 | `contractEmail` | Договорной/контактный email record-а, где он нужен текущему `/company` management surface. |
 | `actingBasis` | Основание полномочий руководителя для record-а, где это поле применимо. |
-| `code`, `region`, `status`, `comment` | Сохраняются и отображаются там, где текущие backend/session/UI contracts продолжают их использовать. |
+| `region`, `status`, `comment` | Сохраняются и отображаются там, где текущие backend/session/UI contracts продолжают их использовать. |
 
-Active create/select flows должны выбирать только visible active scopes. Archived подразделения и юниты скрываются из default selection, не удаляются физически и могут вернуть truthful blocking error, если active equipment, active scoped grants или другие Stage 03 references не позволяют безопасно архивировать узел.
+Active create/select flows должны выбирать только visible active scopes. Archived дивизионы и юниты скрываются из default selection, не удаляются физически и могут вернуть truthful blocking error, если active equipment, active scoped grants или другие Stage 03 references не позволяют безопасно архивировать узел.
 
-Source note for organization legal forms: the visible MVP set intentionally uses `ООО`, `АО`, `ПАО`. `ОАО` and `ЗАО` stay compatibility aliases because [ФНС describes](https://www.nalog.gov.ru/rn03/news/tax_doc_news/5096254/) the abolition of open/closed JSC split in favor of public/non-public JSCs, and OKOPF keeps current entries for [ПАО](https://classifikators.ru/okopf/12247), [АО](https://classifikators.ru/okopf/12267), and [ООО](https://classifikators.ru/okopf/12300).
+Source note for organization requisites: the validation mirrors the stable Russian identifier shapes used by official registries and banks: [ФНС describes](https://www.nalog.gov.ru/rn77/ifns/imns77_47/5955916/) 10-digit `ИНН` and 9-digit `КПП` requisites for organizations, registry identifiers distinguish `ОГРН` / `ОГРНИП`, and Bank of Russia electronic formats publish 20-character account fields and `БИК` fields in payment/bank data schemas. [ФНС also describes](https://www.nalog.gov.ru/rn66/news/smi/4899042/) the public/non-public JSC cutover; VRK keeps legacy `АО` input but stores/displays `НАО` as the product label for non-public JSCs.
 
 ## 2. Иерархия объектов
 
@@ -134,7 +137,7 @@ Source note for organization legal forms: the visible MVP set intentionally uses
 
 ```mermaid
 flowchart TD
-    A["Организация"] --> B["Подразделение (optional)"]
+    A["Организация"] --> B["Дивизион (optional)"]
     A --> C["Юнит"]
     B --> C
     C --> D["Оборудование"]
@@ -148,10 +151,10 @@ flowchart TD
 
 На старте обязательны только поля, без которых нельзя начать оргструктуру и вести оборудование:
 
-- тип организации / ОПФ;
+- тип организации / ОПФ (`ООО`, `ПАО`, `НАО`, `ИП`);
 - полное и сокращенное наименование;
 - ИНН;
-- КПП;
+- КПП, кроме `ИП`;
 - юридический адрес;
 - основной контактный email;
 - основной контактный телефон;
@@ -160,28 +163,43 @@ flowchart TD
 Отдельным неблокирующим блоком живут реквизиты и документы:
 
 - почтовый адрес;
-- ОГРН;
-- ОКПО;
+- ОГРН / ОГРНИП;
+- расчетный счет;
+- банк;
+- корреспондентский счет;
+- БИК;
 - ФИО руководителя;
 - должность руководителя;
 - основание полномочий;
 - файлы документов.
 
-### 2.2. Подразделение
+Логотип хранится отдельно от Postgres: таблица организации содержит только object key и metadata, а файл лежит в приватном S3-compatible bucket.
 
-В модели используется единый пользовательский термин `подразделение`, а API/storage термин для нового Stage 03 contract — `division`. Это может быть филиал, подразделение или иной организационный уровень, но пользовательский selector `Тип` для division не вводится.
+```mermaid
+flowchart LR
+    A["/company UI"] --> B["Next /api/company/logo"]
+    B --> C["backend /api/v1/company/logo"]
+    C --> D["Postgres logo metadata"]
+    C --> E["Private S3-compatible object storage"]
+    E --> C
+    C --> B
+    B --> A
+```
+
+### 2.2. Дивизион
+
+В модели используется единый пользовательский термин `дивизион`, а API/storage термин для нового Stage 03 contract — `division`. Это организационный уровень, который в пользовательских текстах всегда называется дивизионом, но пользовательский selector `Тип` для division не вводится.
 
 Обязательные атрибуты:
 
 - наименование;
-- код;
 - регион;
 - адрес;
 - руководитель;
 - контакты;
 - статус `active` / `archived`.
 
-Storage поле `auth_divisions.division_type` остается скрытым compatibility default `division`; бизнес-классификация подразделений/филиалов не выбирается пользователем в этом slice.
+Storage поле `auth_divisions.division_type` остается скрытым compatibility default `division`; бизнес-классификация дивизионов не выбирается пользователем в этом slice.
 
 ### 2.3. Юнит
 
@@ -189,7 +207,7 @@ Storage поле `auth_divisions.division_type` остается скрытым 
 
 Обязательные правила:
 
-- юнит может иметь родительское подразделение, но оно не обязательно;
+- юнит может иметь родительский дивизион, но он не обязателен;
 - сценарий `organization -> unit` должен поддерживаться так же, как `organization -> division -> unit`;
 - оборудование живет в контексте юнита, а не только организации в целом.
 
@@ -197,9 +215,8 @@ Storage поле `auth_divisions.division_type` остается скрытым 
 
 - тип юнита;
 - родительская организация;
-- родительское подразделение опционально;
+- родительский дивизион опционален;
 - наименование;
-- код;
 - адрес;
 - ответственный;
 - контакты;
@@ -212,10 +229,10 @@ Storage поле `auth_divisions.division_type` остается скрытым 
 
 Требования:
 
-- `/company` должен показывать дерево организации: подразделения/филиалы, прямые юниты организации и юниты внутри подразделений;
+- `/company` должен показывать дерево организации: дивизионы, прямые юниты организации и юниты внутри дивизионов;
 - organization-scope admin может создавать первый и последующие узлы из одного и того же UI;
 - narrower scopes видят только свой subtree и не получают mutate actions для broader organization graph;
-- archive применяется вместо physical delete для подразделений и юнитов;
+- archive применяется вместо physical delete для дивизионов и юнитов;
 - перед архивированием узла UI/API должны показать blocking dependencies, если под ним есть active equipment, active scoped grants или другие master-data references;
 - equipment, MI, standards, contracts и employee grants должны ссылаться только на visible active scopes при создании новых записей.
 
@@ -258,8 +275,10 @@ MVP-модель прав:
 | --- | --- | --- | --- |
 | `organization_admin` | Администратор организации | `organization` | Да: `manage_structure`, `manage_access`, `manage_contracts`, `manage_equipment`, `manage_employees`; также `view_employees` |
 | `organization_head` | Руководитель организации | `organization` | Нет, read-only; `view_employees` на всю организацию |
-| `division_head` | Руководитель подразделения | `division` | Нет, read-only; `view_employees` по подразделению и дочерним юнитам |
-| `division_operator` | Сотрудник подразделения | `division` | Нет, read-only |
+| `division_admin` | Администратор дивизиона | `division` | Да в пределах своего дивизиона и дочерних юнитов: `manage_structure`, `manage_access`, `manage_contracts`, `manage_equipment`, `manage_employees`; также `view_employees` |
+| `division_head` | Руководитель дивизиона | `division` | Нет, read-only; `view_employees` по дивизиону и дочерним юнитам |
+| `division_operator` | Сотрудник дивизиона | `division` | Нет, read-only |
+| `unit_admin` | Администратор юнита | `unit` | Да в пределах своего юнита: `manage_structure`, `manage_access`, `manage_contracts`, `manage_equipment`, `manage_employees`; также `view_employees` |
 | `unit_head` | Руководитель юнита | `unit` | Нет, read-only; `view_employees` по своему юниту |
 | `unit_operator` | Сотрудник юнита | `unit` | Нет, read-only |
 | `auditor` | Аудитор | `organization`, `division` или `unit` | Нет, read-only; `view_employees` в пределах своего scope |
@@ -268,10 +287,10 @@ Legacy aliases are handled only by the DB cutover migration and are not a public
 
 - the old read-only viewer role is now represented only by `auditor`;
 - the old division-manager role is now represented only by `division_head`;
-- previous unit-admin semantics are now represented by `unit_head`;
+- previous unit-admin semantics from early Stage 03 are now represented by `unit_head`; current `unit_admin` is a scoped admin role;
 - current `unit_operator` means a unit employee, not a unit administrator.
 
-В v1 фактические Stage 03 mutation-права остаются только у `organization_admin` на `organization` scope. Остальные роли уже участвуют в совместимости scope, session projection и read-only visibility, а операционные права для следующих stage-ов должны включаться через capability-map, без scattered string checks.
+В v1 mutation-права разделены по области: `organization_admin` управляет всей организацией и профилем организации; `division_admin` управляет доступом, сотрудниками, договорами, оборудованием, своим дивизионом и дочерними юнитами; `unit_admin` управляет доступом, сотрудниками, договорами, оборудованием и своей карточкой юнита. Профиль организации остается только за `organization_admin`.
 
 ### 3.1.1. Просмотр и управление сотрудниками
 
@@ -280,12 +299,12 @@ Legacy aliases are handled only by the DB cutover migration and are not a public
 Visibility для `GET /employees` строится от текущего explicit grant:
 
 - `organization` scope видит все active employee access rows организации;
-- `division` scope видит сотрудников, назначенных напрямую на подразделение, и сотрудников дочерних юнитов;
+- `division` scope видит сотрудников, назначенных напрямую на дивизион, и сотрудников дочерних юнитов;
 - `unit` scope видит только сотрудников своего юнита;
 - organization-scope сотрудники не раскрываются в division/unit scoped списках;
 - `division_operator` и `unit_operator` не получают вкладку сотрудников.
 
-`organization_admin` может менять role/scope активного сотрудника через `PATCH /employees/{accessID}` и отключать сотрудника через `POST /employees/{accessID}/deactivate`. Update проходит ту же role/scope compatibility и active visible target validation, что invite creation. Self-edit и self-deactivate текущего session grant запрещены. Deactivation архивирует membership и инвалидирует active sessions этого membership; restore UI в текущем slice отсутствует.
+Scoped admins с capability `manage_employees` могут менять role/scope активного сотрудника через `PATCH /employees/{accessID}` и отключать сотрудника через `POST /employees/{accessID}/deactivate` только внутри visible scope/subtree. Update проходит ту же role/scope compatibility и active visible target validation, что invite creation; division/unit admins не могут назначать organization-scope access. Self-edit и self-deactivate текущего session grant запрещены. Deactivation архивирует membership и инвалидирует active sessions этого membership; restore UI в текущем slice отсутствует.
 
 ### 3.2. Приглашения сотрудников
 
@@ -311,7 +330,7 @@ Flow приглашения сотрудника:
 
 Во втором живом Stage 03 slice employee invite flow зафиксирован следующим контрактом:
 
-- organization admin может создавать draft employee invite после active organization-scope session; division/unit-scope invite требует существующий visible target scope;
+- admins с `manage_access` могут создавать draft employee invite после active session только в пределах visible scope/subtree; organization-scope invite доступен только `organization_admin`, а division/unit-scope invite требует существующий visible active target scope;
 - `POST /employee-invites` создает `draft` с `full_name`, `email`, `role_template`, `scope_type`, `scope_id` и `expires_at`;
 - `POST /employee-invites/{inviteID}/send` выпускает одноразовый token и переводит invite в `sent`;
 - `GET /invites/{token}` используется как общий public invite endpoint для first-admin и employee flow, а employee invite при первом открытии переводится из `sent` в `opened`;
@@ -336,24 +355,26 @@ flowchart LR
 
 Навигация строится вокруг выбора контекста:
 
-- `Организация` — обзор всех подразделений, юнитов и оборудования организации;
-- `Подразделение` — обзор только своего поддерева и всех его юнитов;
+- `Организация` — обзор всех дивизионов, юнитов и оборудования организации;
+- `Дивизион` — обзор только своего поддерева и всех его юнитов;
 - `Юнит` — основной operational workspace для оборудования, СИ, эталонов и связанных действий.
 
 Главные экраны:
 
 - организация: сводка по оборудованию, сотрудникам, договорам и структуре;
-- подразделение: сводка по юнитам и оборудованию внутри подразделения;
+- дивизион: сводка по юнитам и оборудованию внутри дивизиона;
 - юнит: рабочее место со списком оборудования, СИ, эталонов и точками входа в CRUD.
 
 ### 4.1. Реализованная workspace projection для slice-002
 
 Session summary в slice-002+ больше не возвращает только organization-wide contour, а проецирует singular runtime workspace прямо из explicit active scoped grant:
 
-- `organization` scope открывает весь org graph ниже, показывает вкладку `Сотрудники` для `organization_admin`, `organization_head` и organization-scope `auditor`, а employee invites / edit / deactivate доступны только `organization_admin`;
-- `division` scope открывает целевое подразделение и его дочерние юниты, но не wider organization contour;
-- `division_head` и division-scope `auditor` получают read-only вкладку `Сотрудники` только по своему подразделению и дочерним юнитам;
+- `organization` scope открывает весь org graph ниже, показывает вкладку `Сотрудники` для `organization_admin`, `organization_head` и organization-scope `auditor`, а employee invites / edit / deactivate доступны `organization_admin`;
+- `division` scope открывает целевой дивизион и его дочерние юниты, но не wider organization contour;
+- `division_admin` получает mutate controls только для своего дивизиона, дочерних юнитов, access/employees/equipment/contracts внутри subtree и не может редактировать профиль организации;
+- `division_head` и division-scope `auditor` получают read-only вкладку `Сотрудники` только по своему дивизиону и дочерним юнитам;
 - `unit` scope открывает только один целевой юнит и не раскрывает division/organization graph вверх;
+- `unit_admin` получает mutate controls только для своего юнита и access/employees/equipment/contracts внутри него;
 - `unit_head` и unit-scope `auditor` получают read-only вкладку `Сотрудники` только по своему юниту;
 - один и тот же `/company` route используется как scoped landing page после invite acceptance и последующего login;
 - session restore не выбирает новый workspace: он использует сохраненный `grant_id`;
@@ -444,7 +465,7 @@ flowchart LR
 - идентификатор / серийный номер;
 - метрологические характеристики;
 - владелец;
-- scope владения: юнит / подразделение / организация;
+- scope владения: юнит / дивизион / организация;
 - статус;
 - документы.
 
@@ -586,7 +607,7 @@ flowchart LR
 Ключевые сущности не удаляются физически:
 
 - организация;
-- подразделение;
+- дивизион;
 - юнит;
 - пользователь;
 - договор;

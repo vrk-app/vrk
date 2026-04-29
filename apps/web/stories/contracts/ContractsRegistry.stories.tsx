@@ -4,8 +4,10 @@ import {
   contractRecords,
   contractorOptions,
   contractorSession,
+  divisionAdminSession,
   restrictedCustomerSession,
   runtimeSession,
+  unitAdminSession,
 } from "@/shared/storybook/runtime-fixtures";
 import { withRuntimeApi } from "@/shared/storybook/runtime-api-mock";
 
@@ -58,6 +60,34 @@ export const CustomerRestricted: Story = {
   },
   decorators: [
     withRuntimeApi({ contracts: contractRecords, contractorOptions, session: restrictedCustomerSession }),
+  ],
+};
+
+export const DivisionAdminScoped: Story = {
+  args: {
+    initialContracts: contractRecords.filter((contract) => contract.locationScope.scopeId === "unit-metrology"),
+    session: divisionAdminSession,
+  },
+  decorators: [
+    withRuntimeApi({
+      contracts: contractRecords.filter((contract) => contract.locationScope.scopeId === "unit-metrology"),
+      contractorOptions,
+      session: divisionAdminSession,
+    }),
+  ],
+};
+
+export const UnitAdminScoped: Story = {
+  args: {
+    initialContracts: contractRecords.filter((contract) => contract.locationScope.scopeId === "unit-metrology"),
+    session: unitAdminSession,
+  },
+  decorators: [
+    withRuntimeApi({
+      contracts: contractRecords.filter((contract) => contract.locationScope.scopeId === "unit-metrology"),
+      contractorOptions,
+      session: unitAdminSession,
+    }),
   ],
 };
 

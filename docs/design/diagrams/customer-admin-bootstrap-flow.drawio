@@ -25,7 +25,7 @@
         <mxCell id="Uvl7SCXHovZ_TvcCf32a-68" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="Uvl7SCXHovZ_TvcCf32a-10" target="Uvl7SCXHovZ_TvcCf32a-67" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="Uvl7SCXHovZ_TvcCf32a-10" value="Количество филиалов" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+        <mxCell id="Uvl7SCXHovZ_TvcCf32a-10" value="Количество дивизионов" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="821.25" y="260" width="115" height="50" as="geometry" />
         </mxCell>
         <mxCell id="Uvl7SCXHovZ_TvcCf32a-59" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="Uvl7SCXHovZ_TvcCf32a-12" target="Uvl7SCXHovZ_TvcCf32a-28" edge="1">
@@ -36,7 +36,7 @@
             <mxRectangle x="380" y="300" width="220" height="30" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="Uvl7SCXHovZ_TvcCf32a-13" value="Организационно-правовая ф&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;орма (ООО, АО, ПАО)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="Uvl7SCXHovZ_TvcCf32a-12" vertex="1">
+        <mxCell id="Uvl7SCXHovZ_TvcCf32a-13" value="Организационно-правовая ф&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;орма (ООО, ПАО, НАО, ИП)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="Uvl7SCXHovZ_TvcCf32a-12" vertex="1">
           <mxGeometry y="30" width="140" height="50" as="geometry" />
         </mxCell>
         <mxCell id="Uvl7SCXHovZ_TvcCf32a-14" value="Полное наименование" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="Uvl7SCXHovZ_TvcCf32a-12" vertex="1">
@@ -196,13 +196,13 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="Uvl7SCXHovZ_TvcCf32a-60" value="Наличие СП/филиалов" style="rhombus;whiteSpace=wrap;html=1;fontStyle=0;startSize=30;horizontal=1;" parent="1" vertex="1">
+        <mxCell id="Uvl7SCXHovZ_TvcCf32a-60" value="Наличие дивизионов" style="rhombus;whiteSpace=wrap;html=1;fontStyle=0;startSize=30;horizontal=1;" parent="1" vertex="1">
           <mxGeometry x="650" y="170" width="125" height="70" as="geometry" />
         </mxCell>
         <mxCell id="Uvl7SCXHovZ_TvcCf32a-70" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="Uvl7SCXHovZ_TvcCf32a-67" target="Uvl7SCXHovZ_TvcCf32a-69" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="Uvl7SCXHovZ_TvcCf32a-67" value="Генрация ключей (лог/пароль или токен) по кол-ву филиалов" style="whiteSpace=wrap;html=1;rounded=0;" parent="1" vertex="1">
+        <mxCell id="Uvl7SCXHovZ_TvcCf32a-67" value="Генрация ключей (лог/пароль или токен) по кол-ву дивизионов" style="whiteSpace=wrap;html=1;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="818.75" y="350" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="Uvl7SCXHovZ_TvcCf32a-76" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="Uvl7SCXHovZ_TvcCf32a-69" target="Uvl7SCXHovZ_TvcCf32a-75" edge="1">
@@ -236,7 +236,7 @@
         <mxCell id="Uvl7SCXHovZ_TvcCf32a-100" value="Переход на вкладку &lt;b&gt;ОБОРУДОВАНИЕ&lt;/b&gt;" style="whiteSpace=wrap;html=1;rounded=0;fillColor=#FF3333;fontColor=#ffffff;strokeColor=#A50040;" parent="1" vertex="1">
           <mxGeometry x="818.75" y="695" width="120" height="45" as="geometry" />
         </mxCell>
-        <mxCell id="Uvl7SCXHovZ_TvcCf32a-102" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Администратор&lt;/h1&gt;&lt;div&gt;Сообщение: В настоящий момент данные об оборудовании отсутствуют. Вы можете внести данные самостоятельно или дождаться загрузки данных структурными подразделениями.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" parent="1" vertex="1">
+        <mxCell id="Uvl7SCXHovZ_TvcCf32a-102" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Администратор&lt;/h1&gt;&lt;div&gt;Сообщение: В настоящий момент данные об оборудовании отсутствуют. Вы можете внести данные самостоятельно или дождаться загрузки данных дивизионами.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="1000" y="647.5" width="200" height="140" as="geometry" />
         </mxCell>
         <mxCell id="Uvl7SCXHovZ_TvcCf32a-106" value="Да" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="Uvl7SCXHovZ_TvcCf32a-103" target="Uvl7SCXHovZ_TvcCf32a-105" edge="1">
@@ -343,7 +343,7 @@
             <mxRectangle x="800" y="1640" width="220" height="30" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="Uvl7SCXHovZ_TvcCf32a-143" value="*Регистрационный номер" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="Uvl7SCXHovZ_TvcCf32a-142" vertex="1">
+        <mxCell id="Uvl7SCXHovZ_TvcCf32a-143" value="*ФИФ" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="Uvl7SCXHovZ_TvcCf32a-142" vertex="1">
           <mxGeometry y="30" width="140" height="50" as="geometry" />
         </mxCell>
         <mxCell id="Uvl7SCXHovZ_TvcCf32a-144" value="*Вид опрерации (поверка, калибровка, аттестация)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="Uvl7SCXHovZ_TvcCf32a-142" vertex="1">
@@ -515,7 +515,7 @@
             <mxRectangle x="380" y="190" width="220" height="30" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="9rR8Ady_3ZOeerbZvLVX-24" value="*СП/филиал" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="9rR8Ady_3ZOeerbZvLVX-23" vertex="1">
+        <mxCell id="9rR8Ady_3ZOeerbZvLVX-24" value="*Дивизион" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="9rR8Ady_3ZOeerbZvLVX-23" vertex="1">
           <mxGeometry y="30" width="140" height="25" as="geometry" />
         </mxCell>
         <mxCell id="9rR8Ady_3ZOeerbZvLVX-78" value="*Классификация по применению" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="9rR8Ady_3ZOeerbZvLVX-23" vertex="1">

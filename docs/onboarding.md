@@ -84,14 +84,16 @@ make smoke
 - backend: `http://localhost:18080`
 - web runtime: `http://localhost:3100`
 - field scaffold: `http://localhost:3102`
+- S3-compatible object storage: `http://localhost:19000`
+- MinIO console: `http://localhost:19001`
 
-`make dev` возвращается после compose `--wait`, когда container health уже достигнут, а затем запускает one-shot `dev-seed`. Seed создает demo customer organization, organization-scope администратора, 3 филиала и 9 юнитов через backend API. Credentials печатаются в stdout и сохраняются локально в `.local/dev-seed.json` с правами `0600`.
+`make dev` возвращается после compose `--wait`, когда container health уже достигнут, а затем запускает one-shot `dev-seed`. Seed создает demo customer organization, organization-scope администратора, 3 дивизиона и 9 юнитов через backend API. Credentials печатаются в stdout и сохраняются локально в `.local/dev-seed.json` с правами `0600`.
 
 Если вывод потерялся, открой `.local/dev-seed.json`. Повторный запуск `make dev-seed` не создает дубли для уже успешной версии seed, а печатает `seed already applied`, версию и путь к локальному файлу.
 
 `make smoke` можно запускать сразу после `make dev`: smoke сам подождет короткое bounded окно, пока host-порты backend/web/field начнут принимать подключения, и только потом перейдет к строгим runtime assertions.
 
-Если порты заняты, их можно переопределить через `BACKEND_HOST_PORT`, `WEB_HOST_PORT`, `FIELD_HOST_PORT`.
+Если порты заняты, их можно переопределить через `BACKEND_HOST_PORT`, `WEB_HOST_PORT`, `FIELD_HOST_PORT`, `OBJECT_STORAGE_HOST_PORT`, `OBJECT_STORAGE_CONSOLE_HOST_PORT`.
 
 Если нужен clean-room прогон с повторным применением миграций и исходным seeded baseline, используйте:
 
@@ -211,6 +213,12 @@ DB_USER=postgres
 DB_PASSWORD=postgres
 DB_NAME=db
 DB_SSL_MODE=disable
+OBJECT_STORAGE_ENDPOINT=http://localhost:19000
+OBJECT_STORAGE_REGION=ru-central1
+OBJECT_STORAGE_BUCKET=vrk-local
+OBJECT_STORAGE_ACCESS_KEY_ID=minio
+OBJECT_STORAGE_SECRET_ACCESS_KEY=minio12345
+OBJECT_STORAGE_FORCE_PATH_STYLE=true
 ```
 
 `PLATFORM_ADMIN_SHARED_SECRET` обязателен для Stage 03 admin surface:
@@ -218,6 +226,8 @@ DB_SSL_MODE=disable
 - backend не стартует без этого значения;
 - server-side runtime `apps/web` тоже должен получить тот же secret, чтобы `/register` мог проксировать `POST /api/v1/platform/organization-shells` через Next route handler;
 - secret используется только на server-side boundary и не должен попадать в browser-visible env или client bundle.
+
+Object storage env нужен для логотипов организаций. В compose baseline эти значения уже выставлены для backend и указывают на локальный MinIO-compatible сервис; при запуске backend вне compose используйте такие же значения или оставьте bucket/access keys пустыми, чтобы uploads возвращали controlled `object storage is unavailable`.
 
 ## 6. Установка backend tools
 

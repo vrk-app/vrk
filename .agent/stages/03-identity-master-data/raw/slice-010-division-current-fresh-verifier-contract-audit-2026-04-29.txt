@@ -158,7 +158,6 @@ Division-aligned contract audit for Stage 03 slice-010 correction.
     69	type StructureNodeRequest struct {
     70		Type              string  `json:"type,omitempty"`
     71		Name              string  `json:"name"`
-    72		Code              *string `json:"code,omitempty"`
     73		Region            *string `json:"region,omitempty"`
     74		Address           *string `json:"address,omitempty"`
     75		RegisteredAddress *string `json:"registeredAddress,omitempty"`
@@ -176,7 +175,6 @@ Division-aligned contract audit for Stage 03 slice-010 correction.
    198		ID                string  `json:"id"`
    199		Type              string  `json:"type"`
    200		Name              string  `json:"name"`
-   201		Code              *string `json:"code,omitempty"`
    202		Region            *string `json:"region,omitempty"`
    203		Address           *string `json:"address,omitempty"`
    204		RegisteredAddress *string `json:"registeredAddress,omitempty"`
@@ -195,7 +193,6 @@ Division-aligned contract audit for Stage 03 slice-010 correction.
    217		ID                string  `json:"id"`
    218		Type              string  `json:"type"`
    219		Name              string  `json:"name"`
-   220		Code              *string `json:"code,omitempty"`
    221		Region            *string `json:"region,omitempty"`
    222		DivisionID        *string `json:"divisionId,omitempty"`
    223		Address           *string `json:"address,omitempty"`
@@ -448,7 +445,6 @@ Swagger field grep:
    154	export type StructureNodePayload = {
    155	  type?: string;
    156	  name: string;
-   157	  code?: string;
    158	  region?: string;
    159	  address?: string;
    160	  registeredAddress?: string;
@@ -513,7 +509,6 @@ Swagger field grep:
    253	    id: string;
    254	    type: string;
    255	    name: string;
-   256	    code?: string;
    257	    region?: string;
    258	    address?: string;
    259	    registeredAddress?: string;
@@ -531,7 +526,6 @@ Swagger field grep:
    271	    id: string;
    272	    type: string;
    273	    name: string;
-   274	    code?: string;
    275	    region?: string;
    276	    divisionId?: string;
    277	    address?: string;

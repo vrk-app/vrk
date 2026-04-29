@@ -2,6 +2,7 @@ package equipment
 
 import (
 	"context"
+	"io"
 	"testing"
 	"time"
 
@@ -112,6 +113,18 @@ func (s *testBootstrapService) CompleteLaunch(ctx context.Context, token string,
 
 func (s *testBootstrapService) UpdateCompanyProfile(ctx context.Context, token string, req bootstrap.CompanyProfileRequest) (*bootstrap.SessionSummaryResponse, error) {
 	panic("unexpected call to UpdateCompanyProfile")
+}
+
+func (s *testBootstrapService) UploadCompanyLogo(ctx context.Context, token string, fileName string, contentType string, body io.Reader) (*bootstrap.SessionSummaryResponse, error) {
+	panic("unexpected call to UploadCompanyLogo")
+}
+
+func (s *testBootstrapService) GetCompanyLogo(ctx context.Context, token string) (*bootstrap.CompanyLogoObject, error) {
+	panic("unexpected call to GetCompanyLogo")
+}
+
+func (s *testBootstrapService) DeleteCompanyLogo(ctx context.Context, token string) (*bootstrap.SessionSummaryResponse, error) {
+	panic("unexpected call to DeleteCompanyLogo")
 }
 
 func (s *testBootstrapService) CreateDivision(ctx context.Context, token string, req bootstrap.StructureNodeRequest) (*bootstrap.SessionSummaryResponse, error) {

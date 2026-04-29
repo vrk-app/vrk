@@ -107,7 +107,7 @@ func ResolveScopeLabel(session *bootstrap.SessionSummaryResponse, divisionID *uu
 		if division, ok := VisibleDivisionMap(session)[divisionID.String()]; ok {
 			return division.Name
 		}
-		return "Подразделение"
+		return "Дивизион"
 	}
 
 	return session.Organization.Name

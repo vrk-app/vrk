@@ -35,8 +35,10 @@ type EditForm = {
 const roleTemplates = [
   { value: "organization_admin", label: roleTemplateLabels.organization_admin },
   { value: "organization_head", label: roleTemplateLabels.organization_head },
+  { value: "division_admin", label: roleTemplateLabels.division_admin },
   { value: "division_head", label: roleTemplateLabels.division_head },
   { value: "division_operator", label: roleTemplateLabels.division_operator },
+  { value: "unit_admin", label: roleTemplateLabels.unit_admin },
   { value: "unit_head", label: roleTemplateLabels.unit_head },
   { value: "unit_operator", label: roleTemplateLabels.unit_operator },
   { value: "auditor", label: roleTemplateLabels.auditor },
@@ -44,7 +46,7 @@ const roleTemplates = [
 
 const scopeTypeLabels: Record<ScopeType, string> = {
   organization: "Вся организация",
-  division: "Подразделение",
+  division: "Дивизион",
   unit: "Юнит",
 };
 
@@ -72,11 +74,14 @@ export function EmployeeAccessWorkspace({ session }: Props) {
   const currentAccessId = session.grant?.id;
   const scopeOptions = useMemo<Record<ScopeType, ScopeOption[]>>(
     () => ({
-      organization: [{ value: session.organization.id, label: session.organization.name }],
+      organization:
+        session.workspace.scopeType === "organization"
+          ? [{ value: session.organization.id, label: session.organization.name }]
+          : [],
       division: session.divisions.map((item) => ({ value: item.id, label: item.name })),
       unit: session.units.map((item) => ({ value: item.id, label: item.name })),
     }),
-    [session.organization.id, session.organization.name, session.divisions, session.units],
+    [session.organization.id, session.organization.name, session.divisions, session.units, session.workspace.scopeType],
   );
 
   useEffect(() => {
@@ -182,9 +187,6 @@ export function EmployeeAccessWorkspace({ session }: Props) {
             <Badge tone="interactive">Сотрудники</Badge>
             <div className="space-y-1">
               <h2 className="text-xl font-semibold text-foreground">Сотрудники и доступ</h2>
-              <p className="text-sm leading-6 text-muted-foreground">
-                Активные сотрудники показаны в пределах текущей области доступа.
-              </p>
             </div>
           </div>
           <Button leftIcon={<RefreshCw className="size-4" />} onClick={() => void loadEmployees()} variant="secondary">
@@ -194,7 +196,7 @@ export function EmployeeAccessWorkspace({ session }: Props) {
 
         {!canManage ? (
           <InlineAlert
-            description="Изменение ролей, областей доступа и отключение сотрудников доступны только администратору организации."
+            description="Изменение ролей, областей доступа и отключение сотрудников доступны администратору в пределах видимой области."
             title="Режим просмотра"
             tone="info"
           />
@@ -308,7 +310,7 @@ export function EmployeeAccessWorkspace({ session }: Props) {
                           {
                             disabled:
                               !isRoleScopeCompatible(editForm.roleTemplate, "division") || !scopeOptions.division.length,
-                            label: "Подразделение",
+                            label: "Дивизион",
                             value: "division",
                           },
                           {

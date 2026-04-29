@@ -1,0 +1,28 @@
+Storybook registry entries: 33
+Query: "contracts scope select field card button route registry"
+
+1. Contracts/ContractsRegistry [ContractsRegistry]
+   story: apps/web/stories/contracts/ContractsRegistry.stories.tsx
+   source: apps/web/features/Stage03Contracts/ui/ContractsRegistry.tsx
+   stories: CustomerAdmin, CustomerEmpty, CustomerRestricted, DivisionAdminScoped, UnitAdminScoped, ContractorReadonly
+   tags: autodocs
+2. Primitives/SelectField [SelectField]
+   story: apps/web/stories/primitives/SelectField.stories.tsx
+   source: apps/web/shared/ui/SelectField.tsx
+   stories: Single, Default, Hover, Focus, WithPlaceholder, Multiple, WithHint, WithError, Disabled, LoadingOptions
+   tags: autodocs
+3. Equipment/EquipmentRegistryWorkspace [EquipmentRegistryWorkspace]
+   story: apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+   source: apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+   stories: EquipmentTab, MeasuringInstrumentsTab, StandardsTab, WithArchiveVisible, ScopedReadonly, LoadError
+   tags: autodocs
+4. Primitives/TextareaField [TextareaField]
+   story: apps/web/stories/primitives/TextareaField.stories.tsx
+   source: apps/web/shared/ui/TextareaField.tsx
+   stories: Default, Hover, Focus, WithHint, WithCounter, AutoResize, WithError, Disabled
+   tags: autodocs
+5. Primitives/Button [Button]
+   story: apps/web/stories/primitives/Button.stories.tsx
+   source: apps/web/shared/ui/Button.tsx
+   stories: Default, Hover, Focus, Primary, Secondary, Ghost, Danger, WithLeftIcon, WithRightIcon, Loading, Disabled, FullWidth
+   tags: autodocs

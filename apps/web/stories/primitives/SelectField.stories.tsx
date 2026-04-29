@@ -5,8 +5,8 @@ import { SelectField } from "@/shared/ui";
 const roleOptions = [
   { label: "Администратор организации", value: "organization_admin" },
   { label: "Руководитель организации", value: "organization_head" },
-  { label: "Руководитель подразделения", value: "division_head" },
-  { label: "Сотрудник подразделения", value: "division_operator" },
+  { label: "Руководитель дивизиона", value: "division_head" },
+  { label: "Сотрудник дивизиона", value: "division_operator" },
   { label: "Руководитель юнита", value: "unit_head" },
   { label: "Сотрудник юнита", value: "unit_operator" },
   { label: "Аудитор", value: "auditor" },
@@ -95,8 +95,8 @@ export const WithError: Story = {
 export const Disabled: Story = {
   args: {
     disabled: true,
-    label: "Подразделение",
-    options: [{ label: "Нет доступных подразделений", value: "" }],
+    label: "Дивизион",
+    options: [{ label: "Нет доступных дивизионов", value: "" }],
     value: "",
   },
 };

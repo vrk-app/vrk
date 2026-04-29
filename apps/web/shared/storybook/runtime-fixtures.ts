@@ -65,14 +65,13 @@ export const runtimeSession: SessionSummaryResponse = {
   divisions: [
     {
       id: "division-north",
-      type: "Филиал",
-      name: "Северный филиал",
-      code: "NORTH",
+      type: "Дивизион",
+      name: "Северный дивизион",
       region: "Санкт-Петербург",
       registeredAddress: "197000, Санкт-Петербург, Петровская наб., 4",
       managerName: "Илья Романов",
       leaderFullName: "Илья Романов",
-      leaderPosition: "Руководитель филиала",
+      leaderPosition: "Руководитель дивизиона",
       contractPhone: "+7 812 000-01-00",
       contractEmail: "north@vrk.local",
       actingBasis: "Доверенность",
@@ -81,14 +80,13 @@ export const runtimeSession: SessionSummaryResponse = {
     },
     {
       id: "division-east",
-      type: "Филиал",
-      name: "Восточный филиал",
-      code: "EAST",
+      type: "Дивизион",
+      name: "Восточный дивизион",
       region: "Ленинградская область",
       registeredAddress: "188000, Ленинградская область, промзона Восточная",
       managerName: "Мария Кузнецова",
       leaderFullName: "Мария Кузнецова",
-      leaderPosition: "Руководитель филиала",
+      leaderPosition: "Руководитель дивизиона",
       contractPhone: "+7 812 000-02-00",
       contractEmail: "east@vrk.local",
       actingBasis: "Доверенность",
@@ -100,7 +98,6 @@ export const runtimeSession: SessionSummaryResponse = {
       id: "unit-boiler",
       type: "ВРД",
       name: "Котельный участок",
-      code: "BOILER",
       region: "Санкт-Петербург",
       divisionId: "division-north",
       registeredAddress: "197000, Санкт-Петербург, корпус 2",
@@ -116,7 +113,6 @@ export const runtimeSession: SessionSummaryResponse = {
       id: "unit-metrology",
       type: "ВУ",
       name: "Метрологическая лаборатория",
-      code: "METRO",
       region: "Санкт-Петербург",
       divisionId: "division-north",
       registeredAddress: "197000, Санкт-Петербург, корпус 5",
@@ -132,7 +128,6 @@ export const runtimeSession: SessionSummaryResponse = {
       id: "unit-depot",
       type: "ВРЗ",
       name: "Ремонтное депо",
-      code: "DEPOT",
       region: "Ленинградская область",
       divisionId: "division-east",
       registeredAddress: "188000, Ленинградская область, корпус 1",
@@ -153,7 +148,7 @@ export const emptyStructureSession: SessionSummaryResponse = {
   units: [],
   workspace: {
     ...runtimeSession.workspace,
-    landingSubtitle: "Добавьте первое подразделение или юнит.",
+    landingSubtitle: "Добавьте первый дивизион или юнит.",
   },
 };
 
@@ -175,9 +170,9 @@ export const divisionScopeSession: SessionSummaryResponse = {
   workspace: {
     scopeType: "division",
     scopeId: "division-north",
-    scopeName: "Северный филиал",
-    landingTitle: "Северный филиал",
-    landingSubtitle: "Доступ ограничен своим подразделением и его юнитами.",
+    scopeName: "Северный дивизион",
+    landingTitle: "Северный дивизион",
+    landingSubtitle: "Доступ ограничен своим дивизионом и его юнитами.",
     landingPath: "/company",
     canManageEmployeeInvites: false,
     canViewEmployees: false,
@@ -185,6 +180,29 @@ export const divisionScopeSession: SessionSummaryResponse = {
   },
   divisions: cloneFixture(runtimeSession.divisions.filter((item) => item.id === "division-north")),
   units: cloneFixture(runtimeSession.units.filter((item) => item.divisionId === "division-north")),
+};
+
+export const divisionAdminSession: SessionSummaryResponse = {
+  ...cloneFixture(divisionScopeSession),
+  sessionToken: "storybook-session-division-admin",
+  membershipId: "membership-division-admin",
+  account: {
+    id: "account-division-admin",
+    fullName: "Илья Романов",
+    email: "i.romanov@vrk.local",
+  },
+  grant: {
+    id: "grant-division-admin",
+    roleTemplate: "division_admin",
+    scopeType: "division",
+    scopeId: "division-north",
+  },
+  workspace: {
+    ...divisionScopeSession.workspace,
+    canManageEmployeeInvites: true,
+    canViewEmployees: true,
+    canManageEmployees: true,
+  },
 };
 
 export const contractorSession: SessionSummaryResponse = {
@@ -327,6 +345,29 @@ export const unitHeadSession: SessionSummaryResponse = {
   units: cloneFixture(runtimeSession.units.filter((item) => item.id === "unit-metrology")),
 };
 
+export const unitAdminSession: SessionSummaryResponse = {
+  ...cloneFixture(unitHeadSession),
+  sessionToken: "storybook-session-unit-admin",
+  membershipId: "membership-unit-admin",
+  account: {
+    id: "account-unit-admin",
+    fullName: "Сергей Лебедев",
+    email: "s.lebedev@vrk.local",
+  },
+  grant: {
+    id: "grant-unit-admin",
+    roleTemplate: "unit_admin",
+    scopeType: "unit",
+    scopeId: "unit-metrology",
+  },
+  workspace: {
+    ...unitHeadSession.workspace,
+    canManageEmployeeInvites: true,
+    canViewEmployees: true,
+    canManageEmployees: true,
+  },
+};
+
 export const firstAdminInvite: PublicInviteInspectionResponse = {
   inviteKind: "first_admin",
   organizationId: runtimeSession.organization.id,
@@ -350,7 +391,7 @@ export const employeeInviteInspection: PublicInviteInspectionResponse = {
   inviteExpiresAt: "2026-05-06T09:00:00.000Z",
   roleTemplate: "division_operator",
   scopeType: "division",
-  scopeLabel: "Северный филиал",
+  scopeLabel: "Северный дивизион",
   launchState: "active",
 };
 
@@ -362,7 +403,7 @@ export const employeeInvites: EmployeeInviteResponse[] = [
     roleTemplate: "division_head",
     scopeType: "division",
     scopeId: "division-east",
-    scopeLabel: "Восточный филиал",
+    scopeLabel: "Восточный дивизион",
     status: "sent",
     inviteToken: "employee-east",
     acceptPath: "/register/employee-east",
@@ -432,7 +473,7 @@ export const employeeAccessRows: EmployeeAccessResponse[] = [
     roleTemplate: "division_head",
     scopeType: "division",
     scopeId: "division-north",
-    scopeLabel: "Северный филиал",
+    scopeLabel: "Северный дивизион",
     membershipStatus: "active",
   },
   {
@@ -456,7 +497,7 @@ export const employeeAccessRows: EmployeeAccessResponse[] = [
     roleTemplate: "division_operator",
     scopeType: "division",
     scopeId: "division-east",
-    scopeLabel: "Восточный филиал",
+    scopeLabel: "Восточный дивизион",
     membershipStatus: "active",
   },
   {
@@ -516,7 +557,7 @@ export const contractRecords: ContractRecord[] = [
     locationScope: {
       scopeType: "division",
       scopeId: "division-east",
-      label: "Восточный филиал",
+      label: "Восточный дивизион",
     },
     subjectOfAgreement: "Техническое обслуживание оборудования депо",
     routingEligible: false,
@@ -531,7 +572,7 @@ export const equipmentRecords: EquipmentRecord[] = [
       id: "unit-boiler",
       name: "Котельный участок",
       divisionId: "division-north",
-      divisionName: "Северный филиал",
+      divisionName: "Северный дивизион",
     },
     manufacturer: "ПромТепло",
     classification: "Котельное оборудование",
@@ -554,7 +595,7 @@ export const equipmentRecords: EquipmentRecord[] = [
       id: "unit-depot",
       name: "Ремонтное депо",
       divisionId: "division-east",
-      divisionName: "Восточный филиал",
+      divisionName: "Восточный дивизион",
     },
     manufacturer: "КомпрессорСервис",
     classification: "Компрессор",
@@ -601,7 +642,7 @@ export const standardRecords: StandardRecord[] = [
     ownershipScope: {
       scopeType: "division",
       scopeId: "division-north",
-      label: "Северный филиал",
+      label: "Северный дивизион",
     },
     standardType: "Эталон давления",
     model: "ED-25",
@@ -647,7 +688,7 @@ export const measuringInstrumentRecords: MeasuringInstrumentRecord[] = [
       id: "unit-metrology",
       name: "Метрологическая лаборатория",
       divisionId: "division-north",
-      divisionName: "Северный филиал",
+      divisionName: "Северный дивизион",
     },
     equipment: {
       id: "equipment-001",
@@ -668,7 +709,7 @@ export const measuringInstrumentRecords: MeasuringInstrumentRecord[] = [
         identifier: "STD-ED-25",
         serialNumber: "ED25-144",
         status: "active",
-        scopeLabel: "Северный филиал",
+        scopeLabel: "Северный дивизион",
       },
     ],
     journalCount: 1,
@@ -684,7 +725,7 @@ export const measuringInstrumentRecords: MeasuringInstrumentRecord[] = [
       id: "unit-metrology",
       name: "Метрологическая лаборатория",
       divisionId: "division-north",
-      divisionName: "Северный филиал",
+      divisionName: "Северный дивизион",
     },
     name: "Манометр контрольный",
     instrumentType: "Манометр",

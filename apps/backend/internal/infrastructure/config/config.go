@@ -14,6 +14,7 @@ type Config struct {
 	Server        ServerConfig
 	Database      DatabaseConfig
 	PlatformAdmin PlatformAdminConfig
+	ObjectStorage ObjectStorageConfig
 }
 
 type ServerConfig struct {
@@ -32,6 +33,15 @@ type DatabaseConfig struct {
 
 type PlatformAdminConfig struct {
 	SharedSecret string
+}
+
+type ObjectStorageConfig struct {
+	Endpoint        string
+	Region          string
+	Bucket          string
+	AccessKeyID     string
+	SecretAccessKey string
+	ForcePathStyle  bool
 }
 
 func Load() (*Config, error) {
@@ -54,6 +64,14 @@ func Load() (*Config, error) {
 		},
 		PlatformAdmin: PlatformAdminConfig{
 			SharedSecret: strings.TrimSpace(os.Getenv("PLATFORM_ADMIN_SHARED_SECRET")),
+		},
+		ObjectStorage: ObjectStorageConfig{
+			Endpoint:        strings.TrimSpace(os.Getenv("OBJECT_STORAGE_ENDPOINT")),
+			Region:          getEnv("OBJECT_STORAGE_REGION", "ru-central1"),
+			Bucket:          strings.TrimSpace(os.Getenv("OBJECT_STORAGE_BUCKET")),
+			AccessKeyID:     strings.TrimSpace(os.Getenv("OBJECT_STORAGE_ACCESS_KEY_ID")),
+			SecretAccessKey: strings.TrimSpace(os.Getenv("OBJECT_STORAGE_SECRET_ACCESS_KEY")),
+			ForcePathStyle:  getEnvAsBool("OBJECT_STORAGE_FORCE_PATH_STYLE", false),
 		},
 	}
 
@@ -88,6 +106,16 @@ func getEnvAsInt(key string, defaultValue int) int {
 	if value := os.Getenv(key); value != "" {
 		if intValue, err := strconv.Atoi(value); err == nil {
 			return intValue
+		}
+	}
+	return defaultValue
+}
+
+func getEnvAsBool(key string, defaultValue bool) bool {
+	if value := strings.TrimSpace(os.Getenv(key)); value != "" {
+		parsed, err := strconv.ParseBool(value)
+		if err == nil {
+			return parsed
 		}
 	}
 	return defaultValue

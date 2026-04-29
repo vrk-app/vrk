@@ -7,6 +7,7 @@ import os
 import time
 import urllib.error
 import urllib.request
+from typing import Dict, Optional
 
 
 backend_port = os.getenv("BACKEND_HOST_PORT", "18080")
@@ -17,7 +18,7 @@ startup_timeout_seconds = 45
 retry_interval_seconds = 1
 
 
-def fetch(url: str, headers: dict[str, str] | None = None):
+def fetch(url: str, headers: Optional[Dict[str, str]] = None):
     request = urllib.request.Request(url, headers=headers or {})
     try:
         with urllib.request.urlopen(request, timeout=15) as response:
@@ -70,6 +71,19 @@ def assert_web_route(status: int, body: str):
 
 def assert_company_route(status: int, body: str):
     assert_web_route(status, body)
+
+
+def assert_storybook_index(status: int, body: str):
+    assert status == 200, status
+    assert "Storybook" in body, body[:400]
+
+
+def assert_storybook_json(status: int, body: str):
+    payload = json.loads(body)
+    assert status == 200, payload
+    entries = payload.get("entries")
+    assert isinstance(entries, dict), payload
+    assert entries, payload
 
 
 def assert_field_root(status: int, body: str):
@@ -151,6 +165,22 @@ company_status, company_body = wait_until(
     assert_company_route,
 )
 assert company_status == 200, company_status
+
+storybook_index_status, _ = wait_until(
+    "web Storybook index",
+    f"http://localhost:{web_port}/storybook/index.html",
+    assert_storybook_index,
+)
+assert storybook_index_status == 200, storybook_index_status
+
+storybook_json_status, storybook_json_body = wait_until(
+    "web Storybook index JSON",
+    f"http://localhost:{web_port}/storybook/index.json",
+    assert_storybook_json,
+)
+storybook_index = json.loads(storybook_json_body)
+assert storybook_json_status == 200, storybook_index
+assert storybook_index["entries"], storybook_index
 
 field_status, field_body = wait_until(
     "field root route",

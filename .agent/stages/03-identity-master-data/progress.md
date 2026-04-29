@@ -658,7 +658,7 @@
   - `contractPhone`;
   - `contractEmail`;
   - `actingBasis`;
-  - preserve `code`, `region`, `status`, and `comment` if still used.
+  - preserve `region`, `status`, and `comment` if still used.
 - Replaced the current `sprint_contract.md` from the old slice-007/008 remediation contract to the new slice-010 contract.
 - Updated `stage_spec.md` phasing and acceptance so Stage 03 no longer claims product-complete launch-wizard targeting.
 - Updated `feature_list.json` truthfully:
@@ -715,7 +715,7 @@
   - documented frozen `type` selector values `ВРД`, `ВРЗ`, `ВУ`, `ВРП`;
   - documented `registeredAddress` as canonical organization address and `address` as subdivision/unit compatibility/display alias;
   - documented `leaderFullName` as canonical leader display and `managerName` as migration/read-display alias;
-  - documented `leaderPosition`, `contractPhone`, `contractEmail`, `actingBasis`, and preserved `code`, `region`, `status`, `comment`;
+  - documented `leaderPosition`, `contractPhone`, `contractEmail`, `actingBasis`, and preserved `region`, `status`, `comment`;
   - documented active-only target selection and archive blocking constraints.
 - Refreshed stage handoff artifacts only:
   - `.agent/stages/03-identity-master-data/evidence.md`;
@@ -751,8 +751,8 @@
 
 - Reopened the slice-010 field contract after user correction: the prior PASS still encoded `ВРД` / `ВРЗ` / `ВУ` / `ВРП` as a generic organization/subdivision/unit `type`.
 - Implemented the corrected bounded semantics:
-  - organization profile `Тип` is legal-form `propertyType` with visible values `ООО`, `АО`, `ПАО`;
-  - legacy input aliases normalize as `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО`;
+  - organization profile `Тип` is legal-form `propertyType` with visible values `ООО`, `ПАО`, `НАО`, `ИП`;
+  - legacy input aliases normalize as `АО -> НАО`, `ОАО -> ПАО`, `ЗАО -> НАО`, `LLC -> ООО`;
   - subdivision/branch has no user-facing type selector and no longer displays the hidden storage default;
   - unit type remains required and bounded to `ВРД`, `ВРЗ`, `ВУ`, `ВРП`.
 - Updated canonical docs and stage artifacts:
@@ -784,9 +784,9 @@
 - Spawned exactly one minimal fixer for those proof gaps.
 - Fixer changed only docs/stage evidence:
   - added explicit `LLC -> ООО` wording;
-  - updated Draw.io visible options to `ООО, АО, ПАО`;
+  - updated Draw.io visible options to `ООО, ПАО, НАО, ИП`;
   - recorded `.agent/stages/03-identity-master-data/raw/slice-010-newton-doc-drift-fixer-2026-04-29.txt`.
-- Parent cleanup restored `subdivision` terminology in `docs/roadmap.md` and made all three mappings explicit: `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО`.
+- Parent cleanup restored `subdivision` terminology in `docs/roadmap.md` and made all compatibility mappings explicit.
 - Follow-up audit and harness passed:
   - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-parent-doc-cleanup-2026-04-29.txt`;
   - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-harness-after-doc-fix-2026-04-29.txt`.
@@ -798,7 +798,7 @@
 - Updated canonical docs/diagram requested by the verifier:
   - `docs/roadmap.md` now includes `LLC -> ООО` in the legacy compatibility mapping sentence;
   - `docs/design/customer-admin-bootstrap-flow.md` now includes `LLC -> ООО` in the legacy compatibility mapping sentence;
-  - `docs/design/diagrams/customer-admin-bootstrap-flow.drawio` now shows visible legal-form options `ООО, АО, ПАО` and does not add legacy aliases as visible options.
+  - `docs/design/diagrams/customer-admin-bootstrap-flow.drawio` now shows visible legal-form options `ООО, ПАО, НАО, ИП` and does not add legacy aliases as visible options.
 - Ran focused doc-only checks:
   - `rg -n "LLC -> ООО" docs/roadmap.md docs/design/customer-admin-bootstrap-flow.md` `PASS`;
   - drawio stale option/alias absence audit `PASS`;
@@ -816,7 +816,7 @@
   - scoped roles use `division_head` / `division_operator`;
   - user-facing Russian copy may still say `подразделение/филиал`, but API/stage contract no longer targets `subdivision`;
   - division/branch has no user-facing `type` selector and stores hidden default `division`;
-  - organization legal form remains `ООО` / `АО` / `ПАО` with compatibility aliases `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО`;
+  - organization legal form remains `ООО` / `ПАО` / `НАО` / `ИП` with compatibility aliases `АО -> НАО`, `ОАО -> ПАО`, `ЗАО -> НАО`, `LLC -> ООО`;
   - unit type remains `ВРД` / `ВРЗ` / `ВУ` / `ВРП`.
 - Reopened current org-structure feature proof until a fresh verifier returns `PASS`:
   - `stage03-org-hierarchy-and-launch-wizard` -> `passes: false`;
@@ -935,3 +935,59 @@
 - Synced runtime/deployment docs:
   - `docs/architecture/platform-runtime-baseline.md`;
   - `docs/architecture/yandex-cloud-incubator-deployment.md`.
+
+### 2026-04-29T15:30:00+03:00
+
+- Removed the obsolete short identifier field from the division/unit product contract.
+- Added forward migration `000014_remove_structure_code` that drops `auth_divisions.code` and `auth_units.code`; the down migration restores nullable columns without data recovery.
+- Synced backend/web contracts:
+  - removed the field from Go request/response models and repository mapping;
+  - removed the field columns from sqlc auth queries and regenerated sqlc output;
+  - regenerated Swagger/OpenAPI;
+  - removed the optional identifier input and metadata from `/company` structure forms;
+  - removed the field from web API types and Storybook runtime fixtures/mocks.
+- Synced canonical docs and stage artifacts:
+  - `docs/architecture/identity-master-data.md`;
+  - `stage_spec.md`;
+  - `sprint_contract.md`;
+  - `feature_list.json`;
+  - `evidence.md` / `evidence.json`;
+  - raw Stage 03 snapshots and audits no longer carry the obsolete structure field.
+- Checks passed:
+  - Docker sqlc generation;
+  - Docker Swagger generation;
+  - Docker `go test ./...`;
+  - Docker `go build -buildvcs=false ./...`;
+  - web lint, typecheck, build, and Storybook build with bundled Node;
+  - proof script py_compile;
+  - stage harness self-check;
+  - targeted obsolete-field guard;
+  - `git diff --check`.
+
+### 2026-04-29T23:45:00+03:00
+
+- Continued the company profile/access/password policy slice and closed the remaining contracts scope gap.
+- Backend:
+  - `agreementService.Update` now rejects updates to contracts outside the current session visible scope before applying status/scope changes;
+  - added a focused service test for division admin attempting to update an organization-scope contract.
+- Web:
+  - `ContractsRegistry` now derives create-scope options from the current workspace visibility;
+  - organization scope is only available to organization-scope admins;
+  - division admins can create within their visible division/child units, unit admins within their unit;
+  - added scoped division/unit admin Storybook stories and fixed Storybook contract mock scope derivation from `divisionId` / `unitId`.
+- Doc/stage cleanup:
+  - synchronized active stage proof artifacts to `ООО` / `ПАО` / `НАО` / `ИП` with legacy `АО -> НАО`, `ЗАО -> НАО`, `ОАО -> ПАО`, `LLC -> ООО`;
+  - updated Draw.io measuring-instrument label to `ФИФ`;
+  - recorded Web Interface Guidelines review for the changed contracts/UI files.
+- Checks passed:
+  - Docker `go test ./...`;
+  - Docker `go build -buildvcs=false ./...`;
+  - web `pnpm run lint`;
+  - web `pnpm run typecheck` after build/typegen contention was rerun sequentially;
+  - web `pnpm run build`;
+  - web `pnpm run build-storybook`;
+  - `docker compose -f compose.platform.yml config`;
+  - existing compose `make smoke`;
+  - proof script `py_compile`;
+  - `xmllint` for the Draw.io source;
+  - JSON audits for evidence/feature/verdict.

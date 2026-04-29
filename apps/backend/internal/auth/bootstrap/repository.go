@@ -27,6 +27,8 @@ type Repository interface {
 	DeleteSession(ctx context.Context, sessionToken string) error
 	CompleteLaunch(ctx context.Context, snapshot *sessionSnapshot, req CompleteLaunchRequest) (*sessionSnapshot, error)
 	UpdateCompanyProfile(ctx context.Context, snapshot *sessionSnapshot, req CompanyProfileRequest) (*sessionSnapshot, error)
+	UpdateCompanyLogo(ctx context.Context, snapshot *sessionSnapshot, objectKey string, fileName string, contentType string, sizeBytes int64) (*sessionSnapshot, error)
+	ClearCompanyLogo(ctx context.Context, snapshot *sessionSnapshot) (*sessionSnapshot, error)
 	CreateDivision(ctx context.Context, snapshot *sessionSnapshot, req StructureNodeRequest) (*sessionSnapshot, error)
 	UpdateDivision(ctx context.Context, snapshot *sessionSnapshot, divisionID uuid.UUID, req StructureNodeRequest) (*sessionSnapshot, error)
 	ArchiveDivision(ctx context.Context, snapshot *sessionSnapshot, divisionID uuid.UUID) (*sessionSnapshot, error)
@@ -280,20 +282,26 @@ func (r *repository) CompleteLaunch(ctx context.Context, snapshot *sessionSnapsh
 
 	qtx := r.q.WithTx(tx)
 	updatedOrg, err := qtx.UpdateBootstrapOrganizationCore(ctx, generated.UpdateBootstrapOrganizationCoreParams{
-		ID:             snapshot.SessionRow.OrganizationID,
-		ShellName:      req.OrganizationName,
-		ShortName:      trimOptional(req.ShortName),
-		PropertyType:   trimOptionalString(req.PropertyType),
-		Inn:            trimOptionalString(req.Inn),
-		Kpp:            trimOptionalString(req.Kpp),
-		LegalAddress:   trimOptionalString(req.LegalAddress),
-		ContactEmail:   trimOptionalString(req.ContactEmail),
-		ContactPhone:   trimOptionalString(req.ContactPhone),
-		LeaderFullName: nil,
-		LeaderPosition: nil,
-		ContractPhone:  nil,
-		ContractEmail:  nil,
-		ActingBasis:    nil,
+		ID:                   snapshot.SessionRow.OrganizationID,
+		ShellName:            req.OrganizationName,
+		ShortName:            trimOptional(req.ShortName),
+		PropertyType:         trimOptionalString(req.PropertyType),
+		Inn:                  trimOptionalString(req.Inn),
+		Kpp:                  trimOptionalString(req.Kpp),
+		LegalAddress:         trimOptionalString(req.LegalAddress),
+		ContactEmail:         trimOptionalString(req.ContactEmail),
+		ContactPhone:         trimOptionalString(req.ContactPhone),
+		LeaderFullName:       nil,
+		LeaderPosition:       nil,
+		ContractPhone:        nil,
+		ContractEmail:        nil,
+		ActingBasis:          nil,
+		PostalAddress:        nil,
+		Ogrn:                 nil,
+		SettlementAccount:    nil,
+		BankName:             nil,
+		CorrespondentAccount: nil,
+		Bik:                  nil,
 	})
 	if err != nil {
 		return nil, err
@@ -305,7 +313,6 @@ func (r *repository) CompleteLaunch(ctx context.Context, snapshot *sessionSnapsh
 			OrganizationID: updatedOrg.ID,
 			DivisionType:   req.Division.Type,
 			Name:           req.Division.Name,
-			Code:           trimOptional(req.Division.Code),
 			Region:         trimOptional(req.Division.Region),
 			Address:        trimOptional(req.Division.Address),
 			ManagerName:    trimOptional(req.Division.ManagerName),
@@ -327,7 +334,6 @@ func (r *repository) CompleteLaunch(ctx context.Context, snapshot *sessionSnapsh
 		DivisionID:     divisionID,
 		UnitType:       req.Unit.Type,
 		Name:           req.Unit.Name,
-		Code:           trimOptional(req.Unit.Code),
 		Region:         nil,
 		Address:        trimOptional(req.Unit.Address),
 		ManagerName:    trimOptional(req.Unit.ManagerName),
@@ -354,21 +360,49 @@ func (r *repository) CompleteLaunch(ctx context.Context, snapshot *sessionSnapsh
 
 func (r *repository) UpdateCompanyProfile(ctx context.Context, snapshot *sessionSnapshot, req CompanyProfileRequest) (*sessionSnapshot, error) {
 	if _, err := r.q.UpdateBootstrapOrganizationCore(ctx, generated.UpdateBootstrapOrganizationCoreParams{
-		ID:             snapshot.SessionRow.OrganizationID,
-		ShellName:      req.Name,
-		ShortName:      trimOptional(req.ShortName),
-		PropertyType:   trimOptionalString(req.Type),
-		Inn:            trimOptional(req.Inn),
-		Kpp:            trimOptional(req.Kpp),
-		LegalAddress:   trimOptional(resolveAddressAlias(req.RegisteredAddress, req.Address)),
-		ContactEmail:   trimOptional(req.ContractEmail),
-		ContactPhone:   trimOptional(req.ContractPhone),
-		LeaderFullName: trimOptional(resolveLeaderAlias(req.LeaderFullName, req.ManagerName)),
-		LeaderPosition: trimOptional(req.LeaderPosition),
-		ContractPhone:  trimOptional(req.ContractPhone),
-		ContractEmail:  trimOptional(req.ContractEmail),
-		ActingBasis:    trimOptional(req.ActingBasis),
+		ID:                   snapshot.SessionRow.OrganizationID,
+		ShellName:            req.Name,
+		ShortName:            trimOptional(req.ShortName),
+		PropertyType:         trimOptionalString(req.Type),
+		Inn:                  trimOptional(req.Inn),
+		Kpp:                  trimOptional(req.Kpp),
+		LegalAddress:         trimOptional(resolveAddressAlias(req.RegisteredAddress, req.Address)),
+		ContactEmail:         trimOptional(req.ContractEmail),
+		ContactPhone:         trimOptional(req.ContractPhone),
+		LeaderFullName:       trimOptional(resolveLeaderAlias(req.LeaderFullName, req.ManagerName)),
+		LeaderPosition:       trimOptional(req.LeaderPosition),
+		ContractPhone:        trimOptional(req.ContractPhone),
+		ContractEmail:        trimOptional(req.ContractEmail),
+		ActingBasis:          trimOptional(req.ActingBasis),
+		PostalAddress:        trimOptional(req.PostalAddress),
+		Ogrn:                 trimOptional(req.Ogrn),
+		SettlementAccount:    trimOptional(req.SettlementAccount),
+		BankName:             trimOptional(req.BankName),
+		CorrespondentAccount: trimOptional(req.CorrespondentAccount),
+		Bik:                  trimOptional(req.Bik),
 	}); err != nil {
+		return nil, err
+	}
+
+	return r.GetSession(ctx, snapshot.SessionRow.SessionToken)
+}
+
+func (r *repository) UpdateCompanyLogo(ctx context.Context, snapshot *sessionSnapshot, objectKey string, fileName string, contentType string, sizeBytes int64) (*sessionSnapshot, error) {
+	if _, err := r.q.UpdateBootstrapOrganizationLogo(ctx, generated.UpdateBootstrapOrganizationLogoParams{
+		ID:              snapshot.SessionRow.OrganizationID,
+		LogoObjectKey:   &objectKey,
+		LogoFileName:    &fileName,
+		LogoContentType: &contentType,
+		LogoSizeBytes:   &sizeBytes,
+	}); err != nil {
+		return nil, err
+	}
+
+	return r.GetSession(ctx, snapshot.SessionRow.SessionToken)
+}
+
+func (r *repository) ClearCompanyLogo(ctx context.Context, snapshot *sessionSnapshot) (*sessionSnapshot, error) {
+	if _, err := r.q.ClearBootstrapOrganizationLogo(ctx, snapshot.SessionRow.OrganizationID); err != nil {
 		return nil, err
 	}
 
@@ -380,7 +414,6 @@ func (r *repository) CreateDivision(ctx context.Context, snapshot *sessionSnapsh
 		OrganizationID: snapshot.SessionRow.OrganizationID,
 		DivisionType:   req.Type,
 		Name:           req.Name,
-		Code:           trimOptional(req.Code),
 		Region:         trimOptional(req.Region),
 		Address:        trimOptional(resolveAddressAlias(req.RegisteredAddress, req.Address)),
 		ManagerName:    trimOptional(resolveLeaderAlias(req.LeaderFullName, req.ManagerName)),
@@ -403,7 +436,6 @@ func (r *repository) UpdateDivision(ctx context.Context, snapshot *sessionSnapsh
 		OrganizationID: snapshot.SessionRow.OrganizationID,
 		DivisionType:   req.Type,
 		Name:           req.Name,
-		Code:           trimOptional(req.Code),
 		Region:         trimOptional(req.Region),
 		Address:        trimOptional(resolveAddressAlias(req.RegisteredAddress, req.Address)),
 		ManagerName:    trimOptional(resolveLeaderAlias(req.LeaderFullName, req.ManagerName)),
@@ -470,7 +502,6 @@ func (r *repository) CreateUnit(ctx context.Context, snapshot *sessionSnapshot, 
 		DivisionID:     divisionID,
 		UnitType:       req.Type,
 		Name:           req.Name,
-		Code:           trimOptional(req.Code),
 		Region:         trimOptional(req.Region),
 		Address:        trimOptional(resolveAddressAlias(req.RegisteredAddress, req.Address)),
 		ManagerName:    trimOptional(resolveLeaderAlias(req.LeaderFullName, req.ManagerName)),
@@ -499,7 +530,6 @@ func (r *repository) UpdateUnit(ctx context.Context, snapshot *sessionSnapshot, 
 		DivisionID:     divisionID,
 		UnitType:       req.Type,
 		Name:           req.Name,
-		Code:           trimOptional(req.Code),
 		Region:         trimOptional(req.Region),
 		Address:        trimOptional(resolveAddressAlias(req.RegisteredAddress, req.Address)),
 		ManagerName:    trimOptional(resolveLeaderAlias(req.LeaderFullName, req.ManagerName)),

@@ -6,8 +6,10 @@ export type ScopeType = "organization" | "division" | "unit";
 export type RoleTemplate =
   | "organization_admin"
   | "organization_head"
+  | "division_admin"
   | "division_head"
   | "division_operator"
+  | "unit_admin"
   | "unit_head"
   | "unit_operator"
   | "auditor";
@@ -23,8 +25,10 @@ export type Capability =
 export const roleTemplateLabels: Record<RoleTemplate, string> = {
   organization_admin: "Администратор организации",
   organization_head: "Руководитель организации",
-  division_head: "Руководитель подразделения",
-  division_operator: "Сотрудник подразделения",
+  division_admin: "Администратор дивизиона",
+  division_head: "Руководитель дивизиона",
+  division_operator: "Сотрудник дивизиона",
+  unit_admin: "Администратор юнита",
   unit_head: "Руководитель юнита",
   unit_operator: "Сотрудник юнита",
   auditor: "Аудитор",
@@ -33,8 +37,10 @@ export const roleTemplateLabels: Record<RoleTemplate, string> = {
 export const roleScopeOptions: Record<RoleTemplate, ScopeType[]> = {
   organization_admin: ["organization"],
   organization_head: ["organization"],
+  division_admin: ["division"],
   division_head: ["division"],
   division_operator: ["division"],
+  unit_admin: ["unit"],
   unit_head: ["unit"],
   unit_operator: ["unit"],
   auditor: ["organization", "division", "unit"],
@@ -50,8 +56,24 @@ const roleCapabilities: Record<RoleTemplate, Capability[]> = {
     "manage_employees",
   ],
   organization_head: ["view_employees"],
+  division_admin: [
+    "manage_structure",
+    "manage_access",
+    "manage_contracts",
+    "manage_equipment",
+    "view_employees",
+    "manage_employees",
+  ],
   division_head: ["view_employees"],
   division_operator: [],
+  unit_admin: [
+    "manage_structure",
+    "manage_access",
+    "manage_contracts",
+    "manage_equipment",
+    "view_employees",
+    "manage_employees",
+  ],
   unit_head: ["view_employees"],
   unit_operator: [],
   auditor: ["view_employees"],
@@ -174,8 +196,14 @@ export type CompanyProfilePayload = {
   shortName?: string;
   inn?: string;
   kpp?: string;
+  postalAddress?: string;
   registeredAddress?: string;
   address?: string;
+  ogrn?: string;
+  settlementAccount?: string;
+  bankName?: string;
+  correspondentAccount?: string;
+  bik?: string;
   leaderFullName?: string;
   managerName?: string;
   leaderPosition?: string;
@@ -187,7 +215,6 @@ export type CompanyProfilePayload = {
 export type StructureNodePayload = {
   type?: string;
   name: string;
-  code?: string;
   region?: string;
   address?: string;
   registeredAddress?: string;
@@ -205,7 +232,6 @@ export type StructureNodePayload = {
 export type LaunchDivisionInput = {
   type?: string;
   name: string;
-  code?: string;
   region?: string;
   address?: string;
   managerName?: string;
@@ -215,7 +241,6 @@ export type LaunchDivisionInput = {
 export type LaunchUnitInput = {
   type: string;
   name: string;
-  code?: string;
   address?: string;
   managerName?: string;
   contacts?: string;
@@ -252,11 +277,18 @@ export type SessionSummaryResponse = {
     name: string;
     shortName?: string;
     propertyType?: string;
+    logo?: CompanyLogoResponse;
     inn?: string;
     kpp?: string;
     legalAddress?: string;
+    postalAddress?: string;
     registeredAddress?: string;
     address?: string;
+    ogrn?: string;
+    settlementAccount?: string;
+    bankName?: string;
+    correspondentAccount?: string;
+    bik?: string;
     contactEmail?: string;
     contactPhone?: string;
     leaderFullName?: string;
@@ -288,7 +320,6 @@ export type SessionSummaryResponse = {
     id: string;
     type: string;
     name: string;
-    code?: string;
     region?: string;
     address?: string;
     registeredAddress?: string;
@@ -306,7 +337,6 @@ export type SessionSummaryResponse = {
     id: string;
     type: string;
     name: string;
-    code?: string;
     region?: string;
     divisionId?: string;
     address?: string;
@@ -321,6 +351,14 @@ export type SessionSummaryResponse = {
     status: string;
     comment?: string;
   }>;
+};
+
+export type CompanyLogoResponse = {
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  updatedAt: string;
+  url: string;
 };
 
 export type ApiEnvelope<T> = {

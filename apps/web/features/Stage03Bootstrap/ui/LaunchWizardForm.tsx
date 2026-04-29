@@ -235,13 +235,13 @@ export function LaunchWizardForm({ session }: Props) {
             <div className="space-y-1">
               <p className="text-sm font-semibold text-foreground">Первый уровень оргструктуры</p>
               <p className="text-sm leading-6 text-muted-foreground">
-                Выберите, начнется ли структура с подразделения или с юнита под организацией.
+                Выберите, начнется ли структура с дивизиона или с юнита под организацией.
               </p>
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
               {[
-                { label: "Сначала подразделение", value: "division" as const },
+                { label: "Сначала дивизион", value: "division" as const },
                 { label: "Сразу юнит под организацией", value: "unit" as const },
               ].map((option) => (
                 <label
@@ -265,10 +265,10 @@ export function LaunchWizardForm({ session }: Props) {
               <div className="grid gap-4">
                 <InputField
                   autoComplete="off"
-                  label="Название подразделения"
+                  label="Название дивизиона"
                   name="divisionName"
                   onChange={(event) => setDivisionName(event.target.value)}
-                  placeholder="Например, Северный филиал…"
+                  placeholder="Например, Северный дивизион…"
                   value={divisionName}
                 />
               </div>
@@ -323,7 +323,7 @@ export function LaunchWizardForm({ session }: Props) {
             <p className="text-sm font-semibold text-foreground">Рабочая структура</p>
             <p className="mt-1 text-sm leading-6 text-muted-foreground">
               Сохраняются реквизиты организации и первый{" "}
-              {structureMode === "division" ? "подразделение с юнитом" : "юнит"}.
+              {structureMode === "division" ? "дивизион с юнитом" : "юнит"}.
             </p>
           </div>
           <div className="rounded-[var(--radius-lg)] border border-border bg-card px-4 py-3">

@@ -106,6 +106,15 @@ function createRuntimeState(options: RuntimeApiOptions): RuntimeApiState {
   };
 }
 
+function equipmentWithMeasuringInstrumentCounts(state: RuntimeApiState) {
+  return state.equipment.map((equipment) => ({
+    ...equipment,
+    measuringInstrumentCount: state.measuringInstruments.filter(
+      (instrument) => !instrument.archivedAt && instrument.equipment?.id === equipment.id,
+    ).length,
+  }));
+}
+
 async function handleRuntimeFetch(
   input: RequestInfo | URL,
   init: RequestInit | undefined,
@@ -245,9 +254,8 @@ async function handleRuntimeFetch(
     state.session.divisions = [
       {
         id: `division-${state.session.divisions.length + 1}`,
-        type: "Филиал",
-        name: stringValue(payload, "name", "Новое подразделение"),
-        code: stringValue(payload, "code", "NEW"),
+        type: "Дивизион",
+        name: stringValue(payload, "name", "Новый дивизион"),
         region: stringValue(payload, "region", ""),
         registeredAddress: stringValue(payload, "registeredAddress", ""),
         leaderFullName: stringValue(payload, "leaderFullName", ""),
@@ -269,7 +277,6 @@ async function handleRuntimeFetch(
       division.id === divisionMatch[1]
         ? {
             ...division,
-            code: stringValue(payload, "code", division.code ?? ""),
             contractEmail: stringValue(payload, "contractEmail", division.contractEmail ?? ""),
             contractPhone: stringValue(payload, "contractPhone", division.contractPhone ?? ""),
             leaderFullName: stringValue(payload, "leaderFullName", division.leaderFullName ?? ""),
@@ -296,7 +303,6 @@ async function handleRuntimeFetch(
         id: `unit-${state.session.units.length + 1}`,
         type: stringValue(payload, "type", "ВРД"),
         name: stringValue(payload, "name", "Новый юнит"),
-        code: stringValue(payload, "code", "NEW"),
         region: stringValue(payload, "region", ""),
         divisionId: stringValue(payload, "divisionId", ""),
         registeredAddress: stringValue(payload, "registeredAddress", ""),
@@ -319,7 +325,6 @@ async function handleRuntimeFetch(
       unit.id === unitMatch[1]
         ? {
             ...unit,
-            code: stringValue(payload, "code", unit.code ?? ""),
             contractEmail: stringValue(payload, "contractEmail", unit.contractEmail ?? ""),
             contractPhone: stringValue(payload, "contractPhone", unit.contractPhone ?? ""),
             divisionId: stringValue(payload, "divisionId", unit.divisionId ?? ""),
@@ -345,6 +350,10 @@ async function handleRuntimeFetch(
     const contractor = state.contractorOptions.find(
       (option) => option.id === stringValue(payload, "contractorOrganizationId", ""),
     ) ?? state.contractorOptions[0];
+    const divisionId = stringValue(payload, "divisionId", "");
+    const unitId = stringValue(payload, "unitId", "");
+    const scopeType: ScopeType = unitId ? "unit" : divisionId ? "division" : "organization";
+    const scopeId = unitId || divisionId || state.session.organization.id;
     const contract: ContractRecord = {
       id: `contract-${state.contracts.length + 1}`,
       customerOrganizationId: state.session.organization.id,
@@ -359,9 +368,9 @@ async function handleRuntimeFetch(
       equipmentType: stringValue(payload, "equipmentType", "оборудование"),
       region: stringValue(payload, "region", "Санкт-Петербург"),
       locationScope: {
-        scopeType: scopeValue(payload, "scopeType", "organization"),
-        scopeId: stringValue(payload, "scopeId", ""),
-        label: stringValue(payload, "locationScopeLabel", state.session.organization.name),
+        scopeType,
+        scopeId,
+        label: stringValue(payload, "locationScopeLabel", resolveScopeLabel(state.session, scopeType, scopeId)),
       },
       subjectOfAgreement: stringValue(payload, "subjectOfAgreement", ""),
       routingEligible: contractStatusValue(payload, "contractStatus") === "active",
@@ -402,7 +411,7 @@ async function handleRuntimeFetch(
   }
 
   if (pathname === "/api/equipment" && method === "GET") {
-    return pagedResponse(state.equipment, url.searchParams.get("includeArchived") === "true");
+    return pagedResponse(equipmentWithMeasuringInstrumentCounts(state), url.searchParams.get("includeArchived") === "true");
   }
 
   if (pathname === "/api/equipment/measuring-instruments" && method === "GET") {
@@ -754,7 +763,7 @@ function createJournal(payload: JsonPayload): JournalRecord {
 
 function resolveScopeLabel(session: SessionSummaryResponse, scopeType: ScopeType, scopeId: string) {
   if (scopeType === "division") {
-    return session.divisions.find((division) => division.id === scopeId)?.name ?? "Подразделение";
+    return session.divisions.find((division) => division.id === scopeId)?.name ?? "Дивизион";
   }
   if (scopeType === "unit") {
     return session.units.find((unit) => unit.id === scopeId)?.name ?? "Юнит";

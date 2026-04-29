@@ -13,7 +13,7 @@ This correction must stay bounded to Stage 03 identity/master-data behavior:
 - first-admin invite acceptance lands on `/company`, not `/company/setup`;
 - `/company` becomes the durable place to view, edit, create, and archive organization profile, divisions/branches, and units;
 - organization admins can create first and repeat structure nodes at any time;
-- scoped division/unit users remain read-only inside their allowed subtree;
+- scoped division/unit admins can manage the allowed structure/access/employees/equipment/contracts slice inside their subtree; non-admin scoped users remain read-only;
 - employee invite creation no longer depends on a completed wizard gate, while division/unit invite target validation remains strict.
 
 Do not widen this slice into Stage 04 request flows, request creation, contractor execution, materials, schedules, or operations loops.
@@ -28,9 +28,9 @@ Do not widen this slice into Stage 04 request flows, request creation, contracto
   - `organization -> division -> unit` is valid;
   - `organization -> unit` is equally valid.
 - Archive replaces delete for divisions and units.
-- Canonical role templates are `organization_admin`, `organization_head`, `division_head`, `division_operator`, `unit_head`, `unit_operator`, and `auditor`.
+- Canonical role templates are `organization_admin`, `organization_head`, `division_admin`, `division_head`, `division_operator`, `unit_admin`, `unit_head`, `unit_operator`, and `auditor`.
 - Role/scope compatibility is strict: organization roles only use organization scope, division roles only use division scope, unit roles only use unit scope, and `auditor` may use organization, division, or unit scope.
-- Mutation authority is limited to active customer `organization_admin` on organization scope; all other v1 roles are read-only in their visible subtree.
+- Mutation authority is granted to active customer `organization_admin`, `division_admin`, and `unit_admin` according to their scope; organization profile remains organization-admin-only.
 - Division-scope and unit-scope users read only their visible subtree; they must not receive broader graph data or mutate controls.
 - Stage 03 stays singular-session and grant-scoped; do not add a workspace picker/switcher UI.
 
@@ -38,8 +38,8 @@ Do not widen this slice into Stage 04 request flows, request creation, contracto
 
 The persistent `/company` profile and org-structure forms must expose and persist these business fields where the record type carries them:
 
-- organization `propertyType` / `type` compatibility alias: legal-form selector with exactly these visible values for the correction slice: `ООО`, `АО`, `ПАО`;
-- legacy organization legal-form input maps `ОАО -> ПАО`, `ЗАО -> АО`, and `LLC -> ООО`; those legacy aliases are not visible selector options;
+- organization `propertyType` / `type` compatibility alias: legal-form selector with exactly these visible values for the correction slice: `ООО`, `ПАО`, `НАО`, `ИП`;
+- legacy organization legal-form input maps `АО -> НАО`, `ЗАО -> НАО`, `ОАО -> ПАО`, and `LLC -> ООО`; those legacy aliases are not visible selector options;
 - division/branch `type`: not user-facing and not selectable; keep the existing `auth_divisions.division_type` storage/API shape with hidden internal default `division`;
 - unit `type`: selector with exactly these operational values for the correction slice: `ВРД`, `ВРЗ`, `ВУ`, `ВРП`;
 - `name`;
@@ -51,9 +51,9 @@ The persistent `/company` profile and org-structure forms must expose and persis
 - `contractPhone`;
 - `contractEmail`;
 - `actingBasis`;
-- preserve `code`, `region`, `status`, and `comment` if current backend/session/UI contracts still consume them.
+- preserve `region`, `status`, and `comment` if current backend/session/UI contracts still consume them.
 
-No hard requirement is introduced for post-MVP requisites, document upload, Excel import, external registry sync, or custom role building.
+Optional requisites and logo metadata are in scope for this continuation slice. No hard requirement is introduced for document upload, Excel import, external registry sync, or custom role building.
 
 ## Acceptance Criteria
 
@@ -68,8 +68,10 @@ No hard requirement is introduced for post-MVP requisites, document upload, Exce
   - state rendering remains truthful for missing optional fields and does not claim Stage 04 request readiness.
 - Organization profile and business fields:
   - create/edit flows handle legal-form `propertyType`/`type` alias, `name`, `registeredAddress`/`address`, `leaderFullName`/`managerName`, `leaderPosition`, `contractPhone`, `contractEmail`, and `actingBasis`;
-  - visible profile type selector shows `ООО`, `АО`, `ПАО` only, while legacy `ОАО`, `ЗАО`, and `LLC` inputs normalize for compatibility;
-  - existing `code`, `region`, `status`, and `comment` fields remain visible/preserved if still used by the model;
+  - visible profile type selector shows `ООО`, `ПАО`, `НАО`, `ИП` only, while legacy `АО`, `ОАО`, `ЗАО`, and `LLC` inputs normalize for compatibility;
+  - optional requisites validate digit-only formats and `ИП` clears/disables `КПП`;
+  - logo upload stores only private object key and metadata in Postgres;
+  - existing `region`, `status`, and `comment` fields remain visible/preserved if still used by the model;
   - saved data survives session restore and is reflected in `/company`.
 - Division/branch management:
   - organization admin can create the first division/branch from `/company`;
@@ -121,7 +123,7 @@ No hard requirement is introduced for post-MVP requisites, document upload, Exce
   - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run typecheck`;
   - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run lint`;
   - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run build`;
-  - browser/runtime smoke for `/register/[token] -> /company`, `/company` legal-form options `ООО`/`АО`/`ПАО`, no division type selector, unit type selector, empty/partial/populated states, org-admin mutation controls, and scoped read-only views.
+  - browser/runtime smoke for `/register/[token] -> /company`, `/company` legal-form options `ООО`/`ПАО`/`НАО`/`ИП`, no division type selector, unit type selector, empty/partial/populated states, org-admin profile controls, scoped admin controls, and scoped read-only views.
 - UI review:
   - use `$vrk-web-ui-workflow` for implementation;
   - run `$web-design-guidelines` on touched UI files and close findings before claiming done.
