@@ -15,14 +15,14 @@ type TokenDocsShowcaseProps = {
 };
 
 const TOKEN_DOCS_DESCRIPTION =
-  "Связка между канонической дизайн-системой и токенами Stage 01, которые используют истории и базовые UI-компоненты.";
+  "Связка между канонической дизайн-системой, историями и базовыми UI-компонентами.";
 
 const SECTION_DESCRIPTIONS: Record<TokenDocsSection, string> = {
   colors: "Только цветовые роли: primary CTA, интерактивный контур, поверхности и семантика.",
-  typography: "Фиксированная продуктовая типографика Stage 01 без повторного рендера остальных токенов.",
+  typography: "Фиксированная продуктовая типографика без повторного рендера остальных токенов.",
   spacing: "Базовая 4px-шкала и фиксированные card padding-значения для операторских поверхностей.",
   elevation: "Спокойные elevation-токены, где тень остается вторичной по отношению к border-first языку.",
-  radii: "Набор радиусов, которым ограничиваются карточки, поля и quiet-panels в Stage 01.",
+  radii: "Набор радиусов, которым ограничиваются карточки, поля и quiet-panels.",
 };
 
 function TokenDocsSectionHeading({
@@ -99,7 +99,7 @@ function TokenDocsShowcase({ section }: TokenDocsShowcaseProps) {
           <section className="grid gap-4">
             <TokenDocsSectionHeading
               title="Типографика"
-              description="Stage 01 держит фиксированную продуктовую шкалу из дизайн-системы: плотную, спокойную и читаемую."
+              description="Фиксированная продуктовая шкала из дизайн-системы: плотная, спокойная и читаемая."
             />
             <div className="grid gap-3">
               {TYPOGRAPHY_TOKENS.map((token) => (

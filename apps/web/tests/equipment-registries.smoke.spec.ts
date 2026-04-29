@@ -1,6 +1,7 @@
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 
-const backendBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:18080";
+const backendBaseUrl =
+  process.env.WEB_SMOKE_BACKEND_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:18080";
 const platformAdminSecret = process.env.PLATFORM_ADMIN_SHARED_SECRET ?? "stage03-platform-admin-secret";
 
 type ApiEnvelope<T> = {
@@ -118,13 +119,13 @@ async function bootstrapOrg(
       legalAddress: "г. Москва, ул. Тестовая, д. 1",
       contactEmail: email,
       contactPhone: "+7 (999) 123-45-67",
-      structureMode: "subdivision",
-      subdivision: {
+      structureMode: "division",
+      division: {
         type: "Филиал",
-        name: `${options.label} subdivision`,
+        name: `${options.label} division`,
       },
       unit: {
-        type: "Юнит",
+        type: "ВРД",
         name: `${options.label} unit`,
       },
     },
@@ -286,8 +287,16 @@ async function createStandardJournalSeed(request: APIRequestContext, token: stri
   });
 }
 
-function acceptNextArchiveConfirmation(page: Page) {
-  page.once("dialog", (dialog) => dialog.accept());
+async function confirmArchiveModal(page: Page) {
+  await page
+    .getByRole("dialog", { name: "Архивировать запись?" })
+    .getByRole("button", { name: "Архивировать", exact: true })
+    .click();
+}
+
+async function selectFieldOption(page: Page, fieldLabel: string | RegExp, optionName: string | RegExp) {
+  await page.getByLabel(fieldLabel).click();
+  await page.getByRole("option", { name: optionName, exact: typeof optionName === "string" }).click();
 }
 
 test.describe("stage 03 metrology journals and archive contour", () => {
@@ -335,17 +344,17 @@ test.describe("stage 03 metrology journals and archive contour", () => {
 
     await page.goto("/login?logout=1");
     await page.getByLabel("Корпоративная почта").fill(admin.email);
-    await page.getByLabel("Пароль").fill(admin.password);
-    await page.getByRole("button", { name: "Войти и открыть рабочий contour" }).click();
+    await page.getByLabel(/^Пароль$/).fill(admin.password);
+    await page.getByRole("button", { name: "Войти" }).click();
 
     await expect(page).toHaveURL(/\/company$/);
     await page.goto("/equipment");
 
     await expect(page.getByRole("heading", { level: 1, name: "Оборудование, средства измерения и эталоны" })).toBeVisible();
-    await expect(page.getByText("`/equipment` keeps one public contour")).toBeVisible();
-    await expect(page.getByRole("button", { name: /^Оборудование/ })).toBeVisible();
-    await expect(page.getByRole("button", { name: /^Средства измерения/ })).toBeVisible();
-    await expect(page.getByRole("button", { name: /^Эталоны/ })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Выберите нужный реестр" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /^Оборудование/ })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /^Средства измерения/ })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /^Эталоны/ })).toBeVisible();
 
     await page.getByLabel("Производитель").fill("Трансмаш");
     await page.getByLabel("Класс / тип").fill("Насос");
@@ -353,12 +362,12 @@ test.describe("stage 03 metrology journals and archive contour", () => {
     await page.getByLabel("Полное наименование").fill(equipmentName);
     await page.getByLabel("Заводской номер").fill(`FAC-${seed}`);
     await page.getByRole("button", { name: "Создать оборудование" }).click();
-    await expect(page.getByText("Equipment record создан и появился в реестре.")).toBeVisible();
+    await expect(page.getByText("Карточка оборудования создана и появилась в реестре.")).toBeVisible();
     await expect(page.getByText(equipmentName).first()).toBeVisible();
 
     await page.goto("/equipment?tab=standards");
     await expect(page).toHaveURL(/\/equipment\?tab=standards$/);
-    await page.getByLabel("Ownership scope").selectOption("unit");
+    await selectFieldOption(page, "Уровень владения", "Юнит");
     await page.getByLabel("Тип эталона").fill("Эталон давления");
     await page.getByLabel("Модель").first().fill("ED-77");
     await page.getByLabel("Идентификатор").fill(standardIdentifier);
@@ -367,8 +376,8 @@ test.describe("stage 03 metrology journals and archive contour", () => {
     await expect(page.getByText("Эталон создан. Действующий статус и срок поверки станут производными после записи в журнал.")).toBeVisible();
     await expect(page.getByText(standardIdentifier).first()).toBeVisible();
 
-    await page.getByLabel("Выбранный эталон").selectOption({ label: `Эталон давления • ${standardIdentifier}` });
-    await page.getByLabel("Тип операции").selectOption("verification");
+    await selectFieldOption(page, "Выбранный эталон", `Эталон давления • ${standardIdentifier}`);
+    await selectFieldOption(page, "Тип операции", "Поверка");
     await page.getByLabel("Дата операции").fill("2026-03-10");
     await page.getByLabel("Документ", { exact: true }).fill(`STD-DOC-${seed}`);
     await page.getByLabel("Действует до").fill("2026-12-20");
@@ -376,29 +385,27 @@ test.describe("stage 03 metrology journals and archive contour", () => {
     await page.getByRole("button", { name: "Добавить запись журнала" }).click();
     await expect(page.getByText("Запись журнала эталона сохранена. Производный статус и срок действия пересчитаны.")).toBeVisible();
     await expect(page.getByText(`STD-DOC-${seed}`).first()).toBeVisible();
-    await expect(page.getByText("Текущий статус: active")).toBeVisible();
+    await expect(page.getByText("Текущий статус: Активно")).toBeVisible();
 
     await page.goto("/equipment?tab=mi");
     await expect(page).toHaveURL(/\/equipment\?tab=mi$/);
-    await page.getByLabel("Placement").selectOption("built_in");
+    await selectFieldOption(page, "Размещение", "Встроено в оборудование");
     await page.getByLabel("Наименование").fill(instrumentName);
     await page.getByLabel("Тип / класс").fill("Манометр");
     await page.getByLabel("Модель").first().fill("MN-12");
     await page.getByLabel("Регистрационный номер").fill(`MI-${seed}`);
     await page.getByLabel("Серийный номер").fill(`SER-${seed}`);
-    await page.getByLabel("Привязка к оборудованию").selectOption({ label: equipmentName });
+    await selectFieldOption(page, "Привязка к оборудованию", equipmentName);
     await page.getByLabel(standardIdentifier).check();
     await page.getByRole("button", { name: "Создать средство измерения" }).click();
     await expect(
-      page.getByText("Средство измерения создано. Текущий метрологический статус теперь будет определяться журналом."),
+      page.getByText("Средство измерения создано. Метрологический статус рассчитывается по журналу."),
     ).toBeVisible();
     await expect(page.getByText(instrumentName).first()).toBeVisible();
     await expect(page.getByText(standardIdentifier).first()).toBeVisible();
 
-    await page.getByLabel("Выбранное средство измерения").selectOption({
-      label: `${instrumentName} • MI-${seed}`,
-    });
-    await page.getByLabel("Тип операции").selectOption("verification");
+    await selectFieldOption(page, "Выбранное средство измерения", `${instrumentName} • MI-${seed}`);
+    await selectFieldOption(page, "Тип операции", "Поверка");
     await page.getByLabel("Дата операции").fill("2026-03-12");
     await page.getByLabel("Документ", { exact: true }).fill(`MI-DOC-${seed}`);
     await page.getByLabel("Действует до").fill("2026-12-31");
@@ -406,7 +413,7 @@ test.describe("stage 03 metrology journals and archive contour", () => {
     await page.getByRole("button", { name: "Добавить запись журнала" }).click();
     await expect(page.getByText("Запись журнала СИ сохранена. Производный статус и ближайшая дата пересчитаны.")).toBeVisible();
     await expect(page.getByText(`MI-DOC-${seed}`).first()).toBeVisible();
-    await expect(page.getByText("Текущий статус: active")).toBeVisible();
+    await expect(page.getByText("Текущий статус: Активно")).toBeVisible();
 
     await page.goto("/equipment");
     await expect(page).toHaveURL(/\/equipment$/);
@@ -421,27 +428,23 @@ test.describe("stage 03 metrology journals and archive contour", () => {
     await expect(page.getByText(archiveEquipmentName)).toHaveCount(0);
 
     await page.goto("/equipment?tab=mi");
-    await page.getByLabel("Выбранное средство измерения").selectOption({
-      label: `${archiveInstrumentName} • MI-ARCH-${seed}`,
-    });
-    acceptNextArchiveConfirmation(page);
+    await selectFieldOption(page, "Выбранное средство измерения", `${archiveInstrumentName} • MI-ARCH-${seed}`);
     await page.getByRole("button", { name: "Архивировать выбранное СИ" }).click();
-    await expect(page.getByText("Средство измерения переведено в архив и убрано из активных pickers.")).toBeVisible();
+    await confirmArchiveModal(page);
+    await expect(page.getByText("Средство измерения переведено в архив и убрано из активных списков выбора.")).toBeVisible();
     await expect(page.getByText(archiveInstrumentName)).toHaveCount(0);
 
     await page.goto("/equipment?tab=standards");
-    await page.getByLabel("Выбранный эталон").selectOption({
-      label: `Эталон напряжения • ${archiveStandardIdentifier}`,
-    });
-    acceptNextArchiveConfirmation(page);
+    await selectFieldOption(page, "Выбранный эталон", `Эталон напряжения • ${archiveStandardIdentifier}`);
     await page.getByRole("button", { name: "Архивировать выбранный эталон" }).click();
+    await confirmArchiveModal(page);
     await expect(page.getByText("Эталон переведен в архив и исключен из активных связей.")).toBeVisible();
     await expect(page.getByText(archiveStandardIdentifier)).toHaveCount(0);
 
     await page.getByRole("button", { name: "Показать архив" }).click();
     await expect(page.getByRole("button", { name: "Скрыть архив" })).toBeVisible();
     await expect(page.getByText(archiveStandardIdentifier).first()).toBeVisible();
-    await expect(page.getByText("archived").first()).toBeVisible();
+    await expect(page.getByText("В архиве").first()).toBeVisible();
 
     await page.goto("/equipment");
     await page.getByRole("button", { name: "Показать архив" }).click();
@@ -452,12 +455,16 @@ test.describe("stage 03 metrology journals and archive contour", () => {
 
     await page.goto("/login?logout=1");
     await page.getByLabel("Корпоративная почта").fill(employee.email);
-    await page.getByLabel("Пароль").fill(employee.password);
-    await page.getByRole("button", { name: "Войти и открыть рабочий contour" }).click();
+    await page.getByLabel(/^Пароль$/).fill(employee.password);
+    await page.getByRole("button", { name: "Войти" }).click();
 
     await expect(page).toHaveURL(/\/company$/);
     await page.goto("/equipment");
-    await expect(page.getByText("Текущий workspace остается read-only")).toBeVisible();
+    await expect(
+      page.getByText(
+        "Текущая область доступна только для просмотра: активные записи, архив и журналы фильтруются по выданному доступу, а создание и архивирование скрыты.",
+      ),
+    ).toBeVisible();
     await expect(page.getByRole("button", { name: "Создать оборудование" })).toHaveCount(0);
     await expect(page.getByText(equipmentName).first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Показать архив" })).toBeVisible();
@@ -469,10 +476,9 @@ test.describe("stage 03 metrology journals and archive contour", () => {
     await page.getByRole("button", { name: "Показать архив" }).click();
     await expect(page.getByRole("button", { name: "Создать средство измерения" })).toHaveCount(0);
     await expect(page.getByText(instrumentName).first()).toBeVisible();
-    await page.getByLabel("Выбранное средство измерения").selectOption({
-      label: `${archiveInstrumentName} • MI-ARCH-${seed}`,
-    });
-    await expect(page.getByText("Mutate surface скрыта", { exact: true })).toBeVisible();
+    await selectFieldOption(page, "Выбранное средство измерения", `${archiveInstrumentName} • MI-ARCH-${seed}`);
+    await expect(page.getByText("Редактирование скрыто", { exact: true })).toBeVisible();
+    await expect(page.getByText("Архивированное СИ остается доступным для истории, но новые операции в него не добавляются.")).toBeVisible();
 
     await page.goto("/equipment?tab=standards");
     await page.getByRole("button", { name: "Показать архив" }).click();

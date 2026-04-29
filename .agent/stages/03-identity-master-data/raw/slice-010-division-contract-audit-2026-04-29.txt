@@ -1,0 +1,49 @@
+apps/web/shared/api/bootstrap.ts:8:  | "division_head"
+apps/web/shared/api/bootstrap.ts:9:  | "division_operator"
+apps/web/shared/api/bootstrap.ts:19:  division_head: "Руководитель подразделения",
+apps/web/shared/api/bootstrap.ts:20:  division_operator: "Сотрудник подразделения",
+apps/web/shared/api/bootstrap.ts:29:  division_head: ["division"],
+apps/web/shared/api/bootstrap.ts:30:  division_operator: ["division"],
+apps/web/shared/api/bootstrap.ts:39:  division_head: [],
+apps/web/shared/api/bootstrap.ts:40:  division_operator: [],
+apps/web/shared/api/bootstrap.ts:169:  divisionId?: string;
+apps/web/shared/api/bootstrap.ts:276:    divisionId?: string;
+apps/backend/internal/auth/bootstrap/roles.go:8:	RoleDivisionHead      = "division_head"
+apps/backend/internal/auth/bootstrap/roles.go:9:	RoleDivisionOperator  = "division_operator"
+docs/design/customer-admin-bootstrap-flow.md:120:- профиль организации в `/company` использует selector `Тип` как ОПФ `ООО` / `АО` / `ПАО`; legacy aliases `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО` поддерживаются только как входная совместимость и не показываются в UI;
+.agent/stages/03-identity-master-data/stage_spec.md:123:  - редактирование business fields: organization `propertyType`/`type` alias as legal-form selector `ООО` / `АО` / `ПАО` with legacy `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО`; division/branch has no selectable type and stores hidden internal default only for compatibility; unit keeps operational type selector `ВРД` / `ВРЗ` / `ВУ` / `ВРП`; name, registeredAddress/address alias, leaderFullName with managerName migration/display compatibility, leaderPosition, contractPhone, contractEmail, actingBasis, plus code/region/status/comment where those fields still exist in the model;
+docs/architecture/identity-master-data.md:113:| `propertyType` / organization `type` alias | В профиле организации visible selector `Тип` хранит юридическую форму: `ООО`, `АО`, `ПАО`. `type` остается compatibility alias в API/session там, где старые клиенты уже читают это поле. Legacy input `ОАО` нормализуется в `ПАО`, `ЗАО` в `АО`, `LLC` в `ООО`; `ОАО` и `ЗАО` не показываются как актуальные options, потому что модель ОАО/ЗАО заменена публичными/непубличными АО. |
+docs/architecture/identity-master-data.md:114:| division `type` | Не является user-facing бизнес-полем и не показывается selector-ом в `/company`. Storage column `auth_divisions.division_type` остается `NOT NULL` для совместимости с sqlc/generated response shape; новые create/update writes используют скрытый internal default `division`. |
+docs/architecture/identity-master-data.md:129:Source note for organization legal forms: the visible MVP set intentionally uses `ООО`, `АО`, `ПАО`. `ОАО` and `ЗАО` stay compatibility aliases because [ФНС describes](https://www.nalog.gov.ru/rn03/news/tax_doc_news/5096254/) the abolition of open/closed JSC split in favor of public/non-public JSCs, and OKOPF keeps current entries for [ПАО](https://classifikators.ru/okopf/12247), [АО](https://classifikators.ru/okopf/12267), and [ООО](https://classifikators.ru/okopf/12300).
+docs/architecture/identity-master-data.md:184:Storage поле `auth_divisions.division_type` остается скрытым compatibility default `division`; бизнес-классификация подразделений/филиалов не выбирается пользователем в этом slice.
+apps/backend/docs/swagger/swagger.json:3312:                "divisionId": {
+apps/backend/docs/swagger/swagger.json:3419:                "divisionId": {
+apps/backend/docs/swagger/swagger.json:4045:                "divisionId": {
+apps/backend/docs/swagger/swagger.json:4095:                "divisionId": {
+apps/backend/docs/swagger/swagger.json:4253:                "divisionId": {
+apps/backend/docs/swagger/swagger.json:4541:                "divisionId": {
+apps/backend/docs/swagger/swagger.json:4803:                "divisionId": {
+apps/backend/docs/swagger/swagger.json:4972:                "divisionId": {
+docs/roadmap.md:363:  - organization profile с разделением на launch-critical и optional requisites; поле `Тип` в профиле хранит ОПФ `ООО` / `АО` / `ПАО`, а legacy `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО` принимаются только как compatibility input и нормализуются
+docs/design/diagrams/customer-admin-bootstrap-flow.drawio:39:        <mxCell id="Uvl7SCXHovZ_TvcCf32a-13" value="Организационно-правовая ф&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;орма (ООО, АО, ПАО)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="Uvl7SCXHovZ_TvcCf32a-12" vertex="1">
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:181:    for option in ("ООО", "АО", "ПАО"):
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:192:        "profileLegalForms": ["ООО", "АО", "ПАО"],
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:337:        payload["divisionId"] = division_id
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:453:        "/api/v1/company/divisions",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:471:    assert_true(child_unit["divisionId"] == first_division_id, "child unit is not under division")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:498:        "/api/v1/company/divisions",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:521:        f"/api/v1/company/divisions/{first_division_id}",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:566:        "/api/v1/company/divisions",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:575:        f"/api/v1/company/divisions/{archive_division_id}/archive",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:584:        f"/api/v1/company/divisions/{first_division_id}/archive",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:637:            "roleTemplate": "division_head",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:644:    division_invite = create_employee_invite(admin, "division-reader", "division_head", "division", first_division_id)
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:648:    assert_true(all(unit.get("divisionId") == first_division_id for unit in division_session["units"]), "division user saw units outside subtree")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:688:            "accepted": ["ООО", "АО", "ПАО"],
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:749:                "organization profile legal-form contract accepted ООО/АО/ПАО and normalized legacy aliases",
+.agent/stages/03-identity-master-data/sprint_contract.md:39:- organization `propertyType` / `type` compatibility alias: legal-form selector with exactly these visible values for the correction slice: `ООО`, `АО`, `ПАО`;
+.agent/stages/03-identity-master-data/sprint_contract.md:40:- legacy organization legal-form input maps `ОАО -> ПАО`, `ЗАО -> АО`, and `LLC -> ООО`; those legacy aliases are not visible selector options;
+.agent/stages/03-identity-master-data/sprint_contract.md:41:- division/branch `type`: not user-facing and not selectable; keep the existing `auth_divisions.division_type` storage/API shape with hidden internal default `division`;
+.agent/stages/03-identity-master-data/sprint_contract.md:69:  - visible profile type selector shows `ООО`, `АО`, `ПАО` only, while legacy `ОАО`, `ЗАО`, and `LLC` inputs normalize for compatibility;
+.agent/stages/03-identity-master-data/sprint_contract.md:121:  - browser/runtime smoke for `/register/[token] -> /company`, `/company` legal-form options `ООО`/`АО`/`ПАО`, no division type selector, unit type selector, empty/partial/populated states, org-admin mutation controls, and scoped read-only views.
+exit_code=0

@@ -30,7 +30,7 @@ function CardPreview({
             </Badge>
           </div>
           <p className="text-sm leading-6 text-muted-foreground">
-            Базовая surface-обертка для KPI, списков, auth-панелей и summary-блоков Stage 01.
+            Базовая поверхность для KPI, списков, форм входа и сводных блоков.
           </p>
           <div className="flex gap-3">
             <Button size="sm">Открыть</Button>
@@ -46,12 +46,12 @@ function CardPreview({
 
 const meta = {
   title: "Primitives/Card",
-  component: CardPreview,
+  component: Card,
   parameters: {
     layout: "centered",
   },
   tags: ["autodocs"],
-} satisfies Meta<typeof CardPreview>;
+} satisfies Meta<typeof Card>;
 
 export default meta;
 

@@ -1,4 +1,7 @@
-import { forwardRef, useId, type InputHTMLAttributes, type ReactNode } from "react";
+"use client";
+
+import { Eye, EyeOff } from "lucide-react";
+import { forwardRef, useId, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { cn } from "@/shared/lib/cn";
 
 export interface InputFieldProps
@@ -8,24 +11,50 @@ export interface InputFieldProps
   error?: string;
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
+  hidePasswordLabel?: string;
+  showPasswordLabel?: string;
+  showPasswordToggle?: boolean;
 }
 
 export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
-  ({ className, error, hint, id, label, leftIcon, rightIcon, type = "text", ...props }, ref) => {
+  (
+    {
+      className,
+      disabled,
+      error,
+      hidePasswordLabel = "Скрыть пароль",
+      hint,
+      id,
+      label,
+      leftIcon,
+      rightIcon,
+      showPasswordLabel = "Показать пароль",
+      showPasswordToggle = true,
+      type = "text",
+      ...props
+    },
+    ref,
+  ) => {
     const autoId = useId();
     const inputId = id ?? autoId;
     const messageId = `${inputId}-message`;
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const shouldShowPasswordToggle = type === "password" && showPasswordToggle;
+    const resolvedType = shouldShowPasswordToggle && isPasswordVisible ? "text" : type;
+    const passwordToggleLabel = isPasswordVisible ? hidePasswordLabel : showPasswordLabel;
 
     return (
-      <label className="flex w-full flex-col gap-2.5" htmlFor={inputId}>
-        <span className="text-sm font-medium text-foreground">{label}</span>
+      <div className="flex w-full flex-col gap-2.5">
+        <label className="text-sm font-medium text-foreground" htmlFor={inputId}>
+          {label}
+        </label>
         <span
           className={cn(
-            "flex h-10 items-center gap-3 rounded-[var(--radius-md)] border bg-card px-3.5 shadow-xs transition-colors duration-150",
+            "flex min-h-11 items-center gap-3 rounded-[var(--radius-md)] border bg-card px-3.5 shadow-xs transition-colors duration-150",
             error
               ? "border-destructive bg-destructive-soft/30"
               : "border-input hover:border-border-strong focus-within:border-accent focus-within:ring-2 focus-within:ring-ring/15",
-            props.disabled && "cursor-not-allowed bg-muted text-muted-foreground",
+            disabled && "cursor-not-allowed bg-muted text-text-disabled",
           )}
         >
           {leftIcon ? (
@@ -41,11 +70,12 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
             aria-describedby={hint || error ? messageId : undefined}
             aria-invalid={Boolean(error)}
             className={cn(
-              "w-full border-none bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:text-muted-foreground",
+              "min-w-0 flex-1 border-none bg-transparent text-sm text-foreground outline-none placeholder:text-text-tertiary disabled:cursor-not-allowed disabled:text-text-disabled",
               className,
             )}
+            disabled={disabled}
             id={inputId}
-            type={type}
+            type={resolvedType}
             {...props}
           />
           {rightIcon ? (
@@ -55,6 +85,24 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
             >
               {rightIcon}
             </span>
+          ) : null}
+          {shouldShowPasswordToggle ? (
+            <button
+              aria-controls={inputId}
+              aria-label={passwordToggleLabel}
+              aria-pressed={isPasswordVisible}
+              className="flex size-11 shrink-0 touch-manipulation items-center justify-center rounded-[var(--radius-sm)] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 disabled:pointer-events-none disabled:text-text-disabled"
+              disabled={disabled}
+              onClick={() => setIsPasswordVisible((currentValue) => !currentValue)}
+              title={passwordToggleLabel}
+              type="button"
+            >
+              {isPasswordVisible ? (
+                <EyeOff aria-hidden="true" className="size-4" />
+              ) : (
+                <Eye aria-hidden="true" className="size-4" />
+              )}
+            </button>
           ) : null}
         </span>
         {hint || error ? (
@@ -66,7 +114,7 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
             {error ?? hint}
           </span>
         ) : null}
-      </label>
+      </div>
     );
   },
 );

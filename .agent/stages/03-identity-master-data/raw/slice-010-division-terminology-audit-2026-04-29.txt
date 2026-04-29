@@ -1,0 +1,2 @@
+no stale subdivision contract hits
+exit_code=0

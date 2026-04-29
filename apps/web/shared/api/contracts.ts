@@ -17,7 +17,7 @@ export type ContractRecord = {
   equipmentType: string;
   region: string;
   locationScope: {
-    scopeType: "organization" | "subdivision" | "unit";
+    scopeType: "organization" | "division" | "unit";
     scopeId?: string;
     label: string;
   };

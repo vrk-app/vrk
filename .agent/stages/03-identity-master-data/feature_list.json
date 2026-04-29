@@ -2,51 +2,62 @@
   {
     "id": "stage03-first-admin-activation",
     "category": "functional",
-    "description": "A platform admin can bootstrap an organization by sending a first-admin invite, and the invited admin activates via a one-time link instead of receiving a pre-created password.",
+    "description": "A platform admin can bootstrap an organization by sending a first-admin invite, and the invited admin activates via a one-time link that lands on persistent /company instead of the historical launch wizard.",
     "steps": [
       "Create an organization shell and send a first-admin invite by email",
       "Accept the invite via one-time link and set a password",
-      "Land the invited admin in the launch wizard instead of an empty dashboard"
+      "Land the invited admin on /company without requiring /company/setup or launch-wizard completion"
     ],
     "passes": true,
     "evidence_refs": [
       "docs/roadmap.md",
-      "docs/PRD-MVP.md",
       "docs/architecture/identity-master-data.md",
+      "docs/design/customer-admin-bootstrap-flow.md",
+      "docs/architecture/frontend-architecture.md",
+      ".agent/stages/03-identity-master-data/stage_spec.md",
+      ".agent/stages/03-identity-master-data/sprint_contract.md",
       ".agent/stages/03-identity-master-data/evidence.md",
       ".agent/stages/03-identity-master-data/verdict.json",
-      ".agent/stages/03-identity-master-data/raw/slice-001-web-browser-smoke-2026-04-18.txt",
-      ".agent/stages/03-identity-master-data/raw/slice-007-008-direct-summary-2026-04-21.json",
-      ".agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-summary-2026-04-21.json",
-      ".agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-evidence-audit-2026-04-21.txt"
+      ".agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-proof-run-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-summary-2026-04-29.json"
     ]
   },
   {
     "id": "stage03-org-hierarchy-and-launch-wizard",
     "category": "functional",
-    "description": "The launch wizard and master data model support organization, subdivision, and unit setup, with unit remaining the primary operational scope and subdivision staying optional.",
+    "description": "Persistent /company organization structure management supports organization, division/branch, and unit setup, with unit remaining the primary operational scope and division staying optional.",
     "steps": [
-      "Persist organization core fields separately from optional requisites and documents",
-      "Create subdivisions with a typed subdivision model",
-      "Create units both under a subdivision and directly under an organization"
+      "Render /company empty, partial, and populated states without a completed launch wizard gate",
+      "Create first and repeat divisions/branches from /company with the frozen business fields",
+      "Create first and repeat units both under a division and directly under an organization",
+      "Archive divisions/units instead of hard deleting them"
     ],
     "passes": true,
     "evidence_refs": [
       "docs/roadmap.md",
-      "docs/PRD-MVP.md",
       "docs/architecture/identity-master-data.md",
+      "docs/design/customer-admin-bootstrap-flow.md",
+      "docs/architecture/frontend-architecture.md",
+      ".agent/stages/03-identity-master-data/stage_spec.md",
+      ".agent/stages/03-identity-master-data/sprint_contract.md",
       ".agent/stages/03-identity-master-data/evidence.md",
       ".agent/stages/03-identity-master-data/verdict.json",
-      ".agent/stages/03-identity-master-data/raw/slice-001-direct-unit-proof-summary-2026-04-18.json"
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-proof-run-check-stack-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-contract-audit-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-terminology-audit-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-proof-run-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-summary-2026-04-29.json",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-contract-audit-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-terminology-audit-2026-04-29.txt"
     ]
   },
   {
     "id": "stage03-memberships-invites-scoped-access",
     "category": "functional",
-    "description": "Users, memberships, invites, and scoped grants are separate concepts, and access inherits downward from organization to subdivision to unit without a deny layer.",
+    "description": "Users, memberships, invites, and scoped grants are separate concepts, and access inherits downward from organization to division to unit without a deny layer.",
     "steps": [
       "Model user account, organization membership, and scoped grant separately",
-      "Support role templates and scopes for organization, subdivision, and unit",
+      "Support role templates and scopes for organization, division, and unit",
       "Track invite statuses draft, sent, opened, accepted, expired, and revoked"
     ],
     "passes": true,
@@ -60,7 +71,19 @@
       ".agent/stages/03-identity-master-data/raw/slice-002-direct-scope-proof-summary-2026-04-19.json",
       ".agent/stages/03-identity-master-data/raw/slice-007-008-direct-summary-2026-04-21.json",
       ".agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-live-summary-2026-04-21.json",
-      ".agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-evidence-audit-2026-04-21.txt"
+      ".agent/stages/03-identity-master-data/raw/slice-007-008-continuation-verifier-evidence-audit-2026-04-21.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-active-audit-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-make-smoke-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-backend-test-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-backend-build-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-sqlc-docker-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-swagger-docker-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-web-lint-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-web-typecheck-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-web-build-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-storybook-build-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-browser-smoke-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-harness-2026-04-29.txt"
     ]
   },
   {
@@ -152,6 +175,56 @@
       ".agent/stages/03-identity-master-data/verdict.json",
       ".agent/stages/03-identity-master-data/raw/slice-005-direct-proof-summary-2026-04-19.json",
       ".agent/stages/03-identity-master-data/raw/slice-005-ui-review-2026-04-19.txt"
+    ]
+  },
+  {
+    "id": "stage03-slice010-company-org-structure-correction",
+    "category": "functional",
+    "description": "Correction slice replacing historical launch-wizard targeting with persistent /company organization profile, division/branch, unit, archive, scoped read-only, and employee invite target validation behavior.",
+    "steps": [
+      "First-admin acceptance lands on /company and no longer requires /company/setup or completed launch wizard state",
+      "/company renders empty, partial, and populated organization structure states",
+      "Organization admin can create first and repeat divisions/branches and units, including units under divisions and directly under the organization",
+      "Forms preserve differentiated type semantics: organization propertyType/type alias is ОПФ ООО/АО/ПАО with legacy ОАО/ЗАО/LLC normalization, division has no selectable type, unit type remains ВРД/ВРЗ/ВУ/ВРП; name, registeredAddress/address, leaderFullName/managerName, leaderPosition, contractPhone, contractEmail, actingBasis, and code/region/status/comment remain preserved where still used",
+      "Division and unit lifecycle uses archive instead of delete",
+      "Only organization-scope admins can mutate, while scoped division/unit users read only their subtree",
+      "Employee invite creation works without a completed wizard gate, but division/unit invites require an existing visible active target scope"
+    ],
+    "passes": true,
+    "evidence_refs": [
+      "docs/roadmap.md",
+      "docs/architecture/identity-master-data.md",
+      "docs/design/customer-admin-bootstrap-flow.md",
+      "docs/architecture/frontend-architecture.md",
+      ".agent/stages/03-identity-master-data/stage_spec.md",
+      ".agent/stages/03-identity-master-data/sprint_contract.md",
+      ".agent/stages/03-identity-master-data/evidence.md",
+      ".agent/stages/03-identity-master-data/verdict.json",
+      ".agent/stages/03-identity-master-data/problems.md",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-harness-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-proof-run-check-stack-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-contract-audit-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-terminology-audit-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-harness-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-proof-run-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-summary-2026-04-29.json",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-contract-audit-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-terminology-audit-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-doc-sync-audit-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-current-fresh-verifier-ui-review-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-active-audit-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-make-smoke-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-backend-test-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-backend-build-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-sqlc-docker-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-swagger-docker-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-web-lint-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-web-typecheck-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-web-build-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-storybook-build-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-browser-smoke-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-harness-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-010-division-role-model-harness-post-evidence-2026-04-29.txt"
     ]
   }
 ]

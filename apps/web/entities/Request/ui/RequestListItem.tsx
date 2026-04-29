@@ -2,7 +2,8 @@ import type { HTMLAttributes } from "react";
 import { FileText } from "lucide-react";
 import { Card } from "@/shared/ui";
 import { cn } from "@/shared/lib/cn";
-import { RequestStatusBadge, type RequestStatusValue } from "./RequestStatusBadge";
+import type { RequestStatusValue } from "../model";
+import { RequestStatusBadge } from "./RequestStatusBadge";
 
 const currency = new Intl.NumberFormat("ru-RU", {
   style: "currency",
@@ -92,7 +93,7 @@ export function RequestListItem({
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4 text-sm">
         <div className="inline-flex items-center gap-2 text-muted-foreground">
           <FileText aria-hidden="true" className="size-4" />
-          <span>Документы и статусы уже читаемы в UI, но живая интеграция остаётся задачей Stage 02.</span>
+          <span>Документы и статусы доступны в карточке заявки.</span>
         </div>
         {note ? (
           <p className="inline-flex items-center gap-2 font-medium text-foreground">

@@ -16,8 +16,8 @@ type CreateSessionRequest struct {
 	Password string `json:"password"`
 }
 
-type LaunchSubdivisionInput struct {
-	Type        string  `json:"type"`
+type LaunchDivisionInput struct {
+	Type        string  `json:"type,omitempty"`
 	Name        string  `json:"name"`
 	Code        *string `json:"code,omitempty"`
 	Region      *string `json:"region,omitempty"`
@@ -36,17 +36,52 @@ type LaunchUnitInput struct {
 }
 
 type CompleteLaunchRequest struct {
-	OrganizationName string                  `json:"organizationName"`
-	ShortName        *string                 `json:"shortName,omitempty"`
-	PropertyType     string                  `json:"propertyType"`
-	Inn              string                  `json:"inn"`
-	Kpp              string                  `json:"kpp"`
-	LegalAddress     string                  `json:"legalAddress"`
-	ContactEmail     string                  `json:"contactEmail"`
-	ContactPhone     string                  `json:"contactPhone"`
-	StructureMode    string                  `json:"structureMode"`
-	Subdivision      *LaunchSubdivisionInput `json:"subdivision,omitempty"`
-	Unit             LaunchUnitInput         `json:"unit"`
+	OrganizationName string               `json:"organizationName"`
+	ShortName        *string              `json:"shortName,omitempty"`
+	PropertyType     string               `json:"propertyType"`
+	Inn              string               `json:"inn"`
+	Kpp              string               `json:"kpp"`
+	LegalAddress     string               `json:"legalAddress"`
+	ContactEmail     string               `json:"contactEmail"`
+	ContactPhone     string               `json:"contactPhone"`
+	StructureMode    string               `json:"structureMode"`
+	Division         *LaunchDivisionInput `json:"division,omitempty"`
+	Unit             LaunchUnitInput      `json:"unit"`
+}
+
+type CompanyProfileRequest struct {
+	Type              string  `json:"type"`
+	PropertyType      *string `json:"propertyType,omitempty"`
+	Name              string  `json:"name"`
+	ShortName         *string `json:"shortName,omitempty"`
+	Inn               *string `json:"inn,omitempty"`
+	Kpp               *string `json:"kpp,omitempty"`
+	RegisteredAddress *string `json:"registeredAddress,omitempty"`
+	Address           *string `json:"address,omitempty"`
+	LeaderFullName    *string `json:"leaderFullName,omitempty"`
+	ManagerName       *string `json:"managerName,omitempty"`
+	LeaderPosition    *string `json:"leaderPosition,omitempty"`
+	ContractPhone     *string `json:"contractPhone,omitempty"`
+	ContractEmail     *string `json:"contractEmail,omitempty"`
+	ActingBasis       *string `json:"actingBasis,omitempty"`
+}
+
+type StructureNodeRequest struct {
+	Type              string  `json:"type,omitempty"`
+	Name              string  `json:"name"`
+	Code              *string `json:"code,omitempty"`
+	Region            *string `json:"region,omitempty"`
+	Address           *string `json:"address,omitempty"`
+	RegisteredAddress *string `json:"registeredAddress,omitempty"`
+	LeaderFullName    *string `json:"leaderFullName,omitempty"`
+	ManagerName       *string `json:"managerName,omitempty"`
+	LeaderPosition    *string `json:"leaderPosition,omitempty"`
+	ContractPhone     *string `json:"contractPhone,omitempty"`
+	ContractEmail     *string `json:"contractEmail,omitempty"`
+	ActingBasis       *string `json:"actingBasis,omitempty"`
+	Contacts          *string `json:"contacts,omitempty"`
+	Comment           *string `json:"comment,omitempty"`
+	DivisionID        *string `json:"divisionId,omitempty"`
 }
 
 type OrganizationShellResponse struct {
@@ -137,32 +172,65 @@ type SessionWorkspaceResponse struct {
 }
 
 type SessionOrganizationResponse struct {
-	ID           string  `json:"id"`
-	RoleTitle    string  `json:"roleTitle"`
-	Name         string  `json:"name"`
-	ShortName    *string `json:"shortName,omitempty"`
-	PropertyType *string `json:"propertyType,omitempty"`
-	Inn          *string `json:"inn,omitempty"`
-	Kpp          *string `json:"kpp,omitempty"`
-	LegalAddress *string `json:"legalAddress,omitempty"`
-	ContactEmail *string `json:"contactEmail,omitempty"`
-	ContactPhone *string `json:"contactPhone,omitempty"`
-	LaunchState  string  `json:"launchState"`
+	ID                string  `json:"id"`
+	RoleTitle         string  `json:"roleTitle"`
+	Type              *string `json:"type,omitempty"`
+	Name              string  `json:"name"`
+	ShortName         *string `json:"shortName,omitempty"`
+	PropertyType      *string `json:"propertyType,omitempty"`
+	Inn               *string `json:"inn,omitempty"`
+	Kpp               *string `json:"kpp,omitempty"`
+	LegalAddress      *string `json:"legalAddress,omitempty"`
+	RegisteredAddress *string `json:"registeredAddress,omitempty"`
+	Address           *string `json:"address,omitempty"`
+	ContactEmail      *string `json:"contactEmail,omitempty"`
+	ContactPhone      *string `json:"contactPhone,omitempty"`
+	LeaderFullName    *string `json:"leaderFullName,omitempty"`
+	ManagerName       *string `json:"managerName,omitempty"`
+	LeaderPosition    *string `json:"leaderPosition,omitempty"`
+	ContractPhone     *string `json:"contractPhone,omitempty"`
+	ContractEmail     *string `json:"contractEmail,omitempty"`
+	ActingBasis       *string `json:"actingBasis,omitempty"`
+	LaunchState       string  `json:"launchState"`
 }
 
-type SubdivisionResponse struct {
-	ID   string  `json:"id"`
-	Type string  `json:"type"`
-	Name string  `json:"name"`
-	Code *string `json:"code,omitempty"`
+type DivisionResponse struct {
+	ID                string  `json:"id"`
+	Type              string  `json:"type"`
+	Name              string  `json:"name"`
+	Code              *string `json:"code,omitempty"`
+	Region            *string `json:"region,omitempty"`
+	Address           *string `json:"address,omitempty"`
+	RegisteredAddress *string `json:"registeredAddress,omitempty"`
+	ManagerName       *string `json:"managerName,omitempty"`
+	LeaderFullName    *string `json:"leaderFullName,omitempty"`
+	Contacts          *string `json:"contacts,omitempty"`
+	LeaderPosition    *string `json:"leaderPosition,omitempty"`
+	ContractPhone     *string `json:"contractPhone,omitempty"`
+	ContractEmail     *string `json:"contractEmail,omitempty"`
+	ActingBasis       *string `json:"actingBasis,omitempty"`
+	Status            string  `json:"status"`
+	Comment           *string `json:"comment,omitempty"`
 }
 
 type UnitResponse struct {
-	ID            string  `json:"id"`
-	Type          string  `json:"type"`
-	Name          string  `json:"name"`
-	Code          *string `json:"code,omitempty"`
-	SubdivisionID *string `json:"subdivisionId,omitempty"`
+	ID                string  `json:"id"`
+	Type              string  `json:"type"`
+	Name              string  `json:"name"`
+	Code              *string `json:"code,omitempty"`
+	Region            *string `json:"region,omitempty"`
+	DivisionID        *string `json:"divisionId,omitempty"`
+	Address           *string `json:"address,omitempty"`
+	RegisteredAddress *string `json:"registeredAddress,omitempty"`
+	ManagerName       *string `json:"managerName,omitempty"`
+	LeaderFullName    *string `json:"leaderFullName,omitempty"`
+	Contacts          *string `json:"contacts,omitempty"`
+	LeaderPosition    *string `json:"leaderPosition,omitempty"`
+	ContractPhone     *string `json:"contractPhone,omitempty"`
+	ContractEmail     *string `json:"contractEmail,omitempty"`
+	ActingBasis       *string `json:"actingBasis,omitempty"`
+	Status            string  `json:"status"`
+	Comment           *string `json:"comment,omitempty"`
 }
 
 type SessionSummaryResponse struct {
@@ -174,7 +242,7 @@ type SessionSummaryResponse struct {
 	Organization         SessionOrganizationResponse `json:"organization"`
 	Grant                *SessionGrantResponse       `json:"grant,omitempty"`
 	Workspace            SessionWorkspaceResponse    `json:"workspace"`
-	Subdivisions         []SubdivisionResponse       `json:"subdivisions"`
+	Divisions            []DivisionResponse          `json:"divisions"`
 	Units                []UnitResponse              `json:"units"`
 }
 

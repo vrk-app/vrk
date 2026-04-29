@@ -538,17 +538,17 @@ func (s *measuringInstrumentService) validateStandardIDs(
 	}
 	for _, id := range parsed {
 		scope := scopes[id.String()]
-		var subdivisionID *uuid.UUID
+		var divisionID *uuid.UUID
 		var unitID *uuid.UUID
-		if scope.SubdivisionID != nil {
-			value := uuid.MustParse(*scope.SubdivisionID)
-			subdivisionID = &value
+		if scope.DivisionID != nil {
+			value := uuid.MustParse(*scope.DivisionID)
+			divisionID = &value
 		}
 		if scope.UnitID != nil {
 			value := uuid.MustParse(*scope.UnitID)
 			unitID = &value
 		}
-		if !registryaccess.CanSeeStandard(session, subdivisionID, unitID) {
+		if !registryaccess.CanSeeStandard(session, divisionID, unitID) {
 			return nil, ErrStandardInvalid
 		}
 	}
@@ -593,8 +593,8 @@ func toResponse(item *MeasuringInstrument, derived metrologyjournal.DerivedState
 		Unit: UnitSummary{
 			ID:              item.UnitID,
 			Name:            item.UnitName,
-			SubdivisionID:   item.SubdivisionID,
-			SubdivisionName: item.SubdivisionName,
+			DivisionID:   item.DivisionID,
+			DivisionName: item.DivisionName,
 		},
 		Equipment:          equipment,
 		Name:               item.Name,

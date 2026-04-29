@@ -1,7 +1,7 @@
 # Архитектура фронтенда и практики разработки
 
 Статус: accepted baseline  
-Обновлено: 2026-04-20
+Обновлено: 2026-04-29
 
 ## Назначение
 
@@ -81,16 +81,18 @@ flowchart LR
 
 - `Stage 02` поднял **product-shaped runtime shell** для `/login`, `/register`, `/company`, `/equipment`, `/contracts` и gated `/requests`;
 - эти surfaces могут жить на mock / seed / stub data, если Stage 03 доменная модель еще не активирована;
-- real auth/session/RBAC, invite-based activation, persisted `organization -> subdivision -> unit` state, scoped access grants, contracts/equipment/MI/standards CRUD и invitation workflows остаются ответственностью `Stage 03`;
+- real auth/session/RBAC, invite-based activation, persisted `organization -> division -> unit` state, scoped access grants, contracts/equipment/MI/standards CRUD и invitation workflows остаются ответственностью `Stage 03`;
 - requests contour не должен ложно “оживать” в `Stage 02`: допустим только truthful gated placeholder до Stage 04.
 
-### 1.2.1. Реализованный Stage 03 runtime contour для slice-001
+### 1.2.1. Stage 03 runtime contour для slice-001 и target correction
 
 После реализации `slice-001-first-admin-activation-and-org-graph` в `apps/web` одновременно живут два правдивых режима:
 
 - анонимный пользователь все еще видит Stage 02 shell на `/company`, пока у него нет сессии;
 - платформенный админ выпускает invite через `/register`;
-- приглашенный администратор проходит путь `/register/[token] -> /company/setup -> /company`;
+- historical slice-001 implementation проводит приглашенного администратора по пути `/register/[token] -> /company/setup -> /company`;
+- target correction от 2026-04-29 заменяет этот одноразовый wizard на путь `/register/[token] -> /company`, где первый и последующие филиалы/подразделения и юниты создаются через постоянный organization management UI;
+- `/company` разделяет semantics поля `Тип`: профиль организации показывает legal-form selector `ООО` / `АО` / `ПАО`, подразделение/филиал не показывает type selector, а юнит сохраняет operational type selector `ВРД` / `ВРЗ` / `ВУ` / `ВРП`;
 - server-side runtime layout читает текущую session и не пускает активированного администратора в пустой shell;
 - browser не ходит напрямую в container-only backend host: Next route handlers в `app/api/*` проксируют invite/session/bootstrap requests к `apps/backend`;
 - `/api/platform/organization-shells` inject-ит `X-VRK-Platform-Admin-Secret` только на server side из `PLATFORM_ADMIN_SHARED_SECRET`, поэтому browser не видит deployment-scoped admin credential;
@@ -104,7 +106,7 @@ flowchart LR
     D --> C
     C --> E["HttpOnly vrk_session cookie"]
     E --> B
-    B --> F["/company/setup or /company"]
+    B --> F["/company<br/>persistent org management"]
 ```
 
 ### 1.2.2. Реализованный Stage 03 runtime contour для slice-002
@@ -115,11 +117,25 @@ flowchart LR
 - Next route handlers в `app/api/auth/invites/*` и `app/api/auth/employee-invites/*` закрывают browser от прямого доступа к internal backend host и держат cookie/session boundary на стороне `apps/web`;
 - `/company` стал scope-aware landing page:
   - organization-scope пользователь видит весь org graph и, только при `workspace.canManageEmployeeInvites`, employee invite manager;
-  - subdivision-scope пользователь видит только свое подразделение и его child units;
+  - division-scope пользователь видит только свое подразделение и его child units;
   - unit-scope пользователь видит только один юнит и не видит broader org graph;
 - `/login` после employee acceptance больше не возвращает пользователя в generic shell, а сразу восстанавливает его сохраненный scoped contour;
+- ссылка `политикой доступа` в login consent ведет на `/access-policy`, где временно живет non-legal draft/stub политики до замены юридически оформленной редакцией;
+- checkbox `Запомнить вход` на `/login` управляет только web-session UX: checked ставит HttpOnly `vrk_session` cookie с 24h `maxAge` и сохраняет localStorage-подсказку последнего workspace по hash нормализованного email; unchecked ставит session cookie без `maxAge` и чистит подсказку для текущего email;
+- last workspace hint является display-only: он показывается только после ввода matching email, не отправляется в `/api/auth/session`, не хранит `grant_id` и не может выбирать workspace вместо backend;
+- ссылка `Сбросить пароль` на `/login` ведет на `/password-reset`, где до production-like backend/email flow живет честная informational заглушка и встроенный prompt для следующего implementation slice;
 - Stage 03 намеренно не строит workspace picker UI: session остается singular и привязана к explicit active `grant_id`;
 - если backend при direct login находит несколько eligible memberships/grants, `/api/auth/session` возвращает truthful `409`, а web показывает conflict instead of silently landing in an arbitrary contour.
+
+```mermaid
+flowchart LR
+    A["/login form"] --> B["POST /api/auth/session"]
+    B --> C["apps/backend /sessions<br/>email + password only"]
+    C --> D["SessionSummary<br/>membership_id + grant_id"]
+    D --> E["HttpOnly vrk_session cookie"]
+    D --> F["localStorage hint<br/>email hash + display fields"]
+    F -. "matching email only" .-> A
+```
 
 ```mermaid
 flowchart LR
@@ -166,7 +182,7 @@ flowchart LR
 - `app/api/equipment*` скрывает browser от internal backend host и держит один public web boundary для equipment, measuring instruments и standards;
 - анонимный пользователь по-прежнему видит truthful shell без live scoped records;
 - customer `organization_admin` на organization scope получает live create/list surface для всех трех registries на одном route;
-- subdivision-scope и unit-scope пользователи попадают на тот же `/equipment`, но получают только scope-filtered read-only contour без broader record leak и без mutate surface;
+- division-scope и unit-scope пользователи попадают на тот же `/equipment`, но получают только scope-filtered read-only contour без broader record leak и без mutate surface;
 - contractor session не получает parallel registry family и остается вне customer master-data contour;
 - relation baseline теперь реальна в runtime и proof bundle:
   - equipment может существовать без СИ;
@@ -179,7 +195,7 @@ flowchart LR
     B --> C["backend registries<br/>equipment / measuring-instruments / standards"]
     C --> D["session-based scope filter"]
     D --> E["organization scope<br/>create + list on all tabs"]
-    D --> F["subdivision / unit scope<br/>read-only filtered lists"]
+    D --> F["division / unit scope<br/>read-only filtered lists"]
     C --> G["relation layer<br/>equipment -> 0..N MI -> 0..N standards"]
 ```
 
@@ -199,7 +215,7 @@ flowchart LR
   - built-in MI picker использует только `activeEquipmentRecords`;
   - standard link picker использует только `activeStandards`;
 - mutate surface остается только у customer `organization_admin` на `organization` scope;
-- subdivision/unit users читают только свой scope-filtered active/archive contour и journal history без broader leak.
+- division/unit users читают только свой scope-filtered active/archive contour и journal history без broader leak.
 
 ```mermaid
 flowchart LR

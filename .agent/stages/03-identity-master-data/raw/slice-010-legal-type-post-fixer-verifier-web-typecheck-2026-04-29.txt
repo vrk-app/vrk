@@ -1,0 +1,23 @@
+$ cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run typecheck
+
+> @vrk/web@0.1.0 typecheck /Users/yura-posledov/cursor/vrk/apps/web
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Route types generated successfully
+app/(runtime)/company/_components/CompanyStructureWorkspace.tsx(8,3): error TS2305: Module '"@/shared/api"' has no exported member 'sessionHasCapability'.
+app/(runtime)/contracts/page.tsx(10,3): error TS2305: Module '"@/shared/api"' has no exported member 'sessionHasCapability'.
+app/(runtime)/equipment/page.tsx(4,47): error TS2305: Module '"@/shared/api"' has no exported member 'sessionHasCapability'.
+app/(runtime)/layout.tsx(4,10): error TS2305: Module '"@/shared/api"' has no exported member 'roleTemplateLabel'.
+features/Stage03Access/ui/EmployeeInviteManager.tsx(7,3): error TS2305: Module '"@/shared/api"' has no exported member 'isRoleScopeCompatible'.
+features/Stage03Access/ui/EmployeeInviteManager.tsx(9,3): error TS2305: Module '"@/shared/api"' has no exported member 'roleScopeOptions'.
+features/Stage03Access/ui/EmployeeInviteManager.tsx(10,3): error TS2305: Module '"@/shared/api"' has no exported member 'roleTemplateLabel'.
+features/Stage03Access/ui/EmployeeInviteManager.tsx(11,3): error TS2305: Module '"@/shared/api"' has no exported member 'roleTemplateLabels'.
+features/Stage03Access/ui/EmployeeInviteManager.tsx(14,8): error TS2305: Module '"@/shared/api"' has no exported member 'RoleTemplate'.
+features/Stage03Access/ui/EmployeeInviteManager.tsx(15,8): error TS2305: Module '"@/shared/api"' has no exported member 'ScopeType'.
+features/Stage03Access/ui/EmployeeInviteManager.tsx(79,47): error TS7006: Parameter 'scopeType' implicitly has an 'any' type.
+features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx(10,3): error TS2305: Module '"@/shared/api"' has no exported member 'roleTemplateLabel'.
+features/Stage03Contracts/ui/ContractsRegistry.tsx(6,10): error TS2305: Module '"@/shared/api"' has no exported member 'sessionHasCapability'.
+features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx(27,10): error TS2305: Module '"@/shared/api"' has no exported member 'sessionHasCapability'.
+ ELIFECYCLE  Command failed with exit code 2.
+EXIT_CODE=2

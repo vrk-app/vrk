@@ -264,6 +264,237 @@ func (h *Handler) RevokeEmployeeInvite(w http.ResponseWriter, r *http.Request) {
 	sendSuccess(w, http.StatusOK, resp)
 }
 
+// UpdateCompanyProfile updates the active customer organization profile.
+// @Summary      Update company profile
+// @Description  Updates the persistent Stage 03 company profile for an active organization-scope admin.
+// @Tags         company
+// @Accept       json
+// @Produce      json
+// @Param        request body CompanyProfileRequest true "Company profile payload"
+// @Success      200  {object}  Response{data=SessionSummaryResponse}
+// @Failure      400  {object}  Response
+// @Failure      401  {object}  Response
+// @Failure      403  {object}  Response
+// @Failure      409  {object}  Response
+// @Router       /company/profile [patch]
+func (h *Handler) UpdateCompanyProfile(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	var req CompanyProfileRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		sendError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	resp, err := h.service.UpdateCompanyProfile(r.Context(), token, req)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp)
+}
+
+// CreateDivision creates a division or branch at organization scope.
+// @Summary      Create company division
+// @Description  Creates the first or later active division from the persistent company management surface.
+// @Tags         company
+// @Accept       json
+// @Produce      json
+// @Param        request body StructureNodeRequest true "Division payload"
+// @Success      201  {object}  Response{data=SessionSummaryResponse}
+// @Failure      400  {object}  Response
+// @Failure      401  {object}  Response
+// @Failure      403  {object}  Response
+// @Router       /company/divisions [post]
+func (h *Handler) CreateDivision(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	var req StructureNodeRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		sendError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	resp, err := h.service.CreateDivision(r.Context(), token, req)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusCreated, resp)
+}
+
+// UpdateDivision updates an active division.
+// @Summary      Update company division
+// @Description  Updates an active division visible to the organization-scope admin.
+// @Tags         company
+// @Accept       json
+// @Produce      json
+// @Param        divisionID path string true "Division ID"
+// @Param        request body StructureNodeRequest true "Division payload"
+// @Success      200  {object}  Response{data=SessionSummaryResponse}
+// @Failure      400  {object}  Response
+// @Failure      401  {object}  Response
+// @Failure      403  {object}  Response
+// @Failure      404  {object}  Response
+// @Router       /company/divisions/{divisionID} [patch]
+func (h *Handler) UpdateDivision(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	var req StructureNodeRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		sendError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	resp, err := h.service.UpdateDivision(r.Context(), token, chi.URLParam(r, "divisionID"), req)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp)
+}
+
+// ArchiveDivision archives an active division when no active references block it.
+// @Summary      Archive company division
+// @Description  Archives a division instead of physically deleting it.
+// @Tags         company
+// @Produce      json
+// @Param        divisionID path string true "Division ID"
+// @Success      200  {object}  Response{data=SessionSummaryResponse}
+// @Failure      401  {object}  Response
+// @Failure      403  {object}  Response
+// @Failure      404  {object}  Response
+// @Failure      409  {object}  Response
+// @Router       /company/divisions/{divisionID}/archive [post]
+func (h *Handler) ArchiveDivision(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	resp, err := h.service.ArchiveDivision(r.Context(), token, chi.URLParam(r, "divisionID"))
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp)
+}
+
+// CreateUnit creates a unit under organization or under an active division.
+// @Summary      Create company unit
+// @Description  Creates the first or later active unit, with optional division parent.
+// @Tags         company
+// @Accept       json
+// @Produce      json
+// @Param        request body StructureNodeRequest true "Unit payload"
+// @Success      201  {object}  Response{data=SessionSummaryResponse}
+// @Failure      400  {object}  Response
+// @Failure      401  {object}  Response
+// @Failure      403  {object}  Response
+// @Router       /company/units [post]
+func (h *Handler) CreateUnit(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	var req StructureNodeRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		sendError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	resp, err := h.service.CreateUnit(r.Context(), token, req)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusCreated, resp)
+}
+
+// UpdateUnit updates an active unit.
+// @Summary      Update company unit
+// @Description  Updates an active unit and its optional division parent.
+// @Tags         company
+// @Accept       json
+// @Produce      json
+// @Param        unitID path string true "Unit ID"
+// @Param        request body StructureNodeRequest true "Unit payload"
+// @Success      200  {object}  Response{data=SessionSummaryResponse}
+// @Failure      400  {object}  Response
+// @Failure      401  {object}  Response
+// @Failure      403  {object}  Response
+// @Failure      404  {object}  Response
+// @Router       /company/units/{unitID} [patch]
+func (h *Handler) UpdateUnit(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	var req StructureNodeRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		sendError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	resp, err := h.service.UpdateUnit(r.Context(), token, chi.URLParam(r, "unitID"), req)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp)
+}
+
+// ArchiveUnit archives an active unit when no active references block it.
+// @Summary      Archive company unit
+// @Description  Archives a unit instead of physically deleting it.
+// @Tags         company
+// @Produce      json
+// @Param        unitID path string true "Unit ID"
+// @Success      200  {object}  Response{data=SessionSummaryResponse}
+// @Failure      401  {object}  Response
+// @Failure      403  {object}  Response
+// @Failure      404  {object}  Response
+// @Failure      409  {object}  Response
+// @Router       /company/units/{unitID}/archive [post]
+func (h *Handler) ArchiveUnit(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	resp, err := h.service.ArchiveUnit(r.Context(), token, chi.URLParam(r, "unitID"))
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp)
+}
+
 // CreateSession logs a user in by email/password.
 // @Summary      Create auth session
 // @Description  Logs the user in when exactly one eligible membership/grant path exists and returns the current session snapshot.
@@ -338,9 +569,9 @@ func (h *Handler) DeleteCurrentSession(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// CompleteLaunchWizard saves organization data and the first subdivision/unit.
+// CompleteLaunchWizard saves organization data and the first division/unit.
 // @Summary      Complete launch wizard
-// @Description  Saves the core organization data and creates the first subdivision or direct unit.
+// @Description  Saves the core organization data and creates the first division or direct unit.
 // @Tags         bootstrap
 // @Accept       json
 // @Produce      json
@@ -394,6 +625,8 @@ func writeServiceError(w http.ResponseWriter, err error) {
 	switch {
 	case errors.Is(err, ErrInviteNotFound):
 		sendError(w, http.StatusNotFound, err.Error())
+	case errors.Is(err, ErrDivisionNotFound), errors.Is(err, ErrUnitNotFound):
+		sendError(w, http.StatusNotFound, err.Error())
 	case errors.Is(err, ErrInvalidCredentials), errors.Is(err, ErrUnauthorized):
 		sendError(w, http.StatusUnauthorized, err.Error())
 	case errors.Is(err, ErrForbidden):
@@ -406,7 +639,8 @@ func writeServiceError(w http.ResponseWriter, err error) {
 		errors.Is(err, ErrLaunchRequired),
 		errors.Is(err, ErrInviteDraftRequired),
 		errors.Is(err, ErrInviteSendNotAllowed),
-		errors.Is(err, ErrInviteRevokeNotAllowed):
+		errors.Is(err, ErrInviteRevokeNotAllowed),
+		errors.Is(err, ErrArchiveBlocked):
 		sendError(w, http.StatusConflict, err.Error())
 	case errors.Is(err, ErrOrganizationNameRequired),
 		errors.Is(err, ErrFirstAdminNameRequired),
@@ -416,6 +650,7 @@ func writeServiceError(w http.ResponseWriter, err error) {
 		errors.Is(err, ErrInvalidOrganizationRole),
 		errors.Is(err, ErrInviteRoleTemplateRequired),
 		errors.Is(err, ErrInviteRoleTemplateInvalid),
+		errors.Is(err, ErrInviteRoleScopeInvalid),
 		errors.Is(err, ErrInviteScopeTypeInvalid),
 		errors.Is(err, ErrInviteScopeTargetRequired),
 		errors.Is(err, ErrInviteScopeTargetInvalid),
@@ -423,15 +658,20 @@ func writeServiceError(w http.ResponseWriter, err error) {
 		errors.Is(err, ErrInviteExpiryInvalid),
 		errors.Is(err, ErrPasswordTooShort),
 		errors.Is(err, ErrPropertyTypeRequired),
+		errors.Is(err, ErrPropertyTypeInvalid),
 		errors.Is(err, ErrInnRequired),
 		errors.Is(err, ErrKppRequired),
 		errors.Is(err, ErrLegalAddressRequired),
 		errors.Is(err, ErrContactPhoneRequired),
-		errors.Is(err, ErrSubdivisionNameRequired),
-		errors.Is(err, ErrSubdivisionTypeRequired),
+		errors.Is(err, ErrDivisionNameRequired),
+		errors.Is(err, ErrDivisionTypeRequired),
 		errors.Is(err, ErrUnitNameRequired),
 		errors.Is(err, ErrUnitTypeRequired),
 		errors.Is(err, ErrStructureModeInvalid):
+		sendError(w, http.StatusBadRequest, err.Error())
+	case errors.Is(err, ErrInvalidID),
+		errors.Is(err, ErrStructureTypeInvalid),
+		errors.Is(err, ErrDivisionTargetInvalid):
 		sendError(w, http.StatusBadRequest, err.Error())
 	default:
 		sendError(w, http.StatusInternalServerError, err.Error())

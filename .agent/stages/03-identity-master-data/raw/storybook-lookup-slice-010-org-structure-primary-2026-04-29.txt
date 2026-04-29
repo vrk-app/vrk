@@ -1,0 +1,13 @@
+Storybook registry entries: 24
+Query: "company organization structure management profile subdivision unit invite scope empty partial populated form archive"
+
+1. Requests/RequestList [RequestList]
+   story: apps/web/stories/requests/RequestList.stories.tsx
+   source: apps/web/entities/Request/ui/RequestList.tsx
+   stories: Default, Loading, Empty, Error, DerivedEmptyFromTotal, ManyItems, OutOfRangePage
+   tags: autodocs
+2. Auth/LoginForm [LoginForm]
+   story: apps/web/stories/auth/LoginForm.stories.tsx
+   source: apps/web/widgets/Auth/ui/LoginForm.tsx
+   stories: Default, ValidationError, ServerError, WithWorkspaceHint, Loading
+   tags: autodocs

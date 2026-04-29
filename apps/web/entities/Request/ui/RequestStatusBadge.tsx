@@ -1,5 +1,5 @@
 import { Badge } from "@/shared/ui";
-import { REQUEST_STATUSES } from "@/shared/storybook/fixtures";
+import { REQUEST_STATUSES, type RequestStatusValue } from "../model";
 import {
   CircleCheckBig,
   CircleDashed,
@@ -21,8 +21,6 @@ const statusIcons = {
   completed: CircleCheckBig,
   reclamation: TriangleAlert,
 } as const;
-
-export type RequestStatusValue = (typeof REQUEST_STATUSES)[number]["value"];
 
 export interface RequestStatusBadgeProps {
   status: RequestStatusValue;

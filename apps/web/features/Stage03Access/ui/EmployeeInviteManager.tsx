@@ -2,8 +2,19 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { ArrowUpRight, Mail, ShieldCheck, UserRound } from "lucide-react";
-import { Badge, Button, Card, InputField } from "@/shared/ui";
-import { parseApiResponse, type CreateEmployeeInvitePayload, type EmployeeInviteResponse, type SessionSummaryResponse } from "@/shared/api";
+import { Badge, Button, Card, InputField, SelectField } from "@/shared/ui";
+import {
+  isRoleScopeCompatible,
+  parseApiResponse,
+  roleScopeOptions,
+  roleTemplateLabel,
+  roleTemplateLabels,
+  type CreateEmployeeInvitePayload,
+  type EmployeeInviteResponse,
+  type RoleTemplate,
+  type ScopeType,
+  type SessionSummaryResponse,
+} from "@/shared/api";
 
 type Props = {
   session: SessionSummaryResponse;
@@ -15,11 +26,20 @@ type ScopeOption = {
 };
 
 const roleTemplates = [
-  { value: "organization_admin", label: "Администратор организации" },
-  { value: "subdivision_manager", label: "Руководитель подразделения" },
-  { value: "unit_operator", label: "Администратор юнита" },
-  { value: "observer", label: "Наблюдатель" },
+  { value: "organization_admin", label: roleTemplateLabels.organization_admin },
+  { value: "organization_head", label: roleTemplateLabels.organization_head },
+  { value: "division_head", label: roleTemplateLabels.division_head },
+  { value: "division_operator", label: roleTemplateLabels.division_operator },
+  { value: "unit_head", label: roleTemplateLabels.unit_head },
+  { value: "unit_operator", label: roleTemplateLabels.unit_operator },
+  { value: "auditor", label: roleTemplateLabels.auditor },
 ] as const;
+
+const scopeTypeLabels: Record<ScopeType, string> = {
+  organization: "Вся организация",
+  division: "Подразделение",
+  unit: "Юнит",
+};
 
 const statusToneMap: Record<EmployeeInviteResponse["status"], "neutral" | "interactive" | "success" | "warning" | "danger"> = {
   draft: "neutral",
@@ -31,12 +51,12 @@ const statusToneMap: Record<EmployeeInviteResponse["status"], "neutral" | "inter
 };
 
 const statusLabelMap: Record<EmployeeInviteResponse["status"], string> = {
-  draft: "draft",
-  sent: "sent",
-  opened: "opened",
-  accepted: "accepted",
-  expired: "expired",
-  revoked: "revoked",
+  draft: "Черновик",
+  sent: "Отправлено",
+  opened: "Открыто",
+  accepted: "Принято",
+  expired: "Истекло",
+  revoked: "Отозвано",
 };
 
 function toLocalDateTimeInput(value: Date) {
@@ -55,33 +75,38 @@ function formatTimestamp(value?: string) {
   }).format(new Date(value));
 }
 
-function roleTemplateLabel(value: string) {
-  return roleTemplates.find((item) => item.value === value)?.label ?? value;
+function defaultScopeForRole(roleTemplate: RoleTemplate, scopeOptions: Record<ScopeType, ScopeOption[]>): ScopeType {
+  return roleScopeOptions[roleTemplate].find((scopeType) => scopeOptions[scopeType].length > 0) ?? roleScopeOptions[roleTemplate][0];
 }
 
 export function EmployeeInviteManager({ session }: Props) {
   const [invites, setInvites] = useState<EmployeeInviteResponse[]>([]);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [roleTemplate, setRoleTemplate] = useState<(typeof roleTemplates)[number]["value"]>("unit_operator");
-  const [scopeType, setScopeType] = useState<"organization" | "subdivision" | "unit">("unit");
-  const [scopeId, setScopeId] = useState(session.units[0]?.id ?? session.organization.id);
+  const [roleTemplate, setRoleTemplate] = useState<RoleTemplate>("auditor");
+  const [scopeType, setScopeType] = useState<ScopeType>("organization");
+  const [scopeId, setScopeId] = useState(session.organization.id);
   const [expiresAt, setExpiresAt] = useState(() => toLocalDateTimeInput(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)));
   const [loadingList, setLoadingList] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const scopeOptions = useMemo<Record<typeof scopeType, ScopeOption[]>>(
+  const scopeOptions = useMemo<Record<ScopeType, ScopeOption[]>>(
     () => ({
       organization: [{ value: session.organization.id, label: session.organization.name }],
-      subdivision: session.subdivisions.map((item) => ({ value: item.id, label: item.name })),
+      division: session.divisions.map((item) => ({ value: item.id, label: item.name })),
       unit: session.units.map((item) => ({ value: item.id, label: item.name })),
     }),
-    [session.organization.id, session.organization.name, session.subdivisions, session.units],
+    [session.organization.id, session.organization.name, session.divisions, session.units],
   );
 
   useEffect(() => {
+    if (!isRoleScopeCompatible(roleTemplate, scopeType)) {
+      setScopeType(defaultScopeForRole(roleTemplate, scopeOptions));
+      return;
+    }
+
     const options = scopeOptions[scopeType];
     if (options.length === 0) {
       setScopeId("");
@@ -91,7 +116,7 @@ export function EmployeeInviteManager({ session }: Props) {
     if (!options.some((item) => item.value === scopeId)) {
       setScopeId(options[0].value);
     }
-  }, [scopeId, scopeOptions, scopeType]);
+  }, [roleTemplate, scopeId, scopeOptions, scopeType]);
 
   useEffect(() => {
     void loadInvites();
@@ -105,11 +130,11 @@ export function EmployeeInviteManager({ session }: Props) {
       const response = await fetch("/api/auth/employee-invites", { cache: "no-store" });
       const nextInvites = await parseApiResponse<EmployeeInviteResponse[]>(
         response,
-        "Не удалось загрузить lifecycle приглашений.",
+        "Не удалось загрузить приглашения.",
       );
       setInvites(nextInvites);
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Не удалось загрузить lifecycle приглашений.");
+      setError(error instanceof Error ? error.message : "Не удалось загрузить приглашения.");
     } finally {
       setLoadingList(false);
     }
@@ -142,18 +167,18 @@ export function EmployeeInviteManager({ session }: Props) {
       });
       const createdInvite = await parseApiResponse<EmployeeInviteResponse>(
         response,
-        "Не удалось создать draft приглашения.",
+        "Не удалось создать черновик приглашения.",
       );
 
       setFullName("");
       setEmail("");
-      setRoleTemplate("unit_operator");
-      setScopeType("unit");
-      setScopeId(session.units[0]?.id ?? session.organization.id);
+      setRoleTemplate("auditor");
+      setScopeType("organization");
+      setScopeId(session.organization.id);
       setExpiresAt(toLocalDateTimeInput(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)));
       setInvites((current) => [createdInvite, ...current]);
     } catch (error) {
-      setFormError(error instanceof Error ? error.message : "Не удалось создать draft приглашения.");
+      setFormError(error instanceof Error ? error.message : "Не удалось создать черновик приглашения.");
     }
   }
 
@@ -176,23 +201,19 @@ export function EmployeeInviteManager({ session }: Props) {
     <div className="grid gap-4 xl:grid-cols-[0.92fr_1.08fr]">
       <Card className="gap-5" padding="lg">
         <div className="space-y-2">
-          <Badge tone="interactive">People & access</Badge>
+          <Badge tone="interactive">Сотрудники и доступ</Badge>
           <div className="space-y-2">
             <h2 className="text-xl font-semibold text-foreground">Пригласить сотрудника</h2>
             <p className="text-sm leading-6 text-muted-foreground">
-              После завершения bootstrap администратор организации выпускает employee invite с role template, scope и
-              сроком действия ссылки.
+              Укажите роль, область доступа и срок действия ссылки.
             </p>
           </div>
         </div>
 
         <div className="rounded-[var(--radius-lg)] bg-muted/70 px-4 py-3 text-sm leading-6 text-muted-foreground">
           <div className="flex items-start gap-2">
-            <ShieldCheck className="mt-0.5 size-4 shrink-0 text-accent" />
-            <p>
-              Этот экран покрывает только people/membership/access slice. Contract routing, request flow и contractor
-              execution сюда не расширяются.
-            </p>
+            <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-accent" />
+            <p>Проверьте параметры доступа перед отправкой приглашения.</p>
           </div>
         </div>
 
@@ -217,55 +238,45 @@ export function EmployeeInviteManager({ session }: Props) {
             type="email"
             value={email}
           />
-          <label className="grid gap-2.5">
-            <span className="text-sm font-medium text-foreground">Role template</span>
-            <select
-              className="h-10 rounded-[var(--radius-md)] border border-input bg-card px-3.5 text-sm text-foreground shadow-xs outline-none transition-colors hover:border-border-strong focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-ring/15"
-              name="roleTemplate"
-              onChange={(event) => setRoleTemplate(event.target.value as (typeof roleTemplates)[number]["value"])}
-              value={roleTemplate}
-            >
-              {roleTemplates.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
+              <SelectField
+                label="Роль доступа"
+                name="roleTemplate"
+                onChange={(event) => setRoleTemplate(event.target.value as RoleTemplate)}
+                options={roleTemplates}
+                value={roleTemplate}
+              />
           <div className="grid gap-4 md:grid-cols-2">
-            <label className="grid gap-2.5">
-              <span className="text-sm font-medium text-foreground">Scope type</span>
-              <select
-                className="h-10 rounded-[var(--radius-md)] border border-input bg-card px-3.5 text-sm text-foreground shadow-xs outline-none transition-colors hover:border-border-strong focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-ring/15"
+            <SelectField
+                label="Уровень доступа"
                 name="scopeType"
-                onChange={(event) => setScopeType(event.target.value as "organization" | "subdivision" | "unit")}
+                onChange={(event) => setScopeType(event.target.value as ScopeType)}
+                options={[
+                  {
+                    disabled: !isRoleScopeCompatible(roleTemplate, "organization"),
+                    label: "Вся организация",
+                    value: "organization",
+                  },
+                  {
+                    disabled: !isRoleScopeCompatible(roleTemplate, "division") || !scopeOptions.division.length,
+                    label: "Подразделение",
+                    value: "division",
+                  },
+                  {
+                    disabled: !isRoleScopeCompatible(roleTemplate, "unit") || !scopeOptions.unit.length,
+                    label: "Юнит",
+                    value: "unit",
+                  },
+                ]}
                 value={scopeType}
-              >
-                <option value="organization">organization</option>
-                <option value="subdivision" disabled={!scopeOptions.subdivision.length}>
-                  subdivision
-                </option>
-                <option value="unit" disabled={!scopeOptions.unit.length}>
-                  unit
-                </option>
-              </select>
-            </label>
-            <label className="grid gap-2.5">
-              <span className="text-sm font-medium text-foreground">Scope target</span>
-              <select
-                className="h-10 rounded-[var(--radius-md)] border border-input bg-card px-3.5 text-sm text-foreground shadow-xs outline-none transition-colors hover:border-border-strong focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-ring/15 disabled:cursor-not-allowed disabled:text-muted-foreground"
-                disabled={!scopeOptions[scopeType].length}
-                name="scopeId"
-                onChange={(event) => setScopeId(event.target.value)}
-                value={scopeId}
-              >
-                {scopeOptions[scopeType].map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+            />
+            <SelectField
+              disabled={!scopeOptions[scopeType].length}
+              label="Объект доступа"
+              name="scopeId"
+              onChange={(event) => setScopeId(event.target.value)}
+              options={scopeOptions[scopeType]}
+              value={scopeId}
+            />
           </div>
           <label className="grid gap-2.5">
             <span className="text-sm font-medium text-foreground">Срок действия ссылки до</span>
@@ -299,18 +310,18 @@ export function EmployeeInviteManager({ session }: Props) {
           }
           type="button"
         >
-          Создать draft приглашения
+          Создать черновик приглашения
         </Button>
       </Card>
 
       <Card className="gap-5" padding="lg">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-2">
-            <Badge tone="info">Lifecycle</Badge>
+            <Badge tone="info">История приглашений</Badge>
             <div className="space-y-1">
               <h2 className="text-xl font-semibold text-foreground">Статусы приглашений</h2>
               <p className="text-sm leading-6 text-muted-foreground">
-                Администратор видит полный lifecycle: `draft`, `sent`, `opened`, `accepted`, `expired`, `revoked`.
+                Черновики, отправленные, принятые и отозванные приглашения собраны в одном списке.
               </p>
             </div>
           </div>
@@ -333,7 +344,7 @@ export function EmployeeInviteManager({ session }: Props) {
             aria-live="polite"
             className="rounded-[var(--radius-lg)] border border-border bg-muted/40 px-4 py-6 text-sm text-muted-foreground"
           >
-            Загружаю lifecycle приглашений…
+            Загружаем приглашения…
           </div>
         ) : invites.length ? (
           <div className="grid gap-3">
@@ -347,13 +358,14 @@ export function EmployeeInviteManager({ session }: Props) {
                     </div>
                     <p className="text-sm text-muted-foreground">{invite.email}</p>
                     <p className="text-sm text-muted-foreground">
-                      {roleTemplateLabel(invite.roleTemplate)} / {invite.scopeType} / {invite.scopeLabel}
+                      {roleTemplateLabel(invite.roleTemplate)} / {scopeTypeLabels[invite.scopeType]} /{" "}
+                      {invite.scopeLabel}
                     </p>
                   </div>
                   <div className="text-right text-xs text-muted-foreground">
-                    <div>expires: {formatTimestamp(invite.expiresAt)}</div>
-                    <div>opened: {formatTimestamp(invite.openedAt)}</div>
-                    <div>accepted: {formatTimestamp(invite.acceptedAt)}</div>
+                    <div>Действует до: {formatTimestamp(invite.expiresAt)}</div>
+                    <div>Открыто: {formatTimestamp(invite.openedAt)}</div>
+                    <div>Принято: {formatTimestamp(invite.acceptedAt)}</div>
                   </div>
                 </div>
 
@@ -389,7 +401,7 @@ export function EmployeeInviteManager({ session }: Props) {
                       rel="noreferrer"
                       target="_blank"
                     >
-                      Открыть invite
+                      Открыть приглашение
                       <ArrowUpRight aria-hidden="true" className="size-4" />
                     </a>
                   ) : null}
@@ -397,6 +409,10 @@ export function EmployeeInviteManager({ session }: Props) {
                     <Button
                       onClick={() =>
                         startTransition(() => {
+                          if (!window.confirm("Приглашение будет отозвано. Продолжить?")) {
+                            return;
+                          }
+
                           void mutateInvite(
                             `/api/auth/employee-invites/${invite.id}/revoke`,
                             "Не удалось отозвать приглашение.",
@@ -415,7 +431,7 @@ export function EmployeeInviteManager({ session }: Props) {
           </div>
         ) : (
           <div className="rounded-[var(--radius-lg)] border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
-            После первого draft здесь появится lifecycle employee invites и их текущие статусы.
+            После первого черновика здесь появится список приглашений сотрудников и их текущие статусы.
           </div>
         )}
       </Card>

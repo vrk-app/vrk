@@ -1,0 +1,147 @@
+Frontend evidence audit for slice-010.
+
+1) evidence.json required fields:
+{
+  "design_brief_source": {
+    "artifact": ".agent/stages/03-identity-master-data/sprint_contract.md",
+    "summary": "Replace historical /company/setup launch-wizard targeting with persistent /company organization profile and structure management, scoped read-only projections, archive lifecycle, and employee invite target validation."
+  },
+  "ui_lookup": {
+    "queries": [
+      "slice-010 organization profile structure management company divisions units archive employee invite controls",
+      "Button Card InputField SelectField TextareaField InlineAlert Tabs company structure management"
+    ],
+    "artifacts": [
+      ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-010-org-structure-primary-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-010-org-structure-primitives-2026-04-29.txt"
+    ],
+    "decision": "reuse",
+    "result": "No complete org-structure reusable family was present; the implementation reuses existing primitives and feature-local composition, with no new reusable family/stories required."
+  },
+  "changed_ui_files": [
+    "apps/web/app/(runtime)/company/page.tsx",
+    "apps/web/app/(runtime)/company/setup/page.tsx",
+    "apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx",
+    "apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx",
+    "apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx",
+    "apps/web/app/register/[token]/page.tsx",
+    "apps/web/shared/ui/InputField.tsx",
+    "apps/web/shared/ui/SelectField.tsx",
+    "apps/web/shared/ui/TextareaField.tsx",
+    "apps/web/shared/ui/Tabs.tsx",
+    "apps/web/shared/ui/InlineAlert.tsx"
+  ],
+  "ui_review": {
+    "gate": "$web-design-guidelines",
+    "status": "PASS",
+    "artifact": ".agent/stages/03-identity-master-data/raw/slice-010-ui-review-2026-04-29.txt",
+    "source": ".agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-29.md",
+    "notes": [
+      "Added stable names/autocomplete hints to new company form controls.",
+      "Marked decorative icon as aria-hidden.",
+      "Added confirmation before archive/revoke mutations.",
+      "Tab state remains local as a conscious exception because the slice does not require deep-linked tabs."
+    ]
+  }
+}
+
+2) Fresh lookup rerun, primary:
+Storybook registry entries: 24
+Query: "slice-010 organization profile structure management company divisions units archive employee invite controls"
+
+No matching story-backed components found.
+
+3) Fresh lookup rerun, primitives:
+Storybook registry entries: 24
+Query: "Button Card InputField SelectField TextareaField InlineAlert Tabs company structure management"
+
+1. Primitives/TextareaField [TextareaField]
+   story: apps/web/stories/primitives/TextareaField.stories.tsx
+   source: apps/web/shared/ui/TextareaField.tsx
+   stories: Default, Hover, Focus, WithHint, WithCounter, AutoResize, WithError, Disabled
+   tags: autodocs
+2. Primitives/InlineAlert [InlineAlert]
+   story: apps/web/stories/primitives/InlineAlert.stories.tsx
+   source: apps/web/shared/ui/InlineAlert.tsx
+   stories: Info, Warning, Error, Success, WithAction
+   tags: autodocs
+3. Primitives/SelectField [SelectField]
+   story: apps/web/stories/primitives/SelectField.stories.tsx
+   source: apps/web/shared/ui/SelectField.tsx
+   stories: Single, Default, Hover, Focus, WithPlaceholder, Multiple, WithHint, WithError, Disabled, LoadingOptions
+   tags: autodocs
+4. Primitives/InputField [InputField]
+   story: apps/web/stories/primitives/InputField.stories.tsx
+   source: apps/web/shared/ui/InputField.tsx
+   stories: Default, Hover, Focus, Text, Email, Password, SearchField, WithHint, WithError, Disabled
+   tags: autodocs
+5. Requests/RequestListItem [RequestListItem]
+   story: apps/web/stories/requests/RequestListItem.stories.tsx
+   source: apps/web/entities/Request/ui/RequestListItem.tsx
+   stories: Base, Selected, LongEnterpriseName, WithoutNote, Completed, ZeroProgress, OverflowInput
+   tags: autodocs
+
+4) Stories/backlog for touched reusable primitives:
+present apps/web/stories/primitives/InputField.stories.tsx
+present apps/web/stories/primitives/SelectField.stories.tsx
+present apps/web/stories/primitives/TextareaField.stories.tsx
+present apps/web/stories/primitives/Tabs.stories.tsx
+present apps/web/stories/primitives/InlineAlert.stories.tsx
+52:- Не плодить дубликаты: `SearchInput` и `PasswordInput` являются вариантами `InputField`; статусные плашки являются обертками над `Badge`; круг процентов является оберткой над `CircularProgress`; доменные таблицы строятся на базе одного `DataTable`.
+96:### UI-03 InputField [P0]
+103:### UI-04 SelectField [P0]
+132:### UI-08 Tabs [P0]
+575:#### FORM-01 `TextareaField` [P0]
+690:#### STATE-04 `InlineAlert` / `FormAlert` [P0]
+964:- `SearchInput` — это `InputField` с `type="search"`.
+965:- `PasswordInput` — это `InputField` с `type="password"`.
+
+5) UI review result:
+## apps/web/app/(runtime)/company/page.tsx
+
+✓ pass
+
+## apps/web/app/(runtime)/company/setup/page.tsx
+
+✓ pass
+
+## apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+✓ pass
+
+## apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx
+
+✓ pass
+
+## apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx
+
+✓ pass
+
+## apps/web/app/register/[token]/page.tsx
+
+✓ pass
+
+## apps/web/shared/ui/InputField.tsx
+
+✓ pass
+
+## apps/web/shared/ui/SelectField.tsx
+
+✓ pass
+
+## apps/web/shared/ui/TextareaField.tsx
+
+✓ pass
+
+## apps/web/shared/ui/Tabs.tsx
+
+✓ pass
+
+## apps/web/shared/ui/InlineAlert.tsx
+
+✓ pass
+
+Review notes: source refreshed in web-interface-guidelines-source-2026-04-29-division-current-fresh-verifier.md. Checked labels/names/autocomplete, focus-visible replacement for outline-none, decorative aria-hidden icons, confirmation before archive/revoke mutations, semantic buttons/links, empty states, and story-backed reusable primitives. Local company tabs remain a documented non-blocking intra-page view switch, not a persisted filter/pagination state for this slice.
+
+Conclusion: PASS. Evidence contains brief source, lookup refs, reuse decision, changed UI file list, and UI review result. Lookup was rerun. Touched reusable primitives have stories and matching backlog entries where applicable; no duplicate org-structure reusable family was created.
+EXIT_CODE=0

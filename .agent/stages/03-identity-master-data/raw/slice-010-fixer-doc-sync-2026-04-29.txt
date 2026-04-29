@@ -1,0 +1,49 @@
+Slice-010 fixer doc-sync
+Checked at: 2026-04-29T02:34:55Z
+
+Scope:
+- Fixed only the verifier-reported canonical documentation gap for the /company business-field alias/type contract.
+- Did not edit production code, generated OpenAPI, feature_list.json, or verdict.json.
+
+Canonical doc updated:
+- docs/architecture/identity-master-data.md
+
+Stage artifacts refreshed:
+- .agent/stages/03-identity-master-data/evidence.md
+- .agent/stages/03-identity-master-data/evidence.json
+- .agent/stages/03-identity-master-data/progress.md
+- .agent/stages/03-identity-master-data/problems.md
+
+Command:
+python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data
+
+Result:
+PASS
+
+Key harness checks:
+- stage-artifacts: PASS
+- stage-freeze: PASS
+- feature-list-quality: PASS
+- proof-bundle-consistency: PASS
+
+Command:
+rg -n "ВРД|ВРЗ|ВУ|ВРП|registeredAddress|address|leaderFullName|managerName|leaderPosition|contractPhone|contractEmail|actingBasis|active.*select|Archived|archive|alias|compatibility" docs/architecture/identity-master-data.md .agent/stages/03-identity-master-data/sprint_contract.md .agent/stages/03-identity-master-data/problems.md
+
+Result:
+PASS
+
+Canonical doc hits now include:
+- docs/architecture/identity-master-data.md:113 type values ВРД / ВРЗ / ВУ / ВРП.
+- docs/architecture/identity-master-data.md:115 registeredAddress as canonical organization address.
+- docs/architecture/identity-master-data.md:116 address as compatibility/display alias for subdivision/unit storage/API payloads or old data.
+- docs/architecture/identity-master-data.md:117 leaderFullName as canonical leader display field.
+- docs/architecture/identity-master-data.md:118 managerName as migration/read-display compatibility alias.
+- docs/architecture/identity-master-data.md:119 leaderPosition.
+- docs/architecture/identity-master-data.md:120 contractPhone.
+- docs/architecture/identity-master-data.md:121 contractEmail.
+- docs/architecture/identity-master-data.md:122 actingBasis.
+- docs/architecture/identity-master-data.md:123 preserved code, region, status, comment.
+- docs/architecture/identity-master-data.md:125 active create/select flows and archive blocking constraints.
+
+Fresh verifier required:
+yes

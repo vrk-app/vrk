@@ -6,8 +6,8 @@ type Standard struct {
 	ID                          string
 	OrganizationID              string
 	OrganizationName            string
-	SubdivisionID               *string
-	SubdivisionName             *string
+	DivisionID               *string
+	DivisionName             *string
 	UnitID                      *string
 	UnitName                    *string
 	OwnerLabel                  *string
@@ -26,7 +26,7 @@ type Standard struct {
 }
 
 type CreateRequest struct {
-	SubdivisionID               *string `json:"subdivisionId,omitempty"`
+	DivisionID               *string `json:"divisionId,omitempty"`
 	UnitID                      *string `json:"unitId,omitempty"`
 	OwnerLabel                  *string `json:"ownerLabel,omitempty"`
 	StandardType                string  `json:"standardType"`
@@ -39,7 +39,7 @@ type CreateRequest struct {
 }
 
 type UpdateRequest struct {
-	SubdivisionID               *string `json:"subdivisionId,omitempty"`
+	DivisionID               *string `json:"divisionId,omitempty"`
 	UnitID                      *string `json:"unitId,omitempty"`
 	OwnerLabel                  *string `json:"ownerLabel,omitempty"`
 	StandardType                *string `json:"standardType,omitempty"`

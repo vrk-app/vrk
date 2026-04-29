@@ -1,0 +1,321 @@
+$ cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run build
+
+> @vrk/web@0.1.0 build /Users/yura-posledov/cursor/vrk/apps/web
+> next build
+
+   ▲ Next.js 15.5.15
+
+   Creating an optimized production build ...
+ ⚠ Compiled with warnings in 1811ms
+
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+Attempted import error: 'sessionHasCapability' is not exported from '@/shared/api' (imported as 'sessionHasCapability').
+
+Import trace for requested module:
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'roleTemplateLabels' is not exported from '@/shared/api' (imported as 'roleTemplateLabels').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'roleTemplateLabels' is not exported from '@/shared/api' (imported as 'roleTemplateLabels').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'roleTemplateLabels' is not exported from '@/shared/api' (imported as 'roleTemplateLabels').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'roleTemplateLabels' is not exported from '@/shared/api' (imported as 'roleTemplateLabels').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'roleTemplateLabels' is not exported from '@/shared/api' (imported as 'roleTemplateLabels').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'roleTemplateLabels' is not exported from '@/shared/api' (imported as 'roleTemplateLabels').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'roleTemplateLabels' is not exported from '@/shared/api' (imported as 'roleTemplateLabels').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'roleScopeOptions' is not exported from '@/shared/api' (imported as 'roleScopeOptions').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'roleScopeOptions' is not exported from '@/shared/api' (imported as 'roleScopeOptions').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'isRoleScopeCompatible' is not exported from '@/shared/api' (imported as 'isRoleScopeCompatible').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'isRoleScopeCompatible' is not exported from '@/shared/api' (imported as 'isRoleScopeCompatible').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'isRoleScopeCompatible' is not exported from '@/shared/api' (imported as 'isRoleScopeCompatible').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'isRoleScopeCompatible' is not exported from '@/shared/api' (imported as 'isRoleScopeCompatible').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'roleTemplateLabel' is not exported from '@/shared/api' (imported as 'roleTemplateLabel').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx
+Attempted import error: 'roleTemplateLabel' is not exported from '@/shared/api' (imported as 'roleTemplateLabel').
+
+Import trace for requested module:
+./features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx
+./features/Stage03Bootstrap/index.ts
+./app/register/page.tsx
+
+./features/Stage03Contracts/ui/ContractsRegistry.tsx
+Attempted import error: 'sessionHasCapability' is not exported from '@/shared/api' (imported as 'sessionHasCapability').
+
+Import trace for requested module:
+./features/Stage03Contracts/ui/ContractsRegistry.tsx
+
+./features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+Attempted import error: 'sessionHasCapability' is not exported from '@/shared/api' (imported as 'sessionHasCapability').
+
+Import trace for requested module:
+./features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+
+./app/(runtime)/contracts/page.tsx
+Attempted import error: 'sessionHasCapability' is not exported from '@/shared/api' (imported as 'sessionHasCapability').
+
+Import trace for requested module:
+./app/(runtime)/contracts/page.tsx
+
+./app/(runtime)/equipment/page.tsx
+Attempted import error: 'sessionHasCapability' is not exported from '@/shared/api' (imported as 'sessionHasCapability').
+
+Import trace for requested module:
+./app/(runtime)/equipment/page.tsx
+
+./app/(runtime)/layout.tsx
+Attempted import error: 'roleTemplateLabel' is not exported from '@/shared/api' (imported as 'roleTemplateLabel').
+
+Import trace for requested module:
+./app/(runtime)/layout.tsx
+
+ ⚠ Compiled with warnings in 1009ms
+
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+Attempted import error: 'sessionHasCapability' is not exported from '@/shared/api' (imported as 'sessionHasCapability').
+
+Import trace for requested module:
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'roleTemplateLabels' is not exported from '@/shared/api' (imported as 'roleTemplateLabels').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'roleTemplateLabels' is not exported from '@/shared/api' (imported as 'roleTemplateLabels').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'roleTemplateLabels' is not exported from '@/shared/api' (imported as 'roleTemplateLabels').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'roleTemplateLabels' is not exported from '@/shared/api' (imported as 'roleTemplateLabels').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'roleTemplateLabels' is not exported from '@/shared/api' (imported as 'roleTemplateLabels').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'roleTemplateLabels' is not exported from '@/shared/api' (imported as 'roleTemplateLabels').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'roleTemplateLabels' is not exported from '@/shared/api' (imported as 'roleTemplateLabels').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'roleScopeOptions' is not exported from '@/shared/api' (imported as 'roleScopeOptions').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'roleScopeOptions' is not exported from '@/shared/api' (imported as 'roleScopeOptions').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'isRoleScopeCompatible' is not exported from '@/shared/api' (imported as 'isRoleScopeCompatible').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'isRoleScopeCompatible' is not exported from '@/shared/api' (imported as 'isRoleScopeCompatible').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'isRoleScopeCompatible' is not exported from '@/shared/api' (imported as 'isRoleScopeCompatible').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'isRoleScopeCompatible' is not exported from '@/shared/api' (imported as 'isRoleScopeCompatible').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+Attempted import error: 'roleTemplateLabel' is not exported from '@/shared/api' (imported as 'roleTemplateLabel').
+
+Import trace for requested module:
+./features/Stage03Access/ui/EmployeeInviteManager.tsx
+./features/Stage03Access/index.ts
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+./features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx
+Attempted import error: 'roleTemplateLabel' is not exported from '@/shared/api' (imported as 'roleTemplateLabel').
+
+Import trace for requested module:
+./features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx
+
+./features/Stage03Contracts/ui/ContractsRegistry.tsx
+Attempted import error: 'sessionHasCapability' is not exported from '@/shared/api' (imported as 'sessionHasCapability').
+
+Import trace for requested module:
+./features/Stage03Contracts/ui/ContractsRegistry.tsx
+
+./features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+Attempted import error: 'sessionHasCapability' is not exported from '@/shared/api' (imported as 'sessionHasCapability').
+
+Import trace for requested module:
+./features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+
+ ✓ Compiled successfully in 2.9s
+   Linting and checking validity of types ...
+Failed to compile.
+
+./app/(runtime)/company/_components/CompanyStructureWorkspace.tsx:8:3
+Type error: Module '"@/shared/api"' has no exported member 'sessionHasCapability'.
+
+[0m [90m  6 |[39m [36mimport[39m {
+ [90m  7 |[39m   parseApiResponse[33m,[39m
+[31m[1m>[22m[39m[90m  8 |[39m   sessionHasCapability[33m,[39m
+ [90m    |[39m   [31m[1m^[22m[39m
+ [90m  9 |[39m   type [33mCompanyProfilePayload[39m[33m,[39m
+ [90m 10 |[39m   type [33mSessionSummaryResponse[39m[33m,[39m
+ [90m 11 |[39m   type [33mStructureNodePayload[39m[33m,[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+ ELIFECYCLE  Command failed with exit code 1.
+EXIT_CODE=1

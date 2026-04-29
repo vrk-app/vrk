@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { userEvent, within } from "@storybook/test";
+import { expect, userEvent, within } from "@storybook/test";
 import { LockKeyhole, Mail, Search } from "lucide-react";
 import { InputField } from "@/shared/ui";
 
@@ -64,12 +64,23 @@ export const Email: Story = {
 
 export const Password: Story = {
   args: {
+    defaultValue: "vrk-secret-2026",
     label: "Пароль",
     name: "current-password",
     autoComplete: "current-password",
     placeholder: "Введите пароль…",
     type: "password",
     leftIcon: <LockKeyhole className="size-4" />,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByLabelText("Пароль");
+
+    await userEvent.click(canvas.getByRole("button", { name: "Показать пароль" }));
+    await expect(input).toHaveAttribute("type", "text");
+
+    await userEvent.click(canvas.getByRole("button", { name: "Скрыть пароль" }));
+    await expect(input).toHaveAttribute("type", "password");
   },
 };
 

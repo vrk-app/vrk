@@ -98,6 +98,34 @@ func (s *testBootstrapService) CompleteLaunch(ctx context.Context, token string,
 	panic("unexpected call to CompleteLaunch")
 }
 
+func (s *testBootstrapService) UpdateCompanyProfile(ctx context.Context, token string, req bootstrap.CompanyProfileRequest) (*bootstrap.SessionSummaryResponse, error) {
+	panic("unexpected call to UpdateCompanyProfile")
+}
+
+func (s *testBootstrapService) CreateDivision(ctx context.Context, token string, req bootstrap.StructureNodeRequest) (*bootstrap.SessionSummaryResponse, error) {
+	panic("unexpected call to CreateDivision")
+}
+
+func (s *testBootstrapService) UpdateDivision(ctx context.Context, token string, divisionID string, req bootstrap.StructureNodeRequest) (*bootstrap.SessionSummaryResponse, error) {
+	panic("unexpected call to UpdateDivision")
+}
+
+func (s *testBootstrapService) ArchiveDivision(ctx context.Context, token string, divisionID string) (*bootstrap.SessionSummaryResponse, error) {
+	panic("unexpected call to ArchiveDivision")
+}
+
+func (s *testBootstrapService) CreateUnit(ctx context.Context, token string, req bootstrap.StructureNodeRequest) (*bootstrap.SessionSummaryResponse, error) {
+	panic("unexpected call to CreateUnit")
+}
+
+func (s *testBootstrapService) UpdateUnit(ctx context.Context, token string, unitID string, req bootstrap.StructureNodeRequest) (*bootstrap.SessionSummaryResponse, error) {
+	panic("unexpected call to UpdateUnit")
+}
+
+func (s *testBootstrapService) ArchiveUnit(ctx context.Context, token string, unitID string) (*bootstrap.SessionSummaryResponse, error) {
+	panic("unexpected call to ArchiveUnit")
+}
+
 func TestUpdateRejectsArchivedEquipment(t *testing.T) {
 	t.Parallel()
 
@@ -139,7 +167,7 @@ func TestUpdateRejectsArchivedEquipment(t *testing.T) {
 			},
 			Grant: &bootstrap.SessionGrantResponse{
 				ID:           "grant-1",
-				RoleTemplate: "organization_admin",
+				RoleTemplate: bootstrap.RoleOrganizationAdmin,
 				ScopeType:    "organization",
 				ScopeID:      "org-1",
 			},

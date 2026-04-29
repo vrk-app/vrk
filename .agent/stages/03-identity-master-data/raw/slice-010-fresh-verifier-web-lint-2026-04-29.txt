@@ -1,0 +1,4 @@
+
+> @vrk/web@0.1.0 lint /Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/raw/slice-010-fresh-verifier-workspace-2026-04-29/apps/web
+> eslint .
+

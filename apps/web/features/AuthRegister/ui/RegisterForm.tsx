@@ -22,14 +22,14 @@ export function RegisterForm({
     <Card className={cn("gap-5", className)} padding="lg" {...props}>
       <div className="space-y-2">
         <p className="text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground">
-          Старт customer-admin контура
+          Старт кабинета администратора заказчика
         </p>
         <div className="space-y-2">
           <h2 className="text-2xl font-bold tracking-tight text-foreground">
-            Зарегистрировать компанию в shell-режиме
+            Зарегистрировать компанию
           </h2>
           <p className="text-sm leading-6 text-muted-foreground">
-            Форма фиксирует обязательные поля первого входа, но сохранение и приглашения включатся только на следующем доменном этапе.
+            Укажите контактное лицо, компанию и рабочие контакты.
           </p>
         </div>
       </div>
@@ -83,10 +83,10 @@ export function RegisterForm({
 
         <div className="grid gap-3">
           <Button fullWidth loading={loading} rightIcon={<ArrowRight className="size-4" />} type="submit">
-            Создать shell-профиль
+            Зарегистрировать компанию
           </Button>
           <p className="text-center text-sm text-muted-foreground">
-            После регистрации пользователь переходит в контур компании, где реквизиты и подразделение все еще остаются non-persisted shell surface.
+            После регистрации откроется раздел компании.
           </p>
         </div>
       </form>

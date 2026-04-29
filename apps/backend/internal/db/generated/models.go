@@ -27,7 +27,7 @@ type Agreement struct {
 	WorkType                 *string            `json:"workType"`
 	EquipmentType            *string            `json:"equipmentType"`
 	Region                   *string            `json:"region"`
-	SubdivisionID            pgtype.UUID        `json:"subdivisionId"`
+	DivisionID               pgtype.UUID        `json:"divisionId"`
 	UnitID                   pgtype.UUID        `json:"unitId"`
 	LocationScopeLabel       *string            `json:"locationScopeLabel"`
 }
@@ -101,6 +101,31 @@ type AuthBootstrapOrganization struct {
 	LaunchedAt          pgtype.Timestamptz `json:"launchedAt"`
 	CreatedAt           pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt           pgtype.Timestamptz `json:"updatedAt"`
+	LeaderFullName      *string            `json:"leaderFullName"`
+	LeaderPosition      *string            `json:"leaderPosition"`
+	ContractPhone       *string            `json:"contractPhone"`
+	ContractEmail       *string            `json:"contractEmail"`
+	ActingBasis         *string            `json:"actingBasis"`
+}
+
+type AuthDivision struct {
+	ID             pgtype.UUID        `json:"id"`
+	OrganizationID pgtype.UUID        `json:"organizationId"`
+	DivisionType   string             `json:"divisionType"`
+	Name           string             `json:"name"`
+	Code           *string            `json:"code"`
+	Region         *string            `json:"region"`
+	Address        *string            `json:"address"`
+	ManagerName    *string            `json:"managerName"`
+	Contacts       *string            `json:"contacts"`
+	Status         string             `json:"status"`
+	CreatedAt      pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt      pgtype.Timestamptz `json:"updatedAt"`
+	LeaderPosition *string            `json:"leaderPosition"`
+	ContractPhone  *string            `json:"contractPhone"`
+	ContractEmail  *string            `json:"contractEmail"`
+	ActingBasis    *string            `json:"actingBasis"`
+	Comment        *string            `json:"comment"`
 }
 
 type AuthEmployeeInvite struct {
@@ -166,25 +191,10 @@ type AuthSession struct {
 	GrantID      pgtype.UUID        `json:"grantId"`
 }
 
-type AuthSubdivision struct {
-	ID              pgtype.UUID        `json:"id"`
-	OrganizationID  pgtype.UUID        `json:"organizationId"`
-	SubdivisionType string             `json:"subdivisionType"`
-	Name            string             `json:"name"`
-	Code            *string            `json:"code"`
-	Region          *string            `json:"region"`
-	Address         *string            `json:"address"`
-	ManagerName     *string            `json:"managerName"`
-	Contacts        *string            `json:"contacts"`
-	Status          string             `json:"status"`
-	CreatedAt       pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt       pgtype.Timestamptz `json:"updatedAt"`
-}
-
 type AuthUnit struct {
 	ID             pgtype.UUID        `json:"id"`
 	OrganizationID pgtype.UUID        `json:"organizationId"`
-	SubdivisionID  pgtype.UUID        `json:"subdivisionId"`
+	DivisionID     pgtype.UUID        `json:"divisionId"`
 	UnitType       string             `json:"unitType"`
 	Name           string             `json:"name"`
 	Code           *string            `json:"code"`
@@ -194,6 +204,12 @@ type AuthUnit struct {
 	Status         string             `json:"status"`
 	CreatedAt      pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt      pgtype.Timestamptz `json:"updatedAt"`
+	Region         *string            `json:"region"`
+	LeaderPosition *string            `json:"leaderPosition"`
+	ContractPhone  *string            `json:"contractPhone"`
+	ContractEmail  *string            `json:"contractEmail"`
+	ActingBasis    *string            `json:"actingBasis"`
+	Comment        *string            `json:"comment"`
 }
 
 type Equipment struct {
@@ -380,7 +396,7 @@ type RegistryMetrologyJournalEntry struct {
 type RegistryStandard struct {
 	ID                          pgtype.UUID        `json:"id"`
 	OrganizationID              pgtype.UUID        `json:"organizationId"`
-	SubdivisionID               pgtype.UUID        `json:"subdivisionId"`
+	DivisionID                  pgtype.UUID        `json:"divisionId"`
 	UnitID                      pgtype.UUID        `json:"unitId"`
 	OwnerLabel                  *string            `json:"ownerLabel"`
 	StandardType                string             `json:"standardType"`

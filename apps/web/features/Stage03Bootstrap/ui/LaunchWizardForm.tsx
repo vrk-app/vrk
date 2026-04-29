@@ -2,44 +2,72 @@
 
 import { useEffect, useState, useTransition, type FormEventHandler } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Building2, Factory, MapPinned, Phone, UserRound } from "lucide-react";
-import { Button, Card, InputField } from "@/shared/ui";
+import { ArrowRight, Building2, MapPinned, Phone, UserRound } from "lucide-react";
+import { Button, Card, InputField, SelectField } from "@/shared/ui";
 import { parseApiResponse, resolveSessionLandingPath, type LaunchWizardPayload, type SessionSummaryResponse } from "@/shared/api";
 
 type Props = {
   session: SessionSummaryResponse;
 };
 
+const legalFormOptions = [
+  { label: "ООО", value: "ООО" },
+  { label: "АО", value: "АО" },
+  { label: "ПАО", value: "ПАО" },
+] as const;
+
+const unitTypeOptions = [
+  { label: "ВРД", value: "ВРД" },
+  { label: "ВРЗ", value: "ВРЗ" },
+  { label: "ВУ", value: "ВУ" },
+  { label: "ВРП", value: "ВРП" },
+] as const;
+
+function normalizeLegalForm(value?: string) {
+  switch ((value ?? "").trim().toUpperCase()) {
+    case "ОАО":
+      return "ПАО";
+    case "ЗАО":
+      return "АО";
+    case "LLC":
+      return "ООО";
+    case "АО":
+    case "ПАО":
+    case "ООО":
+      return (value ?? "").trim().toUpperCase();
+    default:
+      return "ООО";
+  }
+}
+
 export function LaunchWizardForm({ session }: Props) {
   const router = useRouter();
-  const [structureMode, setStructureMode] = useState<"subdivision" | "unit">("subdivision");
+  const [structureMode, setStructureMode] = useState<"division" | "unit">("division");
   const [organizationName, setOrganizationName] = useState(session.organization.name);
   const [shortName, setShortName] = useState(session.organization.shortName ?? "");
-  const [propertyType, setPropertyType] = useState(session.organization.propertyType ?? "ООО");
+  const [propertyType, setPropertyType] = useState(normalizeLegalForm(session.organization.propertyType));
   const [inn, setInn] = useState(session.organization.inn ?? "");
   const [kpp, setKpp] = useState(session.organization.kpp ?? "");
   const [legalAddress, setLegalAddress] = useState(session.organization.legalAddress ?? "");
   const [contactEmail, setContactEmail] = useState(session.organization.contactEmail ?? session.account.email);
   const [contactPhone, setContactPhone] = useState(session.organization.contactPhone ?? "");
-  const [subdivisionType, setSubdivisionType] = useState("Филиал");
-  const [subdivisionName, setSubdivisionName] = useState("");
-  const [unitType, setUnitType] = useState("Производственный юнит");
+  const [divisionName, setDivisionName] = useState("");
+  const [unitType, setUnitType] = useState("ВРД");
   const [unitName, setUnitName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const hasUnsavedChanges =
     organizationName !== session.organization.name ||
     shortName !== (session.organization.shortName ?? "") ||
-    propertyType !== (session.organization.propertyType ?? "ООО") ||
+    propertyType !== normalizeLegalForm(session.organization.propertyType) ||
     inn !== (session.organization.inn ?? "") ||
     kpp !== (session.organization.kpp ?? "") ||
     legalAddress !== (session.organization.legalAddress ?? "") ||
     contactEmail !== (session.organization.contactEmail ?? session.account.email) ||
     contactPhone !== (session.organization.contactPhone ?? "") ||
-    structureMode !== "subdivision" ||
-    subdivisionType !== "Филиал" ||
-    subdivisionName !== "" ||
-    unitType !== "Производственный юнит" ||
+    structureMode !== "division" ||
+    divisionName !== "" ||
+    unitType !== "ВРД" ||
     unitName !== "";
 
   useEffect(() => {
@@ -72,11 +100,10 @@ export function LaunchWizardForm({ session }: Props) {
         type: unitType,
         name: unitName,
       },
-      ...(structureMode === "subdivision"
+      ...(structureMode === "division"
         ? {
-            subdivision: {
-              type: subdivisionType,
-              name: subdivisionName,
+            division: {
+              name: divisionName,
             },
           }
         : {}),
@@ -104,14 +131,14 @@ export function LaunchWizardForm({ session }: Props) {
     <div className="grid gap-6 xl:grid-cols-[1.12fr_0.88fr]">
       <Card className="gap-5" padding="lg">
         <div className="space-y-2">
-          <p className="text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground">
-            Launch wizard
-          </p>
+          <p className="text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground">Первичный запуск</p>
           <div className="space-y-2">
-            <h2 className="text-2xl font-bold tracking-tight text-foreground">Запустить организацию и первую структуру</h2>
+            <h2 className="text-balance text-2xl font-bold tracking-tight text-foreground">
+              Запустить организацию и первую структуру
+            </h2>
             <p className="text-sm leading-6 text-muted-foreground">
-              Сохраните базовые реквизиты организации и создайте первую рабочую структуру. После этого runtime shell
-              перестанет быть пустой заготовкой и покажет уже сохраненный контур.
+              Сохраните базовые реквизиты организации и создайте первую рабочую структуру. После завершения вы
+              перейдете в рабочее пространство организации.
             </p>
           </div>
         </div>
@@ -144,13 +171,12 @@ export function LaunchWizardForm({ session }: Props) {
               placeholder="Например, ВРК Север…"
               value={shortName}
             />
-            <InputField
+            <SelectField
               autoComplete="off"
               label="ОПФ"
-              leftIcon={<Factory className="size-4" />}
               name="propertyType"
-              onChange={(event) => setPropertyType(event.target.value)}
-              placeholder="Например, ООО…"
+              onValueChange={setPropertyType}
+              options={legalFormOptions}
               value={propertyType}
             />
             <InputField
@@ -209,14 +235,13 @@ export function LaunchWizardForm({ session }: Props) {
             <div className="space-y-1">
               <p className="text-sm font-semibold text-foreground">Первый уровень оргструктуры</p>
               <p className="text-sm leading-6 text-muted-foreground">
-                Сразу выберите, начнется ли структура с подразделения или первый юнит будет жить напрямую под
-                организацией.
+                Выберите, начнется ли структура с подразделения или с юнита под организацией.
               </p>
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
               {[
-                { label: "Сначала подразделение", value: "subdivision" as const },
+                { label: "Сначала подразделение", value: "division" as const },
                 { label: "Сразу юнит под организацией", value: "unit" as const },
               ].map((option) => (
                 <label
@@ -236,34 +261,26 @@ export function LaunchWizardForm({ session }: Props) {
               ))}
             </div>
 
-            {structureMode === "subdivision" ? (
-              <div className="grid gap-4 md:grid-cols-2">
-                <InputField
-                  autoComplete="off"
-                  label="Тип подразделения"
-                  name="subdivisionType"
-                  onChange={(event) => setSubdivisionType(event.target.value)}
-                  placeholder="Например, Филиал…"
-                  value={subdivisionType}
-                />
+            {structureMode === "division" ? (
+              <div className="grid gap-4">
                 <InputField
                   autoComplete="off"
                   label="Название подразделения"
-                  name="subdivisionName"
-                  onChange={(event) => setSubdivisionName(event.target.value)}
+                  name="divisionName"
+                  onChange={(event) => setDivisionName(event.target.value)}
                   placeholder="Например, Северный филиал…"
-                  value={subdivisionName}
+                  value={divisionName}
                 />
               </div>
             ) : null}
 
             <div className="grid gap-4 md:grid-cols-2">
-              <InputField
+              <SelectField
                 autoComplete="off"
                 label="Тип юнита"
                 name="unitType"
-                onChange={(event) => setUnitType(event.target.value)}
-                placeholder="Например, Производственный юнит…"
+                onValueChange={setUnitType}
+                options={unitTypeOptions}
                 value={unitType}
               />
               <InputField
@@ -294,24 +311,25 @@ export function LaunchWizardForm({ session }: Props) {
       </Card>
 
       <Card className="gap-4" padding="lg">
-        <p className="text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground">Что создается</p>
+        <p className="text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground">После запуска</p>
         <div className="grid gap-3">
           <div className="rounded-[var(--radius-lg)] border border-border bg-card px-4 py-3">
-            <p className="text-sm font-semibold text-foreground">Membership</p>
+            <p className="text-sm font-semibold text-foreground">Доступ администратора</p>
             <p className="mt-1 text-sm leading-6 text-muted-foreground">
-              Для {session.account.fullName} уже создан membership в организации и organization-level grant.
+              {session.account.fullName} сможет управлять организацией.
             </p>
           </div>
           <div className="rounded-[var(--radius-lg)] border border-border bg-card px-4 py-3">
-            <p className="text-sm font-semibold text-foreground">Org graph</p>
+            <p className="text-sm font-semibold text-foreground">Рабочая структура</p>
             <p className="mt-1 text-sm leading-6 text-muted-foreground">
-              Wizard запишет ядро организации и добавит первый {structureMode === "subdivision" ? "подразделение + юнит" : "юнит"}.
+              Сохраняются реквизиты организации и первый{" "}
+              {structureMode === "division" ? "подразделение с юнитом" : "юнит"}.
             </p>
           </div>
           <div className="rounded-[var(--radius-lg)] border border-border bg-card px-4 py-3">
-            <p className="text-sm font-semibold text-foreground">Guardrails</p>
+            <p className="text-sm font-semibold text-foreground">Следующий шаг</p>
             <p className="mt-1 text-sm leading-6 text-muted-foreground">
-              Контуры заявок, contractor execution и offline behavior в этот slice не включаются.
+              После запуска можно перейти к рабочим разделам VRK.
             </p>
           </div>
         </div>

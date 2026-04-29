@@ -1,0 +1,159 @@
+Fresh verifier contract audit for slice-010 legal-type correction
+Date: 2026-04-29
+
+Backend validation evidence:
+apps/backend/internal/auth/bootstrap/errors.go:35:	ErrPropertyTypeInvalid        = errors.New("property type must be ООО, АО, or ПАО")
+apps/backend/internal/auth/bootstrap/errors.go:45:	ErrStructureTypeInvalid       = errors.New("unit type must be ВРД, ВРЗ, ВУ, or ВРП")
+apps/backend/internal/auth/bootstrap/handler_test.go:165:			wantErr: ErrPropertyTypeInvalid,
+apps/backend/internal/auth/bootstrap/handler_test.go:198:	if err := normalizeStructureNodeRequest(&subdivisionReq, false, &sessionSnapshot{}, ErrSubdivisionNameRequired); err != nil {
+apps/backend/internal/auth/bootstrap/handler_test.go:201:	if subdivisionReq.Type != defaultSubdivisionType {
+apps/backend/internal/auth/bootstrap/handler_test.go:202:		t.Fatalf("subdivision type = %q, want %q", subdivisionReq.Type, defaultSubdivisionType)
+apps/backend/internal/auth/bootstrap/handler_test.go:206:	if err := normalizeStructureNodeRequest(&unitReq, true, &sessionSnapshot{}, ErrUnitNameRequired); err != nil {
+apps/backend/internal/auth/bootstrap/handler_test.go:211:	if err := normalizeStructureNodeRequest(&missingUnitType, true, &sessionSnapshot{}, ErrUnitNameRequired); !errors.Is(err, ErrUnitTypeRequired) {
+apps/backend/internal/auth/bootstrap/handler_test.go:216:	if err := normalizeStructureNodeRequest(&invalidUnitType, true, &sessionSnapshot{}, ErrUnitNameRequired); !errors.Is(err, ErrStructureTypeInvalid) {
+apps/backend/internal/auth/bootstrap/handler_test.go:217:		t.Fatalf("unit with invalid type error = %v, want %v", err, ErrStructureTypeInvalid)
+apps/backend/internal/auth/bootstrap/service.go:17:	defaultSubdivisionType  = "subdivision"
+apps/backend/internal/auth/bootstrap/service.go:29:var allowedOrganizationPropertyTypes = map[string]struct{}{
+apps/backend/internal/auth/bootstrap/service.go:35:var allowedUnitTypes = map[string]struct{}{
+apps/backend/internal/auth/bootstrap/service.go:434:	propertyType, err := normalizeOrganizationPropertyType(req.PropertyType)
+apps/backend/internal/auth/bootstrap/service.go:460:	if _, ok := allowedUnitTypes[req.Unit.Type]; !ok {
+apps/backend/internal/auth/bootstrap/service.go:461:		return nil, ErrStructureTypeInvalid
+apps/backend/internal/auth/bootstrap/service.go:473:		req.Subdivision.Type = defaultSubdivisionType
+apps/backend/internal/auth/bootstrap/service.go:514:	if err := normalizeStructureNodeRequest(&req, false, snapshot, ErrSubdivisionNameRequired); err != nil {
+apps/backend/internal/auth/bootstrap/service.go:534:	if err := normalizeStructureNodeRequest(&req, false, snapshot, ErrSubdivisionNameRequired); err != nil {
+apps/backend/internal/auth/bootstrap/service.go:567:	if err := normalizeStructureNodeRequest(&req, true, snapshot, ErrUnitNameRequired); err != nil {
+apps/backend/internal/auth/bootstrap/service.go:587:	if err := normalizeStructureNodeRequest(&req, true, snapshot, ErrUnitNameRequired); err != nil {
+apps/backend/internal/auth/bootstrap/service.go:933:	propertyType, err := normalizeOrganizationPropertyType(firstNonEmptyStringPointer(req.PropertyType, req.Type))
+apps/backend/internal/auth/bootstrap/service.go:947:func normalizeStructureNodeRequest(req *StructureNodeRequest, allowSubdivision bool, snapshot *sessionSnapshot, nameRequiredErr error) error {
+apps/backend/internal/auth/bootstrap/service.go:972:		if _, ok := allowedUnitTypes[req.Type]; !ok {
+apps/backend/internal/auth/bootstrap/service.go:973:			return ErrStructureTypeInvalid
+apps/backend/internal/auth/bootstrap/service.go:976:		req.Type = defaultSubdivisionType
+apps/backend/internal/auth/bootstrap/service.go:997:func normalizeOrganizationPropertyType(value string) (string, error) {
+apps/backend/internal/auth/bootstrap/service.go:1009:	if _, ok := allowedOrganizationPropertyTypes[normalized]; !ok {
+apps/backend/internal/auth/bootstrap/service.go:1010:		return "", ErrPropertyTypeInvalid
+
+Web selector evidence:
+apps/web/features/Stage03Bootstrap/ui/LaunchWizardForm.tsx:13:const legalFormOptions = [
+apps/web/features/Stage03Bootstrap/ui/LaunchWizardForm.tsx:19:const unitTypeOptions = [
+apps/web/features/Stage03Bootstrap/ui/LaunchWizardForm.tsx:28:    case "ОАО":
+apps/web/features/Stage03Bootstrap/ui/LaunchWizardForm.tsx:30:    case "ЗАО":
+apps/web/features/Stage03Bootstrap/ui/LaunchWizardForm.tsx:32:    case "LLC":
+apps/web/features/Stage03Bootstrap/ui/LaunchWizardForm.tsx:176:              label="ОПФ"
+apps/web/features/Stage03Bootstrap/ui/LaunchWizardForm.tsx:179:              options={legalFormOptions}
+apps/web/features/Stage03Bootstrap/ui/LaunchWizardForm.tsx:281:                label="Тип юнита"
+apps/web/features/Stage03Bootstrap/ui/LaunchWizardForm.tsx:284:                options={unitTypeOptions}
+apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx:38:const organizationPropertyTypeOptions = [
+apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx:44:const unitTypeOptions = [
+apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx:173:    case "ОАО":
+apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx:175:    case "ЗАО":
+apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx:177:    case "LLC":
+apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx:349:                label="Тип"
+apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx:352:                options={organizationPropertyTypeOptions}
+apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx:486:              showType={false}
+apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx:567:                          type={unit.type}
+apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx:592:                      type={unit.type}
+apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx:658:            label="Тип"
+apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx:661:            options={unitTypeOptions}
+
+Proof script assertions:
+183:    assert_true('{ label: "ОАО"' not in workspace_source and '{ label: "ЗАО"' not in workspace_source, "/company source must not expose legacy ОАО/ЗАО options")
+186:    for option in ("ВРД", "ВРЗ", "ВУ", "ВРП"):
+192:        "profileLegalForms": ["ООО", "АО", "ПАО"],
+193:        "subdivisionTypeSelector": "hidden",
+194:        "unitTypes": ["ВРД", "ВРЗ", "ВУ", "ВРП"],
+289:        "propertyType": property_type,
+302:        payload.pop("propertyType")
+324:        "type": "ВУ",
+390:    assert_true(profiled["data"]["organization"]["propertyType"] == "ООО", "organization profile did not preserve ООО legal form")
+391:    assert_true(profiled["data"]["organization"]["type"] == "ООО", "organization type alias did not mirror propertyType")
+417:        body=company_profile_payload("legacy-oao", legacy_type="ОАО"),
+425:        body=company_profile_payload("legacy-zao", legacy_type="ЗАО"),
+433:        body=company_profile_payload("legacy-llc", legacy_type="LLC"),
+435:    assert_true(accepted_ao["data"]["organization"]["propertyType"] == "АО", "organization profile rejected АО")
+436:    assert_true(accepted_pao["data"]["organization"]["propertyType"] == "ПАО", "organization profile rejected ПАО")
+437:    assert_true(legacy_oao["data"]["organization"]["propertyType"] == "ПАО", "legacy ОАО did not normalize to ПАО")
+438:    assert_true(legacy_zao["data"]["organization"]["propertyType"] == "АО", "legacy ЗАО did not normalize to АО")
+439:    assert_true(legacy_llc["data"]["organization"]["propertyType"] == "ООО", "legacy LLC did not normalize to ООО")
+447:        body=company_profile_payload("invalid-profile", "ВРД"),
+459:    assert_true(first_sub["data"]["subdivisions"][0]["type"] == "subdivision", "subdivision storage type should remain hidden internal default")
+472:    assert_true(child_unit["type"] == "ВУ", "unit operational type was not preserved")
+474:    invalid_unit_payload = unit_payload("invalid-unit")
+475:    invalid_unit_payload["type"] = "ООО"
+482:        body=invalid_unit_payload,
+690:                "ОАО": legacy_oao["data"]["organization"]["propertyType"],
+691:                "ЗАО": legacy_zao["data"]["organization"]["propertyType"],
+692:                "LLC": legacy_llc["data"]["organization"]["propertyType"],
+
+Canonical doc/stage-artifact audit hits:
+.agent/stages/03-identity-master-data/feature_list.json:172:      "Forms preserve differentiated type semantics: organization propertyType/type alias is ОПФ ООО/АО/ПАО with legacy ОАО/ЗАО/LLC normalization, subdivision has no selectable type, unit type remains ВРД/ВРЗ/ВУ/ВРП; name, registeredAddress/address, leaderFullName/managerName, leaderPosition, contractPhone, contractEmail, actingBasis, and code/region/status/comment remain preserved where still used",
+.agent/stages/03-identity-master-data/progress.md:16:  - the backend already contains early legacy CRUD for organizations, equipment, measuring instruments, standards, and agreements, so the stage contract must explicitly reshape that repo state instead of ignoring it.
+.agent/stages/03-identity-master-data/progress.md:182:  - legacy backend `/agreements` CRUD and shell-only `/contracts` contour were still insufficient proof for slice-003.
+.agent/stages/03-identity-master-data/progress.md:653:  - type selector values `ВРД`, `ВРЗ`, `ВУ`, `ВРП`;
+.agent/stages/03-identity-master-data/progress.md:715:  - documented frozen `type` selector values `ВРД`, `ВРЗ`, `ВУ`, `ВРП`;
+.agent/stages/03-identity-master-data/progress.md:752:- Reopened the slice-010 field contract after user correction: the prior PASS still encoded `ВРД` / `ВРЗ` / `ВУ` / `ВРП` as a generic organization/subdivision/unit `type`.
+.agent/stages/03-identity-master-data/progress.md:754:  - organization profile `Тип` is legal-form `propertyType` with visible values `ООО`, `АО`, `ПАО`;
+.agent/stages/03-identity-master-data/progress.md:755:  - legacy input aliases normalize as `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО`;
+.agent/stages/03-identity-master-data/progress.md:757:  - unit type remains required and bounded to `ВРД`, `ВРЗ`, `ВУ`, `ВРП`.
+.agent/stages/03-identity-master-data/evidence.json:22:    "rg -n 'ВРД|ВРЗ|ВУ|ВРП|registeredAddress|address|leaderFullName|managerName|leaderPosition|contractPhone|contractEmail|actingBasis|active.*select|Archived|archive|alias|compatibility' docs/architecture/identity-master-data.md .agent/stages/03-identity-master-data/sprint_contract.md .agent/stages/03-identity-master-data/problems.md",
+.agent/stages/03-identity-master-data/evidence.json:171:    "summary": "Canonical docs now record differentiated type semantics: organization propertyType/type alias is ОПФ ООО/АО/ПАО with legacy alias normalization, subdivision has no selectable type and keeps hidden storage default, unit type remains ВРД/ВРЗ/ВУ/ВРП, with address/leader aliases and archive constraints preserved.",
+.agent/stages/03-identity-master-data/evidence.json:225:      "organization profile PATCH preserves legal-form propertyType/type alias",
+.agent/stages/03-identity-master-data/evidence.json:226:      "organization legal forms accepted: ООО, АО, ПАО",
+.agent/stages/03-identity-master-data/evidence.json:227:      "legacy legal form aliases normalize: ОАО -> ПАО, ЗАО -> АО, LLC -> ООО",
+.agent/stages/03-identity-master-data/evidence.json:228:      "organization profile rejects operational unit type values such as ВРД",
+.agent/stages/03-identity-master-data/evidence.json:230:      "unit create/update still requires bounded operational type ВРД/ВРЗ/ВУ/ВРП",
+.agent/stages/03-identity-master-data/evidence.json:270:        "ООО",
+.agent/stages/03-identity-master-data/evidence.json:271:        "АО",
+.agent/stages/03-identity-master-data/evidence.json:272:        "ПАО"
+.agent/stages/03-identity-master-data/evidence.json:274:      "legacyAliases": {
+.agent/stages/03-identity-master-data/evidence.json:275:        "ОАО": "ПАО",
+.agent/stages/03-identity-master-data/evidence.json:276:        "ЗАО": "АО",
+.agent/stages/03-identity-master-data/evidence.json:277:        "LLC": "ООО"
+.agent/stages/03-identity-master-data/evidence.json:281:        "ВРД",
+.agent/stages/03-identity-master-data/evidence.json:282:        "ВРЗ",
+.agent/stages/03-identity-master-data/evidence.json:283:        "ВУ",
+.agent/stages/03-identity-master-data/evidence.json:284:        "ВРП"
+docs/design/customer-admin-bootstrap-flow.md:120:- профиль организации в `/company` использует selector `Тип` как ОПФ `ООО` / `АО` / `ПАО`; legacy aliases `ОАО` / `ЗАО` поддерживаются только как входная совместимость и не показываются в UI;
+docs/design/customer-admin-bootstrap-flow.md:121:- форма подразделения/филиала не содержит selector `Тип`; форма юнита сохраняет selector operational type `ВРД` / `ВРЗ` / `ВУ` / `ВРП`;
+.agent/stages/03-identity-master-data/sprint_contract.md:39:- organization `propertyType` / `type` compatibility alias: legal-form selector with exactly these visible values for the correction slice: `ООО`, `АО`, `ПАО`;
+.agent/stages/03-identity-master-data/sprint_contract.md:40:- legacy organization legal-form input maps `ОАО -> ПАО`, `ЗАО -> АО`, and `LLC -> ООО`; those legacy aliases are not visible selector options;
+.agent/stages/03-identity-master-data/sprint_contract.md:42:- unit `type`: selector with exactly these operational values for the correction slice: `ВРД`, `ВРЗ`, `ВУ`, `ВРП`;
+.agent/stages/03-identity-master-data/sprint_contract.md:68:  - create/edit flows handle legal-form `propertyType`/`type` alias, `name`, `registeredAddress`/`address`, `leaderFullName`/`managerName`, `leaderPosition`, `contractPhone`, `contractEmail`, and `actingBasis`;
+.agent/stages/03-identity-master-data/sprint_contract.md:69:  - visible profile type selector shows `ООО`, `АО`, `ПАО` only, while legacy `ОАО`, `ЗАО`, and `LLC` inputs normalize for compatibility;
+.agent/stages/03-identity-master-data/sprint_contract.md:83:  - create/edit uses the frozen unit type selector values `ВРД`, `ВРЗ`, `ВУ`, `ВРП` and business fields above;
+.agent/stages/03-identity-master-data/sprint_contract.md:116:  - focused proof for first-admin accept to `/company`, org profile legal-form validation/legacy aliases, subdivision without user-facing type, unit type validation, org/subdivision/unit create/edit/archive, access rejection, and employee invite target validation.
+.agent/stages/03-identity-master-data/sprint_contract.md:121:  - browser/runtime smoke for `/register/[token] -> /company`, `/company` legal-form options `ООО`/`АО`/`ПАО`, no subdivision type selector, unit type selector, empty/partial/populated states, org-admin mutation controls, and scoped read-only views.
+.agent/stages/03-identity-master-data/stage_spec.md:123:  - редактирование business fields: organization `propertyType`/`type` alias as legal-form selector `ООО` / `АО` / `ПАО` with legacy `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО`; subdivision/branch has no selectable type and stores hidden internal default only for compatibility; unit keeps operational type selector `ВРД` / `ВРЗ` / `ВУ` / `ВРП`; name, registeredAddress/address alias, leaderFullName with managerName migration/display compatibility, leaderPosition, contractPhone, contractEmail, actingBasis, plus code/region/status/comment where those fields still exist in the model;
+.agent/stages/03-identity-master-data/stage_spec.md:157:- текущий legacy backend уже содержит ранние CRUD для организаций, оборудования, СИ и эталонов, но их модель не совпадает с новым Stage 03 contract;
+docs/PRD-MVP.md:150:- в профиле организации поле `Тип` означает ОПФ и показывает только актуальные варианты `ООО`, `АО`, `ПАО`; подразделения не имеют выбираемого типа, а тип юнита остается operational selector-ом;
+docs/PRD-MVP.md:257:- юридическая форма организации хранится отдельно от operational type юнита: `ООО` / `АО` / `ПАО` для организации, `ВРД` / `ВРЗ` / `ВУ` / `ВРП` для юнита;
+docs/roadmap.md:28:3. **Исходное ТЗ** как legacy business source, если оно не противоречит репозиторию
+docs/roadmap.md:191:- сравнивает legacy ТЗ с текущим repo state
+docs/roadmap.md:363:  - organization profile с разделением на launch-critical и optional requisites; поле `Тип` в профиле хранит ОПФ `ООО` / `АО` / `ПАО`, а legacy `ОАО` / `ЗАО` принимаются только как compatibility input и нормализуются
+docs/roadmap.md:365:  - units как primary operational scope для оборудования с selector-ом типа `ВРД` / `ВРЗ` / `ВУ` / `ВРП`
+.agent/stages/03-identity-master-data/evidence.md:13:  - Corrected the stale field contract so organization `Тип` / `propertyType` is legal form `ООО` / `АО` / `ПАО`, subdivision/branch has no selectable type, and unit type remains `ВРД` / `ВРЗ` / `ВУ` / `ВРП`.
+.agent/stages/03-identity-master-data/evidence.md:49:  - `rg -n "ВРД|ВРЗ|ВУ|ВРП|registeredAddress|address|leaderFullName|managerName|leaderPosition|contractPhone|contractEmail|actingBasis|active.*select|Archived|archive|alias|compatibility" docs/architecture/identity-master-data.md .agent/stages/03-identity-master-data/sprint_contract.md .agent/stages/03-identity-master-data/problems.md`
+.agent/stages/03-identity-master-data/evidence.md:137:  - `PATCH /api/v1/company/profile` preserves organization legal form through `propertyType` and `type` compatibility alias plus `name`, `registeredAddress`, `leaderFullName`, `leaderPosition`, `contractPhone`, `contractEmail`, and `actingBasis`;
+.agent/stages/03-identity-master-data/evidence.md:138:  - accepted visible legal forms are `ООО`, `АО`, `ПАО`;
+.agent/stages/03-identity-master-data/evidence.md:139:  - legacy inputs normalize as `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО`;
+.agent/stages/03-identity-master-data/evidence.md:140:  - operational values such as `ВРД` are rejected for organization legal form.
+.agent/stages/03-identity-master-data/evidence.md:142:  - `docs/architecture/identity-master-data.md` now records differentiated type semantics: organization `propertyType`/`type` alias is ОПФ `ООО`/`АО`/`ПАО`, subdivision/branch has no selectable type and uses hidden storage default `subdivision`, and unit `type` is `ВРД`/`ВРЗ`/`ВУ`/`ВРП`;
+.agent/stages/03-identity-master-data/evidence.md:149:  - unit create rejects invalid legal-form values such as `ООО` and preserves valid operational values such as `ВУ`;
+docs/architecture/frontend-architecture.md:95:- `/company` разделяет semantics поля `Тип`: профиль организации показывает legal-form selector `ООО` / `АО` / `ПАО`, подразделение/филиал не показывает type selector, а юнит сохраняет operational type selector `ВРД` / `ВРЗ` / `ВУ` / `ВРП`;
+docs/architecture/frontend-architecture.md:158:- `app/api/contracts*` скрывает legacy backend naming от browser и держит public naming стабильным;
+docs/architecture/identity-master-data.md:113:| `propertyType` / organization `type` alias | В профиле организации visible selector `Тип` хранит юридическую форму: `ООО`, `АО`, `ПАО`. `type` остается compatibility alias в API/session там, где старые клиенты уже читают это поле. Legacy input `ОАО` нормализуется в `ПАО`, `ЗАО` в `АО`, `LLC` в `ООО`; `ОАО` и `ЗАО` не показываются как актуальные options, потому что модель ОАО/ЗАО заменена публичными/непубличными АО. |
+docs/architecture/identity-master-data.md:114:| subdivision `type` | Не является user-facing бизнес-полем и не показывается selector-ом в `/company`. Storage column `auth_subdivisions.subdivision_type` остается `NOT NULL` для совместимости с sqlc/generated response shape; новые create/update writes используют скрытый internal default `subdivision`. |
+docs/architecture/identity-master-data.md:115:| unit `type` | Selector frozen for this slice: `ВРД`, `ВРЗ`, `ВУ`, `ВРП`. Эти значения применяются только к unit create/edit forms; Stage 04 не добавляет сюда request-типы. |
+docs/architecture/identity-master-data.md:129:Source note for organization legal forms: the visible MVP set intentionally uses `ООО`, `АО`, `ПАО`. `ОАО` and `ЗАО` stay compatibility aliases because [ФНС describes](https://www.nalog.gov.ru/rn03/news/tax_doc_news/5096254/) the abolition of open/closed JSC split in favor of public/non-public JSCs, and OKOPF keeps current entries for [ПАО](https://classifikators.ru/okopf/12247), [АО](https://classifikators.ru/okopf/12267), and [ООО](https://classifikators.ru/okopf/12300).
+
+Potential documentation drift hits:
+docs/architecture/identity-master-data.md:113:| `propertyType` / organization `type` alias | В профиле организации visible selector `Тип` хранит юридическую форму: `ООО`, `АО`, `ПАО`. `type` остается compatibility alias в API/session там, где старые клиенты уже читают это поле. Legacy input `ОАО` нормализуется в `ПАО`, `ЗАО` в `АО`, `LLC` в `ООО`; `ОАО` и `ЗАО` не показываются как актуальные options, потому что модель ОАО/ЗАО заменена публичными/непубличными АО. |
+docs/architecture/identity-master-data.md:129:Source note for organization legal forms: the visible MVP set intentionally uses `ООО`, `АО`, `ПАО`. `ОАО` and `ЗАО` stay compatibility aliases because [ФНС describes](https://www.nalog.gov.ru/rn03/news/tax_doc_news/5096254/) the abolition of open/closed JSC split in favor of public/non-public JSCs, and OKOPF keeps current entries for [ПАО](https://classifikators.ru/okopf/12247), [АО](https://classifikators.ru/okopf/12267), and [ООО](https://classifikators.ru/okopf/12300).
+docs/design/customer-admin-bootstrap-flow.md:120:- профиль организации в `/company` использует selector `Тип` как ОПФ `ООО` / `АО` / `ПАО`; legacy aliases `ОАО` / `ЗАО` поддерживаются только как входная совместимость и не показываются в UI;
+docs/design/diagrams/customer-admin-bootstrap-flow.drawio:39:        <mxCell id="Uvl7SCXHovZ_TvcCf32a-13" value="Организационно-правовая ф&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;орма (АО, ЗАО, ООО, ИП)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="Uvl7SCXHovZ_TvcCf32a-12" vertex="1">
+docs/roadmap.md:28:3. **Исходное ТЗ** как legacy business source, если оно не противоречит репозиторию
+docs/roadmap.md:191:- сравнивает legacy ТЗ с текущим repo state
+docs/roadmap.md:363:  - organization profile с разделением на launch-critical и optional requisites; поле `Тип` в профиле хранит ОПФ `ООО` / `АО` / `ПАО`, а legacy `ОАО` / `ЗАО` принимаются только как compatibility input и нормализуются
+
+Fresh verifier conclusion:
+- Code/runtime proof PASS: backend and web implement the corrected legal-type contract; targeted proof passed with seed 20260429017.
+- Documentation proof gap: docs/roadmap.md and docs/design/customer-admin-bootstrap-flow.md describe legacy aliases as ОАО/ЗАО but omit LLC; the referenced drawio diagram still shows stale legal-form examples АО, ЗАО, ООО, ИП instead of ООО, АО, ПАО.

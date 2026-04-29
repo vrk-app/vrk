@@ -1,0 +1,336 @@
+Contract audit for slice-010 legal-type post-fixer verifier
+Checked at: 2026-04-29T04:17:28Z
+Git HEAD: b64f405e284fe0ed803f71fc38c227da64851868
+
+## Prior Documentation Gaps
+$ rg -n "LLC -> ООО" docs/roadmap.md docs/design/customer-admin-bootstrap-flow.md
+docs/design/customer-admin-bootstrap-flow.md:120:- профиль организации в `/company` использует selector `Тип` как ОПФ `ООО` / `АО` / `ПАО`; legacy aliases `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО` поддерживаются только как входная совместимость и не показываются в UI;
+docs/roadmap.md:363:  - organization profile с разделением на launch-critical и optional requisites; поле `Тип` в профиле хранит ОПФ `ООО` / `АО` / `ПАО`, а legacy `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО` принимаются только как compatibility input и нормализуются
+
+$ rg -n "Организационно-правовая.*ООО, АО, ПАО" docs/design/diagrams/customer-admin-bootstrap-flow.drawio
+39:        <mxCell id="Uvl7SCXHovZ_TvcCf32a-13" value="Организационно-правовая ф&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;орма (ООО, АО, ПАО)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="Uvl7SCXHovZ_TvcCf32a-12" vertex="1">
+
+$ rg -n "АО, ЗАО, ООО, ИП|ОАО|ЗАО|ИП" docs/design/diagrams/customer-admin-bootstrap-flow.drawio
+
+$ xmllint --noout docs/design/diagrams/customer-admin-bootstrap-flow.drawio
+xmllint: PASS
+
+## Backend Legal Form Contract
+$ sed -n "1,38p" apps/backend/internal/auth/bootstrap/service.go
+package bootstrap
+
+import (
+	"context"
+	"strings"
+	"time"
+
+	"backend/internal/db/generated"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
+	"golang.org/x/crypto/bcrypt"
+)
+
+const (
+	defaultOrganizationRole = "customer"
+	defaultDivisionType     = "division"
+	inviteLifetime          = 7 * 24 * time.Hour
+	sessionLifetime         = 24 * time.Hour
+)
+
+var allowedOrganizationPropertyTypes = map[string]struct{}{
+	"ООО": {},
+	"АО":  {},
+	"ПАО": {},
+}
+
+var allowedUnitTypes = map[string]struct{}{
+	"ВРД": {},
+	"ВРЗ": {},
+	"ВУ":  {},
+	"ВРП": {},
+}
+
+type Service interface {
+	CreateOrganizationShell(ctx context.Context, req CreateOrganizationShellRequest) (*OrganizationShellResponse, error)
+	InspectInvite(ctx context.Context, token string) (*InviteInspectionResponse, error)
+	AcceptInvite(ctx context.Context, token string, req AcceptInviteRequest) (*SessionSummaryResponse, error)
+
+$ sed -n "920,1006p" apps/backend/internal/auth/bootstrap/service.go
+
+	if req.Name == "" {
+		return ErrOrganizationNameRequired
+	}
+
+	propertyType, err := normalizeOrganizationPropertyType(firstNonEmptyStringPointer(req.PropertyType, req.Type))
+	if err != nil {
+		return err
+	}
+	req.Type = propertyType
+	req.PropertyType = stringPointer(propertyType)
+
+	if req.ContractEmail != nil && !looksLikeEmail(*req.ContractEmail) {
+		return ErrInvalidEmail
+	}
+
+	return nil
+}
+
+func normalizeStructureNodeRequest(req *StructureNodeRequest, allowDivision bool, snapshot *sessionSnapshot, nameRequiredErr error) error {
+	req.Type = strings.TrimSpace(req.Type)
+	req.Name = strings.TrimSpace(req.Name)
+	req.Code = trimStringPointer(req.Code)
+	req.Region = trimStringPointer(req.Region)
+	req.Address = trimStringPointer(req.Address)
+	req.RegisteredAddress = trimStringPointer(req.RegisteredAddress)
+	req.LeaderFullName = trimStringPointer(req.LeaderFullName)
+	req.ManagerName = trimStringPointer(req.ManagerName)
+	req.LeaderPosition = trimStringPointer(req.LeaderPosition)
+	req.ContractPhone = trimStringPointer(req.ContractPhone)
+	req.ContractEmail = trimStringPointer(req.ContractEmail)
+	req.ActingBasis = trimStringPointer(req.ActingBasis)
+	req.Contacts = trimStringPointer(req.Contacts)
+	req.Comment = trimStringPointer(req.Comment)
+	req.DivisionID = trimStringPointer(req.DivisionID)
+
+	if req.Name == "" {
+		return nameRequiredErr
+	}
+
+	if allowDivision {
+		if req.Type == "" {
+			return ErrUnitTypeRequired
+		}
+		if _, ok := allowedUnitTypes[req.Type]; !ok {
+			return ErrStructureTypeInvalid
+		}
+	} else {
+		req.Type = defaultDivisionType
+	}
+
+	if req.ContractEmail != nil && !looksLikeEmail(*req.ContractEmail) {
+		return ErrInvalidEmail
+	}
+	if req.DivisionID != nil {
+		if !allowDivision {
+			return ErrDivisionTargetInvalid
+		}
+		if _, err := uuid.Parse(*req.DivisionID); err != nil {
+			return ErrDivisionTargetInvalid
+		}
+		if !scopeExistsInSnapshot(snapshot, "division", *req.DivisionID) {
+			return ErrDivisionTargetInvalid
+		}
+	}
+
+	return nil
+}
+
+func normalizeOrganizationPropertyType(value string) (string, error) {
+	normalized := strings.ToUpper(strings.TrimSpace(value))
+	switch normalized {
+	case "":
+		return "", ErrPropertyTypeRequired
+	case "LLC":
+		normalized = "ООО"
+	case "ОАО":
+		normalized = "ПАО"
+	case "ЗАО":
+		normalized = "АО"
+	}
+	if _, ok := allowedOrganizationPropertyTypes[normalized]; !ok {
+		return "", ErrPropertyTypeInvalid
+	}
+	return normalized, nil
+}
+
+
+$ rg -n "LLC|ОАО|ЗАО|ВРД|ВРЗ|ВУ|ВРП|defaultDivisionType|normalizeOrganizationPropertyType|normalizeStructureNodeRequest" apps/backend/internal/auth/bootstrap/service.go apps/backend/internal/auth/bootstrap/handler_test.go apps/backend/internal/auth/bootstrap/errors.go
+apps/backend/internal/auth/bootstrap/errors.go:46:	ErrStructureTypeInvalid       = errors.New("unit type must be ВРД, ВРЗ, ВУ, or ВРП")
+apps/backend/internal/auth/bootstrap/service.go:17:	defaultDivisionType     = "division"
+apps/backend/internal/auth/bootstrap/service.go:29:	"ВРД": {},
+apps/backend/internal/auth/bootstrap/service.go:30:	"ВРЗ": {},
+apps/backend/internal/auth/bootstrap/service.go:31:	"ВУ":  {},
+apps/backend/internal/auth/bootstrap/service.go:32:	"ВРП": {},
+apps/backend/internal/auth/bootstrap/service.go:427:	propertyType, err := normalizeOrganizationPropertyType(req.PropertyType)
+apps/backend/internal/auth/bootstrap/service.go:466:		req.Division.Type = defaultDivisionType
+apps/backend/internal/auth/bootstrap/service.go:507:	if err := normalizeStructureNodeRequest(&req, false, snapshot, ErrDivisionNameRequired); err != nil {
+apps/backend/internal/auth/bootstrap/service.go:527:	if err := normalizeStructureNodeRequest(&req, false, snapshot, ErrDivisionNameRequired); err != nil {
+apps/backend/internal/auth/bootstrap/service.go:560:	if err := normalizeStructureNodeRequest(&req, true, snapshot, ErrUnitNameRequired); err != nil {
+apps/backend/internal/auth/bootstrap/service.go:580:	if err := normalizeStructureNodeRequest(&req, true, snapshot, ErrUnitNameRequired); err != nil {
+apps/backend/internal/auth/bootstrap/service.go:925:	propertyType, err := normalizeOrganizationPropertyType(firstNonEmptyStringPointer(req.PropertyType, req.Type))
+apps/backend/internal/auth/bootstrap/service.go:939:func normalizeStructureNodeRequest(req *StructureNodeRequest, allowDivision bool, snapshot *sessionSnapshot, nameRequiredErr error) error {
+apps/backend/internal/auth/bootstrap/service.go:968:		req.Type = defaultDivisionType
+apps/backend/internal/auth/bootstrap/service.go:989:func normalizeOrganizationPropertyType(value string) (string, error) {
+apps/backend/internal/auth/bootstrap/service.go:994:	case "LLC":
+apps/backend/internal/auth/bootstrap/service.go:996:	case "ОАО":
+apps/backend/internal/auth/bootstrap/service.go:998:	case "ЗАО":
+apps/backend/internal/auth/bootstrap/handler_test.go:136:			name: "maps legacy ОАО to ПАО",
+apps/backend/internal/auth/bootstrap/handler_test.go:138:				Type: "ОАО",
+apps/backend/internal/auth/bootstrap/handler_test.go:144:			name: "maps legacy ЗАО to АО",
+apps/backend/internal/auth/bootstrap/handler_test.go:146:				Type: "ЗАО",
+apps/backend/internal/auth/bootstrap/handler_test.go:152:			name: "maps legacy LLC to ООО",
+apps/backend/internal/auth/bootstrap/handler_test.go:154:				Type: "LLC",
+apps/backend/internal/auth/bootstrap/handler_test.go:162:				Type: "ВРД",
+apps/backend/internal/auth/bootstrap/handler_test.go:198:	if err := normalizeStructureNodeRequest(&divisionReq, false, &sessionSnapshot{}, ErrDivisionNameRequired); err != nil {
+apps/backend/internal/auth/bootstrap/handler_test.go:201:	if divisionReq.Type != defaultDivisionType {
+apps/backend/internal/auth/bootstrap/handler_test.go:202:		t.Fatalf("division type = %q, want %q", divisionReq.Type, defaultDivisionType)
+apps/backend/internal/auth/bootstrap/handler_test.go:205:	unitReq := StructureNodeRequest{Name: "Unit", Type: "ВУ"}
+apps/backend/internal/auth/bootstrap/handler_test.go:206:	if err := normalizeStructureNodeRequest(&unitReq, true, &sessionSnapshot{}, ErrUnitNameRequired); err != nil {
+apps/backend/internal/auth/bootstrap/handler_test.go:211:	if err := normalizeStructureNodeRequest(&missingUnitType, true, &sessionSnapshot{}, ErrUnitNameRequired); !errors.Is(err, ErrUnitTypeRequired) {
+apps/backend/internal/auth/bootstrap/handler_test.go:216:	if err := normalizeStructureNodeRequest(&invalidUnitType, true, &sessionSnapshot{}, ErrUnitNameRequired); !errors.Is(err, ErrStructureTypeInvalid) {
+
+## Web Selector Contract
+$ sed -n "35,55p" apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+  comment: string;
+  divisionId: string;
+};
+
+const organizationPropertyTypeOptions = [
+  { label: "ООО", value: "ООО" },
+  { label: "АО", value: "АО" },
+  { label: "ПАО", value: "ПАО" },
+] as const;
+
+const unitTypeOptions = [
+  { label: "ВРД", value: "ВРД" },
+  { label: "ВРЗ", value: "ВРЗ" },
+  { label: "ВУ", value: "ВУ" },
+  { label: "ВРП", value: "ВРП" },
+] as const;
+
+const tabItems = [
+  { key: "profile", label: "Профиль", icon: Building2 },
+  { key: "divisions", label: "Подразделения", icon: GitBranch },
+  { key: "units", label: "Юниты", icon: MapPinned },
+
+$ sed -n "168,186p" apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+  const parts = [item.code, item.region, item.contractEmail].filter(Boolean);
+  return parts.length ? parts.join(" / ") : "Дополнительные поля не заполнены";
+}
+
+function normalizeOrganizationPropertyType(value?: string) {
+  switch ((value ?? "").trim().toUpperCase()) {
+    case "ОАО":
+      return "ПАО";
+    case "ЗАО":
+      return "АО";
+    case "LLC":
+      return "ООО";
+    case "АО":
+    case "ПАО":
+    case "ООО":
+      return (value ?? "").trim().toUpperCase();
+    default:
+      return "ООО";
+  }
+
+$ sed -n "468,486p" apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+      {activeTab === "divisions" ? (
+        <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+          {canManage ? (
+            <StructureFormCard
+              form={divisionForm}
+              isEditing={Boolean(editingDivisionId)}
+              isPending={isPending}
+              onCancel={() => {
+                setDivisionForm(emptyStructureForm());
+                setEditingDivisionId(null);
+              }}
+              onChange={setDivisionForm}
+              onSubmit={submitDivision}
+              namePrefix="division"
+              submitLabel={editingDivisionId ? "Сохранить подразделение" : "Создать подразделение"}
+              showType={false}
+              title={editingDivisionId ? "Редактировать подразделение" : "Новое подразделение"}
+            />
+          ) : null}
+
+$ sed -n "648,666p" apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+        ) : null}
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        {showType ? (
+          <SelectField
+            autoComplete="off"
+            label="Тип"
+            name={`${namePrefix}Type`}
+            onValueChange={(value) => update({ type: value })}
+            options={unitTypeOptions}
+            value={form.type}
+          />
+        ) : null}
+        <InputField
+          autoComplete="organization"
+          label="Наименование"
+          name={`${namePrefix}Name`}
+          onChange={(event) => update({ name: event.target.value })}
+
+$ sed -n "13,40p" apps/web/features/Stage03Bootstrap/ui/LaunchWizardForm.tsx
+const legalFormOptions = [
+  { label: "ООО", value: "ООО" },
+  { label: "АО", value: "АО" },
+  { label: "ПАО", value: "ПАО" },
+] as const;
+
+const unitTypeOptions = [
+  { label: "ВРД", value: "ВРД" },
+  { label: "ВРЗ", value: "ВРЗ" },
+  { label: "ВУ", value: "ВУ" },
+  { label: "ВРП", value: "ВРП" },
+] as const;
+
+function normalizeLegalForm(value?: string) {
+  switch ((value ?? "").trim().toUpperCase()) {
+    case "ОАО":
+      return "ПАО";
+    case "ЗАО":
+      return "АО";
+    case "LLC":
+      return "ООО";
+    case "АО":
+    case "ПАО":
+    case "ООО":
+      return (value ?? "").trim().toUpperCase();
+    default:
+      return "ООО";
+  }
+
+$ rg -n "label: \"ОАО\"|label: \"ЗАО\"|label: \"LLC\"|Тип подразделения|type=\{division.type\}|showType=\{false\}|compactStructurePayload\(divisionForm, false, false\)" apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx apps/web/features/Stage03Bootstrap/ui/LaunchWizardForm.tsx
+apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx:256:          body: JSON.stringify(compactStructurePayload(divisionForm, false, false)),
+apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx:483:              showType={false}
+
+## Current Tree Build/Runtime Observations
+Initial proof attempt with seed 20260429029 failed against stale running stack; saved as slice-010-legal-type-post-fixer-verifier-proof-run-stale-runtime-2026-04-29.txt.
+make dev refresh failed during current web build; saved as slice-010-legal-type-post-fixer-verifier-make-dev-2026-04-29.txt.
+$ rg -n "roleTemplateLabel|roleTemplateLabels|roleScopeOptions|isRoleScopeCompatible" apps/web/shared/api/index.ts apps/web/shared/api/bootstrap.ts apps/web/app/(runtime)/layout.tsx apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx
+apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx:10:  roleTemplateLabel,
+apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx:82:              {roleTemplateLabel(invite.roleTemplate)}
+apps/web/app/(runtime)/layout.tsx:4:import { roleTemplateLabel, SESSION_COOKIE_NAME } from "@/shared/api";
+apps/web/app/(runtime)/layout.tsx:24:	                : `${roleTemplateLabel(session.grant?.roleTemplate ?? "organization_admin").toLocaleLowerCase("ru-RU")} / ${session.workspace.scopeName}`,
+apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx:7:  isRoleScopeCompatible,
+apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx:9:  roleScopeOptions,
+apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx:10:  roleTemplateLabel,
+apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx:11:  roleTemplateLabels,
+apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx:29:  { value: "organization_admin", label: roleTemplateLabels.organization_admin },
+apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx:30:  { value: "organization_head", label: roleTemplateLabels.organization_head },
+apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx:31:  { value: "division_head", label: roleTemplateLabels.division_head },
+apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx:32:  { value: "division_operator", label: roleTemplateLabels.division_operator },
+apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx:33:  { value: "unit_head", label: roleTemplateLabels.unit_head },
+apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx:34:  { value: "unit_operator", label: roleTemplateLabels.unit_operator },
+apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx:35:  { value: "auditor", label: roleTemplateLabels.auditor },
+apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx:79:  return roleScopeOptions[roleTemplate].find((scopeType) => scopeOptions[scopeType].length > 0) ?? roleScopeOptions[roleTemplate][0];
+apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx:105:    if (!isRoleScopeCompatible(roleTemplate, scopeType)) {
+apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx:258:                    disabled: !isRoleScopeCompatible(roleTemplate, "organization"),
+apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx:263:                    disabled: !isRoleScopeCompatible(roleTemplate, "division") || !scopeOptions.division.length,
+apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx:268:                    disabled: !isRoleScopeCompatible(roleTemplate, "unit") || !scopeOptions.unit.length,
+apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx:364:                      {roleTemplateLabel(invite.roleTemplate)} / {scopeTypeLabels[invite.scopeType]} /{" "}
+apps/web/shared/api/bootstrap.ts:16:export const roleTemplateLabels: Record<RoleTemplate, string> = {
+apps/web/shared/api/bootstrap.ts:26:export const roleScopeOptions: Record<RoleTemplate, ScopeType[]> = {
+apps/web/shared/api/bootstrap.ts:47:  return value in roleTemplateLabels;
+apps/web/shared/api/bootstrap.ts:50:export function isRoleScopeCompatible(roleTemplate: string, scopeType: ScopeType) {
+apps/web/shared/api/bootstrap.ts:51:  return isRoleTemplate(roleTemplate) && roleScopeOptions[roleTemplate].includes(scopeType);
+apps/web/shared/api/bootstrap.ts:54:export function roleTemplateLabel(value: string) {
+apps/web/shared/api/bootstrap.ts:55:  return isRoleTemplate(value) ? roleTemplateLabels[value] : value;
+apps/web/shared/api/bootstrap.ts:63:  return isRoleScopeCompatible(roleTemplate, session.workspace.scopeType) && roleCapabilities[roleTemplate].includes(capability);

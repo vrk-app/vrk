@@ -1,0 +1,352 @@
+name: incubator-deploy
+
+on:
+  push:
+    branches:
+      - Incubator
+  workflow_dispatch:
+    inputs:
+      backend_provisioned:
+        description: "Warm backend instances, input -> vars.VRK_BACKEND_PROVISIONED -> 0"
+        type: number
+        default: 0
+      web_provisioned:
+        description: "Warm web instances, input -> vars.VRK_WEB_PROVISIONED -> 0"
+        type: number
+        default: 0
+
+permissions:
+  contents: read
+
+concurrency:
+  group: incubator-deploy
+  cancel-in-progress: true
+
+env:
+  YC_REGISTRY: cr.yandex/${{ secrets.YC_REGISTRY_ID }}
+  BACKEND_IMAGE: vrk-backend
+  WEB_IMAGE: vrk-web
+  BACKEND_CONTAINER_NAME: vrk-backend
+  WEB_CONTAINER_NAME: vrk-web
+
+jobs:
+  backend-checks:
+    name: Backend checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare backend scripts
+        run: chmod +x scripts/backend_go_test.sh scripts/backend_go_build.sh
+
+      - name: Run backend tests in container
+        run: ./scripts/backend_go_test.sh
+
+      - name: Run backend build in container
+        run: ./scripts/backend_go_build.sh
+
+  web-checks:
+    name: Web checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.14.1
+          cache: pnpm
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm --filter @vrk/web exec playwright install --with-deps chromium
+
+      - name: Build and start platform stack
+        run: make dev
+
+      - name: Run web smoke
+        run: pnpm run web:smoke
+
+      - name: Stop platform stack
+        if: always()
+        run: make down
+
+  migrate:
+    name: Apply database migrations
+    runs-on: ubuntu-latest
+    needs:
+      - backend-checks
+      - web-checks
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yc CLI
+        run: |
+          curl -sSL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash -s -- -i /tmp/yc -n
+          echo "/tmp/yc/bin" >> "$GITHUB_PATH"
+
+      - name: Configure yc CLI
+        env:
+          YC_SA_JSON_CREDENTIALS: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+          YC_FOLDER_ID: ${{ secrets.YC_FOLDER_ID }}
+        run: |
+          printf '%s' "$YC_SA_JSON_CREDENTIALS" > /tmp/sa.json
+          yc config set service-account-key /tmp/sa.json
+          yc config set folder-id "$YC_FOLDER_ID"
+
+      - name: Fetch database settings
+        env:
+          YC_LOCKBOX_SECRET_ID: ${{ secrets.YC_LOCKBOX_SECRET_ID }}
+          YC_LOCKBOX_VERSION_ID: ${{ secrets.YC_LOCKBOX_VERSION_ID }}
+        run: |
+          set -euo pipefail
+
+          fetch_required_key() {
+            local key="$1"
+            local value
+            value="$(yc lockbox payload get --id "$YC_LOCKBOX_SECRET_ID" --version-id "$YC_LOCKBOX_VERSION_ID" --key "$key" 2>/dev/null || true)"
+            if [ -z "$value" ]; then
+              echo "::error::Missing required Lockbox key: $key"
+              exit 1
+            fi
+            echo "::add-mask::$value"
+            printf '%s=%s\n' "$key" "$value" >> "$GITHUB_ENV"
+          }
+
+          for key in DB_HOST DB_PORT DB_NAME DB_USER DB_PASSWORD DB_SSL_MODE; do
+            fetch_required_key "$key"
+          done
+
+      - name: Run migrations
+        run: |
+          set -euo pipefail
+
+          db_password_url="$(python3 -c 'import os, urllib.parse; print(urllib.parse.quote(os.environ["DB_PASSWORD"], safe=""))')"
+          database_url="postgres://${DB_USER}:${db_password_url}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=${DB_SSL_MODE}"
+
+          docker run --rm \
+            -v "$PWD/apps/backend/migrations:/migrations:ro" \
+            migrate/migrate:v4.19.0 \
+            -path=/migrations \
+            -database "$database_url" \
+            up
+
+  build-backend:
+    name: Build backend image
+    runs-on: ubuntu-latest
+    needs:
+      - backend-checks
+      - web-checks
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Yandex Container Registry
+        uses: yc-actions/yc-cr-login@v2
+        with:
+          yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./apps/backend
+          file: ./apps/backend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.YC_REGISTRY }}/${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+            ${{ env.YC_REGISTRY }}/${{ env.BACKEND_IMAGE }}:latest
+          cache-from: type=gha,scope=vrk-backend-incubator
+          cache-to: type=gha,mode=max,scope=vrk-backend-incubator
+
+  build-web:
+    name: Build web image
+    runs-on: ubuntu-latest
+    needs:
+      - backend-checks
+      - web-checks
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Yandex Container Registry
+        uses: yc-actions/yc-cr-login@v2
+        with:
+          yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push web
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./apps/web/Dockerfile
+          push: true
+          tags: |
+            ${{ env.YC_REGISTRY }}/${{ env.WEB_IMAGE }}:${{ github.sha }}
+            ${{ env.YC_REGISTRY }}/${{ env.WEB_IMAGE }}:latest
+          build-args: |
+            NEXT_PUBLIC_API_BASE_URL=${{ vars.VRK_BACKEND_URL }}
+            NEXT_PUBLIC_RUNTIME_DATA_MODE=seed-read
+          cache-from: type=gha,scope=vrk-web-incubator
+          cache-to: type=gha,mode=max,scope=vrk-web-incubator
+
+  deploy-backend:
+    name: Deploy backend
+    runs-on: ubuntu-latest
+    needs:
+      - migrate
+      - build-backend
+    env:
+      BACKEND_PROVISIONED_INPUT: ${{ github.event.inputs.backend_provisioned || '' }}
+      BACKEND_PROVISIONED_VAR: ${{ vars.VRK_BACKEND_PROVISIONED || '' }}
+    steps:
+      - name: Resolve backend provisioned capacity
+        run: |
+          set -euo pipefail
+
+          value="$BACKEND_PROVISIONED_INPUT"
+          if [ -z "$value" ]; then
+            value="$BACKEND_PROVISIONED_VAR"
+          fi
+          if [ -z "$value" ]; then
+            value="0"
+          fi
+          if ! [[ "$value" =~ ^[0-9]+$ ]]; then
+            echo "::error::Invalid backend provisioned value: $value"
+            exit 1
+          fi
+
+          echo "BACKEND_PROVISIONED_EFFECTIVE=$value" >> "$GITHUB_ENV"
+
+      - name: Deploy backend container revision
+        uses: yc-actions/yc-sls-container-deploy@v2
+        with:
+          yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+          folder-id: ${{ secrets.YC_FOLDER_ID }}
+          container-name: ${{ env.BACKEND_CONTAINER_NAME }}
+          revision-image-url: ${{ env.YC_REGISTRY }}/${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+          revision-service-account-id: ${{ secrets.YC_CONTAINER_SA_ID }}
+          revision-cores: 1
+          revision-memory: 256Mb
+          revision-core-fraction: 50
+          revision-concurrency: 8
+          revision-execution-timeout: 30s
+          revision-provisioned: ${{ env.BACKEND_PROVISIONED_EFFECTIVE }}
+          revision-secrets: |
+            DB_HOST=${{ secrets.YC_LOCKBOX_SECRET_ID }}/${{ secrets.YC_LOCKBOX_VERSION_ID }}/DB_HOST
+            DB_PORT=${{ secrets.YC_LOCKBOX_SECRET_ID }}/${{ secrets.YC_LOCKBOX_VERSION_ID }}/DB_PORT
+            DB_NAME=${{ secrets.YC_LOCKBOX_SECRET_ID }}/${{ secrets.YC_LOCKBOX_VERSION_ID }}/DB_NAME
+            DB_USER=${{ secrets.YC_LOCKBOX_SECRET_ID }}/${{ secrets.YC_LOCKBOX_VERSION_ID }}/DB_USER
+            DB_PASSWORD=${{ secrets.YC_LOCKBOX_SECRET_ID }}/${{ secrets.YC_LOCKBOX_VERSION_ID }}/DB_PASSWORD
+            DB_SSL_MODE=${{ secrets.YC_LOCKBOX_SECRET_ID }}/${{ secrets.YC_LOCKBOX_VERSION_ID }}/DB_SSL_MODE
+            PLATFORM_ADMIN_SHARED_SECRET=${{ secrets.YC_LOCKBOX_SECRET_ID }}/${{ secrets.YC_LOCKBOX_VERSION_ID }}/PLATFORM_ADMIN_SHARED_SECRET
+          revision-env: |
+            ENVIRONMENT=incubator
+            SERVER_PORT=8080
+
+  deploy-web:
+    name: Deploy web
+    runs-on: ubuntu-latest
+    needs:
+      - deploy-backend
+      - build-web
+    env:
+      WEB_PROVISIONED_INPUT: ${{ github.event.inputs.web_provisioned || '' }}
+      WEB_PROVISIONED_VAR: ${{ vars.VRK_WEB_PROVISIONED || '' }}
+    steps:
+      - name: Resolve web provisioned capacity
+        run: |
+          set -euo pipefail
+
+          value="$WEB_PROVISIONED_INPUT"
+          if [ -z "$value" ]; then
+            value="$WEB_PROVISIONED_VAR"
+          fi
+          if [ -z "$value" ]; then
+            value="0"
+          fi
+          if ! [[ "$value" =~ ^[0-9]+$ ]]; then
+            echo "::error::Invalid web provisioned value: $value"
+            exit 1
+          fi
+
+          echo "WEB_PROVISIONED_EFFECTIVE=$value" >> "$GITHUB_ENV"
+
+      - name: Deploy web container revision
+        uses: yc-actions/yc-sls-container-deploy@v2
+        with:
+          yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+          folder-id: ${{ secrets.YC_FOLDER_ID }}
+          container-name: ${{ env.WEB_CONTAINER_NAME }}
+          revision-image-url: ${{ env.YC_REGISTRY }}/${{ env.WEB_IMAGE }}:${{ github.sha }}
+          revision-service-account-id: ${{ secrets.YC_CONTAINER_SA_ID }}
+          revision-cores: 1
+          revision-memory: 512Mb
+          revision-core-fraction: 50
+          revision-concurrency: 8
+          revision-execution-timeout: 30s
+          revision-provisioned: ${{ env.WEB_PROVISIONED_EFFECTIVE }}
+          revision-secrets: |
+            PLATFORM_ADMIN_SHARED_SECRET=${{ secrets.YC_LOCKBOX_SECRET_ID }}/${{ secrets.YC_LOCKBOX_VERSION_ID }}/PLATFORM_ADMIN_SHARED_SECRET
+          revision-env: |
+            NODE_ENV=production
+            PORT=3000
+            INTERNAL_API_BASE_URL=${{ vars.VRK_BACKEND_URL }}
+            NEXT_PUBLIC_API_BASE_URL=${{ vars.VRK_BACKEND_URL }}
+            NEXT_PUBLIC_RUNTIME_DATA_MODE=seed-read
+
+  health-check:
+    name: Health check
+    runs-on: ubuntu-latest
+    needs:
+      - deploy-backend
+      - deploy-web
+    steps:
+      - name: Check backend readiness
+        env:
+          BACKEND_URL: ${{ vars.VRK_BACKEND_URL }}
+        run: |
+          set -euo pipefail
+
+          backend_base="${BACKEND_URL%/}"
+          for i in $(seq 1 20); do
+            health_code="$(curl -sS -o /dev/null -w "%{http_code}" --max-time 30 "$backend_base/healthz" || echo "000")"
+            ready_code="$(curl -sS -o /dev/null -w "%{http_code}" --max-time 30 "$backend_base/readyz" || echo "000")"
+            if [ "$health_code" = "200" ] && [ "$ready_code" = "200" ]; then
+              echo "Backend health/readiness checks passed"
+              exit 0
+            fi
+            echo "Attempt $i/20: /healthz=$health_code /readyz=$ready_code, waiting 5s..."
+            sleep 5
+          done
+
+          echo "Backend health check failed"
+          exit 1
+
+      - name: Check web route
+        env:
+          WEB_URL: ${{ vars.VRK_WEB_URL }}
+        run: |
+          set -euo pipefail
+
+          web_base="${WEB_URL%/}"
+          for i in $(seq 1 20); do
+            code="$(curl -sS -o /dev/null -w "%{http_code}" --max-time 30 "$web_base/login" || echo "000")"
+            if [ "$code" = "200" ]; then
+              echo "Web route check passed"
+              exit 0
+            fi
+            echo "Attempt $i/20: /login=$code, waiting 5s..."
+            sleep 5
+          done
+
+          echo "Web route check failed"
+          exit 1

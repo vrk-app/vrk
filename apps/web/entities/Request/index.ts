@@ -9,5 +9,9 @@ export {
 export {
   RequestStatusBadge,
   type RequestStatusBadgeProps,
-  type RequestStatusValue,
 } from "./ui/RequestStatusBadge";
+export {
+  REQUEST_STATUSES,
+  type RequestListRecord,
+  type RequestStatusValue,
+} from "./model";

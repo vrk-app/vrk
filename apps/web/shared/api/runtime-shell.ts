@@ -26,9 +26,9 @@ export function getRuntimeBootstrap() {
       contracts: "/api/v1/agreements",
     },
     notes: [
-      "Публичный shell без сессии сохраняет Stage 02 boundaries, хотя invite/auth/session contract уже активирован для Stage 03.",
-      "Публичный web contour использует contracts naming, а backend resource пока остается agreements.",
-      "Route shells без сессии могут показывать seeded или stubbed state, но не должны выдавать scoped runtime behavior за broader organization access.",
+      "Рабочие данные доступны после входа.",
+      "Договоры доступны заказчику и привязанному подрядчику.",
+      "Данные организации не показываются без доступа.",
     ],
   } as const;
 }
@@ -36,33 +36,33 @@ export function getRuntimeBootstrap() {
 export const companyShell = {
   stageLabel: "Company onboarding / profile",
   summary:
-    "Анонимный contour остается truthful public shell до появления сессии; после invite acceptance runtime переключается на persisted org/subdivision/unit model и scoped workspace.",
+    "Войдите по приглашению, чтобы открыть профиль организации, структуру и доступы.",
   steps: [
     {
       title: "Профиль компании",
-      detail: "Без активной сессии экран показывает только shell boundary и не открывает persisted organization profile.",
-      status: "Public shell",
+      detail: "Реквизиты и контактные лица доступны после входа.",
+      status: "Открытый обзор",
     },
     {
-      title: "Подразделение и площадка",
-      detail: "После login пользователь видит только разрешенный subdivision/unit subtree вместо broader organization contour.",
-      status: "Scoped runtime",
+      title: "Подразделения и юниты",
+      detail: "Рабочая структура отображается согласно выданному доступу.",
+      status: "По правам доступа",
     },
     {
-      title: "Доступ и согласование",
-      detail: "Membership, scoped grants и employee invites уже активируют live auth flow поверх Stage 03 runtime.",
-      status: "Stage 03 live",
+      title: "Доступ сотрудников",
+      detail: "Роль и область доступа задаются в приглашении.",
+      status: "Доступ включен",
     },
   ] satisfies ShellStep[],
   boundaries: [
     {
-      label: "Anonymous shell",
-      detail: "Без invite/session этот экран остается публичным shell и не раскрывает закрытый org graph.",
+      label: "Открытый просмотр",
+      detail: "Данные организации скрыты до входа.",
       tone: "interactive",
     },
     {
-      label: "Scoped landing",
-      detail: "После acceptance runtime обязан открыть только разрешенный workspace contour без расширения вверх по иерархии.",
+      label: "Ограниченная область",
+      detail: "Пользователь видит только назначенную часть структуры.",
       tone: "warning",
     },
   ] satisfies BoundaryNote[],
@@ -70,33 +70,33 @@ export const companyShell = {
 
 export const equipmentShell = {
   summary:
-    "Экран показывает пустой registry contour с точками входа для ручного добавления и импорта, но без live CRUD и без реальной привязки к subdivision/unit.",
+    "Войдите, чтобы открыть рабочие реестры оборудования, средств измерения и эталонов.",
   steps: [
     {
       title: "Добавить вручную",
-      detail: "Форма и статусный copy готовы как route shell, но submit будет подключен позже.",
-      status: "Disabled entry point",
+      detail: "Создание доступно пользователям с правом управления реестром.",
+      status: "После входа",
     },
     {
       title: "Импорт реестра",
-      detail: "Импорт из файла обозначен как отдельный вход в процесс без загрузки и парсинга в этом slice.",
-      status: "Placeholder",
+      detail: "Файловая загрузка подготавливается отдельно.",
+      status: "Не подключен",
     },
     {
-      title: "Привязка к подразделению",
-      detail: "Пользователь уже видит, что оборудование живет внутри company contour, но без persisted subdivision/unit model.",
-      status: "Truthful dependency",
+      title: "Привязка к структуре",
+      detail: "Записи закрепляются за подразделениями и юнитами.",
+      status: "По структуре",
     },
   ] satisfies ShellStep[],
   boundaries: [
     {
-      label: "Request precondition",
-      detail: "Requests остаются gated до тех пор, пока equipment contour не станет live в Stage 04 поверх Stage 03 master data.",
+      label: "Для заявок",
+      detail: "Заполненный реестр используется при оформлении заявок.",
       tone: "warning",
     },
     {
-      label: "Seed-backed vocabulary",
-      detail: "Названия категорий и статусов можно выровнять по seed/openapi, но не включать реальный mutate path.",
+      label: "Справочники",
+      detail: "Категории и статусы выбираются из рабочих справочников.",
       tone: "info",
     },
   ] satisfies BoundaryNote[],
@@ -104,33 +104,33 @@ export const equipmentShell = {
 
 export const contractsShell = {
   summary:
-    "Контур показывает подготовку договора и приглашения подрядчика как product-shaped shell, но без persisted contractor invitation state machine.",
+    "Войдите, чтобы открыть договоры и привязку подрядчиков.",
   steps: [
     {
       title: "Карточка договора",
-      detail: "Публичный web contour называет этот раздел contracts, даже если backend resource пока называется agreements.",
-      status: "Normalized in web",
+      detail: "Договор фиксирует подрядчика, работы, сроки и область действия.",
+      status: "Основа маршрута",
     },
     {
       title: "Подрядчик",
-      detail: "Поиск и приглашение подрядчика показаны как следующий шаг без live invitation workflow.",
-      status: "Stub boundary",
+      detail: "Доступ подрядчика ограничен привязанными договорами.",
+      status: "По договору",
     },
     {
-      title: "Связь с requests",
-      detail: "Договор фиксируется как обязательный prerequisite для будущего request contour.",
-      status: "Stage 04 gate",
+      title: "Связь с заявками",
+      detail: "Подходящий договор определяет исполнителя заявки.",
+      status: "Для заявок",
     },
   ] satisfies ShellStep[],
   boundaries: [
     {
-      label: "Agreements adapter",
-      detail: "Shared API boundary прячет backend agreements naming от public runtime route /contracts.",
+      label: "Единый раздел",
+      detail: "Заказчик управляет договорами, подрядчик видит назначенные ему записи.",
       tone: "interactive",
     },
     {
-      label: "No contractor activation",
-      detail: "Статусы приглашения и activation остаются вне этого slice.",
+      label: "Доступ подрядчика",
+      detail: "Внутренняя структура заказчика подрядчику не показывается.",
       tone: "warning",
     },
   ] satisfies BoundaryNote[],
@@ -138,16 +138,16 @@ export const contractsShell = {
 
 export const requestsShell = {
   summary:
-    "Контур requests существует только как truthful gated placeholder и ссылается на company, equipment и contracts как на необходимые prerequisites.",
+    "Раздел заявок временно недоступен.",
   prerequisites: [
-    "Компания и площадка должны пройти onboarding shell",
-    "Оборудование должно появиться в live реестре Stage 03/04",
-    "Договор и подрядчик должны быть активированы позднее",
+    "Проверьте профиль компании",
+    "Заполните реестр оборудования",
+    "Подготовьте договоры с подрядчиками",
   ],
   boundaries: [
     {
-      label: "Stage 04",
-      detail: "Создание и просмотр заявок специально не включаются в Stage 02 route shell.",
+      label: "Заявки недоступны",
+      detail: "Создание и сопровождение заявок еще не открыты.",
       tone: "warning",
     },
   ] satisfies BoundaryNote[],

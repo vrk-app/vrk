@@ -11,11 +11,11 @@ import (
 )
 
 var (
-	ErrUnauthorized       = errors.New("unauthorized")
-	ErrForbidden          = errors.New("forbidden")
-	ErrInvalidUnit        = errors.New("invalid unit scope")
-	ErrInvalidSubdivision = errors.New("invalid subdivision scope")
-	ErrInvalidScope       = errors.New("invalid ownership scope")
+	ErrUnauthorized    = errors.New("unauthorized")
+	ErrForbidden       = errors.New("forbidden")
+	ErrInvalidUnit     = errors.New("invalid unit scope")
+	ErrInvalidDivision = errors.New("invalid division scope")
+	ErrInvalidScope    = errors.New("invalid ownership scope")
 )
 
 func RequireCustomerSession(ctx context.Context, authService bootstrap.Service, token string) (*bootstrap.SessionSummaryResponse, error) {
@@ -44,10 +44,7 @@ func RequireRegistryManager(ctx context.Context, authService bootstrap.Service, 
 }
 
 func CanManageRegistry(session *bootstrap.SessionSummaryResponse) bool {
-	return session != nil &&
-		session.Grant != nil &&
-		session.Grant.RoleTemplate == "organization_admin" &&
-		session.Workspace.ScopeType == "organization"
+	return bootstrap.HasCapability(session, bootstrap.CapabilityManageEquipment)
 }
 
 func VisibleUnitMap(session *bootstrap.SessionSummaryResponse) map[string]bootstrap.UnitResponse {
@@ -58,10 +55,10 @@ func VisibleUnitMap(session *bootstrap.SessionSummaryResponse) map[string]bootst
 	return result
 }
 
-func VisibleSubdivisionMap(session *bootstrap.SessionSummaryResponse) map[string]bootstrap.SubdivisionResponse {
-	result := make(map[string]bootstrap.SubdivisionResponse, len(session.Subdivisions))
-	for _, subdivision := range session.Subdivisions {
-		result[subdivision.ID] = subdivision
+func VisibleDivisionMap(session *bootstrap.SessionSummaryResponse) map[string]bootstrap.DivisionResponse {
+	result := make(map[string]bootstrap.DivisionResponse, len(session.Divisions))
+	for _, division := range session.Divisions {
+		result[division.ID] = division
 	}
 	return result
 }
@@ -80,21 +77,21 @@ func ResolveVisibleUnit(session *bootstrap.SessionSummaryResponse, unitID string
 	return &unit, nil
 }
 
-func CanSeeStandard(session *bootstrap.SessionSummaryResponse, subdivisionID *uuid.UUID, unitID *uuid.UUID) bool {
+func CanSeeStandard(session *bootstrap.SessionSummaryResponse, divisionID *uuid.UUID, unitID *uuid.UUID) bool {
 	if unitID != nil {
 		_, ok := VisibleUnitMap(session)[unitID.String()]
 		return ok
 	}
 
-	if subdivisionID != nil {
-		_, ok := VisibleSubdivisionMap(session)[subdivisionID.String()]
+	if divisionID != nil {
+		_, ok := VisibleDivisionMap(session)[divisionID.String()]
 		return ok
 	}
 
 	return session != nil && session.Workspace.ScopeType == "organization"
 }
 
-func ResolveScopeLabel(session *bootstrap.SessionSummaryResponse, subdivisionID *uuid.UUID, unitID *uuid.UUID, ownerLabel *string) string {
+func ResolveScopeLabel(session *bootstrap.SessionSummaryResponse, divisionID *uuid.UUID, unitID *uuid.UUID, ownerLabel *string) string {
 	if ownerLabel != nil && strings.TrimSpace(*ownerLabel) != "" {
 		return *ownerLabel
 	}
@@ -106,9 +103,9 @@ func ResolveScopeLabel(session *bootstrap.SessionSummaryResponse, subdivisionID 
 		return "Юнит"
 	}
 
-	if subdivisionID != nil {
-		if subdivision, ok := VisibleSubdivisionMap(session)[subdivisionID.String()]; ok {
-			return subdivision.Name
+	if divisionID != nil {
+		if division, ok := VisibleDivisionMap(session)[divisionID.String()]; ok {
+			return division.Name
 		}
 		return "Подразделение"
 	}
@@ -118,12 +115,12 @@ func ResolveScopeLabel(session *bootstrap.SessionSummaryResponse, subdivisionID 
 
 func ValidateStandardScope(
 	session *bootstrap.SessionSummaryResponse,
-	subdivisionValue *string,
+	divisionValue *string,
 	unitValue *string,
 	ownerLabel *string,
 ) (*uuid.UUID, *uuid.UUID, *string, error) {
-	if subdivisionValue != nil && unitValue != nil &&
-		strings.TrimSpace(*subdivisionValue) != "" && strings.TrimSpace(*unitValue) != "" {
+	if divisionValue != nil && unitValue != nil &&
+		strings.TrimSpace(*divisionValue) != "" && strings.TrimSpace(*unitValue) != "" {
 		return nil, nil, nil, ErrInvalidScope
 	}
 
@@ -140,15 +137,15 @@ func ValidateStandardScope(
 		return nil, &parsed, ownerLabel, nil
 	}
 
-	if subdivisionValue != nil && strings.TrimSpace(*subdivisionValue) != "" {
-		subdivisionID := strings.TrimSpace(*subdivisionValue)
-		subdivision, ok := VisibleSubdivisionMap(session)[subdivisionID]
+	if divisionValue != nil && strings.TrimSpace(*divisionValue) != "" {
+		divisionID := strings.TrimSpace(*divisionValue)
+		division, ok := VisibleDivisionMap(session)[divisionID]
 		if !ok {
-			return nil, nil, nil, ErrInvalidSubdivision
+			return nil, nil, nil, ErrInvalidDivision
 		}
-		parsed := uuid.MustParse(subdivisionID)
+		parsed := uuid.MustParse(divisionID)
 		if ownerLabel == nil || strings.TrimSpace(*ownerLabel) == "" {
-			label := subdivision.Name
+			label := division.Name
 			ownerLabel = &label
 		}
 		return &parsed, nil, ownerLabel, nil

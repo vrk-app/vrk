@@ -40,6 +40,13 @@ Apply these rules:
 - Mandatory review gate: `$web-design-guidelines`.
 - Do not use `$frontend-design` directly when `Impeccable` is available; keep it as fallback only.
 
+## Runtime / Dev Server Policy
+
+- Do not start ad-hoc or feature-specific long-running dev servers unless the user explicitly asks for it in the prompt, for example: `подними dev`, `запусти отдельный инстанс`, `start dev server`.
+- For runtime checks, first use the existing compose-backed platform stack. The default web runtime is `http://localhost:3100`; inside the container it maps to port `3000`.
+- If `localhost:3100` is not available and the prompt did not explicitly ask to start a server, do not start `next dev`, `pnpm dev`, `storybook dev`, `python -m http.server`, or another preview server. Report that runtime verification was not run, or ask for permission when the check is important.
+- Short-lived build, lint, typecheck, and smoke commands are allowed when they exit on their own. Long-running preview servers are not.
+
 ## UI Source Of Truth
 
 Before generating or refactoring UI, Storybook stories, layout, forms, tables, charts, and domain UI components, read:

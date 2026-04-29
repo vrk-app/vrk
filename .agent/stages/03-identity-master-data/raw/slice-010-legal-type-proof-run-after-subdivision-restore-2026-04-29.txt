@@ -1,0 +1,21 @@
+Traceback (most recent call last):
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 763, in <module>
+    main()
+    ~~~~^^
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 728, in main
+    empty = run_empty_org_invite_proof()
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 716, in run_empty_org_invite_proof
+    invite = create_employee_invite(admin, "org-before-structure", "auditor", "organization", admin.organization_id)
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 342, in create_employee_invite
+    payload, _ = expect_ok(
+                 ~~~~~~~~~^
+        BACKEND_BASE,
+        ^^^^^^^^^^^^^
+    ...<11 lines>...
+        },
+        ^^
+    )
+    ^
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 141, in expect_ok
+    raise HttpFailure(method, f"{base_url}{path}", status, payload)
+HttpFailure: POST http://127.0.0.1:18080/api/v1/employee-invites -> 400: {'success': False, 'error': 'invite role template is invalid'}

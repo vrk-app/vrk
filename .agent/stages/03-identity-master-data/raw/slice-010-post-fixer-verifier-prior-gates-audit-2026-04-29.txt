@@ -1,0 +1,144 @@
+Prior fresh verifier backend/web/sqlc gates audit
+Checked at: 2026-04-29T02:44:28Z
+Rationale: post-fail change audit found no production/code files newer than the prior verifier fail artifact; only docs/stage verifier artifacts changed. Therefore prior backend/web/sqlc gates remain valid for unchanged code.
+
+--- .agent/stages/03-identity-master-data/raw/slice-010-fresh-verifier-sqlc-docker-generate-2026-04-29.txt
+(file exists and is empty)
+
+--- .agent/stages/03-identity-master-data/raw/slice-010-fresh-verifier-sqlc-generated-diff-2026-04-29.txt
+(file exists and is empty)
+
+--- .agent/stages/03-identity-master-data/raw/slice-010-fresh-verifier-backend-go-test-docker-2026-04-29.txt
+go: downloading github.com/joho/godotenv v1.5.1
+go: downloading golang.org/x/crypto v0.50.0
+go: downloading github.com/swaggo/swag v1.16.6
+go: downloading golang.org/x/tools v0.43.0
+go: downloading github.com/KyleBanks/depth v1.2.1
+go: downloading github.com/go-openapi/spec v0.22.4
+go: downloading github.com/jackc/puddle/v2 v2.2.2
+go: downloading github.com/swaggo/files v1.0.1
+go: downloading github.com/jackc/pgpassfile v1.0.0
+go: downloading github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761
+go: downloading golang.org/x/text v0.36.0
+go: downloading golang.org/x/sync v0.20.0
+go: downloading github.com/go-openapi/swag/stringutils v0.25.5
+go: downloading github.com/go-openapi/swag/jsonname v0.25.5
+go: downloading github.com/go-openapi/jsonpointer v0.22.5
+go: downloading github.com/go-openapi/swag/jsonutils v0.25.5
+go: downloading github.com/go-openapi/jsonreference v0.21.5
+go: downloading github.com/go-openapi/swag/loading v0.25.5
+go: downloading golang.org/x/net v0.52.0
+go: downloading golang.org/x/mod v0.34.0
+go: downloading github.com/go-openapi/swag/typeutils v0.25.5
+go: downloading github.com/go-openapi/swag/conv v0.25.5
+go: downloading github.com/go-openapi/swag/yamlutils v0.25.5
+go: downloading go.yaml.in/yaml/v3 v3.0.4
+?   	backend/cmd/api	[no test files]
+?   	backend/docs/swagger	[no test files]
+ok  	backend/internal/app	0.007s
+ok  	backend/internal/application/agreement	0.002s
+?   	backend/internal/application/application	[no test files]
+ok  	backend/internal/auth/bootstrap	0.002s
+ok  	backend/internal/auth/organization	0.002s
+?   	backend/internal/auth/user	[no test files]
+?   	backend/internal/db/generated	[no test files]
+ok  	backend/internal/equipment/equipment	0.002s
+?   	backend/internal/equipment/measuringinstrument	[no test files]
+?   	backend/internal/equipment/metrologyjournal	[no test files]
+?   	backend/internal/equipment/registryaccess	[no test files]
+?   	backend/internal/equipment/standard	[no test files]
+?   	backend/internal/infrastructure/config	[no test files]
+?   	backend/internal/infrastructure/db	[no test files]
+
+--- .agent/stages/03-identity-master-data/raw/slice-010-fresh-verifier-backend-go-build-docker-2026-04-29.txt
+go: downloading github.com/google/uuid v1.6.0
+go: downloading github.com/go-chi/chi/v5 v5.2.5
+go: downloading github.com/jackc/pgx/v5 v5.9.1
+go: downloading github.com/swaggo/swag v1.16.6
+go: downloading github.com/joho/godotenv v1.5.1
+go: downloading golang.org/x/crypto v0.50.0
+go: downloading github.com/swaggo/http-swagger v1.3.4
+go: downloading github.com/swaggo/files v1.0.1
+go: downloading github.com/jackc/puddle/v2 v2.2.2
+go: downloading golang.org/x/tools v0.43.0
+go: downloading github.com/jackc/pgpassfile v1.0.0
+go: downloading github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761
+go: downloading github.com/go-openapi/spec v0.22.4
+go: downloading github.com/KyleBanks/depth v1.2.1
+go: downloading golang.org/x/text v0.36.0
+go: downloading golang.org/x/sync v0.20.0
+go: downloading github.com/go-openapi/swag/loading v0.25.5
+go: downloading github.com/go-openapi/jsonpointer v0.22.5
+go: downloading github.com/go-openapi/jsonreference v0.21.5
+go: downloading github.com/go-openapi/swag/jsonname v0.25.5
+go: downloading github.com/go-openapi/swag/stringutils v0.25.5
+go: downloading github.com/go-openapi/swag/jsonutils v0.25.5
+go: downloading golang.org/x/net v0.52.0
+go: downloading github.com/go-openapi/swag/yamlutils v0.25.5
+go: downloading golang.org/x/mod v0.34.0
+go: downloading github.com/go-openapi/swag/conv v0.25.5
+go: downloading github.com/go-openapi/swag/typeutils v0.25.5
+go: downloading go.yaml.in/yaml/v3 v3.0.4
+
+--- .agent/stages/03-identity-master-data/raw/slice-010-fresh-verifier-web-typecheck-2026-04-29.txt
+
+> @vrk/web@0.1.0 typecheck /Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/raw/slice-010-fresh-verifier-workspace-2026-04-29/apps/web
+> next typegen && tsc --noEmit
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/yura-posledov/cursor/vrk/pnpm-lock.yaml as the root directory.
+ To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.
+ Detected additional lockfiles: 
+   * /Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/raw/slice-010-fresh-verifier-workspace-2026-04-29/pnpm-lock.yaml
+
+Generating route types...
+✓ Route types generated successfully
+
+--- .agent/stages/03-identity-master-data/raw/slice-010-fresh-verifier-web-lint-2026-04-29.txt
+
+> @vrk/web@0.1.0 lint /Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/raw/slice-010-fresh-verifier-workspace-2026-04-29/apps/web
+> eslint .
+
+
+--- .agent/stages/03-identity-master-data/raw/slice-010-fresh-verifier-web-build-2026-04-29.txt
+├ ƒ /api/auth/session/current                                                206 B         102 kB
+├ ƒ /api/bootstrap                                                           206 B         102 kB
+├ ƒ /api/company/profile                                                     206 B         102 kB
+├ ƒ /api/company/subdivisions                                                206 B         102 kB
+├ ƒ /api/company/subdivisions/[subdivisionId]                                206 B         102 kB
+├ ƒ /api/company/subdivisions/[subdivisionId]/archive                        206 B         102 kB
+├ ƒ /api/company/units                                                       206 B         102 kB
+├ ƒ /api/company/units/[unitId]                                              206 B         102 kB
+├ ƒ /api/company/units/[unitId]/archive                                      206 B         102 kB
+├ ƒ /api/contracts                                                           206 B         102 kB
+├ ƒ /api/contracts/[contractId]                                              206 B         102 kB
+├ ƒ /api/contracts/contractors                                               206 B         102 kB
+├ ƒ /api/contracts/routing/resolve                                           206 B         102 kB
+├ ƒ /api/equipment                                                           206 B         102 kB
+├ ƒ /api/equipment/[equipmentId]/archive                                     206 B         102 kB
+├ ƒ /api/equipment/measuring-instruments                                     206 B         102 kB
+├ ƒ /api/equipment/measuring-instruments/[measuringInstrumentId]/archive     206 B         102 kB
+├ ƒ /api/equipment/measuring-instruments/[measuringInstrumentId]/journals    206 B         102 kB
+├ ƒ /api/equipment/standards                                                 206 B         102 kB
+├ ƒ /api/equipment/standards/[standardId]/archive                            206 B         102 kB
+├ ƒ /api/equipment/standards/[standardId]/journals                           206 B         102 kB
+├ ƒ /api/platform/organization-shells                                        206 B         102 kB
+├ ƒ /company                                                               8.97 kB         152 kB
+├ ƒ /company/setup                                                           206 B         102 kB
+├ ƒ /contracts                                                             6.94 kB         147 kB
+├ ƒ /equipment                                                             14.8 kB         155 kB
+├ ○ /login                                                                 2.67 kB         155 kB
+├ ○ /password-reset                                                          196 B         141 kB
+├ ○ /register                                                                537 B         162 kB
+├ ƒ /register/[token]                                                        230 B         159 kB
+└ ƒ /requests                                                                196 B         141 kB
++ First Load JS shared by all                                               102 kB
+  ├ chunks/4287-1a1b6622c8fbdf8a.js                                        45.7 kB
+  ├ chunks/d9d495f0-0f113042a8009c03.js                                    54.2 kB
+  └ other shared chunks (total)                                            1.88 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

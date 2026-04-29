@@ -1,0 +1,364 @@
+docker compose -f compose.platform.yml up --build -d --wait
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.38kB done
+#1 DONE 0.0s
+
+#2 [backend internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.49kB done
+#2 DONE 0.0s
+
+#3 [field internal] load build definition from Dockerfile
+#3 transferring dockerfile: 533B done
+#3 DONE 0.0s
+
+#4 [web internal] load build definition from Dockerfile
+#4 transferring dockerfile: 529B done
+#4 DONE 0.0s
+
+#5 [web internal] load metadata for docker.io/library/node:24.14.1-alpine
+#5 ...
+
+#6 [backend internal] load metadata for docker.io/library/golang:1.26-alpine
+#6 DONE 0.3s
+
+#5 [field internal] load metadata for docker.io/library/node:24.14.1-alpine
+#5 DONE 0.3s
+
+#7 [web internal] load .dockerignore
+#7 transferring context: 190B done
+#7 DONE 0.0s
+
+#8 [field 1/9] FROM docker.io/library/node:24.14.1-alpine@sha256:8510330d3eb72c804231a834b1a8ebb55cb3796c3e4431297a24d246b8add4d5
+#8 resolve docker.io/library/node:24.14.1-alpine@sha256:8510330d3eb72c804231a834b1a8ebb55cb3796c3e4431297a24d246b8add4d5 done
+#8 DONE 0.0s
+
+#9 [field internal] load build context
+#9 transferring context: 1.80MB 0.0s done
+#9 DONE 0.0s
+
+#10 [field 2/9] WORKDIR /workspace
+#10 CACHED
+
+#11 [web 3/9] RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
+#11 CACHED
+
+#12 [field 4/9] COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+#12 DONE 0.1s
+
+#13 [field 5/9] COPY apps/web/package.json apps/web/package.json
+#13 DONE 0.0s
+
+#14 [web 6/9] COPY apps/field/package.json apps/field/package.json
+#14 DONE 0.0s
+
+#15 [field 7/9] RUN pnpm install --frozen-lockfile
+#15 0.349 Scope: all 3 workspace projects
+#15 0.416 Lockfile is up to date, resolution step is skipped
+#15 0.494 Progress: resolved 1, reused 0, downloaded 0, added 0
+#15 0.580 Packages: +534
+#15 0.580 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#15 ...
+
+#16 [backend internal] load metadata for docker.io/library/alpine:3.19
+#16 DONE 1.4s
+
+#17 [backend internal] load .dockerignore
+#17 transferring context: 44B done
+#17 DONE 0.0s
+
+#18 [backend builder  1/12] FROM docker.io/library/golang:1.26-alpine@sha256:f85330846cde1e57ca9ec309382da3b8e6ae3ab943d2739500e08c86393a21b1
+#18 resolve docker.io/library/golang:1.26-alpine@sha256:f85330846cde1e57ca9ec309382da3b8e6ae3ab943d2739500e08c86393a21b1 0.0s done
+#18 DONE 0.0s
+
+#19 [backend stage-1 1/7] FROM docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1
+#19 resolve docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1 0.0s done
+#19 DONE 0.0s
+
+#20 [backend internal] load build context
+#20 transferring context: 735.34kB 0.0s done
+#20 DONE 0.0s
+
+#21 [backend builder  2/12] RUN apk add --no-cache git ca-certificates tzdata
+#21 CACHED
+
+#22 [backend builder  3/12] RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0
+#22 CACHED
+
+#23 [backend builder  4/12] WORKDIR /app
+#23 CACHED
+
+#24 [backend builder  5/12] COPY go.mod go.sum ./
+#24 CACHED
+
+#25 [backend builder  6/12] RUN go mod download
+#25 CACHED
+
+#26 [backend builder  7/12] COPY sqlc.yaml ./
+#26 CACHED
+
+#15 [field 7/9] RUN pnpm install --frozen-lockfile
+#15 1.089 
+#15 1.089    ╭───────────────────────────────────────────────╮
+#15 1.089    │                                               │
+#15 1.089    │     Update available! 10.33.0 → 10.33.2.      │
+#15 1.089    │     Changelog: https://pnpm.io/v/10.33.2      │
+#15 1.089    │   To update, run: corepack use pnpm@10.33.2   │
+#15 1.089    │                                               │
+#15 1.089    ╰───────────────────────────────────────────────╯
+#15 1.089 
+#15 ...
+
+#27 [backend builder  8/12] COPY internal/db/queries ./internal/db/queries
+#27 DONE 0.2s
+
+#28 [backend builder  9/12] COPY migrations ./migrations
+#28 DONE 0.0s
+
+#29 [backend builder 10/12] RUN sqlc generate
+#29 DONE 1.2s
+
+#30 [backend builder 11/12] COPY . .
+#30 DONE 0.1s
+
+#15 [field 7/9] RUN pnpm install --frozen-lockfile
+#15 1.494 Progress: resolved 534, reused 0, downloaded 172, added 172
+#15 2.494 Progress: resolved 534, reused 0, downloaded 381, added 381
+#15 3.494 Progress: resolved 534, reused 0, downloaded 527, added 527
+#15 4.494 Progress: resolved 534, reused 0, downloaded 532, added 532
+#15 5.495 Progress: resolved 534, reused 0, downloaded 533, added 533
+#15 6.544 Progress: resolved 534, reused 0, downloaded 534, added 533
+#15 6.763 Progress: resolved 534, reused 0, downloaded 534, added 534, done
+#15 7.308 .../esbuild@0.25.12/node_modules/esbuild postinstall$ node install.js
+#15 7.401 .../esbuild@0.25.12/node_modules/esbuild postinstall: Done
+#15 7.584 
+#15 7.642 Done in 7.5s using pnpm v10.33.0
+#15 DONE 8.3s
+
+#31 [field 8/9] COPY . .
+#31 DONE 0.4s
+
+#32 [web 9/9] RUN pnpm --filter @vrk/web build
+#32 0.449 
+#32 0.449 > @vrk/web@0.1.0 build /workspace/apps/web
+#32 0.449 > next build
+#32 0.449 
+#32 1.147    ▲ Next.js 15.5.15
+#32 1.147 
+#32 1.192    Creating an optimized production build ...
+#32 ...
+
+#33 [backend builder 12/12] RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build     -ldflags="-w -s"     -o /app/bin/api     ./cmd/api
+#33 DONE 8.1s
+
+#34 [backend stage-1 2/7] RUN apk add --no-cache ca-certificates tzdata wget
+#34 CACHED
+
+#35 [backend stage-1 3/7] RUN addgroup -g 1001 -S appgroup &&     adduser -u 1001 -S appuser -G appgroup
+#35 CACHED
+
+#36 [backend stage-1 4/7] COPY --from=builder --chown=appuser:appgroup /app/bin/api /app/api
+#36 DONE 0.1s
+
+#37 [backend stage-1 5/7] COPY --chown=appuser:appgroup migrations /app/migrations
+#37 DONE 0.0s
+
+#38 [field 9/9] RUN pnpm --filter @vrk/field build
+#38 0.468 
+#38 0.468 > @vrk/field@0.1.0 build /workspace/apps/field
+#38 0.468 > next build
+#38 0.468 
+#38 1.232    ▲ Next.js 15.5.15
+#38 1.232 
+#38 1.258    Creating an optimized production build ...
+#38 ...
+
+#39 [backend stage-1 6/7] RUN chown -R appuser:appgroup /app
+#39 DONE 0.2s
+
+#40 [backend stage-1 7/7] WORKDIR /app
+#40 DONE 0.0s
+
+#41 [backend] exporting to image
+#41 exporting layers
+#41 exporting layers 0.8s done
+#41 exporting manifest sha256:a4a2a5e3e9fb5d57128ea4b06fd0f333960eb3422e7d3ffec0baca95883ea00a
+#41 exporting manifest sha256:a4a2a5e3e9fb5d57128ea4b06fd0f333960eb3422e7d3ffec0baca95883ea00a done
+#41 exporting config sha256:e4ac66e1ec3e83a4670c1c74fb2761dc796788c6532c5e4554affa58b060c76b done
+#41 exporting attestation manifest sha256:b77c6cceb358003206b8e2608a8ac9b38af714719b094c147c2f2b7f6472f5f8 done
+#41 exporting manifest list sha256:6e7c830e8414b9c91281d8a546f1be62ca8eb724d076ae1639cef90fe7ee14da done
+#41 naming to docker.io/library/vrk-backend:latest done
+#41 unpacking to docker.io/library/vrk-backend:latest 0.1s done
+#41 DONE 1.0s
+
+#38 [field 9/9] RUN pnpm --filter @vrk/field build
+#38 ...
+
+#42 [backend] resolving provenance for metadata file
+#42 DONE 0.0s
+
+#32 [web 9/9] RUN pnpm --filter @vrk/web build
+#32 ...
+
+#38 [field 9/9] RUN pnpm --filter @vrk/field build
+#38 6.601  ✓ Compiled successfully in 3.8s
+#38 6.603    Linting and checking validity of types ...
+#38 7.849    Collecting page data ...
+#38 8.520    Generating static pages (0/4) ...
+#38 8.863    Generating static pages (1/4) 
+#38 8.863    Generating static pages (2/4) 
+#38 8.863    Generating static pages (3/4) 
+#38 8.863  ✓ Generating static pages (4/4)
+#38 9.292    Finalizing page optimization ...
+#38 9.292    Collecting build traces ...
+#38 13.75 
+#38 13.75 Route (app)                                 Size  First Load JS
+#38 13.75 ┌ ƒ /                                      126 B         102 kB
+#38 13.75 ├ ○ /_not-found                            995 B         103 kB
+#38 13.75 └ ○ /manifest.webmanifest                  126 B         102 kB
+#38 13.75 + First Load JS shared by all             102 kB
+#38 13.75   ├ chunks/554-47be74451b2d875f.js       45.5 kB
+#38 13.75   ├ chunks/a97b86c7-9ac234f379ec86d3.js  54.2 kB
+#38 13.75   └ other shared chunks (total)          1.84 kB
+#38 13.75 
+#38 13.75 
+#38 13.75 ○  (Static)   prerendered as static content
+#38 13.75 ƒ  (Dynamic)  server-rendered on demand
+#38 13.75 
+#38 DONE 14.0s
+
+#32 [web 9/9] RUN pnpm --filter @vrk/web build
+#32 10.03  ✓ Compiled successfully in 7.2s
+#32 10.03    Linting and checking validity of types ...
+#32 13.65    Collecting page data ...
+#32 14.79    Generating static pages (0/25) ...
+#32 15.05    Generating static pages (6/25) 
+#32 15.07    Generating static pages (12/25) 
+#32 15.16    Generating static pages (18/25) 
+#32 15.24  ✓ Generating static pages (25/25)
+#32 15.69    Finalizing page optimization ...
+#32 15.69    Collecting build traces ...
+#32 20.03 
+#32 20.04 Route (app)                                                                   Size  First Load JS
+#32 20.04 ┌ ○ /                                                                        208 B         102 kB
+#32 20.04 ├ ○ /_not-found                                                               1 kB         103 kB
+#32 20.04 ├ ○ /access-policy                                                           195 B         140 kB
+#32 20.04 ├ ƒ /api/auth/employee-invites                                               208 B         102 kB
+#32 20.04 ├ ƒ /api/auth/employee-invites/[inviteId]/revoke                             208 B         102 kB
+#32 20.04 ├ ƒ /api/auth/employee-invites/[inviteId]/send                               208 B         102 kB
+#32 20.04 ├ ƒ /api/auth/invites/[token]                                                208 B         102 kB
+#32 20.04 ├ ƒ /api/auth/invites/[token]/accept                                         208 B         102 kB
+#32 20.04 ├ ƒ /api/auth/session                                                        208 B         102 kB
+#32 20.04 ├ ƒ /api/auth/session/current                                                208 B         102 kB
+#32 20.04 ├ ƒ /api/bootstrap                                                           208 B         102 kB
+#32 20.04 ├ ƒ /api/company/profile                                                     208 B         102 kB
+#32 20.04 ├ ƒ /api/company/subdivisions                                                208 B         102 kB
+#32 20.04 ├ ƒ /api/company/subdivisions/[subdivisionId]                                208 B         102 kB
+#32 20.04 ├ ƒ /api/company/subdivisions/[subdivisionId]/archive                        208 B         102 kB
+#32 20.04 ├ ƒ /api/company/units                                                       208 B         102 kB
+#32 20.04 ├ ƒ /api/company/units/[unitId]                                              208 B         102 kB
+#32 20.04 ├ ƒ /api/company/units/[unitId]/archive                                      208 B         102 kB
+#32 20.04 ├ ƒ /api/contracts                                                           208 B         102 kB
+#32 20.04 ├ ƒ /api/contracts/[contractId]                                              208 B         102 kB
+#32 20.04 ├ ƒ /api/contracts/contractors                                               208 B         102 kB
+#32 20.04 ├ ƒ /api/contracts/routing/resolve                                           208 B         102 kB
+#32 20.04 ├ ƒ /api/equipment                                                           208 B         102 kB
+#32 20.04 ├ ƒ /api/equipment/[equipmentId]/archive                                     208 B         102 kB
+#32 20.04 ├ ƒ /api/equipment/measuring-instruments                                     208 B         102 kB
+#32 20.04 ├ ƒ /api/equipment/measuring-instruments/[measuringInstrumentId]/archive     208 B         102 kB
+#32 20.04 ├ ƒ /api/equipment/measuring-instruments/[measuringInstrumentId]/journals    208 B         102 kB
+#32 20.04 ├ ƒ /api/equipment/standards                                                 208 B         102 kB
+#32 20.04 ├ ƒ /api/equipment/standards/[standardId]/archive                            208 B         102 kB
+#32 20.04 ├ ƒ /api/equipment/standards/[standardId]/journals                           208 B         102 kB
+#32 20.04 ├ ƒ /api/platform/organization-shells                                        208 B         102 kB
+#32 20.04 ├ ƒ /company                                                               8.95 kB         151 kB
+#32 20.04 ├ ƒ /company/setup                                                           208 B         102 kB
+#32 20.04 ├ ƒ /contracts                                                             6.93 kB         147 kB
+#32 20.04 ├ ƒ /equipment                                                             14.8 kB         155 kB
+#32 20.04 ├ ○ /login                                                                 2.67 kB         155 kB
+#32 20.04 ├ ○ /password-reset                                                          195 B         140 kB
+#32 20.04 ├ ○ /register                                                                539 B         162 kB
+#32 20.04 ├ ƒ /register/[token]                                                        228 B         158 kB
+#32 20.04 └ ƒ /requests                                                                195 B         140 kB
+#32 20.04 + First Load JS shared by all                                               102 kB
+#32 20.04   ├ chunks/3554-c19825f276ec337d.js                                        45.5 kB
+#32 20.04   ├ chunks/a97b86c7-6ed9a45f307045da.js                                    54.2 kB
+#32 20.04   └ other shared chunks (total)                                            1.87 kB
+#32 20.04 
+#32 20.04 
+#32 20.04 ○  (Static)   prerendered as static content
+#32 20.04 ƒ  (Dynamic)  server-rendered on demand
+#32 20.04 
+#32 DONE 20.1s
+
+#43 [field] exporting to image
+#43 exporting layers
+#43 ...
+
+#44 [web] exporting to image
+#44 exporting layers
+#44 ...
+
+#43 [field] exporting to image
+#43 exporting layers 11.6s done
+#43 exporting manifest sha256:5466223da1ca4a9668d4d071211c8a747fdeae248a491e99822abba24b198549 0.0s done
+#43 exporting config sha256:a491b6ef713f7bf8ce3a60fd0ff3cfc653fb8a5bd31ebad239d6bbb5a65ac005 done
+#43 exporting attestation manifest sha256:8c063050a4638831a00bf13f59a5614760abefc6792ebadb5b934b6ceb566e5a 0.0s done
+#43 exporting manifest list sha256:ffbb89ef279356560fd2d3a937d4f7837ded239d3b593edb25294be6623f45e4 done
+#43 naming to docker.io/library/vrk-field:latest done
+#43 unpacking to docker.io/library/vrk-field:latest
+#43 unpacking to docker.io/library/vrk-field:latest 5.0s done
+#43 DONE 16.7s
+
+#45 [field] resolving provenance for metadata file
+#45 DONE 0.0s
+
+#44 [web] exporting to image
+#44 exporting layers 5.4s done
+#44 exporting manifest sha256:cc85702ce602212ba354e24ee76c14e1eecd1879551e9174954d14cd3c108286 0.0s done
+#44 exporting config sha256:6b5e97343ae43a539c5a6ab16be96052f166dd0d58c3023e8fa8b4992a8213c7 done
+#44 exporting attestation manifest sha256:8f2f98a00f720f92bd93cb6d181038b0097ba7290af1b49dd3c6fde7c8823a18 0.0s done
+#44 exporting manifest list sha256:3c42a2aa1c653c54a2663d6dae124113a728f62907c099c2bf7bbc3ec33563c0 done
+#44 naming to docker.io/library/vrk-web:latest done
+#44 unpacking to docker.io/library/vrk-web:latest 5.2s done
+#44 DONE 10.7s
+
+#46 [web] resolving provenance for metadata file
+#46 DONE 0.0s
+ vrk-backend  Built
+ vrk-web  Built
+ vrk-field  Built
+ Container vrk-db-1  Running
+ Container vrk-backend-1  Recreate
+ Container vrk-backend-1  Recreated
+ Container vrk-web-1  Recreate
+ Container vrk-field-1  Recreate
+ Container vrk-field-1  Recreated
+ Container vrk-web-1  Recreated
+ Container vrk-db-1  Waiting
+ Container vrk-db-1  Healthy
+ Container vrk-migrate-1  Starting
+ Container vrk-migrate-1  Started
+ Container vrk-db-1  Waiting
+ Container vrk-migrate-1  Waiting
+ Container vrk-db-1  Healthy
+ Container vrk-migrate-1  Exited
+ Container vrk-backend-1  Starting
+ Container vrk-backend-1  Started
+ Container vrk-backend-1  Waiting
+ Container vrk-backend-1  Waiting
+ Container vrk-backend-1  Healthy
+ Container vrk-web-1  Starting
+ Container vrk-backend-1  Healthy
+ Container vrk-field-1  Starting
+ Container vrk-field-1  Started
+ Container vrk-web-1  Started
+ Container vrk-backend-1  Waiting
+ Container vrk-web-1  Waiting
+ Container vrk-field-1  Waiting
+ Container vrk-db-1  Waiting
+ Container vrk-migrate-1  Waiting
+ Container vrk-backend-1  Healthy
+ Container vrk-db-1  Healthy
+ Container vrk-migrate-1  Exited
+ Container vrk-web-1  Healthy
+ Container vrk-field-1  Healthy

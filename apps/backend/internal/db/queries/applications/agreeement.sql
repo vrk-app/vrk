@@ -10,7 +10,7 @@ WITH inserted AS (
         work_type,
         equipment_type,
         region,
-        subdivision_id,
+        division_id,
         unit_id,
         location_scope_label,
         source,
@@ -46,8 +46,8 @@ SELECT
     a.work_type,
     a.equipment_type,
     a.region,
-    a.subdivision_id,
-    subdivision.name AS subdivision_name,
+    a.division_id,
+    division.name AS division_name,
     a.unit_id,
     unit.name AS unit_name,
     a.location_scope_label,
@@ -58,7 +58,7 @@ SELECT
 FROM inserted a
 JOIN auth_bootstrap_organizations customer ON customer.id = a.customer_organization_id
 JOIN auth_bootstrap_organizations contractor ON contractor.id = a.contractor_organization_id
-LEFT JOIN auth_subdivisions subdivision ON subdivision.id = a.subdivision_id
+LEFT JOIN auth_divisions division ON division.id = a.division_id
 LEFT JOIN auth_units unit ON unit.id = a.unit_id;
 
 -- name: GetAgreementByID :one
@@ -75,8 +75,8 @@ SELECT
     a.work_type,
     a.equipment_type,
     a.region,
-    a.subdivision_id,
-    subdivision.name AS subdivision_name,
+    a.division_id,
+    division.name AS division_name,
     a.unit_id,
     unit.name AS unit_name,
     a.location_scope_label,
@@ -87,7 +87,7 @@ SELECT
 FROM agreements a
 JOIN auth_bootstrap_organizations customer ON customer.id = a.customer_organization_id
 JOIN auth_bootstrap_organizations contractor ON contractor.id = a.contractor_organization_id
-LEFT JOIN auth_subdivisions subdivision ON subdivision.id = a.subdivision_id
+LEFT JOIN auth_divisions division ON division.id = a.division_id
 LEFT JOIN auth_units unit ON unit.id = a.unit_id
 WHERE a.id = $1
   AND a.customer_organization_id IS NOT NULL;
@@ -106,8 +106,8 @@ SELECT
     a.work_type,
     a.equipment_type,
     a.region,
-    a.subdivision_id,
-    subdivision.name AS subdivision_name,
+    a.division_id,
+    division.name AS division_name,
     a.unit_id,
     unit.name AS unit_name,
     a.location_scope_label,
@@ -118,7 +118,7 @@ SELECT
 FROM agreements a
 JOIN auth_bootstrap_organizations customer ON customer.id = a.customer_organization_id
 JOIN auth_bootstrap_organizations contractor ON contractor.id = a.contractor_organization_id
-LEFT JOIN auth_subdivisions subdivision ON subdivision.id = a.subdivision_id
+LEFT JOIN auth_divisions division ON division.id = a.division_id
 LEFT JOIN auth_units unit ON unit.id = a.unit_id
 WHERE a.customer_organization_id = $1
 ORDER BY a.created_at DESC;
@@ -137,8 +137,8 @@ SELECT
     a.work_type,
     a.equipment_type,
     a.region,
-    a.subdivision_id,
-    subdivision.name AS subdivision_name,
+    a.division_id,
+    division.name AS division_name,
     a.unit_id,
     unit.name AS unit_name,
     a.location_scope_label,
@@ -149,7 +149,7 @@ SELECT
 FROM agreements a
 JOIN auth_bootstrap_organizations customer ON customer.id = a.customer_organization_id
 JOIN auth_bootstrap_organizations contractor ON contractor.id = a.contractor_organization_id
-LEFT JOIN auth_subdivisions subdivision ON subdivision.id = a.subdivision_id
+LEFT JOIN auth_divisions division ON division.id = a.division_id
 LEFT JOIN auth_units unit ON unit.id = a.unit_id
 WHERE a.contractor_organization_id = $1
 ORDER BY a.created_at DESC;
@@ -165,7 +165,7 @@ SET
     work_type = COALESCE($7, work_type),
     equipment_type = COALESCE($8, equipment_type),
     region = COALESCE($9, region),
-    subdivision_id = $10,
+    division_id = $10,
     unit_id = $11,
     location_scope_label = $12,
     source = $13,
@@ -184,7 +184,7 @@ RETURNING
     work_type,
     equipment_type,
     region,
-    subdivision_id,
+    division_id,
     unit_id,
     location_scope_label,
     source,

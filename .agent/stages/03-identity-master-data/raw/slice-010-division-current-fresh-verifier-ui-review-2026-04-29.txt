@@ -1,0 +1,45 @@
+## apps/web/app/(runtime)/company/page.tsx
+
+✓ pass
+
+## apps/web/app/(runtime)/company/setup/page.tsx
+
+✓ pass
+
+## apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+✓ pass
+
+## apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx
+
+✓ pass
+
+## apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx
+
+✓ pass
+
+## apps/web/app/register/[token]/page.tsx
+
+✓ pass
+
+## apps/web/shared/ui/InputField.tsx
+
+✓ pass
+
+## apps/web/shared/ui/SelectField.tsx
+
+✓ pass
+
+## apps/web/shared/ui/TextareaField.tsx
+
+✓ pass
+
+## apps/web/shared/ui/Tabs.tsx
+
+✓ pass
+
+## apps/web/shared/ui/InlineAlert.tsx
+
+✓ pass
+
+Review notes: source refreshed in web-interface-guidelines-source-2026-04-29-division-current-fresh-verifier.md. Checked labels/names/autocomplete, focus-visible replacement for outline-none, decorative aria-hidden icons, confirmation before archive/revoke mutations, semantic buttons/links, empty states, and story-backed reusable primitives. Local company tabs remain a documented non-blocking intra-page view switch, not a persisted filter/pagination state for this slice.

@@ -21,8 +21,8 @@ export type EquipmentRecord = {
   unit: {
     id: string;
     name: string;
-    subdivisionId?: string;
-    subdivisionName?: string;
+    divisionId?: string;
+    divisionName?: string;
   };
   manufacturer: string;
   classification: string;
@@ -56,8 +56,8 @@ export type MeasuringInstrumentRecord = {
   unit: {
     id: string;
     name: string;
-    subdivisionId?: string;
-    subdivisionName?: string;
+    divisionId?: string;
+    divisionName?: string;
   };
   equipment?: {
     id: string;
@@ -85,7 +85,7 @@ export type StandardRecord = {
   id: string;
   organizationId: string;
   ownershipScope: {
-    scopeType: "organization" | "subdivision" | "unit";
+    scopeType: "organization" | "division" | "unit";
     scopeId?: string;
     label: string;
   };

@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 763, in <module>
+    main()
+    ~~~~^^
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 727, in main
+    primary = run_primary_org_proof()
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 380, in run_primary_org_proof
+    admin = accept_first_admin_backend("primary", email_prefix="slice010-primary-admin")
+  File "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data/proof_slice010_org_structure.py", line 231, in accept_first_admin_backend
+    assert_true(data["divisions"] == [] and data["units"] == [], "fresh first-admin session should not require initial structure")
+                ~~~~^^^^^^^^^^^^^
+KeyError: 'divisions'
+exit_code=1

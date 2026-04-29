@@ -1,0 +1,92 @@
+Doc alias audit: canonical docs versus stage contract
+Command: rg -n "registered|address|leader|manager|contractPhone|contractEmail|acting|ВРД|ВРЗ|ВУ|ВРП|business fields|алиас|alias|managerName|leaderFullName" docs/architecture/identity-master-data.md docs/design/customer-admin-bootstrap-flow.md docs/architecture/frontend-architecture.md docs/roadmap.md docs/PRD-MVP.md .agent/stages/03-identity-master-data/sprint_contract.md
+.agent/stages/03-identity-master-data/sprint_contract.md:37:The persistent `/company` profile and org-structure forms must expose and persist these business fields where the record type carries them:
+.agent/stages/03-identity-master-data/sprint_contract.md:39:- `type`: selector with exactly these values for the correction slice: `ВРД`, `ВРЗ`, `ВУ`, `ВРП`;
+.agent/stages/03-identity-master-data/sprint_contract.md:41:- `registeredAddress` as the canonical organization address field;
+.agent/stages/03-identity-master-data/sprint_contract.md:42:- `address` as a compatibility/display alias where existing subdivision/unit APIs or payloads still use it;
+.agent/stages/03-identity-master-data/sprint_contract.md:43:- `leaderFullName` as the canonical leader display field;
+.agent/stages/03-identity-master-data/sprint_contract.md:44:- `managerName` remains a migration/read-display compatibility alias when existing stored data or session payloads still carry that field;
+.agent/stages/03-identity-master-data/sprint_contract.md:45:- `leaderPosition`;
+.agent/stages/03-identity-master-data/sprint_contract.md:46:- `contractPhone`;
+.agent/stages/03-identity-master-data/sprint_contract.md:47:- `contractEmail`;
+.agent/stages/03-identity-master-data/sprint_contract.md:48:- `actingBasis`;
+.agent/stages/03-identity-master-data/sprint_contract.md:64:- Organization profile and business fields:
+.agent/stages/03-identity-master-data/sprint_contract.md:65:  - create/edit flows handle `type`, `name`, `registeredAddress`/`address`, `leaderFullName`/`managerName`, `leaderPosition`, `contractPhone`, `contractEmail`, and `actingBasis`;
+.agent/stages/03-identity-master-data/sprint_contract.md:71:  - create/edit uses the frozen type selector values and business fields above;
+.agent/stages/03-identity-master-data/sprint_contract.md:78:  - create/edit uses the frozen type selector values and business fields above;
+.agent/stages/03-identity-master-data/sprint_contract.md:174:  - document the final business field aliases and archive constraints.
+docs/architecture/frontend-architecture.md:118:  - organization-scope пользователь видит весь org graph и, только при `workspace.canManageEmployeeInvites`, employee invite manager;
+docs/architecture/identity-master-data.md:326:    G --> J["Employee invite manager only for organization_admin"]
+
+OpenAPI field presence:
+apps/web/shared/api/bootstrap.ts:80:  registeredAddress?: string;
+apps/web/shared/api/bootstrap.ts:82:  leaderFullName?: string;
+apps/web/shared/api/bootstrap.ts:83:  managerName?: string;
+apps/web/shared/api/bootstrap.ts:85:  contractPhone?: string;
+apps/web/shared/api/bootstrap.ts:86:  contractEmail?: string;
+apps/web/shared/api/bootstrap.ts:87:  actingBasis?: string;
+apps/web/shared/api/bootstrap.ts:96:  registeredAddress?: string;
+apps/web/shared/api/bootstrap.ts:97:  leaderFullName?: string;
+apps/web/shared/api/bootstrap.ts:98:  managerName?: string;
+apps/web/shared/api/bootstrap.ts:100:  contractPhone?: string;
+apps/web/shared/api/bootstrap.ts:101:  contractEmail?: string;
+apps/web/shared/api/bootstrap.ts:102:  actingBasis?: string;
+apps/web/shared/api/bootstrap.ts:114:  managerName?: string;
+apps/web/shared/api/bootstrap.ts:123:  managerName?: string;
+apps/web/shared/api/bootstrap.ts:161:    registeredAddress?: string;
+apps/web/shared/api/bootstrap.ts:165:    leaderFullName?: string;
+apps/web/shared/api/bootstrap.ts:166:    managerName?: string;
+apps/web/shared/api/bootstrap.ts:168:    contractPhone?: string;
+apps/web/shared/api/bootstrap.ts:169:    contractEmail?: string;
+apps/web/shared/api/bootstrap.ts:170:    actingBasis?: string;
+apps/web/shared/api/bootstrap.ts:195:    registeredAddress?: string;
+apps/web/shared/api/bootstrap.ts:196:    managerName?: string;
+apps/web/shared/api/bootstrap.ts:197:    leaderFullName?: string;
+apps/web/shared/api/bootstrap.ts:200:    contractPhone?: string;
+apps/web/shared/api/bootstrap.ts:201:    contractEmail?: string;
+apps/web/shared/api/bootstrap.ts:202:    actingBasis?: string;
+apps/web/shared/api/bootstrap.ts:214:    registeredAddress?: string;
+apps/web/shared/api/bootstrap.ts:215:    managerName?: string;
+apps/web/shared/api/bootstrap.ts:216:    leaderFullName?: string;
+apps/web/shared/api/bootstrap.ts:219:    contractPhone?: string;
+apps/web/shared/api/bootstrap.ts:220:    contractEmail?: string;
+apps/web/shared/api/bootstrap.ts:221:    actingBasis?: string;
+apps/backend/docs/swagger/swagger.yaml:160:  bootstrap.CompanyProfileRequest:
+apps/backend/docs/swagger/swagger.yaml:162:      actingBasis:
+apps/backend/docs/swagger/swagger.yaml:166:      contractEmail:
+apps/backend/docs/swagger/swagger.yaml:168:      contractPhone:
+apps/backend/docs/swagger/swagger.yaml:174:      leaderFullName:
+apps/backend/docs/swagger/swagger.yaml:178:      managerName:
+apps/backend/docs/swagger/swagger.yaml:182:      registeredAddress:
+apps/backend/docs/swagger/swagger.yaml:307:      managerName:
+apps/backend/docs/swagger/swagger.yaml:324:      managerName:
+apps/backend/docs/swagger/swagger.yaml:407:      actingBasis:
+apps/backend/docs/swagger/swagger.yaml:415:      contractEmail:
+apps/backend/docs/swagger/swagger.yaml:417:      contractPhone:
+apps/backend/docs/swagger/swagger.yaml:427:      leaderFullName:
+apps/backend/docs/swagger/swagger.yaml:433:      managerName:
+apps/backend/docs/swagger/swagger.yaml:439:      registeredAddress:
+apps/backend/docs/swagger/swagger.yaml:492:  bootstrap.StructureNodeRequest:
+apps/backend/docs/swagger/swagger.yaml:494:      actingBasis:
+apps/backend/docs/swagger/swagger.yaml:504:      contractEmail:
+apps/backend/docs/swagger/swagger.yaml:506:      contractPhone:
+apps/backend/docs/swagger/swagger.yaml:508:      leaderFullName:
+apps/backend/docs/swagger/swagger.yaml:512:      managerName:
+apps/backend/docs/swagger/swagger.yaml:518:      registeredAddress:
+apps/backend/docs/swagger/swagger.yaml:527:      actingBasis:
+apps/backend/docs/swagger/swagger.yaml:537:      contractEmail:
+apps/backend/docs/swagger/swagger.yaml:539:      contractPhone:
+apps/backend/docs/swagger/swagger.yaml:543:      leaderFullName:
+apps/backend/docs/swagger/swagger.yaml:547:      managerName:
+apps/backend/docs/swagger/swagger.yaml:553:      registeredAddress:
+apps/backend/docs/swagger/swagger.yaml:562:      actingBasis:
+apps/backend/docs/swagger/swagger.yaml:572:      contractEmail:
+apps/backend/docs/swagger/swagger.yaml:574:      contractPhone:
+apps/backend/docs/swagger/swagger.yaml:578:      leaderFullName:
+apps/backend/docs/swagger/swagger.yaml:582:      managerName:
+apps/backend/docs/swagger/swagger.yaml:588:      registeredAddress:
+apps/backend/docs/swagger/swagger.yaml:1424:          $ref: '#/definitions/bootstrap.CompanyProfileRequest'
+apps/backend/docs/swagger/swagger.yaml:1468:          $ref: '#/definitions/bootstrap.StructureNodeRequest'
+apps/backend/docs/swagger/swagger.yaml:1513:          $ref: '#/definitions/bootstrap.StructureNodeRequest'
+apps/backend/docs/swagger/swagger.yaml:1597:          $ref: '#/definitions/bootstrap.StructureNodeRequest'
+apps/backend/docs/swagger/swagger.yaml:1641:          $ref: '#/definitions/bootstrap.StructureNodeRequest'

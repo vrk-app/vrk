@@ -1,4 +1,6 @@
 import type { LucideIcon } from "lucide-react";
+import type { RequestListRecord } from "@/entities/Request";
+export { REQUEST_STATUSES } from "@/entities/Request";
 import {
   BadgeCheck,
   Bell,
@@ -24,17 +26,6 @@ import {
   WalletCards,
   Wrench,
 } from "lucide-react";
-
-export const REQUEST_STATUSES = [
-  { value: "draft", label: "Черновик", tone: "neutral" as const },
-  { value: "on-approval", label: "На согласовании", tone: "interactive" as const },
-  { value: "approved", label: "Согласована", tone: "success" as const },
-  { value: "in-work", label: "В работе", tone: "info" as const },
-  { value: "on-signing", label: "На подписи", tone: "violet" as const },
-  { value: "awaiting-payment", label: "Ожидает оплаты", tone: "warning" as const },
-  { value: "completed", label: "Завершена", tone: "success" as const },
-  { value: "reclamation", label: "Рекламация", tone: "danger" as const },
-] as const;
 
 export const REQUEST_TYPES = [
   "Ремонт",
@@ -99,20 +90,6 @@ export type ShellUser = {
 export type BreadcrumbFixture = {
   label: string;
   href?: string;
-};
-
-export type RequestListRecord = {
-  requestNumber: string;
-  createdAt: string;
-  title: string;
-  enterprise: string;
-  contractor: string;
-  contract: string;
-  sum: number;
-  status: (typeof REQUEST_STATUSES)[number]["value"];
-  progressPercent: number;
-  selected?: boolean;
-  note?: string;
 };
 
 export const SHELL_NAV_ITEMS: ShellNavItem[] = [

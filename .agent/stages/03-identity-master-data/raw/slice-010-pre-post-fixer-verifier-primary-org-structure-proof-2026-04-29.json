@@ -1,0 +1,64 @@
+{
+  "organizationId": "748ddd3f-982c-4658-9aed-351f8b758623",
+  "firstSubdivisionId": "052a1c5f-e154-4d33-bc0e-5e8c4d877605",
+  "childUnitId": "1e3e5787-b916-4309-b101-52a304b305b9",
+  "directUnitId": "d1e379d0-c76a-46b5-bffd-b25782bfa5f8",
+  "secondSubdivisionId": "0758b286-ead6-4aa8-a71c-68419b8d2023",
+  "archivedUnitId": "eaafd178-39dc-4e05-98bd-5fe132a3bcfd",
+  "archivedSubdivisionId": "18fcc681-77f9-40c2-b2c9-86873d995787",
+  "blockingInviteId": "1cd2ab67-3d4f-4782-9519-f95832b79f71",
+  "blockedSubdivisionArchive": {
+    "success": false,
+    "error": "archive blocked by active references"
+  },
+  "blockedUnitArchive": {
+    "success": false,
+    "error": "archive blocked by active references"
+  },
+  "missingTargetInvite": {
+    "success": false,
+    "error": "invite scope target is invalid"
+  },
+  "archivedUnitInvite": {
+    "success": false,
+    "error": "invite scope target is invalid"
+  },
+  "archivedSubdivisionInvite": {
+    "success": false,
+    "error": "invite scope target is invalid"
+  },
+  "subdivisionScopedSession": {
+    "workspace": {
+      "scopeType": "subdivision",
+      "scopeId": "052a1c5f-e154-4d33-bc0e-5e8c4d877605",
+      "scopeName": "first-edited подразделение 1777429483",
+      "landingTitle": "first-edited подразделение 1777429483",
+      "landingSubtitle": "Доступ ограничен выбранным подразделением и его дочерними юнитами.",
+      "landingPath": "/company",
+      "canManageEmployeeInvites": false
+    },
+    "subdivisionCount": 1,
+    "unitCount": 1,
+    "mutationError": {
+      "success": false,
+      "error": "forbidden"
+    }
+  },
+  "unitScopedSession": {
+    "workspace": {
+      "scopeType": "unit",
+      "scopeId": "1e3e5787-b916-4309-b101-52a304b305b9",
+      "scopeName": "child-edited юнит 1777429483",
+      "landingTitle": "child-edited юнит 1777429483",
+      "landingSubtitle": "Доступ ограничен выбранным юнитом без расширения вверх по иерархии.",
+      "landingPath": "/company",
+      "canManageEmployeeInvites": false
+    },
+    "subdivisionCount": 0,
+    "unitCount": 1,
+    "mutationError": {
+      "success": false,
+      "error": "forbidden"
+    }
+  }
+}

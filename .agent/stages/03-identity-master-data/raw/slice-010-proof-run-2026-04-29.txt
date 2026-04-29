@@ -1,0 +1,8 @@
+slice-010 proof PASS seed=20260429099
+first-admin web acceptance issued active session and /company landing
+organization profile legal-form contract accepted ООО/АО/ПАО and normalized legacy aliases
+division create/update omitted user-facing type while unit type remained required
+persistent /company APIs created/edited/archived divisions and units
+archive blockers and hidden archived invite-target validation returned expected errors
+division/unit scoped users saw read-only subtree projections and backend mutations returned 403
+org-scope employee invite worked before any division or unit existed

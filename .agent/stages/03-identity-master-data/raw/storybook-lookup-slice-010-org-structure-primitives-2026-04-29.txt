@@ -1,0 +1,28 @@
+Storybook registry entries: 24
+Query: "input select textarea tabs inline alert card button invite organization form"
+
+1. Primitives/InlineAlert [InlineAlert]
+   story: apps/web/stories/primitives/InlineAlert.stories.tsx
+   source: apps/web/shared/ui/InlineAlert.tsx
+   stories: Info, Warning, Error, Success, WithAction
+   tags: autodocs
+2. Primitives/TextareaField [TextareaField]
+   story: apps/web/stories/primitives/TextareaField.stories.tsx
+   source: apps/web/shared/ui/TextareaField.tsx
+   stories: Default, Hover, Focus, WithHint, WithCounter, AutoResize, WithError, Disabled
+   tags: autodocs
+3. Primitives/SelectField [SelectField]
+   story: apps/web/stories/primitives/SelectField.stories.tsx
+   source: apps/web/shared/ui/SelectField.tsx
+   stories: Single, Default, Hover, Focus, WithPlaceholder, Multiple, WithHint, WithError, Disabled, LoadingOptions
+   tags: autodocs
+4. Requests/RequestListItem [RequestListItem]
+   story: apps/web/stories/requests/RequestListItem.stories.tsx
+   source: apps/web/entities/Request/ui/RequestListItem.tsx
+   stories: Base, Selected, LongEnterpriseName, WithoutNote, Completed, ZeroProgress, OverflowInput
+   tags: autodocs
+5. Primitives/Button [Button]
+   story: apps/web/stories/primitives/Button.stories.tsx
+   source: apps/web/shared/ui/Button.tsx
+   stories: Default, Hover, Focus, Primary, Secondary, Ghost, Danger, WithLeftIcon, WithRightIcon, Loading, Disabled, FullWidth
+   tags: autodocs

@@ -15,7 +15,7 @@ function IconGalleryShowcase({ section }: IconGalleryShowcaseProps) {
   return (
     <StoryFrame
       title="IconGallery"
-      description="Каталог навигационных, action, file и status icons, которые использует Stage 01 foundation."
+      description="Каталог навигационных, action, file и status icons для интерфейса VRK."
     >
       <div className="grid gap-6">
         {sections.map((sectionItem) => (

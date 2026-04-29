@@ -628,3 +628,266 @@
   - all Stage 03 entries in `feature_list.json` are again truthfully proven;
   - no open proof gaps or pending verifier-control-plane blockers remain for Stage 03;
   - the final post-patch harness self-check also passes, so the closed bundle remains internally consistent.
+
+### 2026-04-29T01:27:13Z
+
+- Froze correction slice `slice-010-stage03-org-structure-management` as a spec-only update after the product target moved from the historical launch wizard to persistent `/company` organization structure management.
+- Re-read the required sources before editing artifacts:
+  - `AGENTS.md`
+  - `docs/architecture/documentation-workflow.md`
+  - `docs/roadmap.md` Stage 03
+  - `docs/architecture/identity-master-data.md`
+  - `docs/design/customer-admin-bootstrap-flow.md`
+  - `docs/architecture/frontend-architecture.md`
+  - current `.agent/stages/03-identity-master-data` artifacts
+- Kept the correction bounded to Stage 03:
+  - first-admin invite acceptance lands on `/company`;
+  - `/company` must cover empty, partial, and populated org-structure states;
+  - organization admin can create first and repeat subdivisions/branches and units;
+  - units can live under subdivisions or directly under the organization;
+  - archive replaces delete;
+  - only organization-scope admins mutate;
+  - scoped subdivision/unit users read only their visible subtree;
+  - employee invites no longer depend on completed wizard state, but subdivision/unit target scopes must exist and be visible.
+- Captured the frozen business fields for the next builder:
+  - type selector values `ВРД`, `ВРЗ`, `ВУ`, `ВРП`;
+  - `name`;
+  - `registeredAddress` / `address` compatibility;
+  - `leaderFullName` with `managerName` migration/display compatibility;
+  - `leaderPosition`;
+  - `contractPhone`;
+  - `contractEmail`;
+  - `actingBasis`;
+  - preserve `code`, `region`, `status`, and `comment` if still used.
+- Replaced the current `sprint_contract.md` from the old slice-007/008 remediation contract to the new slice-010 contract.
+- Updated `stage_spec.md` phasing and acceptance so Stage 03 no longer claims product-complete launch-wizard targeting.
+- Updated `feature_list.json` truthfully:
+  - `stage03-first-admin-activation` is reopened as `passes: false` for the new `/company` landing target;
+  - `stage03-org-hierarchy-and-launch-wizard` is reopened as `passes: false` for persistent org-structure management;
+  - new `stage03-slice010-company-org-structure-correction` is `passes: false` until a fresh verifier returns `PASS`;
+  - prior unrelated Stage 03 proof entries remain preserved.
+- Updated `problems.md` with the open correction gap and pending criteria.
+- No production code or canonical docs were edited in this spec-freezer pass.
+
+### 2026-04-29T02:12:55Z
+
+- Continued as the single slice-010 integration builder and finished the remaining builder-owned proof/evidence work without spawning workers.
+- Reconfirmed local toolchain reality:
+  - requested repo-local `.agent/tmp-tools/sqlc` command is blocked because `.agent/tmp-tools/sqlc` does not exist;
+  - requested repo-local Go path is blocked because `.agent/tmp-tools/go/bin/go` does not exist and `go` is not on PATH;
+  - Docker fallbacks were used for sqlc and backend Go checks.
+- Builder checks captured under `raw/`:
+  - harness self-check `PASS`: `raw/slice-010-harness-check-2026-04-29.txt`;
+  - Docker sqlc fallback `PASS`: `raw/slice-010-sqlc-docker-generate-2026-04-29.txt`;
+  - Docker backend `go test ./...` `PASS`: `raw/slice-010-backend-go-test-docker-2026-04-29.txt`;
+  - Docker backend `go build -buildvcs=false ./...` `PASS`: `raw/slice-010-backend-go-build-docker-2026-04-29.txt`;
+  - web `typecheck`, `lint`, and `build` `PASS`: `raw/slice-010-web-typecheck-rerun-2026-04-29.txt`, `raw/slice-010-web-lint-rerun-2026-04-29.txt`, `raw/slice-010-web-build-rerun-2026-04-29.txt`;
+  - UI review gate `PASS`: `raw/slice-010-ui-review-2026-04-29.txt`;
+  - `make dev` stack boot and health `PASS`: `raw/slice-010-make-dev-2026-04-29.txt`.
+- Added and ran `proof_slice010_org_structure.py`.
+  - First two proof reruns failed because the proof script was reading HTTP headers case-sensitively and assumed the pre-accept launch state was `draft`; these were proof-harness defects, not accepted product behavior.
+  - Fixed the script narrowly:
+    - read `Set-Cookie` / `Location` headers case-insensitively;
+    - accept schema-valid pre-activation `launchState: shell`;
+  - final targeted runtime proof `PASS`: `raw/slice-010-proof-run-rerun3-2026-04-29.txt`;
+  - summary: `raw/slice-010-summary-2026-04-29.json`.
+- Final builder proof covers:
+  - first-admin web acceptance issues an active session and lands on `/company`;
+  - `/company/setup` redirects to `/company`;
+  - `/company` persistent profile/structure APIs create, edit, and archive subdivisions/units;
+  - direct org unit and subdivision child unit are both supported;
+  - archived nodes are hidden from active projections and active selectors;
+  - archive blockers return `409`;
+  - missing/archived subdivision/unit invite targets reject;
+  - subdivision/unit scoped users get read-only subtree projections and backend mutations return `403`;
+  - organization-scope employee invite works in an active org before any subdivision/unit exists.
+- Updated `evidence.md` and `evidence.json` to the slice-010 builder proof bundle and `READY_FOR_FRESH_VERIFIER` state.
+- Did not edit `verdict.json` or `problems.md` in this builder pass because builder instructions explicitly prohibit writing those files.
+  - `verdict.json` still contains the historical slice-007/008 verifier `PASS` and is not slice-010 proof.
+  - `problems.md` already records the open slice-010 correction criteria.
+- Current state: builder proof is complete and ready for a fresh verifier; Stage 03 slice-010 remains `PENDING` and feature entries stay `passes: false` until verifier-owned PASS.
+
+### 2026-04-29T02:34:55Z
+
+- Continued as the single minimal fixer for `slice-010-stage03-org-structure-management` after the fresh verifier failed only on documentation sync.
+- Applied the smallest safe canonical doc fix:
+  - added `docs/architecture/identity-master-data.md` section `1.2.1`;
+  - documented frozen `type` selector values `ВРД`, `ВРЗ`, `ВУ`, `ВРП`;
+  - documented `registeredAddress` as canonical organization address and `address` as subdivision/unit compatibility/display alias;
+  - documented `leaderFullName` as canonical leader display and `managerName` as migration/read-display alias;
+  - documented `leaderPosition`, `contractPhone`, `contractEmail`, `actingBasis`, and preserved `code`, `region`, `status`, `comment`;
+  - documented active-only target selection and archive blocking constraints.
+- Refreshed stage handoff artifacts only:
+  - `.agent/stages/03-identity-master-data/evidence.md`;
+  - `.agent/stages/03-identity-master-data/evidence.json`;
+  - `.agent/stages/03-identity-master-data/progress.md`;
+  - `.agent/stages/03-identity-master-data/problems.md`;
+  - `.agent/stages/03-identity-master-data/raw/slice-010-fixer-doc-sync-2026-04-29.txt`.
+- Reran required fixer checks:
+  - harness self-check `PASS`;
+  - focused `rg` alias/type audit `PASS`, with canonical hits now present in `docs/architecture/identity-master-data.md`.
+- Did not edit production code, generated OpenAPI, `feature_list.json`, or `verdict.json`.
+- Current state: the reported verifier documentation gap is ready for a new fresh verifier; final slice-010 PASS and feature flips remain verifier-owned.
+
+### 2026-04-29T02:49:00Z
+
+- Ran a brand-new post-fixer fresh verifier for `slice-010-stage03-org-structure-management`.
+- Fresh verifier result: `PASS`.
+- The verifier closed the prior documentation-sync failure:
+  - `docs/architecture/identity-master-data.md` section `1.2.1` now records frozen `type` values, alias semantics, preserved fields, and active-only/archive constraints.
+- Fresh verifier proof artifacts:
+  - harness `PASS`: `raw/slice-010-post-fixer-verifier-harness-2026-04-29.txt`;
+  - targeted runtime proof `PASS` with seed `1777430591`: `raw/slice-010-post-fixer-verifier-proof-run-2026-04-29.txt`;
+  - summary: `raw/slice-010-post-fixer-verifier-summary-2026-04-29.json`;
+  - canonical alias/type audit `PASS`: `raw/slice-010-post-fixer-verifier-doc-alias-audit-2026-04-29.txt`;
+  - UI workflow review `PASS`: `raw/slice-010-post-fixer-verifier-ui-review-2026-04-29.txt`.
+- Parent orchestrator updated `feature_list.json` after verifier `PASS`:
+  - `stage03-first-admin-activation` -> `passes: true`;
+  - `stage03-org-hierarchy-and-launch-wizard` -> `passes: true`;
+  - `stage03-slice010-company-org-structure-correction` -> `passes: true`.
+- `verdict.json` and `problems.md` are now verifier-owned `PASS` / no open slice-010 proof gaps.
+
+### 2026-04-29T03:55:18Z
+
+- Reopened the slice-010 field contract after user correction: the prior PASS still encoded `ВРД` / `ВРЗ` / `ВУ` / `ВРП` as a generic organization/subdivision/unit `type`.
+- Implemented the corrected bounded semantics:
+  - organization profile `Тип` is legal-form `propertyType` with visible values `ООО`, `АО`, `ПАО`;
+  - legacy input aliases normalize as `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО`;
+  - subdivision/branch has no user-facing type selector and no longer displays the hidden storage default;
+  - unit type remains required and bounded to `ВРД`, `ВРЗ`, `ВУ`, `ВРП`.
+- Updated canonical docs and stage artifacts:
+  - `docs/architecture/identity-master-data.md`;
+  - `docs/design/customer-admin-bootstrap-flow.md`;
+  - `docs/architecture/frontend-architecture.md`;
+  - `docs/roadmap.md`;
+  - `docs/PRD-MVP.md`;
+  - `.agent/stages/03-identity-master-data/stage_spec.md`;
+  - `.agent/stages/03-identity-master-data/sprint_contract.md`;
+  - `.agent/stages/03-identity-master-data/feature_list.json`;
+  - `.agent/stages/03-identity-master-data/evidence.md`.
+- Refreshed proof script and reran builder gates:
+  - `sqlc generate` via Docker `PASS`;
+  - `go test ./...` via Docker `PASS`;
+  - `go build -buildvcs=false ./...` via Docker `PASS`;
+  - Swagger refresh via Docker `PASS`;
+  - web `typecheck`, `lint`, and `build` `PASS`;
+  - targeted proof `PASS` with seed `1777434591`, including legal-form aliases, subdivision without type, unit type validation, scoped read-only projections, and invite target validation;
+  - harness self-check `PASS`.
+- Raw artifacts use prefix `raw/slice-010-legal-type-*`.
+- Spawned a new fresh verifier `Newton` for the legal-type correction. Feature PASS state must not be considered final for this correction until that verifier returns `PASS`.
+
+### 2026-04-29T04:12:30Z
+
+- Newton fresh verifier returned `FAIL` only for documentation drift:
+  - `docs/roadmap.md` and `docs/design/customer-admin-bootstrap-flow.md` omitted `LLC -> ООО` in legacy alias wording;
+  - `docs/design/diagrams/customer-admin-bootstrap-flow.drawio` still showed stale visible examples.
+- Spawned exactly one minimal fixer for those proof gaps.
+- Fixer changed only docs/stage evidence:
+  - added explicit `LLC -> ООО` wording;
+  - updated Draw.io visible options to `ООО, АО, ПАО`;
+  - recorded `.agent/stages/03-identity-master-data/raw/slice-010-newton-doc-drift-fixer-2026-04-29.txt`.
+- Parent cleanup restored `subdivision` terminology in `docs/roadmap.md` and made all three mappings explicit: `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО`.
+- Follow-up audit and harness passed:
+  - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-parent-doc-cleanup-2026-04-29.txt`;
+  - `.agent/stages/03-identity-master-data/raw/slice-010-legal-type-harness-after-doc-fix-2026-04-29.txt`.
+- Spawned a new fresh verifier `Sagan`; current legal-type correction remains not proven until this post-fixer verifier returns `PASS`.
+
+### 2026-04-29T04:07:54Z
+
+- Minimal fixer for Newton's legal-type documentation drift failure only.
+- Updated canonical docs/diagram requested by the verifier:
+  - `docs/roadmap.md` now includes `LLC -> ООО` in the legacy compatibility mapping sentence;
+  - `docs/design/customer-admin-bootstrap-flow.md` now includes `LLC -> ООО` in the legacy compatibility mapping sentence;
+  - `docs/design/diagrams/customer-admin-bootstrap-flow.drawio` now shows visible legal-form options `ООО, АО, ПАО` and does not add legacy aliases as visible options.
+- Ran focused doc-only checks:
+  - `rg -n "LLC -> ООО" docs/roadmap.md docs/design/customer-admin-bootstrap-flow.md` `PASS`;
+  - drawio stale option/alias absence audit `PASS`;
+  - drawio visible option audit `PASS`;
+  - `xmllint --noout docs/design/diagrams/customer-admin-bootstrap-flow.drawio` `PASS`.
+  - `jq empty .agent/stages/03-identity-master-data/evidence.json` `PASS`.
+- Wrote raw fixer note `raw/slice-010-newton-doc-drift-fixer-2026-04-29.txt`.
+- Did not edit production code, `feature_list.json`, `verdict.json`, or `problems.md`.
+
+### 2026-04-29T04:27:30Z
+
+- Applied the user's clarification that `subdivision` was intentionally renamed to `division`; this is now supported rather than reverted.
+- Realigned current proof/docs/stage artifacts to the implemented contract:
+  - backend/web target names are `/company/divisions`, `divisionId`, session `divisions`, scope `division`;
+  - scoped roles use `division_head` / `division_operator`;
+  - user-facing Russian copy may still say `подразделение/филиал`, but API/stage contract no longer targets `subdivision`;
+  - division/branch has no user-facing `type` selector and stores hidden default `division`;
+  - organization legal form remains `ООО` / `АО` / `ПАО` with compatibility aliases `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО`;
+  - unit type remains `ВРД` / `ВРЗ` / `ВУ` / `ВРП`.
+- Reopened current org-structure feature proof until a fresh verifier returns `PASS`:
+  - `stage03-org-hierarchy-and-launch-wizard` -> `passes: false`;
+  - `stage03-slice010-company-org-structure-correction` -> `passes: false`.
+- Focused checks passed:
+  - `raw/slice-010-division-proof-py-compile-2026-04-29.txt`;
+  - `raw/slice-010-division-proof-run-check-stack-2026-04-29.txt` with seed `20260429042` against `18180/3110`;
+  - `raw/slice-010-division-harness-2026-04-29.txt`;
+  - `raw/slice-010-division-terminology-audit-2026-04-29.txt`;
+  - `raw/slice-010-division-contract-audit-2026-04-29.txt`;
+  - `raw/slice-010-division-json-audit-2026-04-29.txt`.
+- A stale long-running stack on `18080/3100` still returned the old `subdivisions` response shape; proof was rerun successfully against the healthy division-aligned check stack `18180/3110`.
+- Current state: ready for exactly one fresh verifier. Do not mark the correction slice proven until that verifier passes.
+
+### 2026-04-29T04:36:30Z
+
+- Fresh verifier `Maxwell` returned `PASS` for the division terminology correction.
+- Verifier reproduced:
+  - harness `PASS`;
+  - proof compile `PASS`;
+  - targeted proof `PASS` on `18180/3110` with seed `20260429099`;
+  - backend/web/Swagger division contract audit `PASS`;
+  - terminology/doc-sync/UI evidence audits `PASS`.
+- Verifier artifacts:
+  - `raw/slice-010-division-current-fresh-verifier-harness-2026-04-29.txt`;
+  - `raw/slice-010-division-current-fresh-verifier-proof-run-2026-04-29.txt`;
+  - `raw/slice-010-division-current-fresh-verifier-summary-2026-04-29.json`;
+  - `raw/slice-010-division-current-fresh-verifier-contract-audit-2026-04-29.txt`;
+  - `raw/slice-010-division-current-fresh-verifier-terminology-audit-2026-04-29.txt`;
+  - `raw/slice-010-division-current-fresh-verifier-doc-sync-audit-2026-04-29.txt`;
+  - `raw/slice-010-division-current-fresh-verifier-ui-review-2026-04-29.txt`.
+- Parent orchestrator accepted the PASS and flipped back:
+  - `stage03-org-hierarchy-and-launch-wizard` -> `passes: true`;
+  - `stage03-slice010-company-org-structure-correction` -> `passes: true`.
+- Post-flip checks passed:
+  - `raw/slice-010-division-post-verifier-json-audit-2026-04-29.txt`;
+  - `raw/slice-010-division-post-verifier-harness-2026-04-29.txt`.
+
+### 2026-04-29T04:43:36Z
+
+- Completed the follow-up Division + Role Model v1 checkpoint requested by the user.
+- Confirmed the canonical role catalog in code, UI, DB constraints, and docs:
+  - `organization_admin`;
+  - `organization_head`;
+  - `division_head`;
+  - `division_operator`;
+  - `unit_head`;
+  - `unit_operator`;
+  - `auditor`.
+- Confirmed v1 capability behavior:
+  - `organization_admin` at organization scope is the only role with Stage 03 mutate capabilities;
+  - all other canonical roles are scope-aware read-only roles for this stage;
+  - capability checks are now routed through backend/web role catalogs instead of open-coded mutate string checks.
+- Synced canonical docs and stage contract:
+  - `docs/architecture/identity-master-data.md`;
+  - `docs/roadmap.md`;
+  - `docs/PRD-MVP.md`;
+  - `stage_spec.md`;
+  - `sprint_contract.md`.
+- Fixed stale smoke expectations in `apps/web/tests/equipment-registries.smoke.spec.ts` and stale `/company` HTML assertions in `scripts/platform_smoke.sh`.
+- Fresh checks passed:
+  - active terminology audit over `apps/backend/internal`, backend Swagger, `apps/web`, docs, and scripts;
+  - `BACKEND_HOST_PORT=18180 WEB_HOST_PORT=3110 FIELD_HOST_PORT=3112 make smoke`;
+  - `make backend-test`;
+  - `make backend-build`;
+  - Docker `sqlc generate`;
+  - Docker Swagger generation;
+  - `pnpm --dir apps/web run lint`;
+  - `pnpm --dir apps/web run typecheck`;
+  - `pnpm --dir apps/web run build`;
+  - `pnpm --dir apps/web run build-storybook`;
+  - `WEB_SMOKE_BACKEND_URL=http://127.0.0.1:18180 pnpm --dir apps/web run browser-smoke`;
+  - Stage harness self-check.
+- Raw proof was saved under `raw/slice-010-division-role-model-*`.

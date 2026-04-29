@@ -39,6 +39,21 @@ export const WithoutIllustration: Story = {
   },
 };
 
+export const FullBleedIllustration: Story = {
+  args: {
+    fullBleedIllustration: true,
+    showAuthBadge: false,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Доказывает auth layout без внешних section padding/gap: форма сохраняет внутренний отступ, а правая колонка может быть залита до краев viewport.",
+      },
+    },
+  },
+};
+
 export const Mobile: Story = {
   parameters: {
     docs: {

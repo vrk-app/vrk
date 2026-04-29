@@ -1,0 +1,51 @@
+Slice-010 post-fixer canonical doc audit
+Checked at: 2026-04-29T02:43:47Z
+
+Canonical section excerpt: docs/architecture/identity-master-data.md:95-126
+### 1.2. Target correction: organization structure management UI
+
+Следующий Stage 03 correction slice должен убрать зависимость бизнес-логики от "завершенного wizard":
+
+- first-admin invite acceptance сразу выпускает session и ведет администратора на `/company`;
+- `/company` показывает empty / partial / populated states организации и не требует отдельного `/company/setup`;
+- organization-scope admin может в любое время создавать, редактировать и архивировать подразделения/филиалы и юниты;
+- создание первого подразделения и первого юнита использует те же API и UI, что и создание последующих узлов;
+- юнит может быть создан под подразделением или напрямую под организацией;
+- organization-scope employee invite доступен active organization admin без wizard gate;
+- subdivision/unit-scope employee invite требует существующий visible target scope.
+
+#### 1.2.1. `/company` business-field contract
+
+Для correction slice `slice-010-stage03-org-structure-management` формы профиля организации, подразделения/филиала и юнита используют один компактный field contract:
+
+| Поле | Канонический контракт |
+| --- | --- |
+| `type` | Selector frozen for this slice: `ВРД`, `ВРЗ`, `ВУ`, `ВРП`. Эти значения применяются к `/company` profile / subdivision / unit forms; Stage 04 не добавляет сюда request-типы. |
+| `name` | Каноническое отображаемое имя организации, подразделения/филиала или юнита. |
+| `registeredAddress` | Канонический адрес организации. Для organization profile новые записи и редактирование должны опираться на это поле. |
+| `address` | Compatibility/display alias там, где subdivision/unit storage, API payload или старые данные все еще используют `address`; не заменяет `registeredAddress` как канонический адрес организации. |
+| `leaderFullName` | Каноническое display-поле руководителя. |
+| `managerName` | Migration/read-display compatibility alias для старых stored/session payloads; новые leader semantics должны мапиться в `leaderFullName`. |
+| `leaderPosition` | Должность руководителя для карточек организации, подразделения/филиала и юнита, где этот record type ее несет. |
+| `contractPhone` | Договорной/контактный телефон record-а, где он нужен текущему `/company` management surface. |
+| `contractEmail` | Договорной/контактный email record-а, где он нужен текущему `/company` management surface. |
+| `actingBasis` | Основание полномочий руководителя для record-а, где это поле применимо. |
+| `code`, `region`, `status`, `comment` | Сохраняются и отображаются там, где текущие backend/session/UI contracts продолжают их использовать. |
+
+Active create/select flows должны выбирать только visible active scopes. Archived подразделения и юниты скрываются из default selection, не удаляются физически и могут вернуть truthful blocking error, если active equipment, active scoped grants или другие Stage 03 references не позволяют безопасно архивировать узел.
+
+
+Pattern assertions:
+PASS ВРД.*ВРЗ.*ВУ.*ВРП
+PASS `registeredAddress`.*Канонический адрес организации
+PASS `address`.*Compatibility/display alias
+PASS `leaderFullName`.*Каноническое display-поле
+PASS `managerName`.*Migration/read-display compatibility alias
+PASS `leaderPosition`
+PASS `contractPhone`
+PASS `contractEmail`
+PASS `actingBasis`
+PASS `code`, `region`, `status`, `comment`
+PASS Active create/select flows.*visible active scopes
+PASS Archived.*скрываются.*default selection
+PASS blocking error.*active equipment.*active scoped grants

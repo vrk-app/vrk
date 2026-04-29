@@ -1,0 +1,27 @@
+Storybook registry entries: 24
+Query: "company profile legal form selector subdivision form without type unit type selector"
+
+1. Foundations/IconGallery [IconGalleryShowcase]
+   story: apps/web/stories/foundations/IconGallery.stories.tsx
+   stories: NavigationIcons, ActionIcons, FileTypeIcons, StatusIcons
+   tags: autodocs
+2. Layout/TopBar [TopBar]
+   story: apps/web/stories/layout/TopBar.stories.tsx
+   source: apps/web/widgets/OperatorShell/ui/TopBar.tsx
+   stories: Default, WithUnreadCount, WithoutNotifications, SearchUnavailable, ActionsUnavailable, LongUserName
+   tags: autodocs
+3. Auth/AuthSplitLayout [AuthSplitLayout]
+   story: apps/web/stories/auth/AuthSplitLayout.stories.tsx
+   source: apps/web/widgets/Auth/ui/AuthSplitLayout.tsx
+   stories: Default, WithoutIllustration, FullBleedIllustration, Mobile
+   tags: autodocs
+4. Requests/RequestListItem [RequestListItem]
+   story: apps/web/stories/requests/RequestListItem.stories.tsx
+   source: apps/web/entities/Request/ui/RequestListItem.tsx
+   stories: Base, Selected, LongEnterpriseName, WithoutNote, Completed, ZeroProgress, OverflowInput
+   tags: autodocs
+5. Auth/LoginForm [LoginForm]
+   story: apps/web/stories/auth/LoginForm.stories.tsx
+   source: apps/web/widgets/Auth/ui/LoginForm.tsx
+   stories: Default, ValidationError, ServerError, WithWorkspaceHint, Loading
+   tags: autodocs

@@ -5,21 +5,21 @@
 
 ## Objective
 
-Активировать поверх Stage 02 runtime shell реальный контур identity, access и master data: first-admin invite activation, `organization -> subdivision -> unit`, сотрудники и приглашения, scoped access, договоры, оборудование, средства измерения и эталоны.
+Активировать поверх Stage 02 runtime shell реальный контур identity, access и master data: first-admin invite activation, постоянный `organization -> division -> unit` management UI, сотрудники и приглашения, scoped access, договоры, оборудование, средства измерения и эталоны.
 
 ## In scope
 
-- first-admin activation по invite link и launch wizard вместо ручной раздачи паролей;
+- first-admin activation по invite link и переход в постоянный `/company` management UI вместо ручной раздачи паролей и одноразового launch wizard;
 - real auth flow для Stage 03 surfaces:
   - login
   - logout
   - refresh / session restore
   - role-aware access
 - organization profile с разделением на launch-critical и optional requisites;
-- subdivision registry с типом подразделения;
+- division registry для подразделений/филиалов без user-facing selector-а типа;
 - unit registry как primary operational scope, в том числе сценарий без промежуточного подразделения;
 - user accounts, organization memberships и scoped grants как отдельные сущности;
-- role templates, additive inheritance и invitation lifecycle для сотрудников;
+- canonical role templates `organization_admin`, `organization_head`, `division_head`, `division_operator`, `unit_head`, `unit_operator`, `auditor`, role/scope compatibility и invitation lifecycle для сотрудников;
 - contractor/customer relation layer и contracts registry как request-routing prerequisite;
 - equipment registry;
 - measuring instruments registry;
@@ -52,6 +52,19 @@
 - progress.md
 - feature_list.json
 
+## Product correction from 2026-04-29
+
+Historical Stage 03 evidence proves the older launch-wizard implementation. The target product contract is now stricter:
+
+- `/company/setup` and one-time launch wizard are not the desired UX;
+- first-admin invite acceptance should land on `/company`;
+- `/company` must support empty, partial, and populated organization states;
+- organization-scope admins must be able to create first and later divisions/branches and units from the same persistent management surface;
+- division/unit scoped users remain read-only within their visible subtree;
+- employee invite creation must not depend on a completed wizard, but division/unit-scoped invites still require an existing visible active target scope.
+
+Treat this as a bounded follow-up Stage 03 correction before claiming product-complete org-structure management.
+
 ## Frozen phasing inside Stage 03
 
 ### Transition gate from Stage 02
@@ -79,6 +92,7 @@
 7. `slice-007-stage03-admin-surface-auth-hardening`
 8. `slice-008-stage03-multi-org-session-contract`
 9. `slice-009-stage03-equipment-truthfulness`
+10. `slice-010-stage03-org-structure-management`
 
 ```mermaid
 flowchart LR
@@ -91,23 +105,30 @@ flowchart LR
     G --> H["Slice 007<br/>admin auth hardening"]
     H --> I["Slice 008<br/>explicit session contract"]
     I --> J["Slice 009<br/>equipment truthfulness"]
-    J --> K["Stage 03 PASS"]
+    J --> K["Slice 010<br/>persistent /company org management"]
+    K --> L["Stage 03 PASS"]
 ```
 
-The diagram fixes the execution order after Stage 02 closure and after the later post-proof remediation wave: Stage 03 still starts from a stable runtime/platform floor, and the reopened slices remain bounded to truthfulness fixes instead of widening into new product scope.
+The diagram fixes the execution order after Stage 02 closure and after the later post-proof remediation wave: Stage 03 still starts from a stable runtime/platform floor, and the reopened slices remain bounded to truthfulness/product-correction fixes instead of widening into Stage 04 request scope.
 
 ## Acceptance criteria
 
 - платформенный админ может создать организацию-заготовку и отправить first-admin invite;
-- первый администратор принимает приглашение, задает пароль и попадает в launch wizard, а не в пустой кабинет;
-- launch wizard покрывает как минимум:
-  - организацию;
-  - первое подразделение или сразу первый юнит;
-  - приглашение сотрудников;
-  - добавление первого оборудования;
-- org/subdivision/unit модель поддерживает иерархию с optional subdivision;
+- первый администратор принимает приглашение, задает пароль и попадает в `/company`, а не в пустой кабинет или одноразовый wizard;
+- `/company` покрывает как минимум:
+  - профиль организации;
+  - empty / partial / populated states оргструктуры;
+  - создание первого и последующих подразделений/филиалов;
+  - создание первого и последующих юнитов, включая direct `organization -> unit`;
+  - редактирование business fields: organization `propertyType`/`type` alias as legal-form selector `ООО` / `АО` / `ПАО` with legacy `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО`; division/branch has no selectable type and stores hidden internal default only for compatibility; unit keeps operational type selector `ВРД` / `ВРЗ` / `ВУ` / `ВРП`; name, registeredAddress/address alias, leaderFullName with managerName migration/display compatibility, leaderPosition, contractPhone, contractEmail, actingBasis, plus code/region/status/comment where those fields still exist in the model;
+  - архивирование подразделений/юнитов вместо удаления;
+  - приглашение сотрудников с проверкой существующего target scope для division/unit invites;
+  - entry points к добавлению оборудования после появления юнита;
+- org/division/unit модель поддерживает иерархию с optional division;
 - user account, membership и scoped grant разделены и доказаны сценариями доступа;
-- organization-scope права наследуются вниз, subdivision-scope права наследуются на дочерние unit, deny-layer отсутствует;
+- organization-scope права наследуются вниз, division-scope права наследуются на дочерние unit, deny-layer отсутствует;
+- canonical roles are enforced by scope: organization roles only on organization scope, division roles only on division scope, unit roles only on unit scope, and `auditor` on any organization/division/unit scope;
+- Stage 03 v1 mutate capabilities are limited to active customer `organization_admin` on organization scope; `organization_head`, `division_head`, `division_operator`, `unit_head`, `unit_operator`, and `auditor` remain scope-aware read-only roles until later stages enable more capability-map entries;
 - invitation statuses `draft`, `sent`, `opened`, `accepted`, `expired`, `revoked` видимы и воспроизводимы;
 - login/session restore возвращает contour, привязанный к explicit active membership/grant: customer contour на `/company`, active contractor contour на `/contracts`;
 - direct login с несколькими eligible memberships/grants truthfully возвращает `409`, а не silently выбирает один workspace;
@@ -146,8 +167,8 @@ The diagram fixes the execution order after Stage 02 closure and after the later
 - before each slice, re-sync the proven Stage 02 runtime/platform floor and check whether local assumptions still hold;
 - verify each slice independently before moving to the next one;
 - прогнать first-admin activation end-to-end;
-- доказать org/subdivision/unit creation и scoped singular-session landing без multi-workspace picker;
-- доказать invitation lifecycle и scoped access inheritance сценариями organization / subdivision / unit;
+- доказать first and repeat org/division/unit management через постоянный `/company` UI и scoped singular-session landing без multi-workspace picker;
+- доказать invitation lifecycle и scoped access inheritance сценариями organization / division / unit;
 - доказать truthful `409` при direct login, если у аккаунта несколько eligible access paths;
 - доказать contracts registry и contractor restriction baseline;
 - доказать separate registries для equipment / measuring instruments / standards;

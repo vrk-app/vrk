@@ -1,0 +1,58 @@
+Source: .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-29-fresh-verifier.md
+Reviewer: fresh verifier
+Files reviewed:
+- apps/web/app/(runtime)/company/page.tsx
+- apps/web/app/(runtime)/company/setup/page.tsx
+- apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+- apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx
+- apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx
+- apps/web/app/register/[token]/page.tsx
+- apps/web/shared/ui/InputField.tsx
+- apps/web/shared/ui/SelectField.tsx
+- apps/web/shared/ui/TextareaField.tsx
+- apps/web/shared/ui/Tabs.tsx
+- apps/web/shared/ui/InlineAlert.tsx
+
+## apps/web/app/(runtime)/company/page.tsx
+
+PASS: anonymous and authenticated company states use semantic sections, visible headings, labelled actions, noninteractive disabled controls where unauthenticated, and decorative icons are aria-hidden.
+
+## apps/web/app/(runtime)/company/setup/page.tsx
+
+PASS: non-canonical redirect route only; no UI controls.
+
+## apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+
+PASS: profile/subdivision/unit forms have labels, stable names, autocomplete/type hints, visible focus via shared fields, empty/read-only/error states, and confirmation before archive mutations. Local tab state is accepted for this slice because the contract does not require deep-linked company subtabs and the state is not used for filters/pagination.
+
+## apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx
+
+PASS: invite fields have labels/names/types, async errors/loading are announced, date formatting uses Intl.DateTimeFormat, links use anchors, decorative icons are aria-hidden, and revoke requires confirmation.
+
+## apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx
+
+PASS: password fields have labels, names, autocomplete, visible focus through InputField, and polite inline error state.
+
+## apps/web/app/register/[token]/page.tsx
+
+PASS: invite page composes semantic text and the activation form; no unlabeled interactive controls found.
+
+## apps/web/shared/ui/InputField.tsx
+
+PASS: htmlFor-bound labels, visible focus-within/focus-visible treatment, password toggle aria-label, decorative icons hidden, and polite error messaging.
+
+## apps/web/shared/ui/SelectField.tsx
+
+PASS: labelled native/Radix select paths, stable name/value handling, visible focus state, empty/loading options, and decorative icons hidden.
+
+## apps/web/shared/ui/TextareaField.tsx
+
+PASS: htmlFor-bound labels, visible focus state, polite error messaging, and counter support.
+
+## apps/web/shared/ui/Tabs.tsx
+
+PASS: tablist/tab roles, keyboard navigation, roving tabIndex, focus-visible state, and decorative tab icons hidden.
+
+## apps/web/shared/ui/InlineAlert.tsx
+
+PASS: status role by default, labelled dismiss button, decorative icons hidden, and break-words on visible text.

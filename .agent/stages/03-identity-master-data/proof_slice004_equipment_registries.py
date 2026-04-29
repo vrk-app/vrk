@@ -29,8 +29,8 @@ SEED = os.getenv("VRK_STAGE03_SLICE004_SEED", str(int(time.time())))
 class OrgContext:
     label: str
     organization_id: str
-    subdivision_id: str
-    subdivision_name: str
+    division_id: str
+    division_name: str
     unit_id: str
     unit_name: str
     email: str
@@ -201,8 +201,8 @@ def create_org(label: str) -> OrgContext:
             "legalAddress": f"г. Москва, ул. {label}, д. 1",
             "contactEmail": email,
             "contactPhone": "+7 (999) 123-45-67",
-            "structureMode": "subdivision",
-            "subdivision": {
+            "structureMode": "division",
+            "division": {
                 "type": "Филиал",
                 "name": f"{label.title()} Подразделение {SEED}",
             },
@@ -217,14 +217,14 @@ def create_org(label: str) -> OrgContext:
     current = expect_ok("GET", "/api/v1/sessions/current", expected_status=200, token=launched["sessionToken"])
     write_json(f"{label}-session-current", current)
 
-    subdivision = current["data"]["subdivisions"][0]
+    division = current["data"]["divisions"][0]
     unit = current["data"]["units"][0]
 
     return OrgContext(
         label=label,
         organization_id=current["data"]["organization"]["id"],
-        subdivision_id=subdivision["id"],
-        subdivision_name=subdivision["name"],
+        division_id=division["id"],
+        division_name=division["name"],
         unit_id=unit["id"],
         unit_name=unit["name"],
         email=email,
@@ -251,7 +251,7 @@ def create_scoped_employee(
         body={
             "fullName": f"{label.title()} Employee {SEED}",
             "email": email,
-            "roleTemplate": "unit_operator" if scope_type == "unit" else "subdivision_manager",
+            "roleTemplate": "unit_operator" if scope_type == "unit" else "division_manager",
             "scopeType": scope_type,
             "scopeId": scope_id,
             "expiresAt": (TODAY + timedelta(days=7)).isoformat() + "T12:00:00Z",
@@ -293,7 +293,7 @@ def insert_second_unit(customer: OrgContext) -> dict[str, str]:
     sql = f"""
 INSERT INTO auth_units (
     organization_id,
-    subdivision_id,
+    division_id,
     unit_type,
     name,
     code,
@@ -302,7 +302,7 @@ INSERT INTO auth_units (
     contacts
 ) VALUES (
     '{customer.organization_id}'::uuid,
-    '{customer.subdivision_id}'::uuid,
+    '{customer.division_id}'::uuid,
     'Юнит',
     'Второй юнит {SEED}',
     'U2-{SEED}',
@@ -368,8 +368,8 @@ def create_standard(
         "status": "active",
         "metrologicalCharacteristics": metrological_characteristics,
     }
-    if scope_type == "subdivision":
-        body["subdivisionId"] = scope_id
+    if scope_type == "division":
+        body["divisionId"] = scope_id
     elif scope_type == "unit":
         body["unitId"] = scope_id
 
@@ -435,11 +435,11 @@ def main() -> int:
         admin_current = expect_ok("GET", "/api/v1/sessions/current", expected_status=200, token=customer.session_token)
         write_json("admin-session-current-post-unit-seed", admin_current)
 
-        subdivision_employee = create_scoped_employee(
+        division_employee = create_scoped_employee(
             customer,
-            label="subdivision-registry",
-            scope_type="subdivision",
-            scope_id=customer.subdivision_id,
+            label="division-registry",
+            scope_type="division",
+            scope_id=customer.division_id,
         )
         unit_employee = create_scoped_employee(
             customer,
@@ -491,13 +491,13 @@ def main() -> int:
             scope_id=None,
             metrological_characteristics="0.1 кПа, общий контур организации",
         )
-        subdivision_standard = create_standard(
+        division_standard = create_standard(
             customer.session_token,
             standard_type="Эталон температуры",
             model="STD-SUB",
             identifier=f"STD-SUB-{SEED}",
-            scope_type="subdivision",
-            scope_id=customer.subdivision_id,
+            scope_type="division",
+            scope_id=customer.division_id,
             metrological_characteristics="0.3°C, контур подразделения",
         )
         unit_one_standard = create_standard(
@@ -519,7 +519,7 @@ def main() -> int:
             metrological_characteristics="2.0 л/мин, юнит 02",
         )
         write_json("standard-shared", shared_standard)
-        write_json("standard-subdivision", subdivision_standard)
+        write_json("standard-division", division_standard)
         write_json("standard-unit-one", unit_one_standard)
         write_json("standard-unit-two", unit_two_standard)
 
@@ -533,7 +533,7 @@ def main() -> int:
             model="MI-B1",
             registration_number=f"MI-B1-{SEED}",
             serial_number=f"SER-B1-{SEED}",
-            standard_ids=[shared_standard["id"], subdivision_standard["id"]],
+            standard_ids=[shared_standard["id"], division_standard["id"]],
         )
         standalone_unit = create_measuring_instrument(
             customer.session_token,
@@ -575,27 +575,27 @@ def main() -> int:
         write_json("admin-standards-list", admin_standards)
         write_json("admin-agreements-list", admin_agreements)
 
-        subdivision_equipment = expect_ok(
+        division_equipment = expect_ok(
             "GET",
             "/api/v1/equipment",
             expected_status=200,
-            token=subdivision_employee["sessionToken"],
+            token=division_employee["sessionToken"],
         )
-        subdivision_measuring_instruments = expect_ok(
+        division_measuring_instruments = expect_ok(
             "GET",
             "/api/v1/measuring-instruments",
             expected_status=200,
-            token=subdivision_employee["sessionToken"],
+            token=division_employee["sessionToken"],
         )
-        subdivision_standards = expect_ok(
+        division_standards = expect_ok(
             "GET",
             "/api/v1/standards",
             expected_status=200,
-            token=subdivision_employee["sessionToken"],
+            token=division_employee["sessionToken"],
         )
-        write_json("subdivision-equipment-list", subdivision_equipment)
-        write_json("subdivision-measuring-instruments-list", subdivision_measuring_instruments)
-        write_json("subdivision-standards-list", subdivision_standards)
+        write_json("division-equipment-list", division_equipment)
+        write_json("division-measuring-instruments-list", division_measuring_instruments)
+        write_json("division-standards-list", division_standards)
 
         unit_equipment = expect_ok("GET", "/api/v1/equipment", expected_status=200, token=unit_employee["sessionToken"])
         unit_measuring_instruments = expect_ok(
@@ -634,7 +634,7 @@ def main() -> int:
         admin_equipment_items = admin_equipment["data"]
         admin_mi_items = admin_measuring_instruments["data"]
         admin_standard_items = admin_standards["data"]
-        subdivision_standard_ids = {item["id"] for item in subdivision_standards["data"]}
+        division_standard_ids = {item["id"] for item in division_standards["data"]}
         unit_equipment_names = names(unit_equipment["data"], "fullName")
         unit_mi_names = names(unit_measuring_instruments["data"], "name")
         unit_standard_ids = {item["id"] for item in unit_standards["data"]}
@@ -654,18 +654,18 @@ def main() -> int:
             and mi_by_id[standalone_unit["id"]].get("equipment") is None,
             "standaloneMIHasZeroStandards": len(mi_by_id[standalone_unit["id"]].get("standards") or []) == 0,
             "sharedStandardReusable": standard_link_counts[shared_standard["id"]] == 2,
-            "subdivisionUserSeesBothUnits": {
+            "divisionUserSeesBothUnits": {
                 equipment_primary["fullName"],
                 equipment_secondary["fullName"],
-            }.issubset(set(names(subdivision_equipment["data"], "fullName"))),
-            "subdivisionUserNoOrgStandardLeak": shared_standard["id"] not in subdivision_standard_ids,
+            }.issubset(set(names(division_equipment["data"], "fullName"))),
+            "divisionUserNoOrgStandardLeak": shared_standard["id"] not in division_standard_ids,
             "unitUserVisibleEquipment": unit_equipment_names,
             "unitUserVisibleMI": unit_mi_names,
             "unitUserVisibleStandardIds": sorted(unit_standard_ids),
             "unitUserNoEquipmentLeak": equipment_secondary["fullName"] not in unit_equipment_names,
             "unitUserNoMILLeak": built_in_secondary["name"] not in unit_mi_names,
             "unitUserNoBroaderStandardLeak": shared_standard["id"] not in unit_standard_ids
-            and subdivision_standard["id"] not in unit_standard_ids
+            and division_standard["id"] not in unit_standard_ids
             and unit_two_standard["id"] not in unit_standard_ids,
             "unitUserKeepsOwnStandard": unit_one_standard["id"] in unit_standard_ids,
             "unitForbiddenEquipment": unit_forbidden_equipment.get("error") == "forbidden",
@@ -683,8 +683,8 @@ def main() -> int:
         assert checks["standaloneMI"], standalone_unit
         assert checks["standaloneMIHasZeroStandards"], standalone_unit
         assert checks["sharedStandardReusable"], admin_standards
-        assert checks["subdivisionUserSeesBothUnits"], subdivision_equipment
-        assert checks["subdivisionUserNoOrgStandardLeak"], subdivision_standards
+        assert checks["divisionUserSeesBothUnits"], division_equipment
+        assert checks["divisionUserNoOrgStandardLeak"], division_standards
         assert checks["unitUserNoEquipmentLeak"], unit_equipment
         assert checks["unitUserNoMILLeak"], unit_measuring_instruments
         assert checks["unitUserNoBroaderStandardLeak"], unit_standards
@@ -696,7 +696,7 @@ def main() -> int:
         summary = {
             "seed": SEED,
             "organizationId": customer.organization_id,
-            "subdivisionId": customer.subdivision_id,
+            "divisionId": customer.division_id,
             "unitOneId": customer.unit_id,
             "unitTwoId": second_unit["id"],
             "equipmentIds": {
@@ -711,7 +711,7 @@ def main() -> int:
             },
             "standardIds": {
                 "shared": shared_standard["id"],
-                "subdivision": subdivision_standard["id"],
+                "division": division_standard["id"],
                 "unitOne": unit_one_standard["id"],
                 "unitTwo": unit_two_standard["id"],
             },

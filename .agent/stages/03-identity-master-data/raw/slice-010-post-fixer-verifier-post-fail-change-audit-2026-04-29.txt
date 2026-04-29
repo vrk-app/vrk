@@ -1,0 +1,41 @@
+Post-fail production-code change audit for slice-010 fixer pass
+Checked at: 2026-04-29T02:44:07Z
+Baseline prior fail artifact: .agent/stages/03-identity-master-data/raw/slice-010-fresh-verifier-doc-alias-audit-2026-04-29.txt
+
+Key mtimes:
+Apr 29 05:29:58 2026 .agent/stages/03-identity-master-data/raw/slice-010-fresh-verifier-doc-alias-audit-2026-04-29.txt
+Apr 29 05:37:08 2026 .agent/stages/03-identity-master-data/raw/slice-010-fixer-doc-sync-2026-04-29.txt
+Apr 29 05:34:43 2026 docs/architecture/identity-master-data.md
+Apr 29 05:36:38 2026 .agent/stages/03-identity-master-data/problems.md
+Apr 29 05:31:04 2026 .agent/stages/03-identity-master-data/verdict.json
+
+Production/code files newer than prior fail artifact under apps/.github/scripts/README/pnpm-lock:
+
+Docs files newer than prior fail artifact:
+docs/architecture/identity-master-data.md
+
+Stage files newer than prior fail artifact:
+.agent/stages/03-identity-master-data/evidence.json
+.agent/stages/03-identity-master-data/evidence.md
+.agent/stages/03-identity-master-data/problems.md
+.agent/stages/03-identity-master-data/progress.md
+.agent/stages/03-identity-master-data/raw/slice-010-empty-first-admin-accept-2026-04-29.json
+.agent/stages/03-identity-master-data/raw/slice-010-empty-org-invite-proof-2026-04-29.json
+.agent/stages/03-identity-master-data/raw/slice-010-fixer-doc-sync-2026-04-29.txt
+.agent/stages/03-identity-master-data/raw/slice-010-fresh-verifier-harness-post-verdict-2026-04-29.txt
+.agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-doc-alias-audit-2026-04-29.txt
+.agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-empty-org-invite-proof-2026-04-29.json
+.agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-harness-2026-04-29.txt
+.agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-post-fail-change-audit-2026-04-29.txt
+.agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-primary-org-structure-proof-2026-04-29.json
+.agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-proof-run-2026-04-29.txt
+.agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-proof-seed-2026-04-29.txt
+.agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-stack-health-2026-04-29.txt
+.agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-summary-2026-04-29.json
+.agent/stages/03-identity-master-data/raw/slice-010-post-fixer-verifier-web-web-accept-company-2026-04-29.json
+.agent/stages/03-identity-master-data/raw/slice-010-primary-first-admin-accept-2026-04-29.json
+.agent/stages/03-identity-master-data/raw/slice-010-primary-org-structure-proof-2026-04-29.json
+.agent/stages/03-identity-master-data/raw/slice-010-proof-run-2026-04-29.txt
+.agent/stages/03-identity-master-data/raw/slice-010-summary-2026-04-29.json
+.agent/stages/03-identity-master-data/raw/slice-010-web-web-accept-company-2026-04-29.json
+.agent/stages/03-identity-master-data/verdict.json

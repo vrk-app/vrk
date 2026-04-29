@@ -39,7 +39,7 @@ WITH inserted AS (
         work_type,
         equipment_type,
         region,
-        subdivision_id,
+        division_id,
         unit_id,
         location_scope_label,
         source,
@@ -60,7 +60,7 @@ WITH inserted AS (
         $13,
         $14
     )
-    RETURNING id, source, factory_id, organization_id, number, start_date, end_date, subject_of_agreement, schedule_id, created_at, updated_at, customer_organization_id, contractor_organization_id, contract_number, contract_status, work_type, equipment_type, region, subdivision_id, unit_id, location_scope_label
+    RETURNING id, source, factory_id, organization_id, number, start_date, end_date, subject_of_agreement, schedule_id, created_at, updated_at, customer_organization_id, contractor_organization_id, contract_number, contract_status, work_type, equipment_type, region, division_id, unit_id, location_scope_label
 )
 SELECT
     a.id,
@@ -75,8 +75,8 @@ SELECT
     a.work_type,
     a.equipment_type,
     a.region,
-    a.subdivision_id,
-    subdivision.name AS subdivision_name,
+    a.division_id,
+    division.name AS division_name,
     a.unit_id,
     unit.name AS unit_name,
     a.location_scope_label,
@@ -87,7 +87,7 @@ SELECT
 FROM inserted a
 JOIN auth_bootstrap_organizations customer ON customer.id = a.customer_organization_id
 JOIN auth_bootstrap_organizations contractor ON contractor.id = a.contractor_organization_id
-LEFT JOIN auth_subdivisions subdivision ON subdivision.id = a.subdivision_id
+LEFT JOIN auth_divisions division ON division.id = a.division_id
 LEFT JOIN auth_units unit ON unit.id = a.unit_id
 `
 
@@ -101,7 +101,7 @@ type CreateAgreementParams struct {
 	WorkType                 *string     `json:"workType"`
 	EquipmentType            *string     `json:"equipmentType"`
 	Region                   *string     `json:"region"`
-	SubdivisionID            pgtype.UUID `json:"subdivisionId"`
+	DivisionID               pgtype.UUID `json:"divisionId"`
 	UnitID                   pgtype.UUID `json:"unitId"`
 	LocationScopeLabel       *string     `json:"locationScopeLabel"`
 	Source                   *string     `json:"source"`
@@ -121,8 +121,8 @@ type CreateAgreementRow struct {
 	WorkType                   *string            `json:"workType"`
 	EquipmentType              *string            `json:"equipmentType"`
 	Region                     *string            `json:"region"`
-	SubdivisionID              pgtype.UUID        `json:"subdivisionId"`
-	SubdivisionName            *string            `json:"subdivisionName"`
+	DivisionID                 pgtype.UUID        `json:"divisionId"`
+	DivisionName               *string            `json:"divisionName"`
 	UnitID                     pgtype.UUID        `json:"unitId"`
 	UnitName                   *string            `json:"unitName"`
 	LocationScopeLabel         *string            `json:"locationScopeLabel"`
@@ -143,7 +143,7 @@ func (q *Queries) CreateAgreement(ctx context.Context, arg CreateAgreementParams
 		arg.WorkType,
 		arg.EquipmentType,
 		arg.Region,
-		arg.SubdivisionID,
+		arg.DivisionID,
 		arg.UnitID,
 		arg.LocationScopeLabel,
 		arg.Source,
@@ -163,8 +163,8 @@ func (q *Queries) CreateAgreement(ctx context.Context, arg CreateAgreementParams
 		&i.WorkType,
 		&i.EquipmentType,
 		&i.Region,
-		&i.SubdivisionID,
-		&i.SubdivisionName,
+		&i.DivisionID,
+		&i.DivisionName,
 		&i.UnitID,
 		&i.UnitName,
 		&i.LocationScopeLabel,
@@ -232,8 +232,8 @@ SELECT
     a.work_type,
     a.equipment_type,
     a.region,
-    a.subdivision_id,
-    subdivision.name AS subdivision_name,
+    a.division_id,
+    division.name AS division_name,
     a.unit_id,
     unit.name AS unit_name,
     a.location_scope_label,
@@ -244,7 +244,7 @@ SELECT
 FROM agreements a
 JOIN auth_bootstrap_organizations customer ON customer.id = a.customer_organization_id
 JOIN auth_bootstrap_organizations contractor ON contractor.id = a.contractor_organization_id
-LEFT JOIN auth_subdivisions subdivision ON subdivision.id = a.subdivision_id
+LEFT JOIN auth_divisions division ON division.id = a.division_id
 LEFT JOIN auth_units unit ON unit.id = a.unit_id
 WHERE a.id = $1
   AND a.customer_organization_id IS NOT NULL
@@ -263,8 +263,8 @@ type GetAgreementByIDRow struct {
 	WorkType                   *string            `json:"workType"`
 	EquipmentType              *string            `json:"equipmentType"`
 	Region                     *string            `json:"region"`
-	SubdivisionID              pgtype.UUID        `json:"subdivisionId"`
-	SubdivisionName            *string            `json:"subdivisionName"`
+	DivisionID                 pgtype.UUID        `json:"divisionId"`
+	DivisionName               *string            `json:"divisionName"`
 	UnitID                     pgtype.UUID        `json:"unitId"`
 	UnitName                   *string            `json:"unitName"`
 	LocationScopeLabel         *string            `json:"locationScopeLabel"`
@@ -290,8 +290,8 @@ func (q *Queries) GetAgreementByID(ctx context.Context, id pgtype.UUID) (GetAgre
 		&i.WorkType,
 		&i.EquipmentType,
 		&i.Region,
-		&i.SubdivisionID,
-		&i.SubdivisionName,
+		&i.DivisionID,
+		&i.DivisionName,
 		&i.UnitID,
 		&i.UnitName,
 		&i.LocationScopeLabel,
@@ -361,8 +361,8 @@ SELECT
     a.work_type,
     a.equipment_type,
     a.region,
-    a.subdivision_id,
-    subdivision.name AS subdivision_name,
+    a.division_id,
+    division.name AS division_name,
     a.unit_id,
     unit.name AS unit_name,
     a.location_scope_label,
@@ -373,7 +373,7 @@ SELECT
 FROM agreements a
 JOIN auth_bootstrap_organizations customer ON customer.id = a.customer_organization_id
 JOIN auth_bootstrap_organizations contractor ON contractor.id = a.contractor_organization_id
-LEFT JOIN auth_subdivisions subdivision ON subdivision.id = a.subdivision_id
+LEFT JOIN auth_divisions division ON division.id = a.division_id
 LEFT JOIN auth_units unit ON unit.id = a.unit_id
 WHERE a.contractor_organization_id = $1
 ORDER BY a.created_at DESC
@@ -392,8 +392,8 @@ type ListAgreementsByContractorOrganizationRow struct {
 	WorkType                   *string            `json:"workType"`
 	EquipmentType              *string            `json:"equipmentType"`
 	Region                     *string            `json:"region"`
-	SubdivisionID              pgtype.UUID        `json:"subdivisionId"`
-	SubdivisionName            *string            `json:"subdivisionName"`
+	DivisionID                 pgtype.UUID        `json:"divisionId"`
+	DivisionName               *string            `json:"divisionName"`
 	UnitID                     pgtype.UUID        `json:"unitId"`
 	UnitName                   *string            `json:"unitName"`
 	LocationScopeLabel         *string            `json:"locationScopeLabel"`
@@ -425,8 +425,8 @@ func (q *Queries) ListAgreementsByContractorOrganization(ctx context.Context, co
 			&i.WorkType,
 			&i.EquipmentType,
 			&i.Region,
-			&i.SubdivisionID,
-			&i.SubdivisionName,
+			&i.DivisionID,
+			&i.DivisionName,
 			&i.UnitID,
 			&i.UnitName,
 			&i.LocationScopeLabel,
@@ -459,8 +459,8 @@ SELECT
     a.work_type,
     a.equipment_type,
     a.region,
-    a.subdivision_id,
-    subdivision.name AS subdivision_name,
+    a.division_id,
+    division.name AS division_name,
     a.unit_id,
     unit.name AS unit_name,
     a.location_scope_label,
@@ -471,7 +471,7 @@ SELECT
 FROM agreements a
 JOIN auth_bootstrap_organizations customer ON customer.id = a.customer_organization_id
 JOIN auth_bootstrap_organizations contractor ON contractor.id = a.contractor_organization_id
-LEFT JOIN auth_subdivisions subdivision ON subdivision.id = a.subdivision_id
+LEFT JOIN auth_divisions division ON division.id = a.division_id
 LEFT JOIN auth_units unit ON unit.id = a.unit_id
 WHERE a.customer_organization_id = $1
 ORDER BY a.created_at DESC
@@ -490,8 +490,8 @@ type ListAgreementsByCustomerOrganizationRow struct {
 	WorkType                   *string            `json:"workType"`
 	EquipmentType              *string            `json:"equipmentType"`
 	Region                     *string            `json:"region"`
-	SubdivisionID              pgtype.UUID        `json:"subdivisionId"`
-	SubdivisionName            *string            `json:"subdivisionName"`
+	DivisionID                 pgtype.UUID        `json:"divisionId"`
+	DivisionName               *string            `json:"divisionName"`
 	UnitID                     pgtype.UUID        `json:"unitId"`
 	UnitName                   *string            `json:"unitName"`
 	LocationScopeLabel         *string            `json:"locationScopeLabel"`
@@ -523,8 +523,8 @@ func (q *Queries) ListAgreementsByCustomerOrganization(ctx context.Context, cust
 			&i.WorkType,
 			&i.EquipmentType,
 			&i.Region,
-			&i.SubdivisionID,
-			&i.SubdivisionName,
+			&i.DivisionID,
+			&i.DivisionName,
 			&i.UnitID,
 			&i.UnitName,
 			&i.LocationScopeLabel,
@@ -554,7 +554,7 @@ SET
     work_type = COALESCE($7, work_type),
     equipment_type = COALESCE($8, equipment_type),
     region = COALESCE($9, region),
-    subdivision_id = $10,
+    division_id = $10,
     unit_id = $11,
     location_scope_label = $12,
     source = $13,
@@ -573,7 +573,7 @@ RETURNING
     work_type,
     equipment_type,
     region,
-    subdivision_id,
+    division_id,
     unit_id,
     location_scope_label,
     source,
@@ -592,7 +592,7 @@ type UpdateAgreementParams struct {
 	WorkType                 *string            `json:"workType"`
 	EquipmentType            *string            `json:"equipmentType"`
 	Region                   *string            `json:"region"`
-	SubdivisionID            pgtype.UUID        `json:"subdivisionId"`
+	DivisionID               pgtype.UUID        `json:"divisionId"`
 	UnitID                   pgtype.UUID        `json:"unitId"`
 	LocationScopeLabel       *string            `json:"locationScopeLabel"`
 	Source                   *string            `json:"source"`
@@ -611,7 +611,7 @@ type UpdateAgreementRow struct {
 	WorkType                 *string            `json:"workType"`
 	EquipmentType            *string            `json:"equipmentType"`
 	Region                   *string            `json:"region"`
-	SubdivisionID            pgtype.UUID        `json:"subdivisionId"`
+	DivisionID               pgtype.UUID        `json:"divisionId"`
 	UnitID                   pgtype.UUID        `json:"unitId"`
 	LocationScopeLabel       *string            `json:"locationScopeLabel"`
 	Source                   *string            `json:"source"`
@@ -631,7 +631,7 @@ func (q *Queries) UpdateAgreement(ctx context.Context, arg UpdateAgreementParams
 		arg.WorkType,
 		arg.EquipmentType,
 		arg.Region,
-		arg.SubdivisionID,
+		arg.DivisionID,
 		arg.UnitID,
 		arg.LocationScopeLabel,
 		arg.Source,
@@ -650,7 +650,7 @@ func (q *Queries) UpdateAgreement(ctx context.Context, arg UpdateAgreementParams
 		&i.WorkType,
 		&i.EquipmentType,
 		&i.Region,
-		&i.SubdivisionID,
+		&i.DivisionID,
 		&i.UnitID,
 		&i.LocationScopeLabel,
 		&i.Source,

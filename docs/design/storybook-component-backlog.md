@@ -1,7 +1,7 @@
 # VRK Storybook Component Backlog
 
 Статус: proposed source backlog  
-Обновлено: 2026-04-17
+Обновлено: 2026-04-29
 
 ## Назначение
 
@@ -106,6 +106,7 @@
 - Обязательные props: `label`, `placeholder`, `value`, `options`, `multiple`, `clearable`, `disabled`.
 - Состояния: `empty`, `selected`, `multi`, `disabled`, `loading options`.
 - Stories: `Single`, `Multiple`, `WithPlaceholder`, `Disabled`, `LoadingOptions`.
+- Реализация: `apps/web/shared/ui/SelectField.tsx`, stories в `apps/web/stories/primitives/SelectField.stories.tsx`.
 
 ### UI-05 DatePickerField [P0]
 
@@ -134,6 +135,7 @@
 - Обязательные props: `items`, `activeKey`, `onChange`, `fullWidth`.
 - Состояния: `default`, `active`, `overflow`.
 - Stories: `Basic`, `ManyTabs`, `WithLongLabels`.
+- Реализация: `apps/web/shared/ui/Tabs.tsx`, stories в `apps/web/stories/primitives/Tabs.stories.tsx`; вкладки используют `tablist`/`tab`, roving focus и `Home`/`End`.
 
 ### UI-09 Badge [P0]
 
@@ -221,6 +223,14 @@
 - Состояния: `text`, `card`, `table row`, `avatar line`.
 - Stories: `TextLines`, `CardSkeleton`, `TableSkeleton`, `ChatSkeleton`.
 
+### UI-21 CopyableText [P1]
+
+- Назначение: компактное отображение ссылок, токенов, идентификаторов и code-like значений с копированием через icon action внутри блока.
+- Обязательные props: `value`, `copyValue`, `copyLabel`, `copiedLabel`, `children`.
+- Состояния: `default`, `hover`, `focus`, `long value`, `copied`.
+- Stories: `Default`, `Hover`, `Focus`, `LongValue`.
+- Примечание: кнопка копирования не должна становиться отдельным CTA; она появляется как маленькая иконка внутри блока при hover/focus.
+
 ## 3. Layout и навигация
 
 ### LAY-01 AppShell [P0]
@@ -235,8 +245,8 @@
 
 - Назначение: левое меню с разделами и нижним блоком.
 - Обязательные props: `items`, `activeKey`, `footerItems`, `collapsed`, `mobileOpen`.
-- Состояния: `active item`, `long labels`, `mobile drawer`, `collapsed + mobile drawer`.
-- Stories: `Default`, `ActiveRequests`, `Collapsed`, `MobileDrawer`, `CollapsedMobileDrawer`.
+- Состояния: `active item`, `long labels`, `long navigation`, `mobile drawer`, `collapsed + mobile drawer`.
+- Stories: `Default`, `ActiveRequests`, `Collapsed`, `LongLabels`, `LongNavigation`, `MobileDrawer`, `CollapsedMobileDrawer`.
 - Примечание: базовый CRM-shell с вертикальной навигацией закреплен в ТЗ.
 
 ### LAY-03 TopBar [P0]
@@ -536,7 +546,7 @@
 ### REG-04 ReportFiltersPanel [P1]
 
 - Назначение: фильтры отчетов и аналитики.
-- Обязательные props: `period`, `subdivision`, `contractor`, `equipmentType`, `preset`, `onReset`.
+- Обязательные props: `period`, `division`, `contractor`, `equipmentType`, `preset`, `onReset`.
 - Состояния: `default`, `with active filters`, `loading`.
 - Stories: `Default`, `WithPreset`, `WithActiveFilters`.
 
@@ -568,6 +578,7 @@
 - Обязательные props: `label`, `value`, `placeholder`, `rows`, `maxLength`, `autoResize`, `hint`, `error`, `disabled`, `showCounter`.
 - Состояния: `empty`, `filled`, `error`, `disabled`, `with counter`.
 - Stories: `Default`, `AutoResize`, `WithCounter`, `ValidationError`, `Disabled`.
+- Реализация: `apps/web/shared/ui/TextareaField.tsx`, stories в `apps/web/stories/primitives/TextareaField.stories.tsx`.
 
 #### FORM-02 `AsyncEntityPicker` [P0]
 
@@ -682,6 +693,7 @@
 - Обязательные props: `tone`, `title`, `description`, `icon`, `action`, `dismissible`.
 - Состояния: `info`, `warning`, `error`, `success`, `with action`.
 - Stories: `Info`, `Warning`, `Error`, `Success`, `WithAction`.
+- Реализация: `apps/web/shared/ui/InlineAlert.tsx`, stories в `apps/web/stories/primitives/InlineAlert.stories.tsx`.
 
 #### STATE-05 `SessionExpiredDialog` [P1]
 

@@ -1,0 +1,22 @@
+Wed Apr 29 02:42:15 UTC 2026
+NAME            IMAGE                COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+vrk-backend-1   vrk-backend          "/app/api"               backend   32 minutes ago   Up 32 minutes (healthy)   0.0.0.0:18080->8080/tcp, [::]:18080->8080/tcp
+vrk-db-1        postgres:17-alpine   "docker-entrypoint.s…"   db        3 hours ago      Up 3 hours (healthy)      5432/tcp
+vrk-field-1     vrk-field            "docker-entrypoint.s…"   field     32 minutes ago   Up 32 minutes (healthy)   0.0.0.0:3102->3002/tcp, [::]:3102->3002/tcp
+vrk-web-1       vrk-web              "docker-entrypoint.s…"   web       32 minutes ago   Up 32 minutes (healthy)   0.0.0.0:3100->3000/tcp, [::]:3100->3000/tcp
+
+Backend health:
+curl: (22) The requested URL returned error: 404
+curl: (22) The requested URL returned error: 404
+
+Web head:
+HTTP/1.1 200 OK
+Vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding
+link: </_next/static/media/0aa834ed78bf6d07-s.p.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/media/21350d82a1f187e9-s.p.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/media/bb3ef058b751a6ad-s.p.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/media/e4af272ccee01ff0-s.p.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2"
+X-Powered-By: Next.js
+Cache-Control: private, no-cache, no-store, max-age=0, must-revalidate
+Content-Type: text/html; charset=utf-8
+Date: Wed, 29 Apr 2026 02:42:15 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+

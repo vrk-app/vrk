@@ -45,6 +45,10 @@ VRK Platform - это единая цифровая платформа для у
 
 Он описывает текущий runnable baseline: compose-driven platform stack (`backend` + `web` + `field`) и отдельный Storybook harness для Stage 01 reusable UI.
 
+## Incubator CI/CD
+
+Деплой ветки `Incubator` в Yandex Cloud описан в [`docs/architecture/yandex-cloud-incubator-deployment.md`](docs/architecture/yandex-cloud-incubator-deployment.md). Workflow `.github/workflows/incubator-deploy.yml` запускает checks, миграции, сборку Docker-образов и деплой backend/web Serverless Containers по каждому push в `Incubator`.
+
 ## Для кого создается продукт
 
 ### Заказчики

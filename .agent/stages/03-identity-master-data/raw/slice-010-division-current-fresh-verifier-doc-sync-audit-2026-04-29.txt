@@ -1,0 +1,822 @@
+Canonical doc-sync audit for current slice target.
+
+Roadmap target lines:
+   350	- activation flow:
+   351	  - платформенный админ создает заготовку организации и отправляет first-admin invite по email
+   352	  - первый администратор принимает одноразовое приглашение, задает пароль и попадает в рабочий `/company` contour организации
+   353	  - первичная пустая или частично заполненная организация не блокируется отдельным wizard: настройка оргструктуры выполняется через тот же постоянный UI, которым администратор пользуется позже
+   354	  - повторная активация тем же invite token отклоняется и не создает второй session/membership baseline
+   355	  - ручная раздача паролей не используется как основной сценарий
+   356	- auth flow:
+   357	  - login
+   358	  - logout
+   359	  - refresh/session restore
+   360	  - role-aware access
+   361	- org model:
+   362	  - customer / contractor organizations
+   363	  - organization profile с разделением на launch-critical и optional requisites; поле `Тип` в профиле хранит ОПФ `ООО` / `АО` / `ПАО`, а legacy `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО` принимаются только как compatibility input и нормализуются
+   364	  - divisions без пользовательского selector-а типа; storage compatibility type остается скрытым internal default
+   365	  - units как primary operational scope для оборудования с selector-ом типа `ВРД` / `ВРЗ` / `ВУ` / `ВРП`
+   366	  - persistent organization-structure management UI для создания первого и последующих подразделений/филиалов и юнитов в любое время
+   367	  - division/unit create/edit/archive flows доступны только organization-scope администраторам; narrower scopes остаются read-only в пределах своего subtree
+   368	- people and access model:
+   369	  - user account, organization membership и scoped grants разделены
+   370	  - grant scope: organization / division / unit
+   371	  - role templates и additive inheritance без deny-layer в MVP
+   372	  - employee invitation statuses: draft / sent / opened / accepted / expired / revoked
+   373	- contractor/customer relation layer
+   374	- contracts registry
+   375	- contract status baseline `inactive / active / expired` для customer-admin contour
+   376	- equipment registry
+   377	- measuring instruments registry
+   378	- standards registry
+   379	- metrology operation journals, URL/reference attachment baseline и derived status for MI / standards
+   380	- bounded ownership-scope labels for standards; standalone org-scoped dictionary/local-draft CRUD остается вне proven Stage 03 contract
+   381	- archive baseline для организаций, подразделений, юнитов, пользователей, договоров, оборудования, СИ и эталонов
+   382	- audit baseline для auth + CRUD changes
+   383	- web UI:
+   384	  - route contour `/register -> /register/{token} -> /company`
+   385	  - company profile screens и постоянный organization-structure management surface без обязательного первичного wizard
+   386	  - division / unit selectors и scoped singular-session landing без multi-workspace picker
+   387	  - people, memberships, invites и access grant screens
+   388	  - contracts lists, cards and routing surfaces на публичном `/contracts` contour
+   389	  - equipment / measuring instrument / standard lists and cards на одном публичном `/equipment` contour с query-backed tabs и explicit archive visibility state
+   390	
+   391	### Что обязательно доказать
+   392	
+   393	- company onboarding shell из Stage 02 backed реальной org/division/unit моделью и превращен в постоянный management surface
+   394	- анонимный `/company` shell из Stage 02 сохраняется как truthful public contour до появления сессии
+   395	- first-admin activation начинается по invite link, а не с заранее выданного логина/пароля
+   396	- после invite acceptance пользователь получает session и попадает в `/company`, где видит состояние организации и доступные действия по управлению профилем, подразделениями и юнитами
+   397	- администратор может создать первый и последующие подразделения/филиалы и юниты из постоянного `/company` UI, а не только во время первичного запуска
+   398	- юнит может существовать напрямую под организацией без обязательного промежуточного подразделения
+   399	- создание scoped employee invite не зависит от "завершенного wizard"; organization-scope invite доступен active organization admin, а division/unit-scope invite требует существующий visible target scope
+   400	- user account, membership и scoped grants существуют как отдельные сущности
+   401	- права уровня organization наследуются вниз на division и unit; права division наследуются на дочерние unit; deny-layer в MVP отсутствует
+
+Identity architecture target lines:
+78-- `GET /first-admin-invites/{token}` открывает одноразовую ссылку и переводит invite из `sent` в `opened`;
+79-- `POST /first-admin-invites/{token}/accept` задает пароль, создает `membership`, выдает initial `organization_admin` grant и возвращает session;
+80-- повторный `accept` по тому же token возвращает конфликт и не может создать вторую активацию;
+81:- `POST /launch-wizard` сохраняет core organization data и поддерживает оба пути: `organization -> division -> unit` и `organization -> unit`;
+82-- `POST /sessions` и `GET /sessions/current` позволяют вернуться только в тот contour, который привязан к explicit active `membership_id + grant_id`;
+83-- direct login с несколькими eligible access paths возвращает `409` и не делает silent selection.
+84-
+--
+92-    C --> E["replay rejected"]
+93-```
+94-
+95:### 1.2. Target correction: organization structure management UI
+96-
+97-Следующий Stage 03 correction slice должен убрать зависимость бизнес-логики от "завершенного wizard":
+98-
+--
+102-- создание первого подразделения и первого юнита использует те же API и UI, что и создание последующих узлов;
+103-- юнит может быть создан под подразделением или напрямую под организацией;
+104-- organization-scope employee invite доступен active organization admin без wizard gate;
+105:- division/unit-scope employee invite требует существующий visible target scope.
+106-
+107:#### 1.2.1. `/company` business-field contract
+108-
+109-Для correction slice `slice-010-stage03-org-structure-management` формы профиля организации, подразделения/филиала и юнита используют разделенный field contract:
+110-
+111-| Поле | Канонический контракт |
+112-| --- | --- |
+113:| `propertyType` / organization `type` alias | В профиле организации visible selector `Тип` хранит юридическую форму: `ООО`, `АО`, `ПАО`. `type` остается compatibility alias в API/session там, где старые клиенты уже читают это поле. Legacy input `ОАО` нормализуется в `ПАО`, `ЗАО` в `АО`, `LLC` в `ООО`; `ОАО` и `ЗАО` не показываются как актуальные options, потому что модель ОАО/ЗАО заменена публичными/непубличными АО. |
+114:| division `type` | Не является user-facing бизнес-полем и не показывается selector-ом в `/company`. Storage column `auth_divisions.division_type` остается `NOT NULL` для совместимости с sqlc/generated response shape; новые create/update writes используют скрытый internal default `division`. |
+115:| unit `type` | Selector frozen for this slice: `ВРД`, `ВРЗ`, `ВУ`, `ВРП`. Эти значения применяются только к unit create/edit forms; Stage 04 не добавляет сюда request-типы. |
+116-| `name` | Каноническое отображаемое имя организации, подразделения/филиала или юнита. |
+117-| `registeredAddress` | Канонический адрес организации. Для organization profile новые записи и редактирование должны опираться на это поле. |
+118-| `address` | Compatibility/display alias там, где division/unit storage, API payload или старые данные все еще используют `address`; не заменяет `registeredAddress` как канонический адрес организации. |
+--
+181-- контакты;
+182-- статус `active` / `archived`.
+183-
+184:Storage поле `auth_divisions.division_type` остается скрытым compatibility default `division`; бизнес-классификация подразделений/филиалов не выбирается пользователем в этом slice.
+185-
+186-### 2.3. Юнит
+187-
+--
+190-Обязательные правила:
+191-
+192-- юнит может иметь родительское подразделение, но оно не обязательно;
+193:- сценарий `organization -> unit` должен поддерживаться так же, как `organization -> division -> unit`;
+194-- оборудование живет в контексте юнита, а не только организации в целом.
+195-
+196-Минимальные поля:
+--
+247-MVP-модель прав:
+248-
+249-- scope `organization` действует на всю иерархию ниже;
+250:- scope `division` действует на дочерние юниты;
+251-- scope `unit` действует только на конкретный юнит;
+252-- deny-layer в MVP не вводится;
+253-- права суммируются, а не конфликтуют между собой.
+--
+284-
+285-Во втором живом Stage 03 slice employee invite flow зафиксирован следующим контрактом:
+286-
+287:- organization admin может создавать draft employee invite после active organization-scope session; division/unit-scope invite требует существующий visible target scope;
+288-- `POST /employee-invites` создает `draft` с `full_name`, `email`, `role_template`, `scope_type`, `scope_id` и `expires_at`;
+289-- `POST /employee-invites/{inviteID}/send` выпускает одноразовый token и переводит invite в `sent`;
+290-- `GET /invites/{token}` используется как общий public invite endpoint для first-admin и employee flow, а employee invite при первом открытии переводится из `sent` в `opened`;
+
+Customer admin bootstrap flow lines:
+   116	- `/register` используется платформенным админом для выпуска first-admin invite;
+   117	- `/register/[token]` используется приглашенным администратором для password setup и accept;
+   118	- после accept пользователь попадает в `/company`; empty state и первые действия по настройке организации живут в том же постоянном route;
+   119	- `/company/setup` и launch wizard больше не являются целевым UX для Stage 03, даже если текущая historical implementation еще содержит этот route;
+   120	- профиль организации в `/company` использует selector `Тип` как ОПФ `ООО` / `АО` / `ПАО`; legacy aliases `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО` поддерживаются только как входная совместимость и не показываются в UI;
+   121	- форма подразделения/филиала не содержит selector `Тип`; форма юнита сохраняет selector operational type `ВРД` / `ВРЗ` / `ВУ` / `ВРП`;
+   122	- повторный переход по использованной одноразовой ссылке показывает состояние `Одноразовая ссылка больше не активна`;
+   123	- анонимный `/company` shell из `Stage 02` сохраняется как truthful public state до появления активной session.
+   124	
+   125	```mermaid
+   126	flowchart LR
+   127	    A["/register<br/>platform admin issues invite"] --> B["/register/[token]<br/>first admin sets password"]
+   128	    B --> C["/company<br/>organization management"]
+   129	    C --> D["profile / divisions / units"]
+   130	    B --> E["invite replay / expired link"]
+   131	```
+   137	- organization admin завершает bootstrap и остается на `/company`, где получает people/access block для employee invite lifecycle;
+   138	- employee invite выдается из `/company`, а одноразовая ссылка снова ведет в `/register/[token]`;
+   139	- после employee acceptance и последующего login тот же `/company` route становится scope-aware landing:
+   140	  - organization scope показывает полный org graph и invite management;
+   141	  - division scope показывает только свое поддерево;
+   142	  - unit scope показывает только один юнит без расширения вверх;
+   143	- replay, expired и revoked employee links возвращают пользователя в состояние `Одноразовая ссылка больше не активна`, а не в ложный success flow.
+
+Drawio legal-form source audit:
+39:        <mxCell id="Uvl7SCXHovZ_TvcCf32a-13" value="Организационно-правовая ф&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;орма (ООО, АО, ПАО)&lt;/span&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="Uvl7SCXHovZ_TvcCf32a-12" vertex="1">
+
+Stage target lines:
+.agent/stages/03-identity-master-data/sprint_contract.md-12-
+.agent/stages/03-identity-master-data/sprint_contract.md-13-- first-admin invite acceptance lands on `/company`, not `/company/setup`;
+.agent/stages/03-identity-master-data/sprint_contract.md:14:- `/company` becomes the durable place to view, edit, create, and archive organization profile, divisions/branches, and units;
+.agent/stages/03-identity-master-data/sprint_contract.md-15-- organization admins can create first and repeat structure nodes at any time;
+.agent/stages/03-identity-master-data/sprint_contract.md:16:- scoped division/unit users remain read-only inside their allowed subtree;
+.agent/stages/03-identity-master-data/sprint_contract.md:17:- employee invite creation no longer depends on a completed wizard gate, while division/unit invite target validation remains strict.
+.agent/stages/03-identity-master-data/sprint_contract.md-18-
+.agent/stages/03-identity-master-data/sprint_contract.md-19-Do not widen this slice into Stage 04 request flows, request creation, contractor execution, materials, schedules, or operations loops.
+--
+.agent/stages/03-identity-master-data/sprint_contract.md-25-- `requiresLaunchWizard` must not block `/company` or employee invite management once an explicit active session exists; contracts/equipment routes may keep their own existing Stage 03 master-data prerequisites.
+.agent/stages/03-identity-master-data/sprint_contract.md-26-- Organization structure management is persistent master data, not a one-time onboarding task.
+.agent/stages/03-identity-master-data/sprint_contract.md:27:- Unit parent division is optional:
+.agent/stages/03-identity-master-data/sprint_contract.md:28:  - `organization -> division -> unit` is valid;
+.agent/stages/03-identity-master-data/sprint_contract.md-29-  - `organization -> unit` is equally valid.
+.agent/stages/03-identity-master-data/sprint_contract.md:30:- Archive replaces delete for divisions and units.
+.agent/stages/03-identity-master-data/sprint_contract.md-31-- Mutation authority is limited to active customer `organization_admin` on organization scope.
+.agent/stages/03-identity-master-data/sprint_contract.md-32-- Division-scope and unit-scope users read only their visible subtree; they must not receive broader graph data or mutate controls.
+--
+.agent/stages/03-identity-master-data/sprint_contract.md-37-The persistent `/company` profile and org-structure forms must expose and persist these business fields where the record type carries them:
+.agent/stages/03-identity-master-data/sprint_contract.md-38-
+.agent/stages/03-identity-master-data/sprint_contract.md:39:- organization `propertyType` / `type` compatibility alias: legal-form selector with exactly these visible values for the correction slice: `ООО`, `АО`, `ПАО`;
+.agent/stages/03-identity-master-data/sprint_contract.md:40:- legacy organization legal-form input maps `ОАО -> ПАО`, `ЗАО -> АО`, and `LLC -> ООО`; those legacy aliases are not visible selector options;
+.agent/stages/03-identity-master-data/sprint_contract.md:41:- division/branch `type`: not user-facing and not selectable; keep the existing `auth_divisions.division_type` storage/API shape with hidden internal default `division`;
+.agent/stages/03-identity-master-data/sprint_contract.md:42:- unit `type`: selector with exactly these operational values for the correction slice: `ВРД`, `ВРЗ`, `ВУ`, `ВРП`;
+.agent/stages/03-identity-master-data/sprint_contract.md-43-- `name`;
+.agent/stages/03-identity-master-data/sprint_contract.md-44-- `registeredAddress` as the canonical organization address field;
+.agent/stages/03-identity-master-data/sprint_contract.md:45:- `address` as a compatibility/display alias where existing division/unit APIs or payloads still use it;
+.agent/stages/03-identity-master-data/sprint_contract.md-46-- `leaderFullName` as the canonical leader display field;
+.agent/stages/03-identity-master-data/sprint_contract.md-47-- `managerName` remains a migration/read-display compatibility alias when existing stored data or session payloads still carry that field;
+--
+.agent/stages/03-identity-master-data/sprint_contract.md-61-  - replay/expired/revoked invite behavior remains unchanged and does not create duplicate membership/session side effects.
+.agent/stages/03-identity-master-data/sprint_contract.md-62-- `/company` states:
+.agent/stages/03-identity-master-data/sprint_contract.md:63:  - empty organization state shows profile data and available organization-admin actions before any division or unit exists;
+.agent/stages/03-identity-master-data/sprint_contract.md:64:  - partial state works for organization with profile-only data, division without units, and direct unit without division;
+.agent/stages/03-identity-master-data/sprint_contract.md:65:  - populated state shows divisions, direct organization units, and units under divisions in one readable structure surface;
+.agent/stages/03-identity-master-data/sprint_contract.md-66-  - state rendering remains truthful for missing optional fields and does not claim Stage 04 request readiness.
+.agent/stages/03-identity-master-data/sprint_contract.md-67-- Organization profile and business fields:
+.agent/stages/03-identity-master-data/sprint_contract.md:68:  - create/edit flows handle legal-form `propertyType`/`type` alias, `name`, `registeredAddress`/`address`, `leaderFullName`/`managerName`, `leaderPosition`, `contractPhone`, `contractEmail`, and `actingBasis`;
+.agent/stages/03-identity-master-data/sprint_contract.md:69:  - visible profile type selector shows `ООО`, `АО`, `ПАО` only, while legacy `ОАО`, `ЗАО`, and `LLC` inputs normalize for compatibility;
+.agent/stages/03-identity-master-data/sprint_contract.md-70-  - existing `code`, `region`, `status`, and `comment` fields remain visible/preserved if still used by the model;
+.agent/stages/03-identity-master-data/sprint_contract.md-71-  - saved data survives session restore and is reflected in `/company`.
+.agent/stages/03-identity-master-data/sprint_contract.md-72-- Division/branch management:
+.agent/stages/03-identity-master-data/sprint_contract.md:73:  - organization admin can create the first division/branch from `/company`;
+.agent/stages/03-identity-master-data/sprint_contract.md:74:  - organization admin can create a subsequent division/branch from the same UI;
+.agent/stages/03-identity-master-data/sprint_contract.md-75-  - create/edit does not expose or require a user-facing `type` selector and persists business fields above;
+.agent/stages/03-identity-master-data/sprint_contract.md:76:  - backend stores hidden default division type only for storage/generated-response compatibility;
+.agent/stages/03-identity-master-data/sprint_contract.md-77-  - archive is available instead of delete and removes archived nodes from default active selection.
+.agent/stages/03-identity-master-data/sprint_contract.md-78-- Unit management:
+.agent/stages/03-identity-master-data/sprint_contract.md-79-  - organization admin can create the first unit from `/company`;
+.agent/stages/03-identity-master-data/sprint_contract.md-80-  - organization admin can create repeat units from the same UI;
+.agent/stages/03-identity-master-data/sprint_contract.md:81:  - unit can be created under a division;
+.agent/stages/03-identity-master-data/sprint_contract.md-82-  - unit can be created directly under the organization;
+.agent/stages/03-identity-master-data/sprint_contract.md:83:  - create/edit uses the frozen unit type selector values `ВРД`, `ВРЗ`, `ВУ`, `ВРП` and business fields above;
+.agent/stages/03-identity-master-data/sprint_contract.md-84-  - archive is available instead of delete and removes archived units from default active selection.
+.agent/stages/03-identity-master-data/sprint_contract.md-85-- Archive behavior:
+.agent/stages/03-identity-master-data/sprint_contract.md:86:  - no hard-delete UI action is introduced for divisions or units;
+.agent/stages/03-identity-master-data/sprint_contract.md-87-  - backend/API behavior preserves archived rows;
+.agent/stages/03-identity-master-data/sprint_contract.md-88-  - active create/select flows do not target archived parent scopes;
+.agent/stages/03-identity-master-data/sprint_contract.md-89-  - archive requests return truthful blocking errors if active equipment, active scoped grants, or other Stage 03 references prevent safe archive.
+.agent/stages/03-identity-master-data/sprint_contract.md-90-- Access control:
+.agent/stages/03-identity-master-data/sprint_contract.md:91:  - only customer organization-scope `organization_admin` can mutate organization profile, divisions, and units;
+.agent/stages/03-identity-master-data/sprint_contract.md:92:  - division-scope users can read only the target division and child units;
+.agent/stages/03-identity-master-data/sprint_contract.md-93-  - unit-scope users can read only the target unit;
+.agent/stages/03-identity-master-data/sprint_contract.md-94-  - scoped users see no create/edit/archive controls and backend mutation attempts are rejected.
+.agent/stages/03-identity-master-data/sprint_contract.md-95-- Employee invites:
+.agent/stages/03-identity-master-data/sprint_contract.md:96:  - active organization admin can create an organization-scope employee invite without completing any wizard and before any division/unit exists;
+.agent/stages/03-identity-master-data/sprint_contract.md:97:  - division-scope invite requires an existing visible active division target;
+.agent/stages/03-identity-master-data/sprint_contract.md-98-  - unit-scope invite requires an existing visible active unit target;
+.agent/stages/03-identity-master-data/sprint_contract.md-99-  - hidden, archived, missing, or out-of-scope target IDs are rejected truthfully;
+--
+.agent/stages/03-identity-master-data/sprint_contract.md-114-  - `cd apps/backend && env PATH=/Users/yura-posledov/cursor/vrk/.agent/tmp-tools/go/bin:$PATH go test ./...`;
+.agent/stages/03-identity-master-data/sprint_contract.md-115-  - `cd apps/backend && env PATH=/Users/yura-posledov/cursor/vrk/.agent/tmp-tools/go/bin:$PATH go build -buildvcs=false ./...`;
+.agent/stages/03-identity-master-data/sprint_contract.md:116:  - focused proof for first-admin accept to `/company`, org profile legal-form validation/legacy aliases, division without user-facing type, unit type validation, org/division/unit create/edit/archive, access rejection, and employee invite target validation.
+.agent/stages/03-identity-master-data/sprint_contract.md-117-- Web:
+.agent/stages/03-identity-master-data/sprint_contract.md-118-  - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run typecheck`;
+.agent/stages/03-identity-master-data/sprint_contract.md-119-  - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run lint`;
+.agent/stages/03-identity-master-data/sprint_contract.md-120-  - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run build`;
+.agent/stages/03-identity-master-data/sprint_contract.md:121:  - browser/runtime smoke for `/register/[token] -> /company`, `/company` legal-form options `ООО`/`АО`/`ПАО`, no division type selector, unit type selector, empty/partial/populated states, org-admin mutation controls, and scoped read-only views.
+.agent/stages/03-identity-master-data/sprint_contract.md-122-- UI review:
+.agent/stages/03-identity-master-data/sprint_contract.md-123-  - use `$vrk-web-ui-workflow` for implementation;
+--
+.agent/stages/03-identity-master-data/sprint_contract.md-139-  - `docs/design/storybook-component-backlog.md`
+.agent/stages/03-identity-master-data/sprint_contract.md-140-- Component lookup target:
+.agent/stages/03-identity-master-data/sprint_contract.md:141:  - `company organization structure management profile division unit invite scope empty partial populated form archive`
+.agent/stages/03-identity-master-data/sprint_contract.md-142-- Secondary lookup target for expected primitive reuse:
+.agent/stages/03-identity-master-data/sprint_contract.md-143-  - `input select textarea tabs inline alert card button invite organization form`
+--
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-179-    launch_wizard_source = (REPO_ROOT / "apps/web/features/Stage03Bootstrap/ui/LaunchWizardForm.tsx").read_text(encoding="utf-8")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-180-
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:181:    for option in ("ООО", "АО", "ПАО"):
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-182-        assert_true(option in workspace_source, f"/company profile legal-form option {option} is missing from source")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-183-    assert_true('{ label: "ОАО"' not in workspace_source and '{ label: "ЗАО"' not in workspace_source, "/company source must not expose legacy ОАО/ЗАО options")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:184:    assert_true("showType={false}" in workspace_source, "division form must hide type selector")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:185:    assert_true("type={division.type}" not in workspace_source, "division storage type must not be displayed")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:186:    for option in ("ВРД", "ВРЗ", "ВУ", "ВРП"):
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-187-        assert_true(option in workspace_source, f"unit type option {option} is missing from source")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:188:    assert_true("Тип подразделения" not in launch_wizard_source, "historical launch wizard must not expose division type selector")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-189-    assert_true("Производственный юнит" not in launch_wizard_source, "historical launch wizard must not use obsolete unit type default")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-190-
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-191-    return {
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:192:        "profileLegalForms": ["ООО", "АО", "ПАО"],
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:193:        "divisionTypeSelector": "hidden",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:194:        "unitTypes": ["ВРД", "ВРЗ", "ВУ", "ВРП"],
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-195-    }
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-196-
+--
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-229-    data = accepted["data"]
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-230-    assert_active_company_session(data)
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:231:    assert_true(data["divisions"] == [] and data["units"] == [], "fresh first-admin session should not require initial structure")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-232-    write_json(f"{label}-first-admin-accept", accepted)
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-233-    return AdminContext(organization_id=data["organization"]["id"], token=data["sessionToken"])
+--
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-285-
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-286-
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:287:def company_profile_payload(label: str, property_type: str = "ООО", *, legacy_type: str | None = None) -> dict[str, Any]:
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-288-    payload = {
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:289:        "propertyType": property_type,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-290-        "name": f"VRK {label} профиль {SEED}",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-291-        "shortName": f"{label}-{SEED}"[:24],
+--
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-300-    }
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-301-    if legacy_type is not None:
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:302:        payload.pop("propertyType")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-303-        payload["type"] = legacy_type
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-304-    return payload
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-305-
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-306-
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:307:def division_payload(label: str) -> dict[str, Any]:
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-308-    return {
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-309-        "name": f"{label} подразделение {SEED}",
+--
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-320-
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-321-
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:322:def unit_payload(label: str, division_id: str | None = None) -> dict[str, Any]:
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-323-    payload = {
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:324:        "type": "ВУ",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-325-        "name": f"{label} юнит {SEED}",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-326-        "code": f"{label[:3].upper()}-UNIT",
+--
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-334-        "comment": "Создано proof_slice010",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-335-    }
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:336:    if division_id:
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:337:        payload["divisionId"] = division_id
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-338-    return payload
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-339-
+--
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-386-        expected_status=200,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-387-        token=admin.token,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:388:        body=company_profile_payload("primary", "ООО"),
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-389-    )
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:390:    assert_true(profiled["data"]["organization"]["propertyType"] == "ООО", "organization profile did not preserve ООО legal form")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:391:    assert_true(profiled["data"]["organization"]["type"] == "ООО", "organization type alias did not mirror propertyType")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-392-    assert_true(profiled["data"]["organization"]["leaderFullName"] == "primary Руководитель", "profile leaderFullName was not preserved")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-393-    assert_true(profiled["data"]["organization"]["actingBasis"] == "Устав", "profile actingBasis was not preserved")
+--
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-407-        expected_status=200,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-408-        token=admin.token,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:409:        body=company_profile_payload("accepted-pao", "ПАО"),
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-410-    )
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-411-    legacy_oao, _ = expect_ok(
+--
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-431-        expected_status=200,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-432-        token=admin.token,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:433:        body=company_profile_payload("legacy-llc", legacy_type="LLC"),
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-434-    )
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:435:    assert_true(accepted_ao["data"]["organization"]["propertyType"] == "АО", "organization profile rejected АО")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:436:    assert_true(accepted_pao["data"]["organization"]["propertyType"] == "ПАО", "organization profile rejected ПАО")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:437:    assert_true(legacy_oao["data"]["organization"]["propertyType"] == "ПАО", "legacy ОАО did not normalize to ПАО")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:438:    assert_true(legacy_zao["data"]["organization"]["propertyType"] == "АО", "legacy ЗАО did not normalize to АО")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:439:    assert_true(legacy_llc["data"]["organization"]["propertyType"] == "ООО", "legacy LLC did not normalize to ООО")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-440-
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-441-    invalid_profile = expect_error(
+--
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-445-        expected_status=400,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-446-        token=admin.token,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:447:        body=company_profile_payload("invalid-profile", "ВРД"),
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-448-    )
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-449-
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:450:    first_division, _ = expect_ok(
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-451-        BACKEND_BASE,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-452-        "POST",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:453:        "/api/v1/company/divisions",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-454-        expected_status=201,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-455-        token=admin.token,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:456:        body=division_payload("first"),
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-457-    )
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:458:    first_division_id = first_division["data"]["divisions"][0]["id"]
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:459:    assert_true(first_division["data"]["divisions"][0]["type"] == "division", "division storage type should remain hidden internal default")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:460:    assert_true(first_division["data"]["divisions"][0]["leaderPosition"] == "Руководитель подразделения", "division business fields not preserved")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-461-
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-462-    first_unit, _ = expect_ok(
+--
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-466-        expected_status=201,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-467-        token=admin.token,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:468:        body=unit_payload("child", first_division_id),
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-469-    )
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-470-    child_unit = next(unit for unit in first_unit["data"]["units"] if unit["name"].startswith("child юнит"))
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:471:    assert_true(child_unit["divisionId"] == first_division_id, "child unit is not under division")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:472:    assert_true(child_unit["type"] == "ВУ", "unit operational type was not preserved")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-473-
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-474-    invalid_unit_payload = unit_payload("invalid-unit")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:475:    invalid_unit_payload["type"] = "ООО"
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-476-    invalid_unit = expect_error(
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-477-        BACKEND_BASE,
+--
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-493-    direct_unit_id = next(unit for unit in direct_unit["data"]["units"] if unit["name"].startswith("direct юнит"))["id"]
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-494-
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:495:    second_division, _ = expect_ok(
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-496-        BACKEND_BASE,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-497-        "POST",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:498:        "/api/v1/company/divisions",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-499-        expected_status=201,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-500-        token=admin.token,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:501:        body=division_payload("second"),
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-502-    )
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:503:    second_division_id = next(division for division in second_division["data"]["divisions"] if division["name"].startswith("second подразделение"))["id"]
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-504-
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-505-    second_unit, _ = expect_ok(
+--
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-509-        expected_status=201,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-510-        token=admin.token,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:511:        body=unit_payload("second", second_division_id),
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-512-    )
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:513:    assert_true(len(second_unit["data"]["divisions"]) == 2, "repeat division creation failed")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-514-    assert_true(len(second_unit["data"]["units"]) == 3, "repeat/direct unit creation failed")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-515-
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:516:    edited_division_payload = division_payload("first-edited")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:517:    edited_division_payload["comment"] = "Редактирование proof_slice010"
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:518:    edited_division, _ = expect_ok(
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-519-        BACKEND_BASE,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-520-        "PATCH",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:521:        f"/api/v1/company/divisions/{first_division_id}",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-522-        expected_status=200,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-523-        token=admin.token,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:524:        body=edited_division_payload,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-525-    )
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-526-    assert_true(
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:527:        next(division for division in edited_division["data"]["divisions"] if division["id"] == first_division_id)["comment"] == "Редактирование proof_slice010",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:528:        "division edit did not persist",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-529-    )
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-530-
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:531:    edited_unit_payload = unit_payload("child-edited", first_division_id)
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-532-    edited_unit, _ = expect_ok(
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-533-        BACKEND_BASE,
+--
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-561-    assert_true(all(unit["id"] != archive_unit_id for unit in archived_unit["data"]["units"]), "archived unit stayed visible")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-562-
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:563:    archive_division_source, _ = expect_ok(
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-564-        BACKEND_BASE,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-565-        "POST",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:566:        "/api/v1/company/divisions",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-567-        expected_status=201,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-568-        token=admin.token,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:569:        body=division_payload("archive-empty"),
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-570-    )
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:571:    archive_division_id = next(division for division in archive_division_source["data"]["divisions"] if division["name"].startswith("archive-empty подразделение"))["id"]
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:572:    archived_division, _ = expect_ok(
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-573-        BACKEND_BASE,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-574-        "POST",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:575:        f"/api/v1/company/divisions/{archive_division_id}/archive",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-576-        expected_status=200,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-577-        token=admin.token,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-578-    )
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:579:    assert_true(all(division["id"] != archive_division_id for division in archived_division["data"]["divisions"]), "archived division stayed visible")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-580-
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:581:    blocked_division = expect_error(
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-582-        BACKEND_BASE,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-583-        "POST",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:584:        f"/api/v1/company/divisions/{first_division_id}/archive",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-585-        token=admin.token,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-586-        expected_status=409,
+--
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-626-        },
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-627-    )
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:628:    archived_division_target = expect_error(
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-629-        BACKEND_BASE,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-630-        "POST",
+--
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-635-            "fullName": "Archived Division Target",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-636-            "email": f"archived-div-target-{SEED}@vrk.local",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:637:            "roleTemplate": "division_head",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:638:            "scopeType": "division",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:639:            "scopeId": archive_division_id,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-640-            "expiresAt": future_expiry(),
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-641-        },
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-642-    )
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-643-
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:644:    division_invite = create_employee_invite(admin, "division-reader", "division_head", "division", first_division_id)
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:645:    division_session = send_and_accept_employee(admin, division_invite["id"], "division-reader")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:646:    assert_true(division_session["workspace"]["scopeType"] == "division", "division user did not get division workspace")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:647:    assert_true(len(division_session["divisions"]) == 1, "division user should see only target division")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:648:    assert_true(all(unit.get("divisionId") == first_division_id for unit in division_session["units"]), "division user saw units outside subtree")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:649:    assert_true(division_session["workspace"]["canManageEmployeeInvites"] is False, "division user should not manage invites")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:650:    division_mutation = expect_error(
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-651-        BACKEND_BASE,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-652-        "POST",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-653-        "/api/v1/company/units",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-654-        expected_status=403,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:655:        token=division_session["sessionToken"],
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:656:        body=unit_payload("forbidden-division", first_division_id),
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-657-    )
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-658-
+--
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-661-    assert_true(unit_session["workspace"]["scopeType"] == "unit", "unit user did not get unit workspace")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-662-    assert_true(len(unit_session["units"]) == 1 and unit_session["units"][0]["id"] == child_unit["id"], "unit user should see only target unit")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:663:    assert_true(unit_session["divisions"] == [], "unit user should not see parent/broader division graph")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-664-    unit_mutation = expect_error(
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-665-        BACKEND_BASE,
+--
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-673-    summary = {
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-674-        "organizationId": admin.organization_id,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:675:        "firstDivisionId": first_division_id,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-676-        "childUnitId": child_unit["id"],
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-677-        "directUnitId": direct_unit_id,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:678:        "secondDivisionId": second_division_id,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-679-        "archivedUnitId": archive_unit_id,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:680:        "archivedDivisionId": archive_division_id,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-681-        "blockingInviteId": blocking_invite["id"],
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:682:        "blockedDivisionArchive": blocked_division,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-683-        "blockedUnitArchive": blocked_unit,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-684-        "missingTargetInvite": missing_target,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-685-        "archivedUnitInvite": archived_unit_target,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:686:        "archivedDivisionInvite": archived_division_target,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-687-        "legalFormProof": {
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:688:            "accepted": ["ООО", "АО", "ПАО"],
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-689-            "legacyAliases": {
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:690:                "ОАО": legacy_oao["data"]["organization"]["propertyType"],
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:691:                "ЗАО": legacy_zao["data"]["organization"]["propertyType"],
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:692:                "LLC": legacy_llc["data"]["organization"]["propertyType"],
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-693-            },
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-694-            "invalidOperationalTypeError": invalid_profile,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-695-        },
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-696-        "invalidUnitType": invalid_unit,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:697:        "divisionScopedSession": {
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:698:            "workspace": division_session["workspace"],
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:699:            "divisionCount": len(division_session["divisions"]),
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:700:            "unitCount": len(division_session["units"]),
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:701:            "mutationError": division_mutation,
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-702-        },
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-703-        "unitScopedSession": {
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-704-            "workspace": unit_session["workspace"],
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:705:            "divisionCount": len(unit_session["divisions"]),
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-706-            "unitCount": len(unit_session["units"]),
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-707-            "mutationError": unit_mutation,
+--
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-717-    assert_true(invite["scopeType"] == "organization", "org-scope invite before structure did not preserve organization scope")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-718-    current, _ = expect_ok(BACKEND_BASE, "GET", "/api/v1/sessions/current", expected_status=200, token=admin.token)
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:719:    assert_true(current["data"]["divisions"] == [] and current["data"]["units"] == [], "empty org should still have no structure")
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-720-    summary = {"organizationId": admin.organization_id, "invite": invite, "currentStructure": current["data"]}
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-721-    write_json("empty-org-invite-proof", summary)
+--
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-747-                f"slice-010 proof PASS seed={SEED}",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-748-                "first-admin web acceptance issued active session and /company landing",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:749:                "organization profile legal-form contract accepted ООО/АО/ПАО and normalized legacy aliases",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:750:                "division create/update omitted user-facing type while unit type remained required",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:751:                "persistent /company APIs created/edited/archived divisions and units",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-752-                "archive blockers and hidden archived invite-target validation returned expected errors",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:753:                "division/unit scoped users saw read-only subtree projections and backend mutations returned 403",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py:754:                "org-scope employee invite worked before any division or unit existed",
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-755-            ]
+.agent/stages/03-identity-master-data/proof_slice010_org_structure.py-756-        )
+--
+.agent/stages/03-identity-master-data/evidence.md-8-This bundle records builder-collected proof, the minimal fixer doc-sync, and the historical post-fixer fresh verifier `PASS` for the 2026-04-29 Stage 03 correction that moves the product target from the historical launch wizard to persistent `/company` organization profile and structure management.
+.agent/stages/03-identity-master-data/evidence.md-9-
+.agent/stages/03-identity-master-data/evidence.md:10:Newton later failed the legal-type correction only for documentation drift, and that doc-only gap was fixed. The latest user clarification confirms `division` is the intended API/domain term replacing `subdivision`; the current state is ready for a new fresh verifier after proof/docs/stage artifacts were realigned to `division` without reverting production code.
+.agent/stages/03-identity-master-data/evidence.md-11-
+.agent/stages/03-identity-master-data/evidence.md-12-## Commands Run
+.agent/stages/03-identity-master-data/evidence.md-13-
+.agent/stages/03-identity-master-data/evidence.md-14-- Division terminology correction after user clarification:
+.agent/stages/03-identity-master-data/evidence.md:15:  - Realigned `proof_slice010_org_structure.py`, canonical docs, and stage artifacts to the implemented `/company/divisions`, `divisionId`, scope `division`, and role templates `division_head` / `division_operator`.
+.agent/stages/03-identity-master-data/evidence.md:16:  - Kept Russian UI wording `подразделение/филиал` where it is user-facing copy, but removed stale API/contract references to `subdivision`.
+.agent/stages/03-identity-master-data/evidence.md-17-  - Reopened `stage03-org-hierarchy-and-launch-wizard` and `stage03-slice010-company-org-structure-correction` in `feature_list.json` (`passes: false`) until a fresh verifier returns `PASS`.
+.agent/stages/03-identity-master-data/evidence.md-18-  - `python3 -m py_compile .agent/stages/03-identity-master-data/proof_slice010_org_structure.py`
+.agent/stages/03-identity-master-data/evidence.md-19-  - `VRK_API_BASE_URL=http://127.0.0.1:18180 VRK_WEB_BASE_URL=http://127.0.0.1:3110 VRK_STAGE03_SLICE010_SEED=20260429042 python3 .agent/stages/03-identity-master-data/proof_slice010_org_structure.py`
+.agent/stages/03-identity-master-data/evidence.md-20-  - `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data`
+.agent/stages/03-identity-master-data/evidence.md:21:  - focused stale `subdivision` terminology audit over current docs/stage/proof artifacts
+.agent/stages/03-identity-master-data/evidence.md:22:  - focused division contract audit over docs, proof, backend role/service code, web API types, and Swagger
+.agent/stages/03-identity-master-data/evidence.md-23-  - `jq empty .agent/stages/03-identity-master-data/evidence.json .agent/stages/03-identity-master-data/feature_list.json .agent/stages/03-identity-master-data/verdict.json`
+.agent/stages/03-identity-master-data/evidence.md:24:  - Status: `PASS` for compile, targeted proof on the division-aligned check stack, harness, stale-term audit, contract audit, and JSON validation.
+.agent/stages/03-identity-master-data/evidence.md-25-  - Raw:
+.agent/stages/03-identity-master-data/evidence.md:26:    - `.agent/stages/03-identity-master-data/raw/slice-010-division-proof-py-compile-2026-04-29.txt`
+.agent/stages/03-identity-master-data/evidence.md:27:    - `.agent/stages/03-identity-master-data/raw/slice-010-division-proof-run-check-stack-2026-04-29.txt`
+.agent/stages/03-identity-master-data/evidence.md:28:    - `.agent/stages/03-identity-master-data/raw/slice-010-division-harness-2026-04-29.txt`
+.agent/stages/03-identity-master-data/evidence.md:29:    - `.agent/stages/03-identity-master-data/raw/slice-010-division-terminology-audit-2026-04-29.txt`
+.agent/stages/03-identity-master-data/evidence.md:30:    - `.agent/stages/03-identity-master-data/raw/slice-010-division-contract-audit-2026-04-29.txt`
+.agent/stages/03-identity-master-data/evidence.md:31:    - `.agent/stages/03-identity-master-data/raw/slice-010-division-json-audit-2026-04-29.txt`
+.agent/stages/03-identity-master-data/evidence.md-32-
+.agent/stages/03-identity-master-data/evidence.md-33-- Newton doc-drift fixer:
+.agent/stages/03-identity-master-data/evidence.md:34:  - Updated `docs/roadmap.md` and `docs/design/customer-admin-bootstrap-flow.md` so their legacy legal-form compatibility sentences include `LLC -> ООО`.
+.agent/stages/03-identity-master-data/evidence.md:35:  - Updated `docs/design/diagrams/customer-admin-bootstrap-flow.drawio` so the visible legal-form examples are `ООО, АО, ПАО`.
+.agent/stages/03-identity-master-data/evidence.md:36:  - `rg -n "LLC -> ООО" docs/roadmap.md docs/design/customer-admin-bootstrap-flow.md`
+.agent/stages/03-identity-master-data/evidence.md:37:  - `rg -n "Организационно-правовая.*ООО, АО, ПАО" docs/design/diagrams/customer-admin-bootstrap-flow.drawio`
+.agent/stages/03-identity-master-data/evidence.md:38:  - drawio stale option/alias absence audit for `АО, ЗАО, ООО, ИП`, `ОАО`, and `ЗАО`
+.agent/stages/03-identity-master-data/evidence.md-39-  - `xmllint --noout docs/design/diagrams/customer-admin-bootstrap-flow.drawio`
+.agent/stages/03-identity-master-data/evidence.md-40-  - `jq empty .agent/stages/03-identity-master-data/evidence.json`
+--
+.agent/stages/03-identity-master-data/evidence.md-43-
+.agent/stages/03-identity-master-data/evidence.md-44-- Legal-type correction builder rerun:
+.agent/stages/03-identity-master-data/evidence.md:45:  - Corrected the stale field contract so organization `Тип` / `propertyType` is legal form `ООО` / `АО` / `ПАО`, division/branch has no selectable type, and unit type remains `ВРД` / `ВРЗ` / `ВУ` / `ВРП`.
+.agent/stages/03-identity-master-data/evidence.md-46-  - `python3 -m py_compile .agent/stages/03-identity-master-data/proof_slice010_org_structure.py`
+.agent/stages/03-identity-master-data/evidence.md-47-  - `docker run --rm -v /Users/yura-posledov/cursor/vrk/apps/backend:/src -w /src sqlc/sqlc:1.30.0 generate -f sqlc.yaml`
+--
+.agent/stages/03-identity-master-data/evidence.md-73-- Post-Newton doc-only fixer:
+.agent/stages/03-identity-master-data/evidence.md-74-  - Newton's fresh verifier reproduced the runtime/code proof but returned `FAIL` for documentation drift.
+.agent/stages/03-identity-master-data/evidence.md:75:  - The doc-only fixer added explicit `LLC -> ООО` alongside `ОАО -> ПАО` and `ЗАО -> АО` in the roadmap and customer-admin bootstrap flow docs, and updated the Draw.io source to show visible legal-form options `ООО, АО, ПАО`.
+.agent/stages/03-identity-master-data/evidence.md:76:  - Follow-up parent cleanup restored `division` terminology in `docs/roadmap.md` and kept all three alias mappings explicit.
+.agent/stages/03-identity-master-data/evidence.md-77-  - Status: `READY_FOR_POST_FIXER_FRESH_VERIFIER`.
+.agent/stages/03-identity-master-data/evidence.md-78-  - Raw:
+--
+.agent/stages/03-identity-master-data/evidence.md-88-  - `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data`
+.agent/stages/03-identity-master-data/evidence.md-89-  - Status: `PASS` on 2026-04-29T02:34:55Z
+.agent/stages/03-identity-master-data/evidence.md:90:  - `rg -n "ВРД|ВРЗ|ВУ|ВРП|registeredAddress|address|leaderFullName|managerName|leaderPosition|contractPhone|contractEmail|actingBasis|active.*select|Archived|archive|alias|compatibility" docs/architecture/identity-master-data.md .agent/stages/03-identity-master-data/sprint_contract.md .agent/stages/03-identity-master-data/problems.md`
+.agent/stages/03-identity-master-data/evidence.md-91-  - Status: `PASS`; canonical hits are now present in `docs/architecture/identity-master-data.md`.
+.agent/stages/03-identity-master-data/evidence.md-92-  - Raw: `.agent/stages/03-identity-master-data/raw/slice-010-fixer-doc-sync-2026-04-29.txt`
+--
+.agent/stages/03-identity-master-data/evidence.md-176-  - `/company/setup` is non-canonical and redirects to `/company`.
+.agent/stages/03-identity-master-data/evidence.md-177-- Persistent organization profile:
+.agent/stages/03-identity-master-data/evidence.md:178:  - `PATCH /api/v1/company/profile` preserves organization legal form through `propertyType` and `type` compatibility alias plus `name`, `registeredAddress`, `leaderFullName`, `leaderPosition`, `contractPhone`, `contractEmail`, and `actingBasis`;
+.agent/stages/03-identity-master-data/evidence.md:179:  - accepted visible legal forms are `ООО`, `АО`, `ПАО`;
+.agent/stages/03-identity-master-data/evidence.md:180:  - legacy inputs normalize as `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО`;
+.agent/stages/03-identity-master-data/evidence.md:181:  - operational values such as `ВРД` are rejected for organization legal form.
+.agent/stages/03-identity-master-data/evidence.md-182-- Canonical field contract:
+.agent/stages/03-identity-master-data/evidence.md:183:  - `docs/architecture/identity-master-data.md` now records differentiated type semantics: organization `propertyType`/`type` alias is ОПФ `ООО`/`АО`/`ПАО`, division/branch has no selectable type and uses hidden storage default `division`, and unit `type` is `ВРД`/`ВРЗ`/`ВУ`/`ВРП`;
+.agent/stages/03-identity-master-data/evidence.md-184-  - the same doc records `registeredAddress`/`address` and `leaderFullName`/`managerName` alias semantics, remaining business fields, preserved `code`/`region`/`status`/`comment`, and active-only archive/selection constraints for `/company`.
+.agent/stages/03-identity-master-data/evidence.md:185:- Persistent division/unit management:
+.agent/stages/03-identity-master-data/evidence.md:186:  - first division create works without a user-facing `type` payload;
+.agent/stages/03-identity-master-data/evidence.md:187:  - division rows no longer show hidden storage type in the `/company` UI;
+.agent/stages/03-identity-master-data/evidence.md:188:  - unit under division create works;
+.agent/stages/03-identity-master-data/evidence.md-189-  - direct organization unit create works;
+.agent/stages/03-identity-master-data/evidence.md:190:  - unit create rejects invalid legal-form values such as `ООО` and preserves valid operational values such as `ВУ`;
+.agent/stages/03-identity-master-data/evidence.md:191:  - later division and unit create works through the same endpoints;
+.agent/stages/03-identity-master-data/evidence.md:192:  - division and unit edit persist fields;
+.agent/stages/03-identity-master-data/evidence.md:193:  - empty division/unit archive succeeds and archived nodes disappear from active session selectors/projections.
+.agent/stages/03-identity-master-data/evidence.md-194-- Archive blockers and invite target validation:
+.agent/stages/03-identity-master-data/evidence.md:195:  - division with active child unit returns `409 archive blocked by active references`;
+.agent/stages/03-identity-master-data/evidence.md-196-  - unit with active scoped invite returns `409 archive blocked by active references`;
+.agent/stages/03-identity-master-data/evidence.md:197:  - missing, hidden, or archived division/unit invite targets return `400 invite scope target is invalid`.
+.agent/stages/03-identity-master-data/evidence.md-198-- Scoped read-only projections:
+.agent/stages/03-identity-master-data/evidence.md:199:  - division-scoped accepted employee sees only target division and child units;
+.agent/stages/03-identity-master-data/evidence.md:200:  - unit-scoped accepted employee sees only target unit and no broader division graph;
+.agent/stages/03-identity-master-data/evidence.md:201:  - backend mutation attempts from division/unit sessions return `403 forbidden`;
+.agent/stages/03-identity-master-data/evidence.md-202-  - scoped users have `workspace.canManageEmployeeInvites: false`.
+.agent/stages/03-identity-master-data/evidence.md-203-- Employee invites:
+.agent/stages/03-identity-master-data/evidence.md:204:  - organization-scope employee invite works immediately after first-admin acceptance in an organization with no divisions or units.
+.agent/stages/03-identity-master-data/evidence.md-205-
+.agent/stages/03-identity-master-data/evidence.md-206-## UI Workflow Evidence
+--
+.agent/stages/03-identity-master-data/evidence.md-249-Fixer doc-sync update: `docs/architecture/identity-master-data.md` section `1.2.1` now records the concrete `/company` business-field alias/type contract required by `sprint_contract.md`. No production code or generated OpenAPI was changed in the fixer pass.
+.agent/stages/03-identity-master-data/evidence.md-250-
+.agent/stages/03-identity-master-data/evidence.md:251:Newton doc-drift fixer update: `docs/roadmap.md`, `docs/design/customer-admin-bootstrap-flow.md`, and `docs/design/diagrams/customer-admin-bootstrap-flow.drawio` now align with the `LLC -> ООО` compatibility mapping and the visible selector set `ООО`, `АО`, `ПАО`.
+.agent/stages/03-identity-master-data/evidence.md-252-
+.agent/stages/03-identity-master-data/evidence.md-253-## Stage Artifact State
+--
+.agent/stages/03-identity-master-data/stage_spec.md-6-## Objective
+.agent/stages/03-identity-master-data/stage_spec.md-7-
+.agent/stages/03-identity-master-data/stage_spec.md:8:Активировать поверх Stage 02 runtime shell реальный контур identity, access и master data: first-admin invite activation, постоянный `organization -> division -> unit` management UI, сотрудники и приглашения, scoped access, договоры, оборудование, средства измерения и эталоны.
+.agent/stages/03-identity-master-data/stage_spec.md-9-
+.agent/stages/03-identity-master-data/stage_spec.md-10-## In scope
+--
+.agent/stages/03-identity-master-data/stage_spec.md-17-  - role-aware access
+.agent/stages/03-identity-master-data/stage_spec.md-18-- organization profile с разделением на launch-critical и optional requisites;
+.agent/stages/03-identity-master-data/stage_spec.md:19:- division registry для подразделений/филиалов без user-facing selector-а типа;
+.agent/stages/03-identity-master-data/stage_spec.md-20-- unit registry как primary operational scope, в том числе сценарий без промежуточного подразделения;
+.agent/stages/03-identity-master-data/stage_spec.md-21-- user accounts, organization memberships и scoped grants как отдельные сущности;
+--
+.agent/stages/03-identity-master-data/stage_spec.md-60-- first-admin invite acceptance should land on `/company`;
+.agent/stages/03-identity-master-data/stage_spec.md-61-- `/company` must support empty, partial, and populated organization states;
+.agent/stages/03-identity-master-data/stage_spec.md:62:- organization-scope admins must be able to create first and later divisions/branches and units from the same persistent management surface;
+.agent/stages/03-identity-master-data/stage_spec.md:63:- division/unit scoped users remain read-only within their visible subtree;
+.agent/stages/03-identity-master-data/stage_spec.md:64:- employee invite creation must not depend on a completed wizard, but division/unit-scoped invites still require an existing visible active target scope.
+.agent/stages/03-identity-master-data/stage_spec.md-65-
+.agent/stages/03-identity-master-data/stage_spec.md-66-Treat this as a bounded follow-up Stage 03 correction before claiming product-complete org-structure management.
+--
+.agent/stages/03-identity-master-data/stage_spec.md-121-  - создание первого и последующих подразделений/филиалов;
+.agent/stages/03-identity-master-data/stage_spec.md-122-  - создание первого и последующих юнитов, включая direct `organization -> unit`;
+.agent/stages/03-identity-master-data/stage_spec.md:123:  - редактирование business fields: organization `propertyType`/`type` alias as legal-form selector `ООО` / `АО` / `ПАО` with legacy `ОАО -> ПАО`, `ЗАО -> АО`, `LLC -> ООО`; division/branch has no selectable type and stores hidden internal default only for compatibility; unit keeps operational type selector `ВРД` / `ВРЗ` / `ВУ` / `ВРП`; name, registeredAddress/address alias, leaderFullName with managerName migration/display compatibility, leaderPosition, contractPhone, contractEmail, actingBasis, plus code/region/status/comment where those fields still exist in the model;
+.agent/stages/03-identity-master-data/stage_spec.md-124-  - архивирование подразделений/юнитов вместо удаления;
+.agent/stages/03-identity-master-data/stage_spec.md:125:  - приглашение сотрудников с проверкой существующего target scope для division/unit invites;
+.agent/stages/03-identity-master-data/stage_spec.md-126-  - entry points к добавлению оборудования после появления юнита;
+.agent/stages/03-identity-master-data/stage_spec.md:127:- org/division/unit модель поддерживает иерархию с optional division;
+.agent/stages/03-identity-master-data/stage_spec.md-128-- user account, membership и scoped grant разделены и доказаны сценариями доступа;
+.agent/stages/03-identity-master-data/stage_spec.md:129:- organization-scope права наследуются вниз, division-scope права наследуются на дочерние unit, deny-layer отсутствует;
+.agent/stages/03-identity-master-data/stage_spec.md-130-- invitation statuses `draft`, `sent`, `opened`, `accepted`, `expired`, `revoked` видимы и воспроизводимы;
+.agent/stages/03-identity-master-data/stage_spec.md-131-- login/session restore возвращает contour, привязанный к explicit active membership/grant: customer contour на `/company`, active contractor contour на `/contracts`;
+--
+.agent/stages/03-identity-master-data/stage_spec.md-166-- verify each slice independently before moving to the next one;
+.agent/stages/03-identity-master-data/stage_spec.md-167-- прогнать first-admin activation end-to-end;
+.agent/stages/03-identity-master-data/stage_spec.md:168:- доказать first and repeat org/division/unit management через постоянный `/company` UI и scoped singular-session landing без multi-workspace picker;
+.agent/stages/03-identity-master-data/stage_spec.md:169:- доказать invitation lifecycle и scoped access inheritance сценариями organization / division / unit;
+.agent/stages/03-identity-master-data/stage_spec.md-170-- доказать truthful `409` при direct login, если у аккаунта несколько eligible access paths;
+.agent/stages/03-identity-master-data/stage_spec.md-171-- доказать contracts registry и contractor restriction baseline;
+--
+.agent/stages/03-identity-master-data/evidence.json-20-    "python3 -m py_compile .agent/stages/03-identity-master-data/proof_slice010_org_structure.py",
+.agent/stages/03-identity-master-data/evidence.json-21-    "python3 .agent/stages/03-identity-master-data/proof_slice010_org_structure.py",
+.agent/stages/03-identity-master-data/evidence.json:22:    "rg -n 'ВРД|ВРЗ|ВУ|ВРП|registeredAddress|address|leaderFullName|managerName|leaderPosition|contractPhone|contractEmail|actingBasis|active.*select|Archived|archive|alias|compatibility' docs/architecture/identity-master-data.md .agent/stages/03-identity-master-data/sprint_contract.md .agent/stages/03-identity-master-data/problems.md",
+.agent/stages/03-identity-master-data/evidence.json-23-    "VRK_STAGE03_SLICE010_SEED=1777430591 python3 .agent/stages/03-identity-master-data/proof_slice010_org_structure.py",
+.agent/stages/03-identity-master-data/evidence.json-24-    "docker run --rm -v /Users/yura-posledov/cursor/vrk/apps/backend:/src -w /src -e GOCACHE=/tmp/go-cache -e GOMODCACHE=/tmp/go-mod-cache golang:1.26.1 sh -c go-install-swag-and-generate",
+.agent/stages/03-identity-master-data/evidence.json-25-    "VRK_STAGE03_SLICE010_SEED=1777434591 python3 .agent/stages/03-identity-master-data/proof_slice010_org_structure.py",
+.agent/stages/03-identity-master-data/evidence.json-26-    "rg legal type contract audit across canonical docs and stage artifacts",
+.agent/stages/03-identity-master-data/evidence.json:27:    "rg -n \"LLC -> ООО\" docs/roadmap.md docs/design/customer-admin-bootstrap-flow.md",
+.agent/stages/03-identity-master-data/evidence.json:28:    "rg -n \"Организационно-правовая.*ООО, АО, ПАО\" docs/design/diagrams/customer-admin-bootstrap-flow.drawio",
+.agent/stages/03-identity-master-data/evidence.json-29-    "drawio stale option/alias absence audit",
+.agent/stages/03-identity-master-data/evidence.json-30-    "xmllint --noout docs/design/diagrams/customer-admin-bootstrap-flow.drawio",
+--
+.agent/stages/03-identity-master-data/evidence.json-34-    "VRK_API_BASE_URL=http://127.0.0.1:18180 VRK_WEB_BASE_URL=http://127.0.0.1:3110 VRK_STAGE03_SLICE010_SEED=20260429042 python3 .agent/stages/03-identity-master-data/proof_slice010_org_structure.py",
+.agent/stages/03-identity-master-data/evidence.json-35-    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data",
+.agent/stages/03-identity-master-data/evidence.json:36:    "focused stale subdivision terminology audit over current docs/stage/proof artifacts",
+.agent/stages/03-identity-master-data/evidence.json:37:    "focused division contract audit over docs, proof, backend role/service code, web API types, and Swagger",
+.agent/stages/03-identity-master-data/evidence.json-38-    "jq empty .agent/stages/03-identity-master-data/evidence.json .agent/stages/03-identity-master-data/feature_list.json .agent/stages/03-identity-master-data/verdict.json"
+.agent/stages/03-identity-master-data/evidence.json-39-  ],
+--
+.agent/stages/03-identity-master-data/evidence.json-78-    "Newton doc-drift fixer evidence.json jq validation: PASS",
+.agent/stages/03-identity-master-data/evidence.json-79-    "post-Newton doc cleanup audit: PASS",
+.agent/stages/03-identity-master-data/evidence.json:80:    "division terminology correction proof_slice010_org_structure.py py_compile: PASS",
+.agent/stages/03-identity-master-data/evidence.json:81:    "division terminology correction targeted runtime proof: PASS with seed 20260429042 on division-aligned check stack 18180/3110",
+.agent/stages/03-identity-master-data/evidence.json:82:    "division terminology correction harness: PASS",
+.agent/stages/03-identity-master-data/evidence.json:83:    "division terminology stale subdivision audit: PASS",
+.agent/stages/03-identity-master-data/evidence.json:84:    "division terminology contract audit: PASS",
+.agent/stages/03-identity-master-data/evidence.json:85:    "division terminology JSON audit: PASS",
+.agent/stages/03-identity-master-data/evidence.json-86-    "current fresh verifier: REQUIRED before feature_list passes can be flipped back to true"
+.agent/stages/03-identity-master-data/evidence.json-87-  ],
+--
+.agent/stages/03-identity-master-data/evidence.json-144-    "apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx",
+.agent/stages/03-identity-master-data/evidence.json-145-    "apps/web/app/api/company/profile/route.ts",
+.agent/stages/03-identity-master-data/evidence.json:146:    "apps/web/app/api/company/divisions/route.ts",
+.agent/stages/03-identity-master-data/evidence.json:147:    "apps/web/app/api/company/divisions/[divisionId]/route.ts",
+.agent/stages/03-identity-master-data/evidence.json:148:    "apps/web/app/api/company/divisions/[divisionId]/archive/route.ts",
+.agent/stages/03-identity-master-data/evidence.json-149-    "apps/web/app/api/company/units/route.ts",
+.agent/stages/03-identity-master-data/evidence.json-150-    "apps/web/app/api/company/units/[unitId]/route.ts",
+--
+.agent/stages/03-identity-master-data/evidence.json-182-    ".agent/stages/03-identity-master-data/raw/slice-010-legal-type-parent-doc-cleanup-2026-04-29.txt",
+.agent/stages/03-identity-master-data/evidence.json-183-    ".agent/stages/03-identity-master-data/raw/slice-010-legal-type-harness-after-doc-fix-2026-04-29.txt",
+.agent/stages/03-identity-master-data/evidence.json:184:    ".agent/stages/03-identity-master-data/raw/slice-010-division-proof-py-compile-2026-04-29.txt",
+.agent/stages/03-identity-master-data/evidence.json:185:    ".agent/stages/03-identity-master-data/raw/slice-010-division-proof-run-check-stack-2026-04-29.txt",
+.agent/stages/03-identity-master-data/evidence.json:186:    ".agent/stages/03-identity-master-data/raw/slice-010-division-harness-2026-04-29.txt",
+.agent/stages/03-identity-master-data/evidence.json:187:    ".agent/stages/03-identity-master-data/raw/slice-010-division-terminology-audit-2026-04-29.txt",
+.agent/stages/03-identity-master-data/evidence.json:188:    ".agent/stages/03-identity-master-data/raw/slice-010-division-contract-audit-2026-04-29.txt",
+.agent/stages/03-identity-master-data/evidence.json:189:    ".agent/stages/03-identity-master-data/raw/slice-010-division-json-audit-2026-04-29.txt"
+.agent/stages/03-identity-master-data/evidence.json-190-  ],
+.agent/stages/03-identity-master-data/evidence.json-191-  "docs_synced": [
+--
+.agent/stages/03-identity-master-data/evidence.json-204-    "canonical_doc": "docs/architecture/identity-master-data.md",
+.agent/stages/03-identity-master-data/evidence.json-205-    "section": "1.2.1 /company business-field contract",
+.agent/stages/03-identity-master-data/evidence.json:206:    "summary": "Canonical docs now record differentiated type semantics: organization propertyType/type alias is ОПФ ООО/АО/ПАО with legacy alias normalization, division has no selectable type and keeps hidden storage default, unit type remains ВРД/ВРЗ/ВУ/ВРП, with address/leader aliases and archive constraints preserved.",
+.agent/stages/03-identity-master-data/evidence.json-207-    "artifact": ".agent/stages/03-identity-master-data/raw/slice-010-fixer-doc-sync-2026-04-29.txt",
+.agent/stages/03-identity-master-data/evidence.json-208-    "verified_by": [
+--
+.agent/stages/03-identity-master-data/evidence.json-213-  "ui_lookup": {
+.agent/stages/03-identity-master-data/evidence.json-214-    "queries": [
+.agent/stages/03-identity-master-data/evidence.json:215:      "slice-010 organization profile structure management company divisions units archive employee invite controls",
+.agent/stages/03-identity-master-data/evidence.json-216-      "Button Card InputField SelectField TextareaField InlineAlert Tabs company structure management"
+.agent/stages/03-identity-master-data/evidence.json-217-    ],
+--
+.agent/stages/03-identity-master-data/evidence.json-258-      "first-admin web acceptance issues active session and lands on /company",
+.agent/stages/03-identity-master-data/evidence.json-259-      "/company/setup redirects to /company",
+.agent/stages/03-identity-master-data/evidence.json:260:      "organization profile PATCH preserves legal-form propertyType/type alias",
+.agent/stages/03-identity-master-data/evidence.json:261:      "organization legal forms accepted: ООО, АО, ПАО",
+.agent/stages/03-identity-master-data/evidence.json:262:      "legacy legal form aliases normalize: ОАО -> ПАО, ЗАО -> АО, LLC -> ООО",
+.agent/stages/03-identity-master-data/evidence.json:263:      "organization profile rejects operational unit type values such as ВРД",
+.agent/stages/03-identity-master-data/evidence.json:264:      "division create/edit works without user-facing type and stores hidden internal default",
+.agent/stages/03-identity-master-data/evidence.json:265:      "unit create/update still requires bounded operational type ВРД/ВРЗ/ВУ/ВРП",
+.agent/stages/03-identity-master-data/evidence.json-266-      "canonical docs record the corrected field contract",
+.agent/stages/03-identity-master-data/evidence.json:267:      "first and repeat division/unit create/edit works, including direct organization unit and child unit",
+.agent/stages/03-identity-master-data/evidence.json-268-      "archive succeeds for empty nodes and hides them from active projections",
+.agent/stages/03-identity-master-data/evidence.json-269-      "archive blockers return 409 for active references",
+.agent/stages/03-identity-master-data/evidence.json:270:      "division/unit invite target validation rejects missing and archived scopes",
+.agent/stages/03-identity-master-data/evidence.json:271:      "division and unit scoped users see only their subtree and backend mutations return 403",
+.agent/stages/03-identity-master-data/evidence.json:272:      "organization-scope employee invite works before any division/unit exists"
+.agent/stages/03-identity-master-data/evidence.json-273-    ]
+.agent/stages/03-identity-master-data/evidence.json-274-  },
+--
+.agent/stages/03-identity-master-data/evidence.json-295-  ],
+.agent/stages/03-identity-master-data/evidence.json-296-  "notes": [
+.agent/stages/03-identity-master-data/evidence.json:297:    "verdict.json and problems.md are verifier-owned; a new fresh verifier must replace the stale Newton FAIL after the division terminology correction.",
+.agent/stages/03-identity-master-data/evidence.json:298:    "feature_list.json was reopened for the affected org-structure entries after the user confirmed division is the target term; do not flip them back to true before a fresh verifier PASS.",
+.agent/stages/03-identity-master-data/evidence.json:299:    "The latest parent correction changed proof/docs/stage artifacts only and supports the existing production-code rename to division."
+.agent/stages/03-identity-master-data/evidence.json-300-  ],
+.agent/stages/03-identity-master-data/evidence.json-301-  "legal_type_correction": {
+--
+.agent/stages/03-identity-master-data/evidence.json-303-    "corrected_contract": {
+.agent/stages/03-identity-master-data/evidence.json-304-      "organizationPropertyType": [
+.agent/stages/03-identity-master-data/evidence.json:305:        "ООО",
+.agent/stages/03-identity-master-data/evidence.json-306-        "АО",
+.agent/stages/03-identity-master-data/evidence.json:307:        "ПАО"
+.agent/stages/03-identity-master-data/evidence.json-308-      ],
+.agent/stages/03-identity-master-data/evidence.json-309-      "legacyAliases": {
+.agent/stages/03-identity-master-data/evidence.json:310:        "ОАО": "ПАО",
+.agent/stages/03-identity-master-data/evidence.json-311-        "ЗАО": "АО",
+.agent/stages/03-identity-master-data/evidence.json:312:        "LLC": "ООО"
+.agent/stages/03-identity-master-data/evidence.json-313-      },
+.agent/stages/03-identity-master-data/evidence.json:314:      "divisionType": "hidden internal default division; no user-facing selector",
+.agent/stages/03-identity-master-data/evidence.json-315-      "unitType": [
+.agent/stages/03-identity-master-data/evidence.json:316:        "ВРД",
+.agent/stages/03-identity-master-data/evidence.json:317:        "ВРЗ",
+.agent/stages/03-identity-master-data/evidence.json:318:        "ВУ",
+.agent/stages/03-identity-master-data/evidence.json:319:        "ВРП"
+.agent/stages/03-identity-master-data/evidence.json-320-      ]
+.agent/stages/03-identity-master-data/evidence.json-321-    },
+--
+.agent/stages/03-identity-master-data/evidence.json-337-    ],
+.agent/stages/03-identity-master-data/evidence.json-338-    "changes": [
+.agent/stages/03-identity-master-data/evidence.json:339:      "roadmap legacy legal-form compatibility sentence includes LLC -> ООО",
+.agent/stages/03-identity-master-data/evidence.json:340:      "customer-admin bootstrap flow legacy legal-form compatibility sentence includes LLC -> ООО",
+.agent/stages/03-identity-master-data/evidence.json:341:      "drawio legal-form examples show visible options ООО, АО, ПАО and do not expose legacy aliases as visible options"
+.agent/stages/03-identity-master-data/evidence.json-342-    ],
+.agent/stages/03-identity-master-data/evidence.json-343-    "checks": [
+.agent/stages/03-identity-master-data/evidence.json:344:      "rg LLC -> ООО audit: PASS",
+.agent/stages/03-identity-master-data/evidence.json-345-      "drawio visible option audit: PASS",
+.agent/stages/03-identity-master-data/evidence.json-346-      "drawio stale option/alias absence audit: PASS",
+--
+.agent/stages/03-identity-master-data/evidence.json-356-    ]
+.agent/stages/03-identity-master-data/evidence.json-357-  },
+.agent/stages/03-identity-master-data/evidence.json:358:  "division_terminology_correction": {
+.agent/stages/03-identity-master-data/evidence.json-359-    "status": "READY_FOR_FRESH_VERIFIER",
+.agent/stages/03-identity-master-data/evidence.json-360-    "fixed_at": "2026-04-29T04:27:30Z",
+.agent/stages/03-identity-master-data/evidence.json:361:    "scope": "proof-doc-stage-artifact alignment to the implemented division API/domain rename",
+.agent/stages/03-identity-master-data/evidence.json-362-    "contract": {
+.agent/stages/03-identity-master-data/evidence.json-363-      "apiPaths": [
+.agent/stages/03-identity-master-data/evidence.json:364:        "/api/v1/company/divisions",
+.agent/stages/03-identity-master-data/evidence.json:365:        "/api/v1/company/divisions/{divisionId}"
+.agent/stages/03-identity-master-data/evidence.json-366-      ],
+.agent/stages/03-identity-master-data/evidence.json:367:      "sessionCollection": "divisions",
+.agent/stages/03-identity-master-data/evidence.json:368:      "unitParentField": "divisionId",
+.agent/stages/03-identity-master-data/evidence.json-369-      "scopeTypes": [
+.agent/stages/03-identity-master-data/evidence.json-370-        "organization",
+.agent/stages/03-identity-master-data/evidence.json:371:        "division",
+.agent/stages/03-identity-master-data/evidence.json-372-        "unit"
+.agent/stages/03-identity-master-data/evidence.json-373-      ],
+.agent/stages/03-identity-master-data/evidence.json:374:      "divisionRoles": [
+.agent/stages/03-identity-master-data/evidence.json:375:        "division_head",
+.agent/stages/03-identity-master-data/evidence.json:376:        "division_operator"
+.agent/stages/03-identity-master-data/evidence.json-377-      ],
+.agent/stages/03-identity-master-data/evidence.json:378:      "divisionType": "hidden internal default division; no user-facing selector",
+.agent/stages/03-identity-master-data/evidence.json-379-      "organizationPropertyType": [
+.agent/stages/03-identity-master-data/evidence.json:380:        "ООО",
+.agent/stages/03-identity-master-data/evidence.json-381-        "АО",
+.agent/stages/03-identity-master-data/evidence.json:382:        "ПАО"
+.agent/stages/03-identity-master-data/evidence.json-383-      ],
+.agent/stages/03-identity-master-data/evidence.json-384-      "legacyAliases": {
+.agent/stages/03-identity-master-data/evidence.json:385:        "ОАО": "ПАО",
+.agent/stages/03-identity-master-data/evidence.json-386-        "ЗАО": "АО",
+.agent/stages/03-identity-master-data/evidence.json:387:        "LLC": "ООО"
+.agent/stages/03-identity-master-data/evidence.json-388-      },
+.agent/stages/03-identity-master-data/evidence.json-389-      "unitType": [
+.agent/stages/03-identity-master-data/evidence.json:390:        "ВРД",
+.agent/stages/03-identity-master-data/evidence.json:391:        "ВРЗ",
+.agent/stages/03-identity-master-data/evidence.json:392:        "ВУ",
+.agent/stages/03-identity-master-data/evidence.json:393:        "ВРП"
+.agent/stages/03-identity-master-data/evidence.json-394-      ]
+.agent/stages/03-identity-master-data/evidence.json-395-    },
+.agent/stages/03-identity-master-data/evidence.json-396-    "checks": [
+.agent/stages/03-identity-master-data/evidence.json-397-      "py_compile proof_slice010_org_structure.py: PASS",
+.agent/stages/03-identity-master-data/evidence.json:398:      "targeted proof on division-aligned check stack 18180/3110 with seed 20260429042: PASS",
+.agent/stages/03-identity-master-data/evidence.json-399-      "verify_harness: PASS before feature-list verifier flip",
+.agent/stages/03-identity-master-data/evidence.json:400:      "stale subdivision terminology audit: PASS",
+.agent/stages/03-identity-master-data/evidence.json:401:      "division contract audit: PASS",
+.agent/stages/03-identity-master-data/evidence.json-402-      "JSON audit: PASS"
+.agent/stages/03-identity-master-data/evidence.json-403-    ],
+.agent/stages/03-identity-master-data/evidence.json-404-    "artifacts": [
+.agent/stages/03-identity-master-data/evidence.json:405:      ".agent/stages/03-identity-master-data/raw/slice-010-division-proof-py-compile-2026-04-29.txt",
+.agent/stages/03-identity-master-data/evidence.json:406:      ".agent/stages/03-identity-master-data/raw/slice-010-division-proof-run-check-stack-2026-04-29.txt",
+.agent/stages/03-identity-master-data/evidence.json:407:      ".agent/stages/03-identity-master-data/raw/slice-010-division-harness-2026-04-29.txt",
+.agent/stages/03-identity-master-data/evidence.json:408:      ".agent/stages/03-identity-master-data/raw/slice-010-division-terminology-audit-2026-04-29.txt",
+.agent/stages/03-identity-master-data/evidence.json:409:      ".agent/stages/03-identity-master-data/raw/slice-010-division-contract-audit-2026-04-29.txt",
+.agent/stages/03-identity-master-data/evidence.json:410:      ".agent/stages/03-identity-master-data/raw/slice-010-division-json-audit-2026-04-29.txt"
+.agent/stages/03-identity-master-data/evidence.json-411-    ],
+.agent/stages/03-identity-master-data/evidence.json-412-    "feature_list_reopened": [
+
+Doc-sync audit conclusion: PASS. Canonical docs reflect division term, /company target, legal-form options/aliases, hidden division storage default, and required unit types. Historical stage progress entries with subdivision are chronological notes and not current proof.
+EXIT_CODE=0

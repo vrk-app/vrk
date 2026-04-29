@@ -62,9 +62,6 @@ func (s *agreementService) List(ctx context.Context, token string) ([]AgreementR
 	var items []Agreement
 	switch session.Organization.RoleTitle {
 	case "customer":
-		if !canManageContracts(session) {
-			return nil, ErrForbidden
-		}
 		items, err = s.repository.ListByCustomerOrganization(ctx, uuid.MustParse(session.Organization.ID))
 	case "contractor":
 		items, err = s.repository.ListByContractorOrganization(ctx, uuid.MustParse(session.Organization.ID))
@@ -77,6 +74,9 @@ func (s *agreementService) List(ctx context.Context, token string) ([]AgreementR
 
 	result := make([]AgreementResponse, 0, len(items))
 	for index := range items {
+		if !canViewAgreement(session, &items[index]) {
+			continue
+		}
 		result = append(result, *toResponse(&items[index]))
 	}
 	return result, nil
@@ -205,7 +205,7 @@ func (s *agreementService) ResolveRouting(ctx context.Context, token string, req
 	now := time.Now().UTC()
 	for index := range items {
 		item := &items[index]
-		if !isRoutingEligible(item, req, unit.SubdivisionID, now) {
+		if !isRoutingEligible(item, req, unit.DivisionID, now) {
 			continue
 		}
 
@@ -283,7 +283,7 @@ func (s *agreementService) buildCreateModel(ctx context.Context, session *bootst
 		return Agreement{}, err
 	}
 
-	subdivisionID, unitID, label, err := validateScopeForSession(session, req.SubdivisionID, req.UnitID, req.LocationScopeLabel)
+	divisionID, unitID, label, err := validateScopeForSession(session, req.DivisionID, req.UnitID, req.LocationScopeLabel)
 	if err != nil {
 		return Agreement{}, err
 	}
@@ -299,7 +299,7 @@ func (s *agreementService) buildCreateModel(ctx context.Context, session *bootst
 		WorkType:                 req.WorkType,
 		EquipmentType:            req.EquipmentType,
 		Region:                   req.Region,
-		SubdivisionID:            subdivisionID,
+		DivisionID:               divisionID,
 		UnitID:                   unitID,
 		LocationScopeLabel:       label,
 		Source:                   req.Source,
@@ -390,17 +390,17 @@ func (s *agreementService) buildUpdatedModel(ctx context.Context, session *boots
 		updated.SubjectOfAgreement = normalizeOptional(req.SubjectOfAgreement)
 	}
 
-	if req.SubdivisionID != nil || req.UnitID != nil || req.LocationScopeLabel != nil {
-		subdivisionID, unitID, label, err := validateScopeForSession(
+	if req.DivisionID != nil || req.UnitID != nil || req.LocationScopeLabel != nil {
+		divisionID, unitID, label, err := validateScopeForSession(
 			session,
-			req.SubdivisionID,
+			req.DivisionID,
 			req.UnitID,
 			normalizeOptional(req.LocationScopeLabel),
 		)
 		if err != nil {
 			return nil, err
 		}
-		updated.SubdivisionID = subdivisionID
+		updated.DivisionID = divisionID
 		updated.UnitID = unitID
 		updated.LocationScopeLabel = label
 	}
@@ -433,13 +433,9 @@ func (s *agreementService) requireCustomerContractsManager(ctx context.Context, 
 }
 
 func canManageContracts(session *bootstrap.SessionSummaryResponse) bool {
-	if session == nil || session.Grant == nil {
-		return false
-	}
 	return session.Organization.LaunchState == "active" &&
 		session.Organization.RoleTitle == "customer" &&
-		session.Grant.RoleTemplate == "organization_admin" &&
-		session.Workspace.ScopeType == "organization"
+		bootstrap.HasCapability(session, bootstrap.CapabilityManageContracts)
 }
 
 func canViewAgreement(session *bootstrap.SessionSummaryResponse, agreement *Agreement) bool {
@@ -447,7 +443,41 @@ func canViewAgreement(session *bootstrap.SessionSummaryResponse, agreement *Agre
 		return false
 	}
 	if session.Organization.RoleTitle == "customer" {
-		return canManageContracts(session) && agreement.CustomerOrganizationID.String() == session.Organization.ID
+		if agreement.CustomerOrganizationID.String() != session.Organization.ID {
+			return false
+		}
+		switch session.Workspace.ScopeType {
+		case "organization":
+			return true
+		case "division":
+			if agreement.DivisionID != nil {
+				for _, division := range session.Divisions {
+					if division.ID == agreement.DivisionID.String() {
+						return true
+					}
+				}
+			}
+			if agreement.UnitID != nil {
+				for _, unit := range session.Units {
+					if unit.ID == agreement.UnitID.String() {
+						return true
+					}
+				}
+			}
+			return false
+		case "unit":
+			if agreement.UnitID == nil {
+				return false
+			}
+			for _, unit := range session.Units {
+				if unit.ID == agreement.UnitID.String() {
+					return true
+				}
+			}
+			return false
+		default:
+			return false
+		}
 	}
 	if session.Organization.RoleTitle == "contractor" {
 		return agreement.ContractorOrganizationID.String() == session.Organization.ID
@@ -459,12 +489,12 @@ func toResponse(a *Agreement) *AgreementResponse {
 	scopeType := "organization"
 	scopeLabel := a.CustomerOrganizationName
 	var scopeID *string
-	if a.SubdivisionID != nil {
-		scopeType = "subdivision"
-		value := a.SubdivisionID.String()
+	if a.DivisionID != nil {
+		scopeType = "division"
+		value := a.DivisionID.String()
 		scopeID = &value
-		if a.SubdivisionName != nil {
-			scopeLabel = *a.SubdivisionName
+		if a.DivisionName != nil {
+			scopeLabel = *a.DivisionName
 		}
 	}
 	if a.UnitID != nil {
@@ -540,8 +570,8 @@ func isValidWorkType(value string) bool {
 	}
 }
 
-func validateScopeForSession(session *bootstrap.SessionSummaryResponse, subdivisionValue *string, unitValue *string, label *string) (*uuid.UUID, *uuid.UUID, *string, error) {
-	if subdivisionValue != nil && unitValue != nil && strings.TrimSpace(*subdivisionValue) != "" && strings.TrimSpace(*unitValue) != "" {
+func validateScopeForSession(session *bootstrap.SessionSummaryResponse, divisionValue *string, unitValue *string, label *string) (*uuid.UUID, *uuid.UUID, *string, error) {
+	if divisionValue != nil && unitValue != nil && strings.TrimSpace(*divisionValue) != "" && strings.TrimSpace(*unitValue) != "" {
 		return nil, nil, nil, ErrScopeConflict
 	}
 
@@ -563,16 +593,16 @@ func validateScopeForSession(session *bootstrap.SessionSummaryResponse, subdivis
 		return nil, nil, nil, ErrScopeInvalid
 	}
 
-	if subdivisionValue != nil {
-		subdivisionID := strings.TrimSpace(*subdivisionValue)
-		if subdivisionID == "" {
+	if divisionValue != nil {
+		divisionID := strings.TrimSpace(*divisionValue)
+		if divisionID == "" {
 			return nil, nil, nil, ErrScopeInvalid
 		}
-		for _, subdivision := range session.Subdivisions {
-			if subdivision.ID == subdivisionID {
-				parsed := uuid.MustParse(subdivisionID)
+		for _, division := range session.Divisions {
+			if division.ID == divisionID {
+				parsed := uuid.MustParse(divisionID)
 				if label == nil {
-					resolved := subdivision.Name
+					resolved := division.Name
 					label = &resolved
 				}
 				return &parsed, nil, label, nil
@@ -597,7 +627,7 @@ func resolveUnitFromSession(session *bootstrap.SessionSummaryResponse, unitID st
 	return nil, ErrRoutingUnitInvalid
 }
 
-func isRoutingEligible(agreement *Agreement, req RoutingResolveRequest, unitSubdivisionID *string, now time.Time) bool {
+func isRoutingEligible(agreement *Agreement, req RoutingResolveRequest, unitDivisionID *string, now time.Time) bool {
 	if !isCurrentlyEligible(agreement, now) {
 		return false
 	}
@@ -613,8 +643,8 @@ func isRoutingEligible(agreement *Agreement, req RoutingResolveRequest, unitSubd
 	if agreement.UnitID != nil {
 		return agreement.UnitID.String() == req.UnitID
 	}
-	if agreement.SubdivisionID != nil {
-		return unitSubdivisionID != nil && agreement.SubdivisionID.String() == *unitSubdivisionID
+	if agreement.DivisionID != nil {
+		return unitDivisionID != nil && agreement.DivisionID.String() == *unitDivisionID
 	}
 	return true
 }

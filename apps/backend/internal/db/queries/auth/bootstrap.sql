@@ -95,6 +95,11 @@ SELECT
     o.legal_address AS organization_legal_address,
     o.contact_email AS organization_contact_email,
     o.contact_phone AS organization_contact_phone,
+    o.leader_full_name AS organization_leader_full_name,
+    o.leader_position AS organization_leader_position,
+    o.contract_phone AS organization_contract_phone,
+    o.contract_email AS organization_contract_email,
+    o.acting_basis AS organization_acting_basis,
     o.launch_state AS organization_launch_state,
     o.launched_at AS organization_launched_at,
     g.id AS grant_id,
@@ -186,6 +191,11 @@ SELECT
     o.legal_address AS organization_legal_address,
     o.contact_email AS organization_contact_email,
     o.contact_phone AS organization_contact_phone,
+    o.leader_full_name AS organization_leader_full_name,
+    o.leader_position AS organization_leader_position,
+    o.contract_phone AS organization_contract_phone,
+    o.contract_email AS organization_contract_email,
+    o.acting_basis AS organization_acting_basis,
     o.launch_state AS organization_launch_state,
     o.launched_at AS organization_launched_at,
     g.id AS grant_id,
@@ -221,6 +231,11 @@ SET
     legal_address = $7,
     contact_email = $8,
     contact_phone = $9,
+    leader_full_name = $10,
+    leader_position = $11,
+    contract_phone = $12,
+    contract_email = $13,
+    acting_basis = $14,
     updated_at = NOW()
 WHERE id = $1
 RETURNING *;
@@ -234,16 +249,21 @@ SET
 WHERE id = $1
 RETURNING *;
 
--- name: CreateAuthSubdivision :one
-INSERT INTO auth_subdivisions (
+-- name: CreateAuthDivision :one
+INSERT INTO auth_divisions (
     organization_id,
-    subdivision_type,
+    division_type,
     name,
     code,
     region,
     address,
     manager_name,
-    contacts
+    contacts,
+    leader_position,
+    contract_phone,
+    contract_email,
+    acting_basis,
+    comment
 ) VALUES (
     $1,
     $2,
@@ -252,20 +272,31 @@ INSERT INTO auth_subdivisions (
     $5,
     $6,
     $7,
-    $8
+    $8,
+    $9,
+    $10,
+    $11,
+    $12,
+    $13
 )
 RETURNING *;
 
 -- name: CreateAuthUnit :one
 INSERT INTO auth_units (
     organization_id,
-    subdivision_id,
+    division_id,
     unit_type,
     name,
     code,
+    region,
     address,
     manager_name,
-    contacts
+    contacts,
+    leader_position,
+    contract_phone,
+    contract_email,
+    acting_basis,
+    comment
 ) VALUES (
     $1,
     $2,
@@ -274,18 +305,256 @@ INSERT INTO auth_units (
     $5,
     $6,
     $7,
-    $8
+    $8,
+    $9,
+    $10,
+    $11,
+    $12,
+    $13,
+    $14
 )
 RETURNING *;
 
--- name: ListAuthSubdivisionsByOrganization :many
-SELECT *
-FROM auth_subdivisions
+-- name: ListAuthDivisionsByOrganization :many
+SELECT
+    id,
+    organization_id,
+    division_type,
+    name,
+    code,
+    region,
+    address,
+    manager_name,
+    contacts,
+    status,
+    created_at,
+    updated_at,
+    leader_position,
+    contract_phone,
+    contract_email,
+    acting_basis,
+    comment
+FROM auth_divisions
 WHERE organization_id = $1
+  AND status = 'active'
 ORDER BY created_at ASC;
 
 -- name: ListAuthUnitsByOrganization :many
-SELECT *
+SELECT
+    id,
+    organization_id,
+    division_id,
+    unit_type,
+    name,
+    code,
+    address,
+    manager_name,
+    contacts,
+    status,
+    created_at,
+    updated_at,
+    region,
+    leader_position,
+    contract_phone,
+    contract_email,
+    acting_basis,
+    comment
 FROM auth_units
 WHERE organization_id = $1
+  AND status = 'active'
 ORDER BY created_at ASC;
+
+-- name: UpdateAuthDivision :one
+UPDATE auth_divisions
+SET
+    division_type = $3,
+    name = $4,
+    code = $5,
+    region = $6,
+    address = $7,
+    manager_name = $8,
+    contacts = $9,
+    leader_position = $10,
+    contract_phone = $11,
+    contract_email = $12,
+    acting_basis = $13,
+    comment = $14,
+    updated_at = NOW()
+WHERE id = $1
+  AND organization_id = $2
+  AND status = 'active'
+RETURNING *;
+
+-- name: UpdateAuthUnit :one
+UPDATE auth_units
+SET
+    division_id = $3,
+    unit_type = $4,
+    name = $5,
+    code = $6,
+    region = $7,
+    address = $8,
+    manager_name = $9,
+    contacts = $10,
+    leader_position = $11,
+    contract_phone = $12,
+    contract_email = $13,
+    acting_basis = $14,
+    comment = $15,
+    updated_at = NOW()
+WHERE id = $1
+  AND organization_id = $2
+  AND status = 'active'
+RETURNING *;
+
+-- name: GetAuthDivisionByID :one
+SELECT
+    id,
+    organization_id,
+    division_type,
+    name,
+    code,
+    region,
+    address,
+    manager_name,
+    contacts,
+    status,
+    created_at,
+    updated_at,
+    leader_position,
+    contract_phone,
+    contract_email,
+    acting_basis,
+    comment
+FROM auth_divisions
+WHERE id = $1;
+
+-- name: GetAuthUnitByID :one
+SELECT
+    id,
+    organization_id,
+    division_id,
+    unit_type,
+    name,
+    code,
+    address,
+    manager_name,
+    contacts,
+    status,
+    created_at,
+    updated_at,
+    region,
+    leader_position,
+    contract_phone,
+    contract_email,
+    acting_basis,
+    comment
+FROM auth_units
+WHERE id = $1;
+
+-- name: CountAuthDivisionArchiveBlockers :one
+SELECT
+    (
+        SELECT COUNT(*)
+        FROM auth_units u
+        WHERE u.organization_id = sqlc.arg(organization_id)
+          AND u.division_id = sqlc.arg(scope_id)
+          AND u.status = 'active'
+    )
+    + (
+        SELECT COUNT(*)
+        FROM auth_scoped_grants g
+        JOIN auth_memberships m ON m.id = g.membership_id
+        WHERE m.organization_id = sqlc.arg(organization_id)
+          AND m.membership_status = 'active'
+          AND g.scope_type = 'division'
+          AND g.scope_id = sqlc.arg(scope_id)
+    )
+    + (
+        SELECT COUNT(*)
+        FROM auth_employee_invites i
+        WHERE i.organization_id = sqlc.arg(organization_id)
+          AND i.scope_type = 'division'
+          AND i.scope_id = sqlc.arg(scope_id)
+          AND i.status IN ('draft', 'sent', 'opened')
+    )
+    + (
+        SELECT COUNT(*)
+        FROM registry_standards s
+        WHERE s.organization_id = sqlc.arg(organization_id)
+          AND s.division_id = sqlc.arg(scope_id)
+          AND s.archived_at IS NULL
+    )
+    + (
+        SELECT COUNT(*)
+        FROM agreements a
+        WHERE a.customer_organization_id = sqlc.arg(organization_id)
+          AND a.division_id = sqlc.arg(scope_id)
+    ) AS blockers;
+
+-- name: CountAuthUnitArchiveBlockers :one
+SELECT
+    (
+        SELECT COUNT(*)
+        FROM auth_scoped_grants g
+        JOIN auth_memberships m ON m.id = g.membership_id
+        WHERE m.organization_id = sqlc.arg(organization_id)
+          AND m.membership_status = 'active'
+          AND g.scope_type = 'unit'
+          AND g.scope_id = sqlc.arg(scope_id)
+    )
+    + (
+        SELECT COUNT(*)
+        FROM auth_employee_invites i
+        WHERE i.organization_id = sqlc.arg(organization_id)
+          AND i.scope_type = 'unit'
+          AND i.scope_id = sqlc.arg(scope_id)
+          AND i.status IN ('draft', 'sent', 'opened')
+    )
+    + (
+        SELECT COUNT(*)
+        FROM registry_equipment e
+        WHERE e.organization_id = sqlc.arg(organization_id)
+          AND e.unit_id = sqlc.arg(scope_id)
+          AND e.archived_at IS NULL
+    )
+    + (
+        SELECT COUNT(*)
+        FROM registry_measuring_instruments mi
+        WHERE mi.organization_id = sqlc.arg(organization_id)
+          AND mi.unit_id = sqlc.arg(scope_id)
+          AND mi.archived_at IS NULL
+    )
+    + (
+        SELECT COUNT(*)
+        FROM registry_standards s
+        WHERE s.organization_id = sqlc.arg(organization_id)
+          AND s.unit_id = sqlc.arg(scope_id)
+          AND s.archived_at IS NULL
+    )
+    + (
+        SELECT COUNT(*)
+        FROM agreements a
+        WHERE a.customer_organization_id = sqlc.arg(organization_id)
+          AND a.unit_id = sqlc.arg(scope_id)
+    ) AS blockers;
+
+-- name: ArchiveAuthDivision :one
+UPDATE auth_divisions
+SET
+    status = 'archived',
+    updated_at = NOW()
+WHERE id = $1
+  AND organization_id = $2
+  AND status = 'active'
+RETURNING *;
+
+-- name: ArchiveAuthUnit :one
+UPDATE auth_units
+SET
+    status = 'archived',
+    updated_at = NOW()
+WHERE id = $1
+  AND organization_id = $2
+  AND status = 'active'
+RETURNING *;

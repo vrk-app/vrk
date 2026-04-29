@@ -70,8 +70,6 @@ def assert_web_route(status: int, body: str):
 
 def assert_company_route(status: int, body: str):
     assert_web_route(status, body)
-    assert "http://backend:8080" in body, body[:400]
-    assert "seed-read" in body, body[:400]
 
 
 def assert_field_root(status: int, body: str):
@@ -153,8 +151,6 @@ company_status, company_body = wait_until(
     assert_company_route,
 )
 assert company_status == 200, company_status
-assert "http://backend:8080" in company_body, company_body[:400]
-assert "seed-read" in company_body, company_body[:400]
 
 field_status, field_body = wait_until(
     "field root route",

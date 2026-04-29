@@ -1,0 +1,6 @@
+slice-010 proof PASS seed=1777429483
+first-admin web acceptance issued active session and /company landing
+persistent /company APIs created/edited/archived subdivisions and units
+archive blockers and hidden archived invite-target validation returned expected errors
+subdivision/unit scoped users saw read-only subtree projections and backend mutations returned 403
+org-scope employee invite worked before any subdivision or unit existed
