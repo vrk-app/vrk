@@ -29,19 +29,21 @@ Cost guardrails:
 - Both Serverless Containers default to `0` provisioned instances through repository variables `VRK_BACKEND_PROVISIONED` and `VRK_WEB_PROVISIONED`.
 - Container images are cleaned by `registry-retention` after keeping the newest 20 sha-tagged images per repository.
 
-## GitHub Secrets And Variables
+## GitHub Secrets, Variables, And Lockbox
 
-Repository secrets configured for `vrk-app/vrk`:
+Runtime secrets are stored in Yandex Lockbox. GitHub Actions keeps only the bootstrap Yandex Cloud credential required to authenticate and read/deploy Yandex resources.
+
+Repository secret configured for `vrk-app/vrk`:
 
 - `YC_SA_JSON_CREDENTIALS`
+
+Repository variables configured for `vrk-app/vrk`:
+
 - `YC_FOLDER_ID`
 - `YC_REGISTRY_ID`
 - `YC_CONTAINER_SA_ID`
 - `YC_LOCKBOX_SECRET_ID`
 - `YC_LOCKBOX_VERSION_ID`
-
-Repository variables configured for `vrk-app/vrk`:
-
 - `VRK_BACKEND_URL`
 - `VRK_WEB_URL`
 - `VRK_BACKEND_PROVISIONED`
@@ -56,6 +58,8 @@ Lockbox owns the runtime secret payload:
 - `DB_PASSWORD`
 - `DB_SSL_MODE`
 - `PLATFORM_ADMIN_SHARED_SECRET`
+
+The `YC_*_ID` values are identifiers, not secret payload. They are repository variables so workflow YAML can reference the correct folder, registry, runtime service account, and Lockbox version without duplicating runtime secrets in GitHub.
 
 ## Deploy Flow
 
@@ -93,3 +97,4 @@ The workflow is intentionally ordered so migrations complete before the backend 
 - Direct public invocation is enabled for both incubator containers. This keeps the first incubator pipeline simple and cheap, but backend URL access should move behind API Gateway/custom domains before production hardening.
 - The PostgreSQL host has a public IP so GitHub Actions can run migrations. If the database is later made private, the migration step must move into a Yandex-side runner or a dedicated migration container flow.
 - The VPC network currently lives in the `ncfg` folder only because the cloud-level VPC network quota blocked a new `vrk` network. If quota is increased, create `vrk-network` / `vrk-subnet-a`, move `vrk-db`, and update this document.
+- Next.js public environment values are build-time inputs. Local platform smoke passes `NEXT_PUBLIC_API_BASE_URL`, `NEXT_PUBLIC_RUNTIME_DATA_MODE`, and field sync mode as Docker build args in `compose.platform.yml`; the Incubator deploy workflow passes the backend URL as build args before pushing the web image.

@@ -23,7 +23,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  YC_REGISTRY: cr.yandex/${{ secrets.YC_REGISTRY_ID }}
+  YC_REGISTRY: cr.yandex/${{ vars.YC_REGISTRY_ID }}
   BACKEND_IMAGE: vrk-backend
   WEB_IMAGE: vrk-web
   BACKEND_CONTAINER_NAME: vrk-backend
@@ -94,7 +94,7 @@ jobs:
       - name: Configure yc CLI
         env:
           YC_SA_JSON_CREDENTIALS: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
-          YC_FOLDER_ID: ${{ secrets.YC_FOLDER_ID }}
+          YC_FOLDER_ID: ${{ vars.YC_FOLDER_ID }}
         run: |
           printf '%s' "$YC_SA_JSON_CREDENTIALS" > /tmp/sa.json
           yc config set service-account-key /tmp/sa.json
@@ -102,8 +102,8 @@ jobs:
 
       - name: Fetch database settings
         env:
-          YC_LOCKBOX_SECRET_ID: ${{ secrets.YC_LOCKBOX_SECRET_ID }}
-          YC_LOCKBOX_VERSION_ID: ${{ secrets.YC_LOCKBOX_VERSION_ID }}
+          YC_LOCKBOX_SECRET_ID: ${{ vars.YC_LOCKBOX_SECRET_ID }}
+          YC_LOCKBOX_VERSION_ID: ${{ vars.YC_LOCKBOX_VERSION_ID }}
         run: |
           set -euo pipefail
 
@@ -230,10 +230,10 @@ jobs:
         uses: yc-actions/yc-sls-container-deploy@v2
         with:
           yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
-          folder-id: ${{ secrets.YC_FOLDER_ID }}
+          folder-id: ${{ vars.YC_FOLDER_ID }}
           container-name: ${{ env.BACKEND_CONTAINER_NAME }}
           revision-image-url: ${{ env.YC_REGISTRY }}/${{ env.BACKEND_IMAGE }}:${{ github.sha }}
-          revision-service-account-id: ${{ secrets.YC_CONTAINER_SA_ID }}
+          revision-service-account-id: ${{ vars.YC_CONTAINER_SA_ID }}
           revision-cores: 1
           revision-memory: 256Mb
           revision-core-fraction: 50
@@ -241,13 +241,13 @@ jobs:
           revision-execution-timeout: 30s
           revision-provisioned: ${{ env.BACKEND_PROVISIONED_EFFECTIVE }}
           revision-secrets: |
-            DB_HOST=${{ secrets.YC_LOCKBOX_SECRET_ID }}/${{ secrets.YC_LOCKBOX_VERSION_ID }}/DB_HOST
-            DB_PORT=${{ secrets.YC_LOCKBOX_SECRET_ID }}/${{ secrets.YC_LOCKBOX_VERSION_ID }}/DB_PORT
-            DB_NAME=${{ secrets.YC_LOCKBOX_SECRET_ID }}/${{ secrets.YC_LOCKBOX_VERSION_ID }}/DB_NAME
-            DB_USER=${{ secrets.YC_LOCKBOX_SECRET_ID }}/${{ secrets.YC_LOCKBOX_VERSION_ID }}/DB_USER
-            DB_PASSWORD=${{ secrets.YC_LOCKBOX_SECRET_ID }}/${{ secrets.YC_LOCKBOX_VERSION_ID }}/DB_PASSWORD
-            DB_SSL_MODE=${{ secrets.YC_LOCKBOX_SECRET_ID }}/${{ secrets.YC_LOCKBOX_VERSION_ID }}/DB_SSL_MODE
-            PLATFORM_ADMIN_SHARED_SECRET=${{ secrets.YC_LOCKBOX_SECRET_ID }}/${{ secrets.YC_LOCKBOX_VERSION_ID }}/PLATFORM_ADMIN_SHARED_SECRET
+            DB_HOST=${{ vars.YC_LOCKBOX_SECRET_ID }}/${{ vars.YC_LOCKBOX_VERSION_ID }}/DB_HOST
+            DB_PORT=${{ vars.YC_LOCKBOX_SECRET_ID }}/${{ vars.YC_LOCKBOX_VERSION_ID }}/DB_PORT
+            DB_NAME=${{ vars.YC_LOCKBOX_SECRET_ID }}/${{ vars.YC_LOCKBOX_VERSION_ID }}/DB_NAME
+            DB_USER=${{ vars.YC_LOCKBOX_SECRET_ID }}/${{ vars.YC_LOCKBOX_VERSION_ID }}/DB_USER
+            DB_PASSWORD=${{ vars.YC_LOCKBOX_SECRET_ID }}/${{ vars.YC_LOCKBOX_VERSION_ID }}/DB_PASSWORD
+            DB_SSL_MODE=${{ vars.YC_LOCKBOX_SECRET_ID }}/${{ vars.YC_LOCKBOX_VERSION_ID }}/DB_SSL_MODE
+            PLATFORM_ADMIN_SHARED_SECRET=${{ vars.YC_LOCKBOX_SECRET_ID }}/${{ vars.YC_LOCKBOX_VERSION_ID }}/PLATFORM_ADMIN_SHARED_SECRET
           revision-env: |
             ENVIRONMENT=incubator
             SERVER_PORT=8080
@@ -284,10 +284,10 @@ jobs:
         uses: yc-actions/yc-sls-container-deploy@v2
         with:
           yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
-          folder-id: ${{ secrets.YC_FOLDER_ID }}
+          folder-id: ${{ vars.YC_FOLDER_ID }}
           container-name: ${{ env.WEB_CONTAINER_NAME }}
           revision-image-url: ${{ env.YC_REGISTRY }}/${{ env.WEB_IMAGE }}:${{ github.sha }}
-          revision-service-account-id: ${{ secrets.YC_CONTAINER_SA_ID }}
+          revision-service-account-id: ${{ vars.YC_CONTAINER_SA_ID }}
           revision-cores: 1
           revision-memory: 512Mb
           revision-core-fraction: 50
@@ -295,7 +295,7 @@ jobs:
           revision-execution-timeout: 30s
           revision-provisioned: ${{ env.WEB_PROVISIONED_EFFECTIVE }}
           revision-secrets: |
-            PLATFORM_ADMIN_SHARED_SECRET=${{ secrets.YC_LOCKBOX_SECRET_ID }}/${{ secrets.YC_LOCKBOX_VERSION_ID }}/PLATFORM_ADMIN_SHARED_SECRET
+            PLATFORM_ADMIN_SHARED_SECRET=${{ vars.YC_LOCKBOX_SECRET_ID }}/${{ vars.YC_LOCKBOX_VERSION_ID }}/PLATFORM_ADMIN_SHARED_SECRET
           revision-env: |
             NODE_ENV=production
             PORT=3000
