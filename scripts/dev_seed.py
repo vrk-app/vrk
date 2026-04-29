@@ -15,7 +15,7 @@ from psycopg.types.json import Jsonb
 
 
 DEV_SEED_KEY = "vrk-local-dev-seed"
-DEV_SEED_VERSION = "2026-04-29.2"
+DEV_SEED_VERSION = "2026-04-29.3"
 ADMIN_PASSWORD = "vrk-dev-admin-2026!"
 
 ADMIN_EMAIL = f"admin+{DEV_SEED_VERSION.replace('.', '-')}@vrk.local"
@@ -306,11 +306,11 @@ def mark_failed(conn: psycopg.Connection, error: Exception) -> None:
     conn.commit()
 
 
-def find_by_code(items: list[dict[str, Any]], code: str, item_name: str) -> dict[str, Any]:
+def find_by_name(items: list[dict[str, Any]], name: str, item_name: str) -> dict[str, Any]:
     for item in items:
-        if item.get("code") == code:
+        if item.get("name") == name:
             return item
-    raise DevSeedError(f"created {item_name} with code {code!r} was not returned by the API")
+    raise DevSeedError(f"created {item_name} with name {name!r} was not returned by the API")
 
 
 def division_payload(division: dict[str, Any]) -> dict[str, Any]:
@@ -430,7 +430,7 @@ def create_seed_data() -> dict[str, Any]:
             expected_status=201,
             body=division_payload(division),
         )
-        created = find_by_code(response["divisions"], division["code"], "division")
+        created = find_by_name(response["divisions"], division["name"], "division")
         division_by_key[division["key"]] = created
 
     created_units: list[dict[str, Any]] = []
@@ -443,7 +443,7 @@ def create_seed_data() -> dict[str, Any]:
             expected_status=201,
             body=unit_payload(unit, division_id),
         )
-        created_units.append(find_by_code(response["units"], unit["code"], "unit"))
+        created_units.append(find_by_name(response["units"], unit["name"], "unit"))
 
     login = request_json(
         "POST",
@@ -472,7 +472,7 @@ def create_seed_data() -> dict[str, Any]:
             {
                 "id": division_by_key[division["key"]]["id"],
                 "name": division_by_key[division["key"]]["name"],
-                "code": division_by_key[division["key"]].get("code"),
+                "code": division["code"],
                 "region": division_by_key[division["key"]].get("region"),
             }
             for division in DIVISIONS
@@ -481,7 +481,7 @@ def create_seed_data() -> dict[str, Any]:
             {
                 "id": unit["id"],
                 "name": unit["name"],
-                "code": unit.get("code"),
+                "code": next((seed["code"] for seed in UNITS if seed["name"] == unit["name"]), None),
                 "type": unit.get("type"),
                 "divisionId": unit.get("divisionId"),
             }
