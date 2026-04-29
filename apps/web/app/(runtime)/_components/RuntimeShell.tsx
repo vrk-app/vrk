@@ -9,7 +9,7 @@ import { AppShell, SidebarNav, TopBar } from "@/widgets/OperatorShell";
 const runtimeNavItems = [
   { key: "company", label: "Компания", href: "/company", icon: Building2 },
   { key: "equipment", label: "Оборудование", href: "/equipment", icon: Wrench },
-  { key: "contracts", label: "Договоры", href: "/contracts", icon: ClipboardList },
+  { key: "contracts", label: "Договоры", href: "/contracts", icon: ClipboardList, badge: "Скоро" },
   { key: "requests", label: "Заявки", href: "/requests", icon: ClipboardList, badge: "Скоро" },
 ] as const;
 

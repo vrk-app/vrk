@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Archive, Building2, GitBranch, MapPinned, Plus, Save } from "lucide-react";
-import { EmployeeInviteManager } from "@/features/Stage03Access";
+import { Archive, Building2, GitBranch, MapPinned, Plus, Save, UsersRound } from "lucide-react";
+import { EmployeeAccessWorkspace } from "@/features/Stage03Access";
 import {
   parseApiResponse,
   sessionHasCapability,
@@ -16,7 +16,7 @@ type Props = {
   initialSession: SessionSummaryResponse;
 };
 
-type TabKey = "profile" | "divisions" | "units";
+type TabKey = "profile" | "divisions" | "units" | "employees";
 
 type Division = SessionSummaryResponse["divisions"][number];
 type Unit = SessionSummaryResponse["units"][number];
@@ -53,6 +53,7 @@ const tabItems = [
   { key: "profile", label: "Профиль", icon: Building2 },
   { key: "divisions", label: "Подразделения", icon: GitBranch },
   { key: "units", label: "Юниты", icon: MapPinned },
+  { key: "employees", label: "Сотрудники", icon: UsersRound },
 ] as const;
 
 const directOrganizationParent = "__organization__";
@@ -204,6 +205,10 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
   const canManage = canManageCompany(session);
   const directUnits = session.units.filter((unit) => !unit.divisionId);
   const hasStructure = session.divisions.length > 0 || session.units.length > 0;
+  const visibleTabItems = useMemo(
+    () => tabItems.filter((item) => item.key !== "employees" || session.workspace.canViewEmployees),
+    [session.workspace.canViewEmployees],
+  );
   const divisionOptions = useMemo(
     () => [
       { label: "Напрямую под организацией", value: directOrganizationParent },
@@ -364,7 +369,7 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
       <Tabs<TabKey>
         activeKey={activeTab}
         ariaLabel="Разделы управления организацией"
-        items={tabItems}
+        items={visibleTabItems}
         onChange={setActiveTab}
       />
 
@@ -640,7 +645,7 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
         </div>
       ) : null}
 
-      {session.workspace.canManageEmployeeInvites ? <EmployeeInviteManager session={session} /> : null}
+      {activeTab === "employees" && session.workspace.canViewEmployees ? <EmployeeAccessWorkspace session={session} /> : null}
     </div>
   );
 }

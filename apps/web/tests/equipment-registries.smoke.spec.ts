@@ -312,8 +312,11 @@ test.describe("stage 03 metrology journals and archive contour", () => {
     const employee = await createScopedEmployee(request, admin, seed);
 
     const equipmentName = `Насос Питательный ${seed}`;
+    const updatedEquipmentName = `Насос Питательный обновлен ${seed}`;
     const standardIdentifier = `STD-${seed}`;
+    const updatedStandardIdentifier = `STD-EDIT-${seed}`;
     const instrumentName = `Манометр ${seed}`;
+    const updatedInstrumentName = `Манометр обновлен ${seed}`;
     const archiveEquipmentName = `Оборудование в архив ${seed}`;
     const archiveStandardIdentifier = `STD-ARCHIVE-${seed}`;
     const archiveInstrumentName = `Термометр архив ${seed}`;
@@ -351,10 +354,12 @@ test.describe("stage 03 metrology journals and archive contour", () => {
     await page.goto("/equipment");
 
     await expect(page.getByRole("heading", { level: 1, name: "Оборудование, средства измерения и эталоны" })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 2, name: "Выберите нужный реестр" })).toBeVisible();
+    await expect(page.getByRole("tablist", { name: "Реестры оборудования" })).toBeVisible();
     await expect(page.getByRole("tab", { name: /^Оборудование/ })).toBeVisible();
     await expect(page.getByRole("tab", { name: /^Средства измерения/ })).toBeVisible();
     await expect(page.getByRole("tab", { name: /^Эталоны/ })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Новое оборудование" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Оборудование в учете" })).toBeVisible();
 
     await page.getByLabel("Производитель").fill("Трансмаш");
     await page.getByLabel("Класс / тип").fill("Насос");
@@ -362,18 +367,35 @@ test.describe("stage 03 metrology journals and archive contour", () => {
     await page.getByLabel("Полное наименование").fill(equipmentName);
     await page.getByLabel("Заводской номер").fill(`FAC-${seed}`);
     await page.getByRole("button", { name: "Создать оборудование" }).click();
-    await expect(page.getByText("Карточка оборудования создана и появилась в реестре.")).toBeVisible();
+    await expect(page.getByText("Оборудование создано и появилось в учете.", { exact: true })).toBeVisible();
     await expect(page.getByText(equipmentName).first()).toBeVisible();
+
+    await page.setViewportSize({ height: 844, width: 390 });
+    await page.getByRole("button", { name: `Редактировать оборудование ${equipmentName}` }).click();
+    const equipmentEditDialog = page.getByRole("dialog", { name: "Редактировать оборудование" });
+    await expect(equipmentEditDialog).toBeVisible();
+    await equipmentEditDialog.getByLabel("Полное наименование").fill(updatedEquipmentName);
+    await equipmentEditDialog.getByLabel("Инвентарный номер").fill(`INV-EDIT-${seed}`);
+    await equipmentEditDialog.getByRole("button", { name: "Сохранить изменения" }).click();
+    await expect(page.getByText("Оборудование обновлено.", { exact: true })).toBeVisible();
+    await expect(page.getByText(updatedEquipmentName).first()).toBeVisible();
+    await page.setViewportSize({ height: 720, width: 1280 });
 
     await page.goto("/equipment?tab=standards");
     await expect(page).toHaveURL(/\/equipment\?tab=standards$/);
+    await expect(page.getByRole("heading", { level: 2, name: "Новый эталон" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Эталоны в учете" })).toBeVisible();
     await selectFieldOption(page, "Уровень владения", "Юнит");
     await page.getByLabel("Тип эталона").fill("Эталон давления");
     await page.getByLabel("Модель").first().fill("ED-77");
     await page.getByLabel("Идентификатор").fill(standardIdentifier);
     await page.getByLabel("Метрологические характеристики").fill("0.2 кПа, класс точности 0.1");
     await page.getByRole("button", { name: "Создать эталон" }).click();
-    await expect(page.getByText("Эталон создан. Действующий статус и срок поверки станут производными после записи в журнал.")).toBeVisible();
+    await expect(
+      page.getByText("Эталон создан. Действующий статус и срок поверки станут производными после записи в журнал.", {
+        exact: true,
+      }),
+    ).toBeVisible();
     await expect(page.getByText(standardIdentifier).first()).toBeVisible();
 
     await selectFieldOption(page, "Выбранный эталон", `Эталон давления • ${standardIdentifier}`);
@@ -383,26 +405,46 @@ test.describe("stage 03 metrology journals and archive contour", () => {
     await page.getByLabel("Действует до").fill("2026-12-20");
     await page.getByLabel("Организация-исполнитель").fill("ФБУ Ростест-Москва");
     await page.getByRole("button", { name: "Добавить запись журнала" }).click();
-    await expect(page.getByText("Запись журнала эталона сохранена. Производный статус и срок действия пересчитаны.")).toBeVisible();
+    await expect(
+      page.getByText("Запись журнала эталона сохранена. Производный статус и срок действия пересчитаны.", {
+        exact: true,
+      }),
+    ).toBeVisible();
     await expect(page.getByText(`STD-DOC-${seed}`).first()).toBeVisible();
     await expect(page.getByText("Текущий статус: Активно")).toBeVisible();
 
+    await page.getByRole("button", { name: `Редактировать эталон ${standardIdentifier}` }).click();
+    const standardEditDialog = page.getByRole("dialog", { name: "Редактировать эталон" });
+    await expect(standardEditDialog).toBeVisible();
+    await standardEditDialog.getByLabel("Уровень владения").click();
+    await page.getByRole("option", { name: "Организация", exact: true }).click();
+    await standardEditDialog.getByLabel("Тип эталона").fill("Эталон поверочный");
+    await standardEditDialog.getByLabel("Идентификатор").fill(updatedStandardIdentifier);
+    await standardEditDialog.getByRole("button", { name: "Сохранить изменения" }).click();
+    await expect(page.getByText("Эталон обновлен.", { exact: true })).toBeVisible();
+    await expect(page.getByText(updatedStandardIdentifier).first()).toBeVisible();
+    await expect(page.getByText("Организация").first()).toBeVisible();
+
     await page.goto("/equipment?tab=mi");
     await expect(page).toHaveURL(/\/equipment\?tab=mi$/);
+    await expect(page.getByRole("heading", { level: 2, name: "Новое средство измерения" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Средства измерения в учете" })).toBeVisible();
     await selectFieldOption(page, "Размещение", "Встроено в оборудование");
     await page.getByLabel("Наименование").fill(instrumentName);
     await page.getByLabel("Тип / класс").fill("Манометр");
     await page.getByLabel("Модель").first().fill("MN-12");
     await page.getByLabel("Регистрационный номер").fill(`MI-${seed}`);
     await page.getByLabel("Серийный номер").fill(`SER-${seed}`);
-    await selectFieldOption(page, "Привязка к оборудованию", equipmentName);
-    await page.getByLabel(standardIdentifier).check();
+    await selectFieldOption(page, "Привязка к оборудованию", updatedEquipmentName);
+    await page.getByLabel(updatedStandardIdentifier).check();
     await page.getByRole("button", { name: "Создать средство измерения" }).click();
     await expect(
-      page.getByText("Средство измерения создано. Метрологический статус рассчитывается по журналу."),
+      page.getByText("Средство измерения создано. Метрологический статус рассчитывается по журналу.", {
+        exact: true,
+      }),
     ).toBeVisible();
     await expect(page.getByText(instrumentName).first()).toBeVisible();
-    await expect(page.getByText(standardIdentifier).first()).toBeVisible();
+    await expect(page.getByText(updatedStandardIdentifier).first()).toBeVisible();
 
     await selectFieldOption(page, "Выбранное средство измерения", `${instrumentName} • MI-${seed}`);
     await selectFieldOption(page, "Тип операции", "Поверка");
@@ -411,13 +453,29 @@ test.describe("stage 03 metrology journals and archive contour", () => {
     await page.getByLabel("Действует до").fill("2026-12-31");
     await page.getByLabel("Организация-исполнитель").fill("ФБУ Ростест-Москва");
     await page.getByRole("button", { name: "Добавить запись журнала" }).click();
-    await expect(page.getByText("Запись журнала СИ сохранена. Производный статус и ближайшая дата пересчитаны.")).toBeVisible();
+    await expect(
+      page.getByText("Запись журнала СИ сохранена. Производный статус и ближайшая дата пересчитаны.", {
+        exact: true,
+      }),
+    ).toBeVisible();
     await expect(page.getByText(`MI-DOC-${seed}`).first()).toBeVisible();
     await expect(page.getByText("Текущий статус: Активно")).toBeVisible();
 
+    await page.getByRole("button", { name: `Редактировать средство измерения ${instrumentName}` }).click();
+    const measuringInstrumentEditDialog = page.getByRole("dialog", { name: "Редактировать средство измерения" });
+    await expect(measuringInstrumentEditDialog).toBeVisible();
+    await measuringInstrumentEditDialog.getByLabel("Наименование").fill(updatedInstrumentName);
+    await measuringInstrumentEditDialog.getByLabel("Размещение").click();
+    await page.getByRole("option", { name: "Отдельное СИ", exact: true }).click();
+    await measuringInstrumentEditDialog.getByLabel(new RegExp(updatedStandardIdentifier)).uncheck();
+    await measuringInstrumentEditDialog.getByRole("button", { name: "Сохранить изменения" }).click();
+    await expect(page.getByText("Средство измерения обновлено.", { exact: true })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(updatedInstrumentName).first()).toBeVisible();
+    await expect(page.getByText("Отдельное").first()).toBeVisible();
+
     await page.goto("/equipment");
     await expect(page).toHaveURL(/\/equipment$/);
-    await expect(page.getByText("СИ: 1").first()).toBeVisible();
+    await expect(page.getByText("СИ: 0").first()).toBeVisible();
     await expect(page.getByText(archiveEquipmentName).first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Архивировать оборудование" }).first()).toBeVisible();
     await backend(request, `/api/v1/equipment/${archiveEquipment.id}/archive`, {
@@ -431,14 +489,18 @@ test.describe("stage 03 metrology journals and archive contour", () => {
     await selectFieldOption(page, "Выбранное средство измерения", `${archiveInstrumentName} • MI-ARCH-${seed}`);
     await page.getByRole("button", { name: "Архивировать выбранное СИ" }).click();
     await confirmArchiveModal(page);
-    await expect(page.getByText("Средство измерения переведено в архив и убрано из активных списков выбора.")).toBeVisible();
+    await expect(
+      page.getByText("Средство измерения переведено в архив и убрано из активных списков выбора.", {
+        exact: true,
+      }),
+    ).toBeVisible();
     await expect(page.getByText(archiveInstrumentName)).toHaveCount(0);
 
     await page.goto("/equipment?tab=standards");
     await selectFieldOption(page, "Выбранный эталон", `Эталон напряжения • ${archiveStandardIdentifier}`);
     await page.getByRole("button", { name: "Архивировать выбранный эталон" }).click();
     await confirmArchiveModal(page);
-    await expect(page.getByText("Эталон переведен в архив и исключен из активных связей.")).toBeVisible();
+    await expect(page.getByText("Эталон переведен в архив и исключен из активных связей.", { exact: true })).toBeVisible();
     await expect(page.getByText(archiveStandardIdentifier)).toHaveCount(0);
 
     await page.getByRole("button", { name: "Показать архив" }).click();
@@ -449,9 +511,11 @@ test.describe("stage 03 metrology journals and archive contour", () => {
     await page.goto("/equipment");
     await page.getByRole("button", { name: "Показать архив" }).click();
     await expect(page.getByText(archiveEquipmentName).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: `Редактировать оборудование ${archiveEquipmentName}` })).toHaveCount(0);
     await page.goto("/equipment?tab=mi");
     await page.getByRole("button", { name: "Показать архив" }).click();
     await expect(page.getByText(archiveInstrumentName).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: `Редактировать средство измерения ${archiveInstrumentName}` })).toHaveCount(0);
 
     await page.goto("/login?logout=1");
     await page.getByLabel("Корпоративная почта").fill(employee.email);
@@ -466,7 +530,8 @@ test.describe("stage 03 metrology journals and archive contour", () => {
       ),
     ).toBeVisible();
     await expect(page.getByRole("button", { name: "Создать оборудование" })).toHaveCount(0);
-    await expect(page.getByText(equipmentName).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Редактировать/ })).toHaveCount(0);
+    await expect(page.getByText(updatedEquipmentName).first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Показать архив" })).toBeVisible();
 
     await page.getByRole("button", { name: "Показать архив" }).click();
@@ -475,7 +540,8 @@ test.describe("stage 03 metrology journals and archive contour", () => {
     await page.goto("/equipment?tab=mi");
     await page.getByRole("button", { name: "Показать архив" }).click();
     await expect(page.getByRole("button", { name: "Создать средство измерения" })).toHaveCount(0);
-    await expect(page.getByText(instrumentName).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Редактировать/ })).toHaveCount(0);
+    await expect(page.getByText(updatedInstrumentName).first()).toBeVisible();
     await selectFieldOption(page, "Выбранное средство измерения", `${archiveInstrumentName} • MI-ARCH-${seed}`);
     await expect(page.getByText("Редактирование скрыто", { exact: true })).toBeVisible();
     await expect(page.getByText("Архивированное СИ остается доступным для истории, но новые операции в него не добавляются.")).toBeVisible();
@@ -483,7 +549,9 @@ test.describe("stage 03 metrology journals and archive contour", () => {
     await page.goto("/equipment?tab=standards");
     await page.getByRole("button", { name: "Показать архив" }).click();
     await expect(page.getByRole("button", { name: "Создать эталон" })).toHaveCount(0);
-    await expect(page.getByText(standardIdentifier).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Редактировать/ })).toHaveCount(0);
+    await expect(page.getByText(updatedStandardIdentifier)).toHaveCount(0);
     await expect(page.getByText(archiveStandardIdentifier).first()).toBeVisible();
+    await expect(page.getByRole("button", { name: `Редактировать эталон ${archiveStandardIdentifier}` })).toHaveCount(0);
   });
 });

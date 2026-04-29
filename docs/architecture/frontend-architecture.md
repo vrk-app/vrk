@@ -114,11 +114,11 @@ flowchart LR
 После реализации `slice-002-employee-invites-and-scoped-access` web contour расширился поверх того же runtime skeleton, но без widening в Stage 04:
 
 - `/register/[token]` теперь является общим activation route для first-admin и employee invites;
-- Next route handlers в `app/api/auth/invites/*` и `app/api/auth/employee-invites/*` закрывают browser от прямого доступа к internal backend host и держат cookie/session boundary на стороне `apps/web`;
+- Next route handlers в `app/api/auth/invites/*`, `app/api/auth/employee-invites/*` и `app/api/auth/employees/*` закрывают browser от прямого доступа к internal backend host и держат cookie/session boundary на стороне `apps/web`;
 - `/company` стал scope-aware landing page:
-  - organization-scope пользователь видит весь org graph и, только при `workspace.canManageEmployeeInvites`, employee invite manager;
-  - division-scope пользователь видит только свое подразделение и его child units;
-  - unit-scope пользователь видит только один юнит и не видит broader org graph;
+  - organization-scope пользователь видит весь org graph; вкладка `Сотрудники` появляется при `workspace.canViewEmployees`, а invite/edit/deactivate controls только при admin-флагах;
+  - division-scope пользователь видит только свое подразделение и его child units; `division_head` и scoped `auditor` получают read-only employees registry;
+  - unit-scope пользователь видит только один юнит и не видит broader org graph; `unit_head` и scoped `auditor` получают read-only employees registry;
 - `/login` после employee acceptance больше не возвращает пользователя в generic shell, а сразу восстанавливает его сохраненный scoped contour;
 - ссылка `политикой доступа` в login consent ведет на `/access-policy`, где временно живет non-legal draft/stub политики до замены юридически оформленной редакцией;
 - checkbox `Запомнить вход` на `/login` управляет только web-session UX: checked ставит HttpOnly `vrk_session` cookie с 24h `maxAge` и сохраняет localStorage-подсказку последнего workspace по hash нормализованного email; unchecked ставит session cookie без `maxAge` и чистит подсказку для текущего email;
@@ -139,13 +139,13 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    A["/company<br/>organization admin"] --> B["EmployeeInviteManager"]
-    B --> C["/api/auth/employee-invites*"]
-    C --> D["apps/backend /employee-invites*"]
-    D --> E["public token"]
-    E --> F["/register/[token]"]
-    F --> G["/api/auth/invites/*"]
-    G --> H["apps/backend /invites/*"]
+    A["/company<br/>employees tab"] --> B["EmployeeAccessWorkspace"]
+    B --> C["/api/auth/employees*"]
+    B --> D["EmployeeInviteManager<br/>admin only"]
+    D --> E["/api/auth/employee-invites*"]
+    E --> F["public token"]
+    F --> G["/register/[token]"]
+    G --> H["/api/auth/invites/*"]
     H --> I["HttpOnly vrk_session"]
     I --> J["/company scoped landing"]
 ```
@@ -201,7 +201,7 @@ flowchart LR
 
 ### 1.2.5. Реализованный Stage 03 runtime contour для slice-005
 
-После реализации `slice-005-metrology-journals-archiving-and-proof` тот же `/equipment` route получил journal/archive state без widening в parallel public family:
+После реализации `slice-005-metrology-journals-archiving-and-proof` и follow-up frontend edit slice тот же `/equipment` route получил journal/archive/edit state без widening в parallel public family:
 
 - server page читает `searchParams.tab` и `searchParams.archived`, нормализует их и передает в `EquipmentRegistryWorkspace`;
 - route state остается URL-backed:
@@ -211,6 +211,12 @@ flowchart LR
 - shared backend/proxy helpers больше не разворачивают только `data`: для paginated Stage 03 registries они сохраняют backend envelope `meta`, чтобы web boundary не теряла `total/limit/offset` при росте реестров;
 - journal detail panels для measuring instruments и standards живут в том же workspace и используют `app/api/equipment/.../journals`;
 - archive actions идут через `app/api/equipment/.../archive`;
+- edit actions для equipment, СИ и эталонов живут в record cards и используют компактный editor dialog, а browser ходит только в Next proxy routes:
+  - `PATCH app/api/equipment/[equipmentId] -> /api/v1/equipment/{id}`;
+  - `PATCH app/api/equipment/measuring-instruments/[measuringInstrumentId] -> /api/v1/measuring-instruments/{id}`;
+  - `PATCH app/api/equipment/standards/[standardId] -> /api/v1/standards/{id}`;
+- edit surface открывается только для `sessionHasCapability(session, "manage_equipment")` и не показывается на archived records;
+- derived метрологический статус СИ и эталонов остается read-only в edit UI и продолжает пересчитываться через journal endpoints;
 - active pickers остаются отфильтрованными даже когда archive visibility включена:
   - built-in MI picker использует только `activeEquipmentRecords`;
   - standard link picker использует только `activeStandards`;
@@ -224,14 +230,16 @@ flowchart LR
     C --> D["/api/equipment*?includeArchived=true"]
     C --> E["/api/equipment/.../journals"]
     C --> F["/api/equipment/.../archive"]
+    C --> L["/api/equipment/[id] PATCH<br/>/api/equipment/measuring-instruments/[id] PATCH<br/>/api/equipment/standards/[id] PATCH"]
     D --> G["backend scoped registries"]
     E --> H["backend journal endpoints"]
     F --> I["backend archive endpoints"]
+    L --> M["backend PATCH endpoints"]
     G --> J["active lists + archived rows"]
     C --> K["activeEquipmentRecords / activeStandards pickers only"]
 ```
 
-Диаграмма фиксирует текущую frontend boundary для slice-005: query state управляет тем, что видно на одном публичном route, но archived visibility не расширяет mutate surface и не возвращает archived rows в active relation flows.
+Диаграмма фиксирует текущую frontend boundary для slice-005 и edit follow-up: query state управляет тем, что видно на одном публичном route, archived visibility не расширяет mutate surface, а PATCH editor доступен только для активных записей у роли с `manage_equipment`.
 
 ### 1.3. Field scaffold boundary
 

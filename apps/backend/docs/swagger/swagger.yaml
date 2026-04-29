@@ -281,6 +281,29 @@ definitions:
       type:
         type: string
     type: object
+  bootstrap.EmployeeAccessResponse:
+    properties:
+      accessId:
+        type: string
+      accountId:
+        type: string
+      email:
+        type: string
+      fullName:
+        type: string
+      membershipId:
+        type: string
+      membershipStatus:
+        type: string
+      roleTemplate:
+        type: string
+      scopeId:
+        type: string
+      scopeLabel:
+        type: string
+      scopeType:
+        type: string
+    type: object
   bootstrap.EmployeeInviteResponse:
     properties:
       acceptPath:
@@ -513,6 +536,10 @@ definitions:
     properties:
       canManageEmployeeInvites:
         type: boolean
+      canManageEmployees:
+        type: boolean
+      canViewEmployees:
+        type: boolean
       landingPath:
         type: string
       landingSubtitle:
@@ -594,6 +621,15 @@ definitions:
       status:
         type: string
       type:
+        type: string
+    type: object
+  bootstrap.UpdateEmployeeAccessRequest:
+    properties:
+      roleTemplate:
+        type: string
+      scopeId:
+        type: string
+      scopeType:
         type: string
     type: object
   equipment.CreateRequest:
@@ -1864,6 +1900,129 @@ paths:
       summary: Send employee invite
       tags:
       - employee-invites
+  /employees:
+    get:
+      description: Returns active employee access rows filtered by the current organization,
+        division, or unit scope.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/bootstrap.EmployeeAccessResponse'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: List employees
+      tags:
+      - employees
+  /employees/{accessID}:
+    patch:
+      consumes:
+      - application/json
+      description: Organization admins can update an employee role template and scope
+        target.
+      parameters:
+      - description: Scoped access ID
+        in: path
+        name: accessID
+        required: true
+        type: string
+      - description: Employee access update payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/bootstrap.UpdateEmployeeAccessRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.EmployeeAccessResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Update employee access
+      tags:
+      - employees
+  /employees/{accessID}/deactivate:
+    post:
+      description: Organization admins can archive an employee membership through
+        one of its active access rows.
+      parameters:
+      - description: Scoped access ID
+        in: path
+        name: accessID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/bootstrap.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/bootstrap.EmployeeAccessResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/bootstrap.Response'
+      summary: Deactivate employee
+      tags:
+      - employees
   /equipment:
     get:
       description: Returns equipment records visible inside the authenticated customer

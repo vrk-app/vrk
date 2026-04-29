@@ -264,6 +264,96 @@ func (h *Handler) RevokeEmployeeInvite(w http.ResponseWriter, r *http.Request) {
 	sendSuccess(w, http.StatusOK, resp)
 }
 
+// ListEmployees returns active scoped employees visible to the current access grant.
+// @Summary      List employees
+// @Description  Returns active employee access rows filtered by the current organization, division, or unit scope.
+// @Tags         employees
+// @Produce      json
+// @Success      200  {object}  Response{data=[]EmployeeAccessResponse}
+// @Failure      401  {object}  Response
+// @Failure      403  {object}  Response
+// @Router       /employees [get]
+func (h *Handler) ListEmployees(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	resp, err := h.service.ListEmployees(r.Context(), token)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp)
+}
+
+// UpdateEmployeeAccess updates role and scope for an active employee access row.
+// @Summary      Update employee access
+// @Description  Organization admins can update an employee role template and scope target.
+// @Tags         employees
+// @Accept       json
+// @Produce      json
+// @Param        accessID path string true "Scoped access ID"
+// @Param        request body UpdateEmployeeAccessRequest true "Employee access update payload"
+// @Success      200  {object}  Response{data=EmployeeAccessResponse}
+// @Failure      400  {object}  Response
+// @Failure      401  {object}  Response
+// @Failure      403  {object}  Response
+// @Failure      404  {object}  Response
+// @Failure      409  {object}  Response
+// @Router       /employees/{accessID} [patch]
+func (h *Handler) UpdateEmployeeAccess(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	var req UpdateEmployeeAccessRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		sendError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	resp, err := h.service.UpdateEmployeeAccess(r.Context(), token, chi.URLParam(r, "accessID"), req)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp)
+}
+
+// DeactivateEmployee deactivates an employee membership and invalidates its sessions.
+// @Summary      Deactivate employee
+// @Description  Organization admins can archive an employee membership through one of its active access rows.
+// @Tags         employees
+// @Produce      json
+// @Param        accessID path string true "Scoped access ID"
+// @Success      200  {object}  Response{data=EmployeeAccessResponse}
+// @Failure      401  {object}  Response
+// @Failure      403  {object}  Response
+// @Failure      404  {object}  Response
+// @Failure      409  {object}  Response
+// @Router       /employees/{accessID}/deactivate [post]
+func (h *Handler) DeactivateEmployee(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	resp, err := h.service.DeactivateEmployee(r.Context(), token, chi.URLParam(r, "accessID"))
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp)
+}
+
 // UpdateCompanyProfile updates the active customer organization profile.
 // @Summary      Update company profile
 // @Description  Updates the persistent Stage 03 company profile for an active organization-scope admin.
@@ -623,7 +713,7 @@ func sendError(w http.ResponseWriter, status int, message string) {
 
 func writeServiceError(w http.ResponseWriter, err error) {
 	switch {
-	case errors.Is(err, ErrInviteNotFound):
+	case errors.Is(err, ErrInviteNotFound), errors.Is(err, ErrEmployeeAccessNotFound):
 		sendError(w, http.StatusNotFound, err.Error())
 	case errors.Is(err, ErrDivisionNotFound), errors.Is(err, ErrUnitNotFound):
 		sendError(w, http.StatusNotFound, err.Error())
@@ -640,6 +730,8 @@ func writeServiceError(w http.ResponseWriter, err error) {
 		errors.Is(err, ErrInviteDraftRequired),
 		errors.Is(err, ErrInviteSendNotAllowed),
 		errors.Is(err, ErrInviteRevokeNotAllowed),
+		errors.Is(err, ErrEmployeeAccessConflict),
+		errors.Is(err, ErrEmployeeAccessSelfMutation),
 		errors.Is(err, ErrArchiveBlocked):
 		sendError(w, http.StatusConflict, err.Error())
 	case errors.Is(err, ErrOrganizationNameRequired),

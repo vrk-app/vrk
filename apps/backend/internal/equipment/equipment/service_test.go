@@ -82,6 +82,18 @@ func (s *testBootstrapService) RevokeEmployeeInvite(ctx context.Context, token s
 	panic("unexpected call to RevokeEmployeeInvite")
 }
 
+func (s *testBootstrapService) ListEmployees(ctx context.Context, token string) ([]bootstrap.EmployeeAccessResponse, error) {
+	panic("unexpected call to ListEmployees")
+}
+
+func (s *testBootstrapService) UpdateEmployeeAccess(ctx context.Context, token string, accessID string, req bootstrap.UpdateEmployeeAccessRequest) (*bootstrap.EmployeeAccessResponse, error) {
+	panic("unexpected call to UpdateEmployeeAccess")
+}
+
+func (s *testBootstrapService) DeactivateEmployee(ctx context.Context, token string, accessID string) (*bootstrap.EmployeeAccessResponse, error) {
+	panic("unexpected call to DeactivateEmployee")
+}
+
 func (s *testBootstrapService) CreateSession(ctx context.Context, req bootstrap.CreateSessionRequest) (*bootstrap.SessionSummaryResponse, error) {
 	panic("unexpected call to CreateSession")
 }

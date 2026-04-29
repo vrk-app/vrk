@@ -42,6 +42,9 @@ type Service interface {
 	ListEmployeeInvites(ctx context.Context, token string) ([]EmployeeInviteResponse, error)
 	SendEmployeeInvite(ctx context.Context, token string, inviteID string) (*EmployeeInviteResponse, error)
 	RevokeEmployeeInvite(ctx context.Context, token string, inviteID string) (*EmployeeInviteResponse, error)
+	ListEmployees(ctx context.Context, token string) ([]EmployeeAccessResponse, error)
+	UpdateEmployeeAccess(ctx context.Context, token string, accessID string, req UpdateEmployeeAccessRequest) (*EmployeeAccessResponse, error)
+	DeactivateEmployee(ctx context.Context, token string, accessID string) (*EmployeeAccessResponse, error)
 	CreateSession(ctx context.Context, req CreateSessionRequest) (*SessionSummaryResponse, error)
 	GetSession(ctx context.Context, token string) (*SessionSummaryResponse, error)
 	DeleteSession(ctx context.Context, token string) error
@@ -361,6 +364,69 @@ func (s *service) RevokeEmployeeInvite(ctx context.Context, token string, invite
 	return s.mapEmployeeInvite(ctx, snapshot, invite), nil
 }
 
+func (s *service) ListEmployees(ctx context.Context, token string) ([]EmployeeAccessResponse, error) {
+	snapshot, err := s.authorizeEmployeeViewer(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	records, err := s.repository.ListEmployeeAccessRows(ctx, snapshot)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]EmployeeAccessResponse, 0, len(records))
+	for _, record := range records {
+		result = append(result, *s.mapEmployeeAccess(ctx, snapshot, record))
+	}
+	return result, nil
+}
+
+func (s *service) UpdateEmployeeAccess(ctx context.Context, token string, accessID string, req UpdateEmployeeAccessRequest) (*EmployeeAccessResponse, error) {
+	snapshot, err := s.authorizeEmployeeManager(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := parseRequiredUUID(accessID)
+	if err != nil {
+		return nil, err
+	}
+	if isCurrentSessionAccess(snapshot, id) {
+		return nil, ErrEmployeeAccessSelfMutation
+	}
+	if err := normalizeEmployeeAccessUpdateRequest(snapshot, &req); err != nil {
+		return nil, err
+	}
+
+	record, err := s.repository.UpdateEmployeeAccess(ctx, snapshot, id, req)
+	if err != nil {
+		return nil, err
+	}
+	return s.mapEmployeeAccess(ctx, snapshot, *record), nil
+}
+
+func (s *service) DeactivateEmployee(ctx context.Context, token string, accessID string) (*EmployeeAccessResponse, error) {
+	snapshot, err := s.authorizeEmployeeManager(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := parseRequiredUUID(accessID)
+	if err != nil {
+		return nil, err
+	}
+	if isCurrentSessionAccess(snapshot, id) {
+		return nil, ErrEmployeeAccessSelfMutation
+	}
+
+	record, err := s.repository.DeactivateEmployeeAccess(ctx, snapshot, id)
+	if err != nil {
+		return nil, err
+	}
+	return s.mapEmployeeAccess(ctx, snapshot, *record), nil
+}
+
 func (s *service) CreateSession(ctx context.Context, req CreateSessionRequest) (*SessionSummaryResponse, error) {
 	email := strings.ToLower(strings.TrimSpace(req.Email))
 	password := strings.TrimSpace(req.Password)
@@ -634,6 +700,34 @@ func (s *service) authorizeInviteManager(ctx context.Context, token string) (*se
 	return snapshot, nil
 }
 
+func (s *service) authorizeEmployeeViewer(ctx context.Context, token string) (*sessionSnapshot, error) {
+	snapshot, err := s.repository.GetSession(ctx, strings.TrimSpace(token))
+	if err != nil {
+		return nil, err
+	}
+	if snapshot.SessionRow.OrganizationLaunchState != "active" {
+		return nil, ErrLaunchRequired
+	}
+	if snapshot.SessionRow.OrganizationRoleTitle != "customer" || !canViewEmployees(snapshot) {
+		return nil, ErrForbidden
+	}
+	return snapshot, nil
+}
+
+func (s *service) authorizeEmployeeManager(ctx context.Context, token string) (*sessionSnapshot, error) {
+	snapshot, err := s.repository.GetSession(ctx, strings.TrimSpace(token))
+	if err != nil {
+		return nil, err
+	}
+	if snapshot.SessionRow.OrganizationLaunchState != "active" {
+		return nil, ErrLaunchRequired
+	}
+	if snapshot.SessionRow.OrganizationRoleTitle != "customer" || !canManageEmployees(snapshot) {
+		return nil, ErrForbidden
+	}
+	return snapshot, nil
+}
+
 func (s *service) normalizeEmployeeInviteRequest(snapshot *sessionSnapshot, req *CreateEmployeeInviteRequest) (time.Time, error) {
 	req.FullName = strings.TrimSpace(req.FullName)
 	req.Email = strings.ToLower(strings.TrimSpace(req.Email))
@@ -679,6 +773,36 @@ func (s *service) normalizeEmployeeInviteRequest(snapshot *sessionSnapshot, req 
 	}
 
 	return expiresAt, nil
+}
+
+func normalizeEmployeeAccessUpdateRequest(snapshot *sessionSnapshot, req *UpdateEmployeeAccessRequest) error {
+	req.RoleTemplate = strings.TrimSpace(req.RoleTemplate)
+	req.ScopeType = strings.TrimSpace(req.ScopeType)
+	req.ScopeID = strings.TrimSpace(req.ScopeID)
+
+	if req.RoleTemplate == "" {
+		return ErrInviteRoleTemplateRequired
+	}
+	if _, ok := allowedRoleTemplates[req.RoleTemplate]; !ok {
+		return ErrInviteRoleTemplateInvalid
+	}
+	if req.ScopeType != ScopeOrganization && req.ScopeType != ScopeDivision && req.ScopeType != ScopeUnit {
+		return ErrInviteScopeTypeInvalid
+	}
+	if !IsRoleScopeCompatible(req.RoleTemplate, req.ScopeType) {
+		return ErrInviteRoleScopeInvalid
+	}
+	if req.ScopeID == "" {
+		return ErrInviteScopeTargetRequired
+	}
+	if _, err := uuid.Parse(req.ScopeID); err != nil {
+		return ErrInviteScopeTargetInvalid
+	}
+	if !scopeExistsInSnapshot(snapshot, req.ScopeType, req.ScopeID) {
+		return ErrInviteScopeTargetInvalid
+	}
+
+	return nil
 }
 
 func (s *service) inspectEmployeeInvite(ctx context.Context, invite *generated.GetEmployeeInviteByTokenRow) (*PublicInviteInspectionResponse, error) {
@@ -842,6 +966,8 @@ func resolveWorkspace(snapshot *sessionSnapshot) SessionWorkspaceResponse {
 		LandingSubtitle:          "Доступ уровня organization: доступны подразделения и юниты организации.",
 		LandingPath:              "/company",
 		CanManageEmployeeInvites: canManageEmployeeInvites(snapshot),
+		CanViewEmployees:         canViewEmployees(snapshot),
+		CanManageEmployees:       canManageEmployees(snapshot),
 	}
 
 	if session.OrganizationRoleTitle == "contractor" && session.OrganizationLaunchState == "active" {
@@ -878,7 +1004,25 @@ func resolveWorkspace(snapshot *sessionSnapshot) SessionWorkspaceResponse {
 }
 
 func canManageEmployeeInvites(snapshot *sessionSnapshot) bool {
-	return snapshotHasCapability(snapshot, CapabilityManageAccess)
+	return snapshot != nil &&
+		snapshot.SessionRow.OrganizationRoleTitle == "customer" &&
+		snapshotHasCapability(snapshot, CapabilityManageAccess)
+}
+
+func canViewEmployees(snapshot *sessionSnapshot) bool {
+	return snapshot != nil &&
+		snapshot.SessionRow.OrganizationRoleTitle == "customer" &&
+		snapshotHasCapability(snapshot, CapabilityViewEmployees)
+}
+
+func canManageEmployees(snapshot *sessionSnapshot) bool {
+	return snapshot != nil &&
+		snapshot.SessionRow.OrganizationRoleTitle == "customer" &&
+		snapshotHasCapability(snapshot, CapabilityManageEmployees)
+}
+
+func isCurrentSessionAccess(snapshot *sessionSnapshot, accessID uuid.UUID) bool {
+	return snapshot != nil && samePGUUID(toPGUUID(accessID), snapshot.SessionRow.GrantID)
 }
 
 func scopeExistsInSnapshot(snapshot *sessionSnapshot, scopeType string, scopeID string) bool {
@@ -1035,6 +1179,29 @@ func coalesceStringPointer(primary *string, fallback *string) *string {
 		return primary
 	}
 	return fallback
+}
+
+func (s *service) mapEmployeeAccess(ctx context.Context, snapshot *sessionSnapshot, record employeeAccessRecord) *EmployeeAccessResponse {
+	scopeLabel := s.resolveScopeLabel(
+		ctx,
+		snapshot.SessionRow.OrganizationID,
+		record.ScopeType,
+		record.ScopeID,
+		snapshot.SessionRow.OrganizationShellName,
+		snapshot,
+	)
+	return &EmployeeAccessResponse{
+		AccessID:         uuidFromPG(record.AccessID).String(),
+		MembershipID:     uuidFromPG(record.MembershipID).String(),
+		AccountID:        uuidFromPG(record.AccountID).String(),
+		FullName:         record.FullName,
+		Email:            record.Email,
+		RoleTemplate:     record.RoleTemplate,
+		ScopeType:        record.ScopeType,
+		ScopeID:          uuidFromPG(record.ScopeID).String(),
+		ScopeLabel:       scopeLabel,
+		MembershipStatus: record.MembershipStatus,
+	}
 }
 
 func (s *service) mapEmployeeInvite(ctx context.Context, snapshot *sessionSnapshot, invite *generated.AuthEmployeeInvite) *EmployeeInviteResponse {

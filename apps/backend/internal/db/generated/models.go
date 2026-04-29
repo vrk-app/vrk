@@ -212,6 +212,15 @@ type AuthUnit struct {
 	Comment        *string            `json:"comment"`
 }
 
+type DevSeedRun struct {
+	SeedKey    string             `json:"seedKey"`
+	Version    string             `json:"version"`
+	Status     string             `json:"status"`
+	StartedAt  pgtype.Timestamptz `json:"startedAt"`
+	FinishedAt pgtype.Timestamptz `json:"finishedAt"`
+	ResultJson []byte             `json:"resultJson"`
+}
+
 type Equipment struct {
 	ID                    pgtype.UUID        `json:"id"`
 	FactoryNumber         string             `json:"factoryNumber"`

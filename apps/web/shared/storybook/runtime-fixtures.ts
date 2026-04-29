@@ -1,6 +1,7 @@
 import type {
   ContractRecord,
   ContractorOption,
+  EmployeeAccessResponse,
   EmployeeInviteResponse,
   EquipmentRecord,
   JournalRecord,
@@ -58,6 +59,8 @@ export const runtimeSession: SessionSummaryResponse = {
     landingSubtitle: "Управление реквизитами, структурой и доступом сотрудников.",
     landingPath: "/company",
     canManageEmployeeInvites: true,
+    canViewEmployees: true,
+    canManageEmployees: true,
   },
   divisions: [
     {
@@ -177,6 +180,8 @@ export const divisionScopeSession: SessionSummaryResponse = {
     landingSubtitle: "Доступ ограничен своим подразделением и его юнитами.",
     landingPath: "/company",
     canManageEmployeeInvites: false,
+    canViewEmployees: false,
+    canManageEmployees: false,
   },
   divisions: cloneFixture(runtimeSession.divisions.filter((item) => item.id === "division-north")),
   units: cloneFixture(runtimeSession.units.filter((item) => item.divisionId === "division-north")),
@@ -214,6 +219,8 @@ export const contractorSession: SessionSummaryResponse = {
     landingSubtitle: "Договоры заказчиков, доступные вашей организации.",
     landingPath: "/contracts",
     canManageEmployeeInvites: false,
+    canViewEmployees: false,
+    canManageEmployees: false,
   },
   divisions: [],
   units: [],
@@ -238,7 +245,86 @@ export const restrictedCustomerSession: SessionSummaryResponse = {
     scopeName: "Аудиторский доступ",
     landingSubtitle: "Просмотр без изменения данных.",
     canManageEmployeeInvites: false,
+    canViewEmployees: true,
+    canManageEmployees: false,
   },
+};
+
+export const organizationHeadSession: SessionSummaryResponse = {
+  ...cloneFixture(runtimeSession),
+  sessionToken: "storybook-session-organization-head",
+  membershipId: "membership-organization-head",
+  account: {
+    id: "account-organization-head",
+    fullName: "Дмитрий Ковалев",
+    email: "d.kovalev@vrk.local",
+  },
+  grant: {
+    id: "grant-organization-head",
+    roleTemplate: "organization_head",
+    scopeType: "organization",
+    scopeId: "org-customer",
+  },
+  workspace: {
+    ...runtimeSession.workspace,
+    scopeName: "Вся организация",
+    landingSubtitle: "Просмотр организации и сотрудников без изменения доступа.",
+    canManageEmployeeInvites: false,
+    canViewEmployees: true,
+    canManageEmployees: false,
+  },
+};
+
+export const divisionHeadSession: SessionSummaryResponse = {
+  ...cloneFixture(divisionScopeSession),
+  sessionToken: "storybook-session-division-head",
+  membershipId: "membership-division-head",
+  account: {
+    id: "account-division-head",
+    fullName: "Илья Романов",
+    email: "i.romanov@vrk.local",
+  },
+  grant: {
+    id: "grant-division-head",
+    roleTemplate: "division_head",
+    scopeType: "division",
+    scopeId: "division-north",
+  },
+  workspace: {
+    ...divisionScopeSession.workspace,
+    canViewEmployees: true,
+    canManageEmployees: false,
+  },
+};
+
+export const unitHeadSession: SessionSummaryResponse = {
+  ...cloneFixture(runtimeSession),
+  sessionToken: "storybook-session-unit-head",
+  membershipId: "membership-unit-head",
+  account: {
+    id: "account-unit-head",
+    fullName: "Сергей Лебедев",
+    email: "s.lebedev@vrk.local",
+  },
+  grant: {
+    id: "grant-unit-head",
+    roleTemplate: "unit_head",
+    scopeType: "unit",
+    scopeId: "unit-metrology",
+  },
+  workspace: {
+    scopeType: "unit",
+    scopeId: "unit-metrology",
+    scopeName: "Метрологическая лаборатория",
+    landingTitle: "Метрологическая лаборатория",
+    landingSubtitle: "Доступ ограничен выбранным юнитом.",
+    landingPath: "/company",
+    canManageEmployeeInvites: false,
+    canViewEmployees: true,
+    canManageEmployees: false,
+  },
+  divisions: [],
+  units: cloneFixture(runtimeSession.units.filter((item) => item.id === "unit-metrology")),
 };
 
 export const firstAdminInvite: PublicInviteInspectionResponse = {
@@ -309,6 +395,81 @@ export const employeeInvites: EmployeeInviteResponse[] = [
     scopeLabel: runtimeSession.organization.name,
     status: "draft",
     expiresAt: "2026-05-10T12:00:00.000Z",
+  },
+];
+
+export const employeeAccessRows: EmployeeAccessResponse[] = [
+  {
+    accessId: "grant-organization-admin",
+    membershipId: "membership-customer-admin",
+    accountId: "account-admin",
+    fullName: "Анна Волкова",
+    email: "a.volkova@vrk.local",
+    roleTemplate: "organization_admin",
+    scopeType: "organization",
+    scopeId: runtimeSession.organization.id,
+    scopeLabel: runtimeSession.organization.name,
+    membershipStatus: "active",
+  },
+  {
+    accessId: "grant-organization-head",
+    membershipId: "membership-organization-head",
+    accountId: "account-organization-head",
+    fullName: "Дмитрий Ковалев",
+    email: "d.kovalev@vrk.local",
+    roleTemplate: "organization_head",
+    scopeType: "organization",
+    scopeId: runtimeSession.organization.id,
+    scopeLabel: runtimeSession.organization.name,
+    membershipStatus: "active",
+  },
+  {
+    accessId: "grant-division-head",
+    membershipId: "membership-division-head",
+    accountId: "account-division-head",
+    fullName: "Илья Романов",
+    email: "i.romanov@vrk.local",
+    roleTemplate: "division_head",
+    scopeType: "division",
+    scopeId: "division-north",
+    scopeLabel: "Северный филиал",
+    membershipStatus: "active",
+  },
+  {
+    accessId: "grant-unit-head",
+    membershipId: "membership-unit-head",
+    accountId: "account-unit-head",
+    fullName: "Сергей Лебедев",
+    email: "s.lebedev@vrk.local",
+    roleTemplate: "unit_head",
+    scopeType: "unit",
+    scopeId: "unit-metrology",
+    scopeLabel: "Метрологическая лаборатория",
+    membershipStatus: "active",
+  },
+  {
+    accessId: "grant-division-operator-east",
+    membershipId: "membership-division-operator-east",
+    accountId: "account-division-operator-east",
+    fullName: "Мария Кузнецова",
+    email: "m.kuznetsova@vrk.local",
+    roleTemplate: "division_operator",
+    scopeType: "division",
+    scopeId: "division-east",
+    scopeLabel: "Восточный филиал",
+    membershipStatus: "active",
+  },
+  {
+    accessId: "grant-auditor",
+    membershipId: "membership-auditor",
+    accountId: "account-auditor",
+    fullName: "Олег Сафонов",
+    email: "o.safonov@vrk.local",
+    roleTemplate: "auditor",
+    scopeType: "organization",
+    scopeId: runtimeSession.organization.id,
+    scopeLabel: runtimeSession.organization.name,
+    membershipStatus: "active",
   },
 ];
 

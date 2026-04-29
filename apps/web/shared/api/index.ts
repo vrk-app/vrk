@@ -25,6 +25,7 @@ export type {
   Capability,
   CompanyProfilePayload,
   CreateEmployeeInvitePayload,
+  EmployeeAccessResponse,
   EmployeeInviteResponse,
   InviteInspectionResponse,
   LaunchWizardPayload,
@@ -35,6 +36,7 @@ export type {
   ScopeType,
   SessionSummaryResponse,
   StructureNodePayload,
+  UpdateEmployeeAccessPayload,
 } from "./bootstrap";
 export {
   fetchContractRegistry,

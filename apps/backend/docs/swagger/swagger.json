@@ -1105,6 +1105,201 @@
                 }
             }
         },
+        "/employees": {
+            "get": {
+                "description": "Returns active employee access rows filtered by the current organization, division, or unit scope.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "employees"
+                ],
+                "summary": "List employees",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/bootstrap.EmployeeAccessResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/employees/{accessID}": {
+            "patch": {
+                "description": "Organization admins can update an employee role template and scope target.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "employees"
+                ],
+                "summary": "Update employee access",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Scoped access ID",
+                        "name": "accessID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Employee access update payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.UpdateEmployeeAccessRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.EmployeeAccessResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/employees/{accessID}/deactivate": {
+            "post": {
+                "description": "Organization admins can archive an employee membership through one of its active access rows.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "employees"
+                ],
+                "summary": "Deactivate employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Scoped access ID",
+                        "name": "accessID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/bootstrap.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/bootstrap.EmployeeAccessResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/bootstrap.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/equipment": {
             "get": {
                 "description": "Returns equipment records visible inside the authenticated customer organization/session scope.",
@@ -3645,6 +3840,41 @@
                 }
             }
         },
+        "bootstrap.EmployeeAccessResponse": {
+            "type": "object",
+            "properties": {
+                "accessId": {
+                    "type": "string"
+                },
+                "accountId": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "fullName": {
+                    "type": "string"
+                },
+                "membershipId": {
+                    "type": "string"
+                },
+                "membershipStatus": {
+                    "type": "string"
+                },
+                "roleTemplate": {
+                    "type": "string"
+                },
+                "scopeId": {
+                    "type": "string"
+                },
+                "scopeLabel": {
+                    "type": "string"
+                },
+                "scopeType": {
+                    "type": "string"
+                }
+            }
+        },
         "bootstrap.EmployeeInviteResponse": {
             "type": "object",
             "properties": {
@@ -3998,6 +4228,12 @@
                 "canManageEmployeeInvites": {
                     "type": "boolean"
                 },
+                "canManageEmployees": {
+                    "type": "boolean"
+                },
+                "canViewEmployees": {
+                    "type": "boolean"
+                },
                 "landingPath": {
                     "type": "string"
                 },
@@ -4120,6 +4356,20 @@
                     "type": "string"
                 },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "bootstrap.UpdateEmployeeAccessRequest": {
+            "type": "object",
+            "properties": {
+                "roleTemplate": {
+                    "type": "string"
+                },
+                "scopeId": {
+                    "type": "string"
+                },
+                "scopeType": {
                     "type": "string"
                 }
             }

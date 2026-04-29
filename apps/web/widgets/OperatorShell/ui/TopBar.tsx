@@ -99,7 +99,7 @@ export function TopBar({
               aria-controls={mobileMenuId}
               aria-expanded={mobileMenuOpen}
               aria-label={mobileMenuOpen ? "Закрыть навигацию" : "Открыть навигацию"}
-              className="inline-flex size-11 items-center justify-center rounded-[var(--radius-lg)] border border-border bg-card text-foreground shadow-xs transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:hidden"
+              className="inline-flex size-11 touch-manipulation items-center justify-center rounded-[var(--radius-lg)] border border-border bg-card text-foreground shadow-xs transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none lg:hidden"
               onClick={handleMobileMenuToggle}
               type="button"
             >
@@ -123,7 +123,7 @@ export function TopBar({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <label
             className={cn(
-              "flex h-11 min-w-0 flex-1 items-center gap-3 rounded-[var(--radius-lg)] border border-border bg-muted/70 px-3.5 text-sm text-foreground shadow-xs transition-[border-color,box-shadow,background-color] duration-150 sm:w-[320px]",
+              "flex h-11 min-w-0 flex-1 items-center gap-3 rounded-[var(--radius-lg)] border border-border bg-muted/70 px-3.5 text-sm text-foreground shadow-xs transition-[border-color,box-shadow,background-color] duration-150 motion-reduce:transition-none sm:w-[320px]",
               isSearchInteractive
                 ? "focus-within:border-accent focus-within:bg-card focus-within:ring-2 focus-within:ring-ring/15"
                 : "cursor-not-allowed bg-muted text-muted-foreground",
@@ -145,7 +145,7 @@ export function TopBar({
             />
           </label>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <button
               aria-label={
                 isNotificationsInteractive
@@ -153,7 +153,7 @@ export function TopBar({
                   : "Уведомления недоступны без подключенного сценария"
               }
               className={cn(
-                "relative inline-flex size-11 items-center justify-center rounded-[var(--radius-lg)] border border-border shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                "relative inline-flex size-11 touch-manipulation items-center justify-center rounded-[var(--radius-lg)] border border-border shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none",
                 isNotificationsInteractive
                   ? "bg-card text-foreground hover:bg-muted"
                   : "cursor-not-allowed bg-muted text-muted-foreground",
@@ -177,7 +177,7 @@ export function TopBar({
                   : "Меню пользователя недоступно без подключенного сценария"
               }
               className={cn(
-                "inline-flex min-h-11 items-center gap-3 rounded-[var(--radius-lg)] border border-border px-3 py-2 text-left shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                "inline-flex h-11 min-w-0 max-w-full touch-manipulation items-center gap-2.5 rounded-[var(--radius-lg)] border border-border px-2.5 pr-3 text-left shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none sm:max-w-[390px]",
                 isUserMenuInteractive
                   ? "bg-card hover:bg-muted"
                   : "cursor-not-allowed bg-muted text-muted-foreground",
@@ -188,7 +188,7 @@ export function TopBar({
             >
               <span
                 className={cn(
-                  "flex size-9 items-center justify-center rounded-full text-sm font-semibold",
+                  "flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold",
                   isUserMenuInteractive ? "bg-accent-soft text-accent" : "bg-card text-muted-foreground",
                 )}
               >
@@ -197,13 +197,13 @@ export function TopBar({
               <span className="hidden min-w-0 flex-col sm:flex">
                 <span
                   className={cn(
-                    "truncate text-sm font-semibold",
+                    "truncate text-[13px] font-semibold leading-4",
                     isUserMenuInteractive ? "text-foreground" : "text-muted-foreground",
                   )}
                 >
                   {user.name}
                 </span>
-                <span className="truncate text-xs text-muted-foreground">{user.role}</span>
+                <span className="truncate text-xs leading-3.5 text-muted-foreground">{user.role}</span>
               </span>
               {isUserMenuInteractive ? (
                 <ChevronDown aria-hidden="true" className="size-4 text-muted-foreground" />

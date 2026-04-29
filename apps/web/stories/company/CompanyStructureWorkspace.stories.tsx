@@ -1,9 +1,12 @@
 import type { Decorator, Meta, StoryObj } from "@storybook/react";
 import { CompanyStructureWorkspace } from "@/app/(runtime)/company/_components/CompanyStructureWorkspace";
 import {
+  divisionHeadSession,
   divisionScopeSession,
   emptyStructureSession,
+  organizationHeadSession,
   runtimeSession,
+  unitHeadSession,
 } from "@/shared/storybook/runtime-fixtures";
 import { withRuntimeApi } from "@/shared/storybook/runtime-api-mock";
 
@@ -51,4 +54,25 @@ export const ScopedReadonly: Story = {
     initialSession: divisionScopeSession,
   },
   decorators: [withRuntimeApi({ session: divisionScopeSession })],
+};
+
+export const OrganizationHeadEmployees: Story = {
+  args: {
+    initialSession: organizationHeadSession,
+  },
+  decorators: [withRuntimeApi({ session: organizationHeadSession })],
+};
+
+export const DivisionHeadEmployees: Story = {
+  args: {
+    initialSession: divisionHeadSession,
+  },
+  decorators: [withRuntimeApi({ session: divisionHeadSession })],
+};
+
+export const UnitHeadEmployees: Story = {
+  args: {
+    initialSession: unitHeadSession,
+  },
+  decorators: [withRuntimeApi({ session: unitHeadSession })],
 };

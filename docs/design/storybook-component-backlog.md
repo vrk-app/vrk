@@ -538,23 +538,29 @@
 
 ### RUN-01 CompanyStructureWorkspace [P1]
 
-- Назначение: управление профилем организации, подразделениями, юнитами и доступным scope.
-- Состояния: `organization admin`, `empty structure`, `scoped read-only`.
-- Stories: `OrganizationAdmin`, `EmptyStructure`, `ScopedReadonly`.
+- Назначение: управление профилем организации, подразделениями, юнитами, доступным scope и conditional вкладкой сотрудников.
+- Состояния: `organization admin`, `empty structure`, `scoped read-only`, `organization head employees`, `division head employees`, `unit head employees`.
+- Stories: `OrganizationAdmin`, `EmptyStructure`, `ScopedReadonly`, `OrganizationHeadEmployees`, `DivisionHeadEmployees`, `UnitHeadEmployees`.
 
-### RUN-02 EmployeeInviteManager [P1]
+### RUN-02 EmployeeAccessWorkspace [P1]
+
+- Назначение: scoped registry активных сотрудников на вкладке `/company` → `Сотрудники`, с admin edit/deactivate controls и embedded invite manager только для `organization_admin`.
+- Состояния: `admin editable`, `organization head read-only`, `division head read-only`, `unit head read-only`, `empty`, `loading`, `error`.
+- Stories: `AdminEditable`, `OrganizationHeadReadonly`, `DivisionHeadReadonly`, `UnitHeadReadonly`, `Empty`, `Loading`, `Error`.
+
+### RUN-03 EmployeeInviteManager [P1]
 
 - Назначение: создание, отправка, отзыв и просмотр статусов приглашений сотрудников.
 - Состояния: `with invites`, `empty`, `loading`, `error`.
 - Stories: `WithInvites`, `Empty`, `Loading`, `Error`.
 
-### RUN-03 ContractsRegistry [P1]
+### RUN-04 ContractsRegistry [P1]
 
 - Назначение: реестр договоров заказчика, read-only договоры подрядчика и проверка маршрутизации.
 - Состояния: `customer admin`, `customer empty`, `customer restricted`, `contractor read-only`.
 - Stories: `CustomerAdmin`, `CustomerEmpty`, `CustomerRestricted`, `ContractorReadonly`.
 
-### RUN-04 EquipmentRegistryWorkspace [P1]
+### RUN-05 EquipmentRegistryWorkspace [P1]
 
 - Назначение: единый workspace реестров оборудования, СИ, эталонов, журналов и архива.
 - Состояния: `equipment tab`, `measuring instruments tab`, `standards tab`, `archive visible`, `scoped read-only`, `load error`.
