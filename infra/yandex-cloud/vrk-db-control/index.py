@@ -15,6 +15,7 @@ METADATA_TOKEN_URL = (
 
 DEFAULT_SESSION_HOURS = 6
 DEFAULT_OPERATION_WAIT_SECONDS = 240
+DEFAULT_LABEL_WAIT_SECONDS = 45
 DEFAULT_OPERATION_POLL_SECONDS = 5
 
 
@@ -29,38 +30,111 @@ def start(event, context):
     config = _load_config()
     cluster = _get_cluster(config)
     active_until = int(time.time()) + config["session_seconds"]
-
-    start_operation = None
-    if cluster.get("status") == "STOPPED":
-        start_operation = _post_cluster_action(config, "start")
-        _wait_operation(config, start_operation["id"])
-        cluster = _wait_cluster_ready(config)
-    elif cluster.get("status") in {"STARTING", "UPDATING"}:
-        cluster = _wait_cluster_ready(config)
+    status = cluster.get("status")
 
     labels = _merged_labels(cluster, active_until)
-    label_operation = _update_labels(config, labels)
-    label_result = _wait_operation(config, label_operation["id"])
-    cluster = _get_cluster(config)
-
-    if cluster.get("status") in {"STARTING", "UPDATING"}:
-        cluster = _wait_cluster_ready(config)
-
-    body = {
+    base_body = {
         "ok": True,
-        "action": "start-or-extend",
         "cluster_id": config["cluster_id"],
         "cluster_name": cluster.get("name"),
-        "status": cluster.get("status"),
+        "status_before": status,
         "health": cluster.get("health"),
         "active_until": active_until,
         "active_until_iso": _format_epoch(active_until),
         "session_hours": config["session_seconds"] // 3600,
-        "label_operation_id": label_operation["id"],
-        "label_operation_done": label_result.get("done", False),
-        "start_operation_id": start_operation["id"] if start_operation else None,
     }
-    return _response(200, body)
+
+    try:
+        if status == "STOPPED":
+            label_operation = _update_labels(config, labels)
+            label_result = _wait_operation(
+                config,
+                label_operation["id"],
+                timeout_seconds=config["label_wait_seconds"],
+            )
+            if not label_result.get("done"):
+                return _response(
+                    202,
+                    {
+                        **base_body,
+                        "action": "lease-update-in-progress",
+                        "label_operation_id": label_operation["id"],
+                        "label_operation_done": False,
+                        "start_operation_id": None,
+                        "message": "Lease label update is still running; retry the start URL in a minute.",
+                    },
+                )
+
+            start_operation = _post_cluster_action(config, "start")
+            return _response(
+                202,
+                {
+                    **base_body,
+                    "action": "start-requested",
+                    "status": "STARTING",
+                    "label_operation_id": label_operation["id"],
+                    "label_operation_done": True,
+                    "start_operation_id": start_operation["id"],
+                    "message": "Database start was requested. Backend readiness may take a few minutes.",
+                },
+            )
+
+        if status == "RUNNING":
+            label_operation = _update_labels(config, labels)
+            return _response(
+                200,
+                {
+                    **base_body,
+                    "action": "extend-requested",
+                    "status": status,
+                    "label_operation_id": label_operation["id"],
+                    "label_operation_done": False,
+                    "start_operation_id": None,
+                    "message": "Database is already running; session extension was requested.",
+                },
+            )
+
+        if status in {"STARTING", "UPDATING"}:
+            current_active_until = _parse_int((cluster.get("labels") or {}).get("active_until"))
+            return _response(
+                202,
+                {
+                    **base_body,
+                    "action": "cluster-operation-in-progress",
+                    "reason": "cluster-operation-in-progress",
+                    "status": status,
+                    "current_active_until": current_active_until,
+                    "current_active_until_iso": _format_epoch(current_active_until)
+                    if current_active_until
+                    else None,
+                    "label_operation_id": None,
+                    "label_operation_done": False,
+                    "start_operation_id": None,
+                    "message": "Cluster operation is already in progress. Check backend /readyz in a few minutes.",
+                },
+            )
+
+        return _response(
+            409,
+            {
+                **base_body,
+                "ok": False,
+                "action": "unsupported-status",
+                "status": status,
+                "message": "Cluster is not in a startable status.",
+            },
+        )
+    except ApiError as err:
+        return _response(
+            err.status if 400 <= err.status < 500 else 502,
+            {
+                **base_body,
+                "ok": False,
+                "action": "api-error",
+                "status": status,
+                "error": err.body,
+            },
+        )
 
 
 def autostop(event, context):
@@ -137,10 +211,15 @@ def _load_config():
     if wait_seconds is None:
         wait_seconds = DEFAULT_OPERATION_WAIT_SECONDS
 
+    label_wait_seconds = _parse_int(os.environ.get("VRK_DB_LABEL_WAIT_SECONDS"))
+    if label_wait_seconds is None:
+        label_wait_seconds = DEFAULT_LABEL_WAIT_SECONDS
+
     return {
         "cluster_id": cluster_id,
         "session_seconds": session_hours * 3600,
         "wait_seconds": wait_seconds,
+        "label_wait_seconds": label_wait_seconds,
         "token": _get_iam_token(),
     }
 
@@ -188,8 +267,9 @@ def _post_cluster_action(config, action):
     )
 
 
-def _wait_operation(config, operation_id):
-    deadline = time.time() + config["wait_seconds"]
+def _wait_operation(config, operation_id, timeout_seconds=None):
+    wait_seconds = config["wait_seconds"] if timeout_seconds is None else timeout_seconds
+    deadline = time.time() + wait_seconds
     last_payload = None
 
     while time.time() < deadline:
@@ -205,19 +285,6 @@ def _wait_operation(config, operation_id):
         time.sleep(DEFAULT_OPERATION_POLL_SECONDS)
 
     return last_payload or {"done": False}
-
-
-def _wait_cluster_ready(config):
-    deadline = time.time() + config["wait_seconds"]
-    last_cluster = None
-
-    while time.time() < deadline:
-        last_cluster = _get_cluster(config)
-        if last_cluster.get("status") == "RUNNING":
-            return last_cluster
-        time.sleep(DEFAULT_OPERATION_POLL_SECONDS)
-
-    return last_cluster or _get_cluster(config)
 
 
 def _request_json(config, method, url, payload=None):

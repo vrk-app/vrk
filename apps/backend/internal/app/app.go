@@ -47,7 +47,7 @@ func New(cfg *config.Config) (*App, error) {
 	}
 
 	logger.Info(
-		"database_ready",
+		"database_pool_configured",
 		"database", cfg.Database.DBName,
 		"host", cfg.Database.Host,
 		"port", cfg.Database.Port,

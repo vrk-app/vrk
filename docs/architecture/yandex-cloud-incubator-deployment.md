@@ -100,6 +100,8 @@ flowchart LR
 
 The workflow is intentionally ordered so migrations complete before the backend revision is deployed, and the web revision is deployed only after the backend revision succeeds. The backend container receives S3-compatible Yandex Object Storage settings for organization logos. The web container receives `INTERNAL_API_BASE_URL` and `NEXT_PUBLIC_API_BASE_URL` from `VRK_BACKEND_URL`; it also receives a derived `NEXT_PUBLIC_STORYBOOK_URL=${VRK_WEB_URL}/storybook/` and serves the static Storybook build from the same public endpoint.
 
+Backend startup configures the PostgreSQL pool without blocking the HTTP process on an initial DB ping. In the incubator scale-to-zero topology this keeps `/healthz` responsive while `vrk-db` is still starting; `/readyz` remains the readiness gate because it performs the bounded database ping used by CI and operator checks.
+
 Do not set `PORT` in Serverless Container revision env. Yandex Cloud reserves this environment variable and rejects web revision deployment with `INVALID_ARGUMENT: Environment variable PORT is forbidden`. The incubator web image starts Next.js on `${PORT:-8080}` through `apps/web/Dockerfile`; local Compose sets `PORT=3000`, while Yandex Cloud reaches the container on `127.0.0.1:8080`.
 
 For session-authenticated backend calls in this Serverless Container topology, prefer `X-VRK-Session-Token` over the standard `Authorization` header. The public Yandex endpoint can reserve `Authorization` for cloud invocation auth before the request reaches the container. The backend remains backward-compatible with `Authorization: Bearer <token>` for local Compose and direct backend tests, while the web server proxy and dev seed use `X-VRK-Session-Token` for Incubator runtime calls.
