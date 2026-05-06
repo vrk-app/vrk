@@ -12,21 +12,22 @@ import (
 
 type Repository interface {
     // Equipment dictionary
-    CreateEquipmentDict(ctx context.Context, params generated.CreateEquipmentDictionaryParams) (*EquipmentDictionaryWithDetails, error)
+    CreateEquipmentDict(ctx context.Context, fullName, model string, midID *uuid.UUID) (*EquipmentDictionaryWithDetails, error)
     GetEquipmentDictByID(ctx context.Context, id uuid.UUID) (*EquipmentDictionaryWithDetails, error)
-    UpdateEquipmentDict(ctx context.Context, params generated.UpdateEquipmentDictionaryParams) (*EquipmentDictionaryWithDetails, error)
+    UpdateEquipmentDict(ctx context.Context, id uuid.UUID, fullName, model string, midID *uuid.UUID) (*EquipmentDictionaryWithDetails, error)
     DeleteEquipmentDict(ctx context.Context, id uuid.UUID) error
     ListEquipmentDicts(ctx context.Context, limit, offset int32) ([]*EquipmentDictionary, int64, error)
     ExistsEquipmentDict(ctx context.Context, id uuid.UUID) (bool, error)
 
     // Measuring instrument dictionary
-    CreateMID(ctx context.Context, params generated.CreateMeasuringInstrumentsDictionaryParams) (*MeasuringInstrumentsDictionary, error)
+    CreateMID(ctx context.Context, registryNumber string, metrologicalTypeID int32) (*MeasuringInstrumentsDictionary, error)
     GetMIDByID(ctx context.Context, id uuid.UUID) (*MeasuringInstrumentsDictionary, error)
-    UpdateMID(ctx context.Context, params generated.UpdateMeasuringInstrumentsDictionaryParams) (*MeasuringInstrumentsDictionary, error)
+    UpdateMID(ctx context.Context, id uuid.UUID, registryNumber string, metrologicalTypeID int32) error
     DeleteMID(ctx context.Context, id uuid.UUID) error
+    ExistsMIDByRegistryNumber(ctx context.Context, registryNumber string) (bool, error)
 
     // Standard dictionary
-    CreateStandardsDict(ctx context.Context, params generated.CreateStandardsDictionaryParams) (*StandardsDictionary, error)
+    CreateStandardsDict(ctx context.Context, midID uuid.UUID, model string) (*StandardsDictionary, error)
     ListStandardsByMID(ctx context.Context, mid uuid.UUID) ([]*StandardsDictionary, error)
     DeleteStandardsByMID(ctx context.Context, mid uuid.UUID) error
     DeleteStandardsDict(ctx context.Context, id uuid.UUID) error
@@ -60,8 +61,6 @@ func fromNullUUID(v pgtype.UUID) *uuid.UUID {
     return &id
 }
 
-
-
 // ---------- маппинг row → модель ----------
 func mapEquipmentDict(row *generated.GetEquipmentDictionaryByIDRow) *EquipmentDictionary {
     return &EquipmentDictionary{
@@ -88,9 +87,13 @@ func mapStandardDict(row *generated.CreateStandardsDictionaryRow) *StandardsDict
     }
 }
 
-// ---------- реализация методов ----------
-
-func (r *repository) CreateEquipmentDict(ctx context.Context, params generated.CreateEquipmentDictionaryParams) (*EquipmentDictionaryWithDetails, error) {
+// ---------- реализация Equipment dictionary ----------
+func (r *repository) CreateEquipmentDict(ctx context.Context, fullName, model string, midID *uuid.UUID) (*EquipmentDictionaryWithDetails, error) {
+    params := generated.CreateEquipmentDictionaryParams{
+        FullName:                         fullName,
+        Model:                            model,
+        MeasuringInstrumentsDictionaryID: toNullPGUUID(midID),
+    }
     row, err := r.q.CreateEquipmentDictionary(ctx, params)
     if err != nil {
         return nil, fmt.Errorf("failed to create equipment dict: %w", err)
@@ -98,7 +101,13 @@ func (r *repository) CreateEquipmentDict(ctx context.Context, params generated.C
     return r.getFullByID(ctx, row.ID)
 }
 
-func (r *repository) UpdateEquipmentDict(ctx context.Context, params generated.UpdateEquipmentDictionaryParams) (*EquipmentDictionaryWithDetails, error) {
+func (r *repository) UpdateEquipmentDict(ctx context.Context, id uuid.UUID, fullName, model string, midID *uuid.UUID) (*EquipmentDictionaryWithDetails, error) {
+    params := generated.UpdateEquipmentDictionaryParams{
+        ID:                               toPGUUID(id),
+        FullName:                         fullName,
+        Model:                            model,
+        MeasuringInstrumentsDictionaryID: toNullPGUUID(midID),
+    }
     row, err := r.q.UpdateEquipmentDictionary(ctx, params)
     if err != nil {
         return nil, fmt.Errorf("failed to update equipment dict: %w", err)
@@ -128,7 +137,7 @@ func (r *repository) ListEquipmentDicts(ctx context.Context, limit, offset int32
     }
     items := make([]*EquipmentDictionary, len(rows))
     for i := range rows {
-        items[i] = mapEquipmentDict((*generated.GetEquipmentDictionaryByIDRow) (&rows[i]))
+        items[i] = mapEquipmentDict((*generated.GetEquipmentDictionaryByIDRow)(&rows[i]))
     }
     return items, total, nil
 }
@@ -161,8 +170,12 @@ func (r *repository) GetEquipmentDictByID(ctx context.Context, id uuid.UUID) (*E
     return r.getFullByID(ctx, toPGUUID(id))
 }
 
-// MID
-func (r *repository) CreateMID(ctx context.Context, params generated.CreateMeasuringInstrumentsDictionaryParams) (*MeasuringInstrumentsDictionary, error) {
+// ---------- Measuring instrument dictionary ----------
+func (r *repository) CreateMID(ctx context.Context, registryNumber string, metrologicalTypeID int32) (*MeasuringInstrumentsDictionary, error) {
+    params := generated.CreateMeasuringInstrumentsDictionaryParams{
+        RegistryNumber:             registryNumber,
+        MetrologicalOperationTypeID: metrologicalTypeID,
+    }
     row, err := r.q.CreateMeasuringInstrumentsDictionary(ctx, params)
     if err != nil {
         return nil, fmt.Errorf("failed to create MID: %w", err)
@@ -178,12 +191,17 @@ func (r *repository) GetMIDByID(ctx context.Context, id uuid.UUID) (*MeasuringIn
     return mapMID((*generated.CreateMeasuringInstrumentsDictionaryRow)(&row)), nil
 }
 
-func (r *repository) UpdateMID(ctx context.Context, params generated.UpdateMeasuringInstrumentsDictionaryParams) (*MeasuringInstrumentsDictionary, error) {
-    row, err := r.q.UpdateMeasuringInstrumentsDictionary(ctx, params)
-    if err != nil {
-        return nil, fmt.Errorf("failed to update MID: %w", err)
+func (r *repository) UpdateMID(ctx context.Context, id uuid.UUID, registryNumber string, metrologicalTypeID int32) error {
+    params := generated.UpdateMeasuringInstrumentsDictionaryParams{
+        ID:                         toPGUUID(id),
+        RegistryNumber:             registryNumber,
+        MetrologicalOperationTypeID: metrologicalTypeID,
     }
-    return mapMID((*generated.CreateMeasuringInstrumentsDictionaryRow)(&row)), nil
+    _, err := r.q.UpdateMeasuringInstrumentsDictionary(ctx, params)
+    if err != nil {
+        return fmt.Errorf("failed to update MID: %w", err)
+    }
+    return nil
 }
 
 func (r *repository) DeleteMID(ctx context.Context, id uuid.UUID) error {
@@ -194,8 +212,20 @@ func (r *repository) DeleteMID(ctx context.Context, id uuid.UUID) error {
     return nil
 }
 
-// Standard dictionary
-func (r *repository) CreateStandardsDict(ctx context.Context, params generated.CreateStandardsDictionaryParams) (*StandardsDictionary, error) {
+func (r *repository) ExistsMIDByRegistryNumber(ctx context.Context, registryNumber string) (bool, error) {
+    exists, err := r.q.ExistsMIDByRegistryNumber(ctx, registryNumber)
+    if err != nil {
+        return false, fmt.Errorf("failed to check registry number: %w", err)
+    }
+    return exists, nil
+}
+
+// ---------- Standard dictionary ----------
+func (r *repository) CreateStandardsDict(ctx context.Context, midID uuid.UUID, model string) (*StandardsDictionary, error) {
+    params := generated.CreateStandardsDictionaryParams{
+        MeasuringInstrumentsDictionaryID: toPGUUID(midID),
+        Model:                            model,
+    }
     row, err := r.q.CreateStandardsDictionary(ctx, params)
     if err != nil {
         return nil, fmt.Errorf("failed to create standard dict: %w", err)

@@ -132,7 +132,9 @@ func (h *EquipmentHandler) Delete(w http.ResponseWriter, r *http.Request) {
 func (h *EquipmentHandler) List(w http.ResponseWriter, r *http.Request) {
     limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
     offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
-    items, total, err := h.service.List(r.Context(), int32(limit), int32(offset))
+    pg := toPagination(int32(limit), int32(offset))
+
+    items, total, err := h.service.List(r.Context(), pg)
     if err != nil {
         sendError(w, http.StatusInternalServerError, err.Error())
         return
@@ -142,6 +144,19 @@ func (h *EquipmentHandler) List(w http.ResponseWriter, r *http.Request) {
         Limit:  int32(limit),
         Offset: int32(offset),
     })
+}
+
+func toPagination(limit, offset int32) Pagination {
+    if limit <= 0 {
+        limit = 1000
+    }
+    if limit > 1000 {
+        limit = 1000
+    }
+    if offset < 0 {
+        offset = 0
+    }
+    return Pagination{Limit: limit, Offset: offset}
 }
 
 func sendSuccess(w http.ResponseWriter, status int, data interface{}, meta *Meta) {

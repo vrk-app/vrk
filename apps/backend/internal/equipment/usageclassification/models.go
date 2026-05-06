@@ -11,7 +11,7 @@ type UsageClassification struct {
 }
 
 type CreateRequest struct {
-    Classification string `json:"classification" validate:"required"`
+    Classification string `json:"classification" validate:"required, max=200"`
 }
 
 type UsageClassificationResponse struct {
@@ -20,7 +20,7 @@ type UsageClassificationResponse struct {
     CreatedAt      string `json:"createdAt"`
 }
 
-type ListFilter struct {
+type Pagination struct {
     Limit  int32
     Offset int32
 }

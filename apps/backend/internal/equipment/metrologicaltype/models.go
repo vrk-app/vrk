@@ -17,10 +17,9 @@ type CreateRequest struct {
 type MetrologicalTypeResponse struct {
     ID                       int64  `json:"id"`
     MetrologicalOperationType string `json:"metrologicalOperationType"`
-    CreatedAt                string `json:"createdAt"`
 }
 
-type ListFilter struct {
+type Pagination struct {
     Limit  int32
     Offset int32
 }

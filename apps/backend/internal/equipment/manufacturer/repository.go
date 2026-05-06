@@ -3,8 +3,10 @@ package manufacturer
 import (
     "context"
     "fmt"
+    "errors"
 
     "github.com/google/uuid"
+    "github.com/jackc/pgx/v5"
     "github.com/jackc/pgx/v5/pgtype"
 
     "backend/internal/db/generated"
@@ -13,6 +15,7 @@ import (
 type ManufacturerRepository interface {
     Create(ctx context.Context, m Manufacturer) (*Manufacturer, error)
     GetByID(ctx context.Context, id uuid.UUID) (*Manufacturer, error)
+    GetByName(ctx context.Context, name string) (*Manufacturer, error)
     Update(ctx context.Context, m Manufacturer) (*Manufacturer, error)
     Delete(ctx context.Context, id uuid.UUID) error
     List(ctx context.Context, limit, offset int32) ([]Manufacturer, int64, error)
@@ -59,6 +62,18 @@ func (r *manufacturerRepository) GetByID(ctx context.Context, id uuid.UUID) (*Ma
     }
     return mapRow((*generated.CreateManufacturerRow)(&row)), nil
 }
+
+func (r *manufacturerRepository) GetByName(ctx context.Context, name string) (*Manufacturer, error) {
+    row, err := r.q.GetManufacturerByName(ctx, name)
+    if err != nil {
+        if errors.Is(err, pgx.ErrNoRows) {
+            return nil, nil
+        }
+        return nil, fmt.Errorf("failed to get manufacturer by name: %w", err)
+    }
+    return mapRow((*generated.CreateManufacturerRow)(&row)), nil
+}
+
 
 func (r *manufacturerRepository) Update(ctx context.Context, m Manufacturer) (*Manufacturer, error) {
     params := generated.UpdateManufacturerParams{

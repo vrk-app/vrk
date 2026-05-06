@@ -83,15 +83,7 @@ SELECT
     mi.last_operation_date as mi_last_operation_date,
     mi.next_operation_date as mi_next_operation_date,
     mi.document_provider_organization as mi_document_provider_organization,
-    mi.document_url as mi_document_url,
-    -- Данные эталона
-    s.id as standard_id,
-    s.certificate_number as std_certificate_number,
-    s.last_operation_date as std_last_operation_date,
-    s.next_operation_date as std_next_operation_date,
-    s.document_provider_organization as std_document_provider_organization,
-    s.document_url as std_document_url,
-    s.metrological_characteristics as std_metrological_characteristics
+    mi.document_url as mi_document_url
 FROM equipment e
 LEFT JOIN manufacturers m ON e.manufacturer_id = m.id
 LEFT JOIN usage_classifications uc ON m.classification_id = uc.id
@@ -101,9 +93,20 @@ LEFT JOIN metrological_types mt ON mid.metrological_operation_type_id = mt.id
 LEFT JOIN organization_units ou ON e.organization_id = ou.id
 LEFT JOIN equipment_statuses es ON e.status_id = es.id
 LEFT JOIN measuring_instruments mi ON e.id = mi.equipment_id
-LEFT JOIN standards s ON e.id = s.equipment_id
 ORDER BY e.created_at DESC
 LIMIT $1 OFFSET $2;
+
+-- name: ListStandardsByEquipmentID :many
+SELECT 
+    id,
+    certificate_number,
+    last_operation_date,
+    next_operation_date,
+    document_provider_organization,
+    document_url,
+    metrological_characteristics
+FROM standards
+WHERE equipment_id = $1;
 
 -- name: UpdateEquipment :one
 UPDATE equipment SET

@@ -7,7 +7,7 @@ BEGIN;
 
 CREATE TABLE usage_classifications (
     id SERIAL PRIMARY KEY,
-    classification VARCHAR(50) NOT NULL UNIQUE,
+    classification VARCHAR(200) NOT NULL UNIQUE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -38,7 +38,7 @@ CREATE TABLE manufacturers (
 CREATE TABLE measuring_instruments_dictionaries (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     registry_number VARCHAR(50) NOT NULL UNIQUE,
-    metrological_operation_type_id INT REFERENCES metrological_types(id) ON DELETE RESTRICT,
+    metrological_operation_type_id INT NOT NULL REFERENCES metrological_types(id) ON DELETE RESTRICT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -48,7 +48,7 @@ CREATE TABLE equipment_dictionaries (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     full_name VARCHAR(100) NOT NULL,
     model VARCHAR(100) NOT NULL,
-    measuring_instruments_dictionary_id UUID NOT NULL REFERENCES measuring_instruments_dictionaries(id) ON DELETE RESTRICT,
+    measuring_instruments_dictionary_id UUID REFERENCES measuring_instruments_dictionaries(id) ON DELETE RESTRICT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

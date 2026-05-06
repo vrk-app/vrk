@@ -134,7 +134,7 @@ type MeasuringInstrument struct {
 type MeasuringInstrumentsDictionary struct {
 	ID                          pgtype.UUID        `json:"id"`
 	RegistryNumber              string             `json:"registryNumber"`
-	MetrologicalOperationTypeID *int32             `json:"metrologicalOperationTypeId"`
+	MetrologicalOperationTypeID int32              `json:"metrologicalOperationTypeId"`
 	CreatedAt                   pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt                   pgtype.Timestamptz `json:"updatedAt"`
 }

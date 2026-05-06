@@ -11,6 +11,11 @@ SELECT id, name, classification_id
 FROM manufacturers
 WHERE id = $1;
 
+-- name: GetManufacturerByName :one
+SELECT id, name, classification_id
+FROM manufacturers
+WHERE name = $1;
+
 -- name: ListManufacturers :many
 SELECT id, name, classification_id
 FROM manufacturers

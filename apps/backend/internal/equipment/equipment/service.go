@@ -10,7 +10,7 @@ import (
 
 type EquipmentService interface {
     Create(ctx context.Context, req CreateRequest) (*EquipmentResponse, error)
-    List(ctx context.Context, limit, offset int32) ([]*EquipmentResponse, int64, error)
+    List(ctx context.Context, pg Pagination) ([]*EquipmentResponse, int64, error)
     GetByID(ctx context.Context, id string) (*EquipmentResponse, error)
 //    Update(ctx context.Context, id string, req UpdateRequest) (*EquipmentResponse, error)
     Delete(ctx context.Context, id string) error
@@ -232,25 +232,19 @@ func (s *equipmentService) Delete(ctx context.Context, id string) error {
     return s.repository.Delete(ctx, eqID)
 }
 
-func (s *equipmentService) List(ctx context.Context, limit, offset int32) ([]*EquipmentResponse, int64, error) {
-    if limit <= 0 {
-        limit = 10
-    }
-    if limit > 100 {
-        limit = 100
-    }
-    if offset < 0 {
-        offset = 0
-    }
-
-    items, total, err := s.repository.List(ctx, limit, offset)
+func (s *equipmentService) List(ctx context.Context, pg Pagination) ([]*EquipmentResponse, int64, error) {
+    items, total, err := s.repository.List(ctx, pg.Limit, pg.Offset)
     if err != nil {
         return nil, 0, err
     }
 
     res := make([]*EquipmentResponse, len(items))
-    for i := range items {
-        res[i] = toResponse(&items[i])
+    for i, eq := range items {
+        standards, err := s.repository.ListStandardsByEquipmentID(ctx, eq.ID)
+        if err != nil {
+            standards = []StandardInfo{}
+        }
+        res[i] = toResponseWithStandards(&eq, standards)
     }
 
     return res, total, nil
@@ -280,13 +274,38 @@ func toResponse(eq *EquipmentWithDetails) *EquipmentResponse {
         resp.MeasuringInstrument = eq.MeasuringInstrument
     }
 
-    // Добавляем данные эталона, если есть
-    if eq.Standard != nil && eq.Standard.ID != nil {
-        resp.Standard = eq.Standard
+    return resp
+}
+
+func toResponseWithStandards(eq *EquipmentWithDetails, standards []StandardInfo) *EquipmentResponse {
+    resp := &EquipmentResponse{
+        ID:                   eq.ID.String(),
+        ManufacturerName:     eq.ManufacturerName,
+        UsageClassification:  eq.UsageClassification,
+        EquipmentName:        eq.EquipmentName,
+        Model:                eq.Model,
+        FactoryNumber:        eq.FactoryNumber,
+        ManufactureYear:      eq.ManufactureYear.Format("2006"),
+        OrganizationName:     eq.OrganizationName,
+        StatusID:             eq.StatusID,
+        StatusName:           eq.StatusName,
+    }
+
+    if eq.InventoryNumber != nil {
+        resp.InventoryNumber = eq.InventoryNumber
+    }
+
+    if eq.MeasuringInstrument != nil && eq.MeasuringInstrument.ID != nil {
+        resp.MeasuringInstrument = eq.MeasuringInstrument
+    }
+
+    if len(standards) > 0 {
+        resp.Standards = standards
     }
 
     return resp
 }
+
 func toResponseFromEquipment(eq *Equipment) *EquipmentResponse {
     resp := &EquipmentResponse{
         ID:              eq.ID.String(),

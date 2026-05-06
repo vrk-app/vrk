@@ -1,75 +1,92 @@
+// internal/equipment/equipmentdictionary/service.go
 package equipmentdictionary
 
 import (
     "context"
-    "fmt"
 
     "github.com/google/uuid"
-    "backend/internal/db/generated"
 )
+
+type MetrologicalTypeRepository interface {
+    Exists(ctx context.Context, id int64) (bool, error)
+}
 
 type Service interface {
     Create(ctx context.Context, req CreateEquipmentDictionaryRequest) (*EquipmentDictionaryFull, error)
     GetByID(ctx context.Context, id string) (*EquipmentDictionaryFull, error)
     Update(ctx context.Context, id string, req UpdateEquipmentDictionaryRequest) (*EquipmentDictionaryFull, error)
     Delete(ctx context.Context, id string) error
-    List(ctx context.Context, limit, offset int32) ([]*EquipmentDictionaryFull, int64, error)
+    List(ctx context.Context, pg Pagination) ([]*EquipmentDictionaryFull, int64, error)
 }
 
 type service struct {
     repo Repository
+    mtRepo MetrologicalTypeRepository
 }
 
-func NewService(repo Repository) Service {
-    return &service{repo: repo}
+func NewService(repo Repository, mtRepo MetrologicalTypeRepository) Service {
+    return &service{repo: repo, mtRepo: mtRepo}
 }
 
-// Create – создание словаря оборудования с возможностью создания нового MID и стандартов
 func (s *service) Create(ctx context.Context, req CreateEquipmentDictionaryRequest) (*EquipmentDictionaryFull, error) {
     var midID *uuid.UUID
 
     if req.MeasuringInstrument != nil {
-        // Создаём MID
-        var metrologicalTypeID *int32
-        if req.MeasuringInstrument.MetrologicalOperationTypeID != nil {
-            metrologicalTypeID = req.MeasuringInstrument.MetrologicalOperationTypeID
+        // Валидация registry_number
+        if req.MeasuringInstrument.RegistryNumber == "" {
+            return nil, ErrRegistryNumberRequired
         }
-        midParams := generated.CreateMeasuringInstrumentsDictionaryParams{
-            RegistryNumber:             req.MeasuringInstrument.RegistryNumber,
-            MetrologicalOperationTypeID: metrologicalTypeID,
+        if len(req.MeasuringInstrument.RegistryNumber) > 50 {
+            return nil, ErrRegistryNumberTooLong
         }
-        newMID, err := s.repo.CreateMID(ctx, midParams)
+
+        // Проверка уникальности registry_number
+        registryNumberExists, err := s.repo.ExistsMIDByRegistryNumber(ctx, req.MeasuringInstrument.RegistryNumber)
         if err != nil {
-            return nil, fmt.Errorf("failed to create MID: %w", err)
+            return nil, err
+        }
+        if registryNumberExists {
+            return nil, ErrRegistryNumberNotUnique
+        }
+
+        exists, err := s.mtRepo.Exists(ctx, int64(req.MeasuringInstrument.MetrologicalOperationTypeID))
+        if err != nil {
+            return nil, err
+        }
+        if !exists {
+            return nil, ErrMetrologicalTypeNotFound
+        }
+
+
+        // Валидация эталонов
+        for _, stdModel := range req.MeasuringInstrument.Standards {
+            if len(stdModel) > 100 {
+                return nil, ErrStandardModelTooLong
+            }
+        }
+
+        // Создаём MID
+        newMID, err := s.repo.CreateMID(ctx, req.MeasuringInstrument.RegistryNumber, req.MeasuringInstrument.MetrologicalOperationTypeID)
+        if err != nil {
+            return nil, err
         }
         midID = &newMID.ID
 
         // Создаём эталоны
         for _, stdModel := range req.MeasuringInstrument.Standards {
-            stdParams := generated.CreateStandardsDictionaryParams{
-                MeasuringInstrumentsDictionaryID: toPGUUID(*midID),
-                Model:                            stdModel,
-            }
-            if _, err := s.repo.CreateStandardsDict(ctx, stdParams); err != nil {
-                return nil, fmt.Errorf("failed to create standard '%s': %w", stdModel, err)
+            if _, err := s.repo.CreateStandardsDict(ctx, *midID, stdModel); err != nil {
+                return nil, ErrStandardCreationFailed
             }
         }
-    } else {
-        return nil, fmt.Errorf("either measuringInstrumentDictionaryId or measuringInstrument must be provided")
     }
 
     // Создаём EquipmentDictionary
-    equipParams := generated.CreateEquipmentDictionaryParams{
-        FullName:                         req.FullName,
-        Model:                            req.Model,
-        MeasuringInstrumentsDictionaryID: toPGUUID(*midID),
-    }
-    full, err := s.repo.CreateEquipmentDict(ctx, equipParams)
+    full, err := s.repo.CreateEquipmentDict(ctx, req.FullName, req.Model, midID)
     if err != nil {
         return nil, err
     }
 
-    // Получаем стандарты для ответа
+    // Получаем эталоны для ответа
     var standards []StandardsDictionaryFull
     if full.MeasuringInstrumentsDictionaryID != nil {
         stds, err := s.repo.ListStandardsByMID(ctx, *full.MeasuringInstrumentsDictionaryID)
@@ -87,11 +104,11 @@ func (s *service) Create(ctx context.Context, req CreateEquipmentDictionaryReque
 func (s *service) GetByID(ctx context.Context, idStr string) (*EquipmentDictionaryFull, error) {
     id, err := uuid.Parse(idStr)
     if err != nil {
-        return nil, fmt.Errorf("invalid ID: %w", err)
+        return nil, ErrInvalidID
     }
     full, err := s.repo.GetEquipmentDictByID(ctx, id)
     if err != nil {
-        return nil, err
+        return nil, ErrNotFound
     }
     var standards []StandardsDictionaryFull
     if full.MeasuringInstrumentsDictionaryID != nil {
@@ -105,17 +122,16 @@ func (s *service) GetByID(ctx context.Context, idStr string) (*EquipmentDictiona
     return toFullResponse(full, standards), nil
 }
 
-// Update – обновление
 func (s *service) Update(ctx context.Context, idStr string, req UpdateEquipmentDictionaryRequest) (*EquipmentDictionaryFull, error) {
     id, err := uuid.Parse(idStr)
     if err != nil {
-        return nil, fmt.Errorf("invalid ID: %w", err)
+        return nil, ErrInvalidID
     }
 
     // Получаем текущую запись (полную)
     current, err := s.repo.GetEquipmentDictByID(ctx, id)
     if err != nil {
-        return nil, err
+        return nil, ErrNotFound
     }
 
     // Обновляем базовые поля
@@ -127,51 +143,90 @@ func (s *service) Update(ctx context.Context, idStr string, req UpdateEquipmentD
     }
 
     newMID := current.MeasuringInstrumentsDictionaryID
-    if req.MeasuringInstrumentsDictionaryID != nil && *req.MeasuringInstrumentsDictionaryID != "" {
-        midUUID, err := uuid.Parse(*req.MeasuringInstrumentsDictionaryID)
-        if err != nil {
-            return nil, fmt.Errorf("invalid MID ID: %w", err)
-        }
-        newMID = &midUUID
-    } else if req.MeasuringInstrument != nil {
-        // Создаём новый MID и стандарты (аналогично Create)
-        var metrologicalTypeID *int32
-        if req.MeasuringInstrument.MetrologicalOperationTypeID != nil {
-            metrologicalTypeID = req.MeasuringInstrument.MetrologicalOperationTypeID
-        }
-        midParams := generated.CreateMeasuringInstrumentsDictionaryParams{
-            RegistryNumber:             req.MeasuringInstrument.RegistryNumber,
-            MetrologicalOperationTypeID: metrologicalTypeID,
-        }
-        newMIDRow, err := s.repo.CreateMID(ctx, midParams)
-        if err != nil {
-            return nil, fmt.Errorf("failed to create MID: %w", err)
-        }
-        newMID = &newMIDRow.ID
 
-        for _, stdModel := range req.MeasuringInstrument.Standards {
-            stdParams := generated.CreateStandardsDictionaryParams{
-                MeasuringInstrumentsDictionaryID: toPGUUID(*newMID),
-                Model:                            stdModel,
+    if req.MeasuringInstrument != nil {
+        if current.MeasuringInstrumentsDictionaryID == nil {
+            // нельзя добавить MID через update
+            return nil, ErrMIDNotFound
+        }
+        originalMID, err := s.repo.GetMIDByID(ctx, *current.MeasuringInstrumentsDictionaryID)
+
+        // Валидация registry_number
+        var finalRegistryNumber string
+        if req.MeasuringInstrument.RegistryNumber != nil && *req.MeasuringInstrument.RegistryNumber != "" {
+            if len(*req.MeasuringInstrument.RegistryNumber) > 50 {
+                return nil, ErrRegistryNumberTooLong
             }
-            if _, err := s.repo.CreateStandardsDict(ctx, stdParams); err != nil {
-                return nil, fmt.Errorf("failed to create standard: %w", err)
+
+
+            // Проверяем уникальность registry_number
+            originalMID, err := s.repo.GetMIDByID(ctx, *current.MeasuringInstrumentsDictionaryID)
+            if err != nil {
+                return nil, err
+            }
+            if originalMID.RegistryNumber != *req.MeasuringInstrument.RegistryNumber {
+                exists, err := s.repo.ExistsMIDByRegistryNumber(ctx, *req.MeasuringInstrument.RegistryNumber)
+                if err != nil {
+                    return nil, err
+                }
+                if exists {
+                    return nil, ErrRegistryNumberNotUnique
+                }
+            }
+            finalRegistryNumber = *req.MeasuringInstrument.RegistryNumber
+        } else {
+            finalRegistryNumber = originalMID.RegistryNumber
+        }
+
+        // Проверяем metrologicalOperationTypeID
+        var finalMetrologicalTypeID int32
+        if req.MeasuringInstrument.MetrologicalOperationTypeID != nil {
+            exists, err := s.mtRepo.Exists(ctx, int64(*req.MeasuringInstrument.MetrologicalOperationTypeID))
+            if err != nil {
+                return nil, err
+            }
+            if !exists {
+                return nil, ErrMetrologicalTypeNotFound
+            }
+            finalMetrologicalTypeID = *req.MeasuringInstrument.MetrologicalOperationTypeID
+        } else {
+            finalMetrologicalTypeID = originalMID.MetrologicalOperationTypeID
+        }
+    
+        // Валидация эталонов
+        for _, stdModel := range req.MeasuringInstrument.Standards {
+            if len(stdModel) > 100 {
+                return nil, ErrStandardModelTooLong
             }
         }
+
+        // Обновляем существующий MID
+        err = s.repo.UpdateMID(ctx, *current.MeasuringInstrumentsDictionaryID, finalRegistryNumber, finalMetrologicalTypeID)
+        if err != nil {
+            return nil, err
+        }
+
+        // Обновляем стандарты: если передан массив - удаляем старые и создаём новые
+        if req.MeasuringInstrument.Standards != nil {
+            if err := s.repo.DeleteStandardsByMID(ctx, *current.MeasuringInstrumentsDictionaryID); err != nil {
+                return nil, err
+            }
+            for _, stdModel := range req.MeasuringInstrument.Standards {
+                if _, err := s.repo.CreateStandardsDict(ctx, *current.MeasuringInstrumentsDictionaryID, stdModel); err != nil {
+                    return nil, ErrStandardCreationFailed
+                }
+            }
+        }
+        newMID = current.MeasuringInstrumentsDictionaryID
     }
 
     // Обновляем EquipmentDictionary
-    updateParams := generated.UpdateEquipmentDictionaryParams{
-        ID:                               toPGUUID(id),
-        FullName:                         current.FullName,
-        Model:                            current.Model,
-        MeasuringInstrumentsDictionaryID: toNullPGUUID(newMID),
-    }
-    updated, err := s.repo.UpdateEquipmentDict(ctx, updateParams)
+    updated, err := s.repo.UpdateEquipmentDict(ctx, id, current.FullName, current.Model, newMID)
     if err != nil {
         return nil, err
     }
 
+    // Получаем эталоны для ответа
     var standards []StandardsDictionaryFull
     if updated.MeasuringInstrumentsDictionaryID != nil {
         stds, err := s.repo.ListStandardsByMID(ctx, *updated.MeasuringInstrumentsDictionaryID)
@@ -181,6 +236,7 @@ func (s *service) Update(ctx context.Context, idStr string, req UpdateEquipmentD
             }
         }
     }
+
     return toFullResponse(updated, standards), nil
 }
 
@@ -188,17 +244,17 @@ func (s *service) Update(ctx context.Context, idStr string, req UpdateEquipmentD
 func (s *service) Delete(ctx context.Context, idStr string) error {
     id, err := uuid.Parse(idStr)
     if err != nil {
-        return fmt.Errorf("invalid ID: %w", err)
+        return ErrInvalidID
     }
     // Получаем MID перед удалением
     dict, err := s.repo.GetEquipmentDictByID(ctx, id)
     if err != nil {
-        return err
+        return ErrNotFound
     }
     midID := dict.MeasuringInstrumentsDictionaryID
 
     if err := s.repo.DeleteEquipmentDict(ctx, id); err != nil {
-        return err
+        return ErrDeleteFailed
     }
     if midID != nil {
         _ = s.repo.DeleteStandardsByMID(ctx, *midID)
@@ -208,20 +264,10 @@ func (s *service) Delete(ctx context.Context, idStr string) error {
 }
 
 // List – список
-func (s *service) List(ctx context.Context, limit, offset int32) ([]*EquipmentDictionaryFull, int64, error) {
-    if limit <= 0 {
-        limit = 10
-    }
-    if limit > 100 {
-        limit = 100
-    }
-    if offset < 0 {
-        offset = 0
-    }
-
-    items, total, err := s.repo.ListEquipmentDicts(ctx, limit, offset)
+func (s *service) List(ctx context.Context, pg Pagination) ([]*EquipmentDictionaryFull, int64, error) {
+    items, total, err := s.repo.ListEquipmentDicts(ctx, pg.Limit, pg.Offset)  
     if err != nil {
-        return nil, 0, err
+        return nil, 0, ErrListFailed
     }
 
     result := make([]*EquipmentDictionaryFull, len(items))
@@ -229,7 +275,7 @@ func (s *service) List(ctx context.Context, limit, offset int32) ([]*EquipmentDi
         full, err := s.repo.GetEquipmentDictByID(ctx, it.ID)
         if err != nil {
             result[i] = &EquipmentDictionaryFull{
-                ID:        it.ID.String(),
+                ID:        it.ID.String(), 
                 FullName:  it.FullName,
                 Model:     it.Model,
             }
@@ -269,7 +315,7 @@ func toFullResponse(dict *EquipmentDictionaryWithDetails, standards []StandardsD
         midFull = &MeasuringInstrumentsDictionaryFull{
             ID:                         dict.MeasuringInstrumentsDictionaryID.String(),
             RegistryNumber:             getStringValue(dict.RegistryNumber),
-            MetrologicalOperationTypeID: dict.MetrologicalOperationTypeID,
+            MetrologicalOperationTypeID: *dict.MetrologicalOperationTypeID,
             MetrologicalOperationType:  dict.MetrologicalOperationType,
             Standards:                  standards,
         }

@@ -18,3 +18,8 @@ SELECT COUNT(*) FROM usage_classifications;
 
 -- name: UsageClassificationExists :one
 SELECT EXISTS(SELECT 1 FROM usage_classifications WHERE id = $1);
+
+-- name: GetUsageClassificationByClassification :one
+SELECT id, classification
+FROM usage_classifications
+WHERE classification = $1;

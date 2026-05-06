@@ -4,6 +4,7 @@ import (
     "encoding/json"
     "net/http"
     "strconv"
+    "errors"
 
     "github.com/go-chi/chi/v5"
 )
@@ -35,7 +36,16 @@ func (h *ManufacturerHandler) Create(w http.ResponseWriter, r *http.Request) {
     }
     resp, err := h.service.Create(r.Context(), req)
     if err != nil {
-        sendError(w, http.StatusInternalServerError, err.Error())
+        switch {
+        case errors.Is(err, ErrNameRequired), errors.Is(err, ErrNameTooLong), errors.Is(err, ErrClassificationRequired):
+            sendError(w, http.StatusBadRequest, err.Error())
+        case errors.Is(err, ErrDuplicateName):
+            sendError(w, http.StatusConflict, err.Error())
+        case errors.Is(err, ErrClassificationNotFound):
+            sendError(w, http.StatusNotFound, err.Error())
+        default:
+            sendError(w, http.StatusInternalServerError, err.Error())
+        }
         return
     }
     sendSuccess(w, http.StatusCreated, resp, nil)
@@ -91,7 +101,16 @@ func (h *ManufacturerHandler) Update(w http.ResponseWriter, r *http.Request) {
     }
     resp, err := h.service.Update(r.Context(), id, req)
     if err != nil {
-        sendError(w, http.StatusInternalServerError, err.Error())
+        switch {
+        case errors.Is(err, ErrNameTooLong):
+            sendError(w, http.StatusBadRequest, err.Error())
+        case errors.Is(err, ErrDuplicateName):
+            sendError(w, http.StatusConflict, err.Error())
+        case errors.Is(err, ErrClassificationNotFound):
+            sendError(w, http.StatusNotFound, err.Error())
+        default:
+            sendError(w, http.StatusInternalServerError, err.Error())
+        }
         return
     }
     sendSuccess(w, http.StatusOK, resp, nil)
@@ -132,7 +151,9 @@ func (h *ManufacturerHandler) Delete(w http.ResponseWriter, r *http.Request) {
 func (h *ManufacturerHandler) List(w http.ResponseWriter, r *http.Request) {
     limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
     offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
-    items, total, err := h.service.List(r.Context(), int32(limit), int32(offset))
+    pg := toPagination(int32(limit), int32(offset))
+
+    items, total, err := h.service.List(r.Context(), pg)
     if err != nil {
         sendError(w, http.StatusInternalServerError, err.Error())
         return
@@ -143,6 +164,20 @@ func (h *ManufacturerHandler) List(w http.ResponseWriter, r *http.Request) {
         Offset: int32(offset),
     })
 }
+
+func toPagination(limit, offset int32) Pagination {
+    if limit <= 0 {
+        limit = 1000
+    }
+    if limit > 1000 {
+        limit = 1000
+    }
+    if offset < 0 {
+        offset = 0
+    }
+    return Pagination{Limit: limit, Offset: offset}
+}
+
 
 func sendSuccess(w http.ResponseWriter, status int, data interface{}, meta *Meta) {
     w.Header().Set("Content-Type", "application/json")

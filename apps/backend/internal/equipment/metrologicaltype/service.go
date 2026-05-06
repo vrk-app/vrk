@@ -2,15 +2,13 @@ package metrologicaltype
 
 import (
     "context"
-    "strconv"
-    "time"
 )
 
 type Service interface {
     Create(ctx context.Context, req CreateRequest) (*MetrologicalTypeResponse, error)
-    GetByID(ctx context.Context, id string) (*MetrologicalTypeResponse, error)
-    Delete(ctx context.Context, id string) error
-    List(ctx context.Context, limit, offset int32) ([]*MetrologicalTypeResponse, int64, error)
+    GetByID(ctx context.Context, id int64) (*MetrologicalTypeResponse, error)
+    Delete(ctx context.Context, id int64) error
+    List(ctx context.Context, pg Pagination) ([]*MetrologicalTypeResponse, int64, error)
 }
 
 type service struct {
@@ -22,9 +20,23 @@ func NewService(repo Repository) Service {
 }
 
 func (s *service) Create(ctx context.Context, req CreateRequest) (*MetrologicalTypeResponse, error) {
+    // Валидация
     if req.MetrologicalOperationType == "" {
         return nil, ErrOperationTypeRequired
     }
+    if len(req.MetrologicalOperationType) > 20 {
+        return nil, ErrOperationTypeTooLong
+    }
+
+    // Проверка существования
+    existing, err := s.repo.GetByOperationType(ctx, req.MetrologicalOperationType)
+    if err != nil {
+        return nil, err
+    }
+    if existing != nil {
+        return nil, ErrDuplicateOperationType
+    }
+
     mt, err := s.repo.Create(ctx, req.MetrologicalOperationType)
     if err != nil {
         return nil, err
@@ -32,37 +44,30 @@ func (s *service) Create(ctx context.Context, req CreateRequest) (*MetrologicalT
     return toResponse(mt), nil
 }
 
-func (s *service) GetByID(ctx context.Context, idStr string) (*MetrologicalTypeResponse, error) {
-    id, err := strconv.ParseInt(idStr, 10, 64)
-    if err != nil {
-        return nil, ErrInvalidID
-    }
+func (s *service) GetByID(ctx context.Context, id int64) (*MetrologicalTypeResponse, error) {
     mt, err := s.repo.GetByID(ctx, id)
     if err != nil {
         return nil, err
     }
+    if mt == nil {
+        return nil, ErrNotFound
+    }
     return toResponse(mt), nil
 }
 
-func (s *service) Delete(ctx context.Context, idStr string) error {
-    id, err := strconv.ParseInt(idStr, 10, 64)
+func (s *service) Delete(ctx context.Context, id int64) error {
+    exists, err := s.repo.Exists(ctx, id)
     if err != nil {
-        return ErrInvalidID
+        return err
+    }
+    if !exists {
+        return ErrNotFound
     }
     return s.repo.Delete(ctx, id)
 }
 
-func (s *service) List(ctx context.Context, limit, offset int32) ([]*MetrologicalTypeResponse, int64, error) {
-    if limit <= 0 {
-        limit = 10
-    }
-    if limit > 100 {
-        limit = 100
-    }
-    if offset < 0 {
-        offset = 0
-    }
-    items, total, err := s.repo.List(ctx, limit, offset)
+func (s *service) List(ctx context.Context, pg Pagination) ([]*MetrologicalTypeResponse, int64, error) {
+    items, total, err := s.repo.List(ctx, pg.Limit, pg.Offset)
     if err != nil {
         return nil, 0, err
     }
@@ -77,6 +82,5 @@ func toResponse(mt *MetrologicalType) *MetrologicalTypeResponse {
     return &MetrologicalTypeResponse{
         ID:                       mt.ID,
         MetrologicalOperationType: mt.MetrologicalOperationType,
-        CreatedAt:                mt.CreatedAt.Format(time.RFC3339),
     }
 }

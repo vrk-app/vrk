@@ -15,7 +15,6 @@ type Querier interface {
 	CountEquipmentDictionaries(ctx context.Context) (int64, error)
 	CountManufacturers(ctx context.Context) (int64, error)
 	CountMetrologicalTypes(ctx context.Context) (int64, error)
-	CountStandards(ctx context.Context) (int64, error)
 	CountUsageClassifications(ctx context.Context) (int64, error)
 	CreateEquipment(ctx context.Context, arg CreateEquipmentParams) (Equipment, error)
 	CreateEquipmentDictionary(ctx context.Context, arg CreateEquipmentDictionaryParams) (CreateEquipmentDictionaryRow, error)
@@ -26,7 +25,6 @@ type Querier interface {
 	// =====================================================
 	CreateMeasuringInstrumentsDictionary(ctx context.Context, arg CreateMeasuringInstrumentsDictionaryParams) (CreateMeasuringInstrumentsDictionaryRow, error)
 	CreateMetrologicalType(ctx context.Context, metrologicalOperationType string) (CreateMetrologicalTypeRow, error)
-	CreateStandard(ctx context.Context, arg CreateStandardParams) (CreateStandardRow, error)
 	// =====================================================
 	// Операции с standards_dictionaries
 	// =====================================================
@@ -37,34 +35,34 @@ type Querier interface {
 	DeleteManufacturer(ctx context.Context, id pgtype.UUID) error
 	DeleteMeasuringInstrumentsDictionary(ctx context.Context, id pgtype.UUID) error
 	DeleteMetrologicalType(ctx context.Context, id int32) error
-	DeleteStandard(ctx context.Context, id pgtype.UUID) error
 	DeleteStandardsDictionariesByMID(ctx context.Context, measuringInstrumentsDictionaryID pgtype.UUID) error
 	DeleteStandardsDictionary(ctx context.Context, id pgtype.UUID) error
 	DeleteUsageClassification(ctx context.Context, id int32) error
 	EquipmentDictionaryExists(ctx context.Context, id pgtype.UUID) (bool, error)
 	EquipmentExists(ctx context.Context, id pgtype.UUID) (bool, error)
+	ExistsMIDByRegistryNumber(ctx context.Context, registryNumber string) (bool, error)
 	GetEquipmentByID(ctx context.Context, id pgtype.UUID) (GetEquipmentByIDRow, error)
 	GetEquipmentDictionaryByID(ctx context.Context, id pgtype.UUID) (GetEquipmentDictionaryByIDRow, error)
 	GetManufacturerByID(ctx context.Context, id pgtype.UUID) (GetManufacturerByIDRow, error)
+	GetManufacturerByName(ctx context.Context, name string) (GetManufacturerByNameRow, error)
 	GetMeasuringInstrumentsDictionaryByID(ctx context.Context, id pgtype.UUID) (GetMeasuringInstrumentsDictionaryByIDRow, error)
 	GetMetrologicalTypeByID(ctx context.Context, id int32) (GetMetrologicalTypeByIDRow, error)
-	GetStandardByID(ctx context.Context, id pgtype.UUID) (GetStandardByIDRow, error)
+	GetMetrologicalTypeByOperationType(ctx context.Context, metrologicalOperationType string) (GetMetrologicalTypeByOperationTypeRow, error)
+	GetUsageClassificationByClassification(ctx context.Context, classification string) (GetUsageClassificationByClassificationRow, error)
 	GetUsageClassificationByID(ctx context.Context, id int32) (GetUsageClassificationByIDRow, error)
 	ListEquipment(ctx context.Context, arg ListEquipmentParams) ([]ListEquipmentRow, error)
 	ListEquipmentDictionaries(ctx context.Context, arg ListEquipmentDictionariesParams) ([]ListEquipmentDictionariesRow, error)
 	ListManufacturers(ctx context.Context, arg ListManufacturersParams) ([]ListManufacturersRow, error)
 	ListMetrologicalTypes(ctx context.Context, arg ListMetrologicalTypesParams) ([]ListMetrologicalTypesRow, error)
-	ListStandards(ctx context.Context, arg ListStandardsParams) ([]ListStandardsRow, error)
+	ListStandardsByEquipmentID(ctx context.Context, equipmentID pgtype.UUID) ([]ListStandardsByEquipmentIDRow, error)
 	ListStandardsDictionariesByMID(ctx context.Context, measuringInstrumentsDictionaryID pgtype.UUID) ([]ListStandardsDictionariesByMIDRow, error)
 	ListUsageClassifications(ctx context.Context, arg ListUsageClassificationsParams) ([]ListUsageClassificationsRow, error)
 	ManufacturerExists(ctx context.Context, id pgtype.UUID) (bool, error)
 	MetrologicalTypeExists(ctx context.Context, id int32) (bool, error)
-	StandardExists(ctx context.Context, id pgtype.UUID) (bool, error)
 	UpdateEquipment(ctx context.Context, arg UpdateEquipmentParams) (UpdateEquipmentRow, error)
 	UpdateEquipmentDictionary(ctx context.Context, arg UpdateEquipmentDictionaryParams) (UpdateEquipmentDictionaryRow, error)
 	UpdateManufacturer(ctx context.Context, arg UpdateManufacturerParams) (UpdateManufacturerRow, error)
 	UpdateMeasuringInstrumentsDictionary(ctx context.Context, arg UpdateMeasuringInstrumentsDictionaryParams) (UpdateMeasuringInstrumentsDictionaryRow, error)
-	UpdateStandard(ctx context.Context, arg UpdateStandardParams) (UpdateStandardRow, error)
 	UsageClassificationExists(ctx context.Context, id int32) (bool, error)
 }
 

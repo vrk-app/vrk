@@ -62,6 +62,22 @@ func (q *Queries) GetMetrologicalTypeByID(ctx context.Context, id int32) (GetMet
 	return i, err
 }
 
+const getMetrologicalTypeByOperationType = `-- name: GetMetrologicalTypeByOperationType :one
+SELECT id, metrological_operation_type FROM metrological_types WHERE metrological_operation_type = $1
+`
+
+type GetMetrologicalTypeByOperationTypeRow struct {
+	ID                        int32  `json:"id"`
+	MetrologicalOperationType string `json:"metrologicalOperationType"`
+}
+
+func (q *Queries) GetMetrologicalTypeByOperationType(ctx context.Context, metrologicalOperationType string) (GetMetrologicalTypeByOperationTypeRow, error) {
+	row := q.db.QueryRow(ctx, getMetrologicalTypeByOperationType, metrologicalOperationType)
+	var i GetMetrologicalTypeByOperationTypeRow
+	err := row.Scan(&i.ID, &i.MetrologicalOperationType)
+	return i, err
+}
+
 const listMetrologicalTypes = `-- name: ListMetrologicalTypes :many
 SELECT id, metrological_operation_type FROM metrological_types
 LIMIT $1 OFFSET $2

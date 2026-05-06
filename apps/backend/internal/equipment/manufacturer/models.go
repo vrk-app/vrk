@@ -1,8 +1,6 @@
 package manufacturer
 
 import (
-    "time"
-
     "github.com/google/uuid"
 )
 
@@ -10,8 +8,6 @@ type Manufacturer struct {
     ID              uuid.UUID
     Name            string
     ClassificationID int32
-    CreatedAt       time.Time
-    UpdatedAt       time.Time
 }
 
 type CreateRequest struct {
@@ -28,11 +24,9 @@ type ManufacturerResponse struct {
     ID              string `json:"id"`
     Name            string `json:"name"`
     ClassificationID int32
-    CreatedAt       string `json:"createdAt"`
-    UpdatedAt       string `json:"updatedAt"`
 }
 
-type ListFilter struct {
+type Pagination struct {
     Limit  int32
     Offset int32
 }

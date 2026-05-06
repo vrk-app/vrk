@@ -273,6 +273,19 @@ definitions:
           type: string
         type: array
     type: object
+  equipmentdictionary.MeasuringInstrumentUpdateInput:
+    properties:
+      metrologicalOperationTypeId:
+        type: integer
+      registryNumber:
+        type: string
+      standards:
+        example:
+        - standardModel
+        items:
+          type: string
+        type: array
+    type: object
   equipmentdictionary.MeasuringInstrumentsDictionaryFull:
     properties:
       id:
@@ -310,9 +323,7 @@ definitions:
       fullName:
         type: string
       measuringInstrument:
-        $ref: '#/definitions/equipmentdictionary.MeasuringInstrumentInput'
-      measuringInstrumentDictionaryId:
-        type: string
+        $ref: '#/definitions/equipmentdictionary.MeasuringInstrumentUpdateInput'
       model:
         type: string
     type: object
@@ -331,13 +342,9 @@ definitions:
       classificationID:
         format: int32
         type: integer
-      createdAt:
-        type: string
       id:
         type: string
       name:
-        type: string
-      updatedAt:
         type: string
     type: object
   manufacturer.Meta:
@@ -385,8 +392,6 @@ definitions:
     type: object
   metrologicaltype.MetrologicalTypeResponse:
     properties:
-      createdAt:
-        type: string
       id:
         type: integer
       metrologicalOperationType:
@@ -835,7 +840,7 @@ paths:
               type: object
       summary: Получить список словарей оборудования
       tags:
-      - equipment-dictionaries
+      - equipment
     post:
       consumes:
       - application/json
@@ -870,7 +875,7 @@ paths:
             $ref: '#/definitions/equipmentdictionary.ApiResponse'
       summary: Создать словарь оборудования
       tags:
-      - equipment-dictionaries
+      - equipment
   /equipment-dictionaries/{id}:
     delete:
       parameters:
@@ -888,7 +893,7 @@ paths:
             $ref: '#/definitions/equipmentdictionary.ApiResponse'
       summary: Удалить словарь оборудования
       tags:
-      - equipment-dictionaries
+      - equipment
     get:
       parameters:
       - description: ID
@@ -914,7 +919,7 @@ paths:
             $ref: '#/definitions/equipmentdictionary.ApiResponse'
       summary: Получить словарь оборудования по ID
       tags:
-      - equipment-dictionaries
+      - equipment
     put:
       consumes:
       - application/json
@@ -952,7 +957,7 @@ paths:
             $ref: '#/definitions/equipmentdictionary.ApiResponse'
       summary: Обновить словарь оборудования
       tags:
-      - equipment-dictionaries
+      - equipment
   /equipment/{id}:
     delete:
       description: Удаляет оборудование по ID
@@ -1209,7 +1214,7 @@ paths:
               type: object
       summary: Получить список типов метрологических операций
       tags:
-      - metrological-types
+      - equipment
     post:
       consumes:
       - application/json
@@ -1242,7 +1247,7 @@ paths:
             $ref: '#/definitions/metrologicaltype.Response'
       summary: Создать тип метрологической операции
       tags:
-      - metrological-types
+      - equipment
   /metrological-types/{id}:
     delete:
       parameters:
@@ -1260,7 +1265,7 @@ paths:
             $ref: '#/definitions/metrologicaltype.Response'
       summary: Удалить тип метрологической операции
       tags:
-      - metrological-types
+      - equipment
     get:
       parameters:
       - description: ID типа
@@ -1286,7 +1291,7 @@ paths:
             $ref: '#/definitions/metrologicaltype.Response'
       summary: Получить тип метрологической операции по ID
       tags:
-      - metrological-types
+      - equipment
   /organizations:
     get:
       description: Возвращает список организаций с пагинацией
@@ -1489,7 +1494,7 @@ paths:
               type: object
       summary: Получить список классификаций использования
       tags:
-      - usage-classifications
+      - equipment
     post:
       consumes:
       - application/json
@@ -1522,7 +1527,7 @@ paths:
             $ref: '#/definitions/usageclassification.Response'
       summary: Создать классификацию использования
       tags:
-      - usage-classifications
+      - equipment
   /usage-classifications/{id}:
     delete:
       parameters:
@@ -1540,7 +1545,7 @@ paths:
             $ref: '#/definitions/usageclassification.Response'
       summary: Удалить классификацию использования
       tags:
-      - usage-classifications
+      - equipment
     get:
       parameters:
       - description: ID классификации
@@ -1566,5 +1571,5 @@ paths:
             $ref: '#/definitions/usageclassification.Response'
       summary: Получить классификацию использования по ID
       tags:
-      - usage-classifications
+      - equipment
 swagger: "2.0"

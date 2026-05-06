@@ -2,15 +2,14 @@ package usageclassification
 
 import (
     "context"
-    "strconv"
     "time"
 )
 
 type Service interface {
     Create(ctx context.Context, req CreateRequest) (*UsageClassificationResponse, error)
-    GetByID(ctx context.Context, id string) (*UsageClassificationResponse, error)
-    Delete(ctx context.Context, id string) error
-    List(ctx context.Context, limit, offset int32) ([]*UsageClassificationResponse, int64, error)
+    GetByID(ctx context.Context, id int64) (*UsageClassificationResponse, error)
+    Delete(ctx context.Context, id int64) error
+    List(ctx context.Context, pg Pagination) ([]*UsageClassificationResponse, int64, error)
 }
 
 type service struct {
@@ -25,6 +24,18 @@ func (s *service) Create(ctx context.Context, req CreateRequest) (*UsageClassifi
     if req.Classification == "" {
         return nil, ErrClassificationRequired
     }
+    if len(req.Classification) > 200 {
+        return nil, ErrClassificationTooLong
+    }
+
+    existing, err := s.repo.GetByClassification(ctx, req.Classification)
+    if err != nil {
+        return nil, err
+    }
+    if existing != nil {
+        return nil, ErrDuplicateClassification
+    }
+
     uc, err := s.repo.Create(ctx, req.Classification)
     if err != nil {
         return nil, err
@@ -32,11 +43,7 @@ func (s *service) Create(ctx context.Context, req CreateRequest) (*UsageClassifi
     return toResponse(uc), nil
 }
 
-func (s *service) GetByID(ctx context.Context, idStr string) (*UsageClassificationResponse, error) {
-    id, err := strconv.ParseInt(idStr, 10, 64)
-    if err != nil {
-        return nil, ErrInvalidID
-    }
+func (s *service) GetByID(ctx context.Context, id int64) (*UsageClassificationResponse, error) {
     uc, err := s.repo.GetByID(ctx, id)
     if err != nil {
         return nil, err
@@ -44,25 +51,12 @@ func (s *service) GetByID(ctx context.Context, idStr string) (*UsageClassificati
     return toResponse(uc), nil
 }
 
-func (s *service) Delete(ctx context.Context, idStr string) error {
-    id, err := strconv.ParseInt(idStr, 10, 64)
-    if err != nil {
-        return ErrInvalidID
-    }
+func (s *service) Delete(ctx context.Context, id int64) error {
     return s.repo.Delete(ctx, id)
 }
 
-func (s *service) List(ctx context.Context, limit, offset int32) ([]*UsageClassificationResponse, int64, error) {
-    if limit <= 0 {
-        limit = 10
-    }
-    if limit > 100 {
-        limit = 100
-    }
-    if offset < 0 {
-        offset = 0
-    }
-    items, total, err := s.repo.List(ctx, limit, offset)
+func (s *service) List(ctx context.Context, pg Pagination) ([]*UsageClassificationResponse, int64, error) {
+    items, total, err := s.repo.List(ctx, pg.Limit, pg.Offset)
     if err != nil {
         return nil, 0, err
     }

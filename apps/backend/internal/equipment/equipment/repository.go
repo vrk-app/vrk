@@ -20,6 +20,7 @@ type EquipmentRepository interface {
 //    Update(ctx context.Context, m Equipment) (*Equipment, error)
     Delete(ctx context.Context, id uuid.UUID) error
     List(ctx context.Context, limit, offset int32) ([]EquipmentWithDetails, int64, error)
+    ListStandardsByEquipmentID(ctx context.Context, equipmentID uuid.UUID) ([]StandardInfo, error)
     Exists(ctx context.Context, id uuid.UUID) (bool, error)
 }
 
@@ -94,21 +95,6 @@ func mapRowWithDetails(r *generated.GetEquipmentByIDRow) *EquipmentWithDetails {
         MetrologicalOperationType:    r.MetrologicalOperationType,
     }
 
-    var standardID *uuid.UUID
-    if r.StandardID.Valid {
-        id := uuid.UUID(r.StandardID.Bytes)
-        standardID = &id
-    }
-
-    stdInfo := &StandardInfo{
-        ID:                           standardID,
-        CertificateNumber:            r.StdCertificateNumber,
-        LastOperationDate:            datePtrToStringPtr(r.StdLastOperationDate),
-        NextOperationDate:            datePtrToStringPtr(r.StdNextOperationDate),
-        DocumentProviderOrganization: r.StdDocumentProviderOrganization,
-        DocumentURL:                  r.StdDocumentUrl,
-        MetrologicalCharacteristics:  r.StdMetrologicalCharacteristics,
-    }
     return &EquipmentWithDetails{
         ID:                         uuid.UUID(r.ID.Bytes),
         ManufacturerID:             uuid.UUID(r.ManufacturerID.Bytes),
@@ -126,7 +112,6 @@ func mapRowWithDetails(r *generated.GetEquipmentByIDRow) *EquipmentWithDetails {
         StatusID:                   r.StatusID,
         StatusName:                 getStringValue(r.StatusName),
         MeasuringInstrument:        miInfo,
-        Standard:                   stdInfo,
     }
 }
 
@@ -159,22 +144,6 @@ func mapRowWithDetailsFromList(r *generated.ListEquipmentRow) *EquipmentWithDeta
         MetrologicalOperationType:    &metrologicalOperationType,
     }
 
-    // Данные эталона
-    var standardID *uuid.UUID
-    if r.StandardID.Valid {
-        id := uuid.UUID(r.StandardID.Bytes)
-        standardID = &id
-    }
-
-    stdInfo := &StandardInfo{
-        ID:                           standardID,
-        CertificateNumber:            r.StdCertificateNumber,
-        LastOperationDate:            datePtrToStringPtr(r.StdLastOperationDate),
-        NextOperationDate:            datePtrToStringPtr(r.StdNextOperationDate),
-        DocumentProviderOrganization: r.StdDocumentProviderOrganization,
-        DocumentURL:                  r.StdDocumentUrl,
-        MetrologicalCharacteristics:  r.StdMetrologicalCharacteristics,
-    }
 
     return &EquipmentWithDetails{
         ID:                         uuid.UUID(r.ID.Bytes),
@@ -193,7 +162,6 @@ func mapRowWithDetailsFromList(r *generated.ListEquipmentRow) *EquipmentWithDeta
         StatusID:                   r.StatusID,
         StatusName:                 statusName,
         MeasuringInstrument:        miInfo,
-        Standard:                   stdInfo,
     }
 }
 
@@ -334,6 +302,31 @@ func (r *equipmentRepository) List(ctx context.Context, limit, offset int32) ([]
         result[i] = *mapRowWithDetailsFromList(&rows[i])
     }
     return result, total, nil
+}
+
+func (r *equipmentRepository) ListStandardsByEquipmentID(ctx context.Context, equipmentID uuid.UUID) ([]StandardInfo, error) {
+    rows, err := r.q.ListStandardsByEquipmentID(ctx, toPGUUID(equipmentID))
+    if err != nil {
+        return nil, err
+    }
+    result := make([]StandardInfo, len(rows))
+    for i, row := range rows {
+        var standardID *uuid.UUID
+        if row.ID.Valid {
+            id := uuid.UUID(row.ID.Bytes)
+            standardID = &id
+        }
+        result[i] = StandardInfo{
+            ID:                           standardID,
+            CertificateNumber:            row.CertificateNumber,
+            LastOperationDate:            datePtrToStringPtr(row.LastOperationDate),
+            NextOperationDate:            datePtrToStringPtr(row.NextOperationDate),
+            DocumentProviderOrganization: row.DocumentProviderOrganization,
+            DocumentURL:                  row.DocumentUrl,
+            MetrologicalCharacteristics:  row.MetrologicalCharacteristics,
+        }
+    }
+    return result, nil
 }
 
 func datePtrToStringPtr(d pgtype.Date) *string {

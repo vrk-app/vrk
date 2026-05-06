@@ -4,6 +4,7 @@ import (
     "encoding/json"
     "net/http"
     "strconv"
+    "errors"
 
     "github.com/go-chi/chi/v5"
 )
@@ -19,7 +20,7 @@ func NewHandler(service Service) *Handler {
 // CreateEquipmentDictionary создаёт новый equipment_dictionary с вложенными MID и стандартами
 // @Summary      Создать словарь оборудования
 // @Description  Создаёт equipment_dictionary, при необходимости создаёт measuring_instruments_dictionary и стандарты
-// @Tags         equipment-dictionaries
+// @Tags         equipment
 // @Accept       json
 // @Produce      json
 // @Param        request body CreateEquipmentDictionaryRequest true "Данные"
@@ -35,7 +36,16 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
     }
     resp, err := h.service.Create(r.Context(), req)
     if err != nil {
-        sendError(w, http.StatusInternalServerError, err.Error())
+        switch {
+        case errors.Is(err, ErrRegistryNumberRequired), errors.Is(err, ErrRegistryNumberTooLong), errors.Is(err, ErrStandardModelTooLong):
+            sendError(w, http.StatusBadRequest, err.Error())
+        case errors.Is(err, ErrMetrologicalTypeNotFound):
+            sendError(w, http.StatusNotFound, err.Error())
+        case errors.Is(err, ErrRegistryNumberNotUnique):
+            sendError(w, http.StatusConflict, err.Error())
+        default:
+            sendError(w, http.StatusInternalServerError, err.Error())
+        }
         return
     }
     sendSuccess(w, http.StatusCreated, resp, nil)
@@ -43,7 +53,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 
 // GetByID возвращает equipment_dictionary с полной информацией
 // @Summary      Получить словарь оборудования по ID
-// @Tags         equipment-dictionaries
+// @Tags         equipment
 // @Produce      json
 // @Param        id   path      string  true  "ID"
 // @Success      200  {object}  ApiResponse{data=EquipmentDictionaryFull}
@@ -65,7 +75,7 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 // UpdateEquipmentDictionary обновляет dictionary
 // @Summary      Обновить словарь оборудования
-// @Tags         equipment-dictionaries
+// @Tags         equipment
 // @Accept       json
 // @Produce      json
 // @Param        id       path      string                         true  "ID"
@@ -87,7 +97,16 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
     }
     resp, err := h.service.Update(r.Context(), id, req)
     if err != nil {
-        sendError(w, http.StatusInternalServerError, err.Error())
+        switch {
+        case errors.Is(err, ErrRegistryNumberTooLong), errors.Is(err, ErrStandardModelTooLong):
+            sendError(w, http.StatusBadRequest, err.Error())
+        case errors.Is(err, ErrMetrologicalTypeNotFound), errors.Is(err, ErrMIDNotFound):
+            sendError(w, http.StatusNotFound, err.Error())
+        case errors.Is(err, ErrRegistryNumberNotUnique):
+            sendError(w, http.StatusConflict, err.Error())
+        default:
+            sendError(w, http.StatusInternalServerError, err.Error())
+        }
         return
     }
     sendSuccess(w, http.StatusOK, resp, nil)
@@ -95,7 +114,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 
 // Delete удаляет equipment_dictionary и связанные данные
 // @Summary      Удалить словарь оборудования
-// @Tags         equipment-dictionaries
+// @Tags         equipment
 // @Param        id   path      string  true  "ID"
 // @Success      204
 // @Failure      404  {object}  ApiResponse
@@ -115,7 +134,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 
 // List возвращает список equipment_dictionaries
 // @Summary      Получить список словарей оборудования
-// @Tags         equipment-dictionaries
+// @Tags         equipment
 // @Produce      json
 // @Param        limit   query     int  false  "Количество записей"  default(10)
 // @Param        offset  query     int  false  "Смещение"            default(0)
@@ -124,7 +143,10 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
     limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
     offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
-    items, total, err := h.service.List(r.Context(), int32(limit), int32(offset))
+
+    pg := toPagination(int32(limit), int32(offset))
+
+    items, total, err := h.service.List(r.Context(), pg)
     if err != nil {
         sendError(w, http.StatusInternalServerError, err.Error())
         return
@@ -135,6 +157,20 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
         Offset: int32(offset),
     })
 }
+
+func toPagination(limit, offset int32) Pagination {
+    if limit <= 0 {
+        limit = 1000
+    }
+    if limit > 1000 {
+        limit = 1000
+    }
+    if offset < 0 {
+        offset = 0
+    }
+    return Pagination{Limit: limit, Offset: offset}
+}
+
 
 func sendSuccess(w http.ResponseWriter, status int, data interface{}, meta *Meta) {
     w.Header().Set("Content-Type", "application/json")

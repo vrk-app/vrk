@@ -80,6 +80,9 @@ RETURNING id, registry_number, metrological_operation_type_id;
 -- name: DeleteMeasuringInstrumentsDictionary :exec
 DELETE FROM measuring_instruments_dictionaries WHERE id = $1;
 
+-- name: ExistsMIDByRegistryNumber :one
+SELECT EXISTS(SELECT 1 FROM measuring_instruments_dictionaries WHERE registry_number = $1);
+
 -- =====================================================
 -- Операции с standards_dictionaries
 -- =====================================================
@@ -101,3 +104,4 @@ DELETE FROM standards_dictionaries WHERE id = $1;
 
 -- name: DeleteStandardsDictionariesByMID :exec
 DELETE FROM standards_dictionaries WHERE measuring_instruments_dictionary_id = $1;
+

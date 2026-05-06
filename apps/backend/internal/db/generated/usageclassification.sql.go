@@ -46,6 +46,24 @@ func (q *Queries) DeleteUsageClassification(ctx context.Context, id int32) error
 	return err
 }
 
+const getUsageClassificationByClassification = `-- name: GetUsageClassificationByClassification :one
+SELECT id, classification
+FROM usage_classifications
+WHERE classification = $1
+`
+
+type GetUsageClassificationByClassificationRow struct {
+	ID             int32  `json:"id"`
+	Classification string `json:"classification"`
+}
+
+func (q *Queries) GetUsageClassificationByClassification(ctx context.Context, classification string) (GetUsageClassificationByClassificationRow, error) {
+	row := q.db.QueryRow(ctx, getUsageClassificationByClassification, classification)
+	var i GetUsageClassificationByClassificationRow
+	err := row.Scan(&i.ID, &i.Classification)
+	return i, err
+}
+
 const getUsageClassificationByID = `-- name: GetUsageClassificationByID :one
 SELECT id, classification FROM usage_classifications WHERE id = $1
 `

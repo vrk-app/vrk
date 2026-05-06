@@ -5,6 +5,9 @@ RETURNING id, metrological_operation_type;
 -- name: GetMetrologicalTypeByID :one
 SELECT id, metrological_operation_type FROM metrological_types WHERE id = $1;
 
+-- name: GetMetrologicalTypeByOperationType :one
+SELECT id, metrological_operation_type FROM metrological_types WHERE metrological_operation_type = $1;
+
 -- name: ListMetrologicalTypes :many
 SELECT id, metrological_operation_type FROM metrological_types
 LIMIT $1 OFFSET $2;

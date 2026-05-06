@@ -67,13 +67,13 @@ RETURNING id, registry_number, metrological_operation_type_id
 
 type CreateMeasuringInstrumentsDictionaryParams struct {
 	RegistryNumber              string `json:"registryNumber"`
-	MetrologicalOperationTypeID *int32 `json:"metrologicalOperationTypeId"`
+	MetrologicalOperationTypeID int32  `json:"metrologicalOperationTypeId"`
 }
 
 type CreateMeasuringInstrumentsDictionaryRow struct {
 	ID                          pgtype.UUID `json:"id"`
 	RegistryNumber              string      `json:"registryNumber"`
-	MetrologicalOperationTypeID *int32      `json:"metrologicalOperationTypeId"`
+	MetrologicalOperationTypeID int32       `json:"metrologicalOperationTypeId"`
 }
 
 // =====================================================
@@ -163,6 +163,17 @@ func (q *Queries) EquipmentDictionaryExists(ctx context.Context, id pgtype.UUID)
 	return exists, err
 }
 
+const existsMIDByRegistryNumber = `-- name: ExistsMIDByRegistryNumber :one
+SELECT EXISTS(SELECT 1 FROM measuring_instruments_dictionaries WHERE registry_number = $1)
+`
+
+func (q *Queries) ExistsMIDByRegistryNumber(ctx context.Context, registryNumber string) (bool, error) {
+	row := q.db.QueryRow(ctx, existsMIDByRegistryNumber, registryNumber)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const getEquipmentDictionaryByID = `-- name: GetEquipmentDictionaryByID :one
 SELECT 
     ed.id,
@@ -212,7 +223,7 @@ WHERE id = $1
 type GetMeasuringInstrumentsDictionaryByIDRow struct {
 	ID                          pgtype.UUID `json:"id"`
 	RegistryNumber              string      `json:"registryNumber"`
-	MetrologicalOperationTypeID *int32      `json:"metrologicalOperationTypeId"`
+	MetrologicalOperationTypeID int32       `json:"metrologicalOperationTypeId"`
 }
 
 func (q *Queries) GetMeasuringInstrumentsDictionaryByID(ctx context.Context, id pgtype.UUID) (GetMeasuringInstrumentsDictionaryByIDRow, error) {
@@ -366,13 +377,13 @@ RETURNING id, registry_number, metrological_operation_type_id
 type UpdateMeasuringInstrumentsDictionaryParams struct {
 	ID                          pgtype.UUID `json:"id"`
 	RegistryNumber              string      `json:"registryNumber"`
-	MetrologicalOperationTypeID *int32      `json:"metrologicalOperationTypeId"`
+	MetrologicalOperationTypeID int32       `json:"metrologicalOperationTypeId"`
 }
 
 type UpdateMeasuringInstrumentsDictionaryRow struct {
 	ID                          pgtype.UUID `json:"id"`
 	RegistryNumber              string      `json:"registryNumber"`
-	MetrologicalOperationTypeID *int32      `json:"metrologicalOperationTypeId"`
+	MetrologicalOperationTypeID int32       `json:"metrologicalOperationTypeId"`
 }
 
 func (q *Queries) UpdateMeasuringInstrumentsDictionary(ctx context.Context, arg UpdateMeasuringInstrumentsDictionaryParams) (UpdateMeasuringInstrumentsDictionaryRow, error) {

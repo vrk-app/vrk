@@ -2,28 +2,62 @@ package manufacturer
 
 import (
     "context"
-    "time"
 
     "github.com/google/uuid"
 )
 
 type ManufacturerService interface {
     Create(ctx context.Context, req CreateRequest) (*ManufacturerResponse, error)
-    List(ctx context.Context, limit, offset int32) ([]*ManufacturerResponse, int64, error)
+    List(ctx context.Context, pg Pagination) ([]*ManufacturerResponse, int64, error)
     GetByID(ctx context.Context, id string) (*ManufacturerResponse, error)
     Update(ctx context.Context, id string, req UpdateRequest) (*ManufacturerResponse, error)
     Delete(ctx context.Context, id string) error
 }
 
-type manufacturerService struct {
-    repo ManufacturerRepository
+type ClassificationRepository interface {
+    Exists(ctx context.Context, id int64) (bool, error)
 }
 
-func NewService(repo ManufacturerRepository) ManufacturerService {
-    return &manufacturerService{repo: repo}
+type manufacturerService struct {
+    repo ManufacturerRepository
+    classificationRepo ClassificationRepository
+}
+
+func NewService(repo ManufacturerRepository, classificationRepo ClassificationRepository) ManufacturerService {
+    return &manufacturerService{
+        repo: repo,
+        classificationRepo: classificationRepo,
+    }
 }
 
 func (s *manufacturerService) Create(ctx context.Context, req CreateRequest) (*ManufacturerResponse, error) {
+    if req.Name == "" {
+        return nil, ErrNameRequired
+    }
+    if len(req.Name) > 200 {
+        return nil, ErrNameTooLong
+    }
+    if req.ClassificationID == 0 {
+        return nil, ErrClassificationRequired
+    }
+
+    exists, err := s.classificationRepo.Exists(ctx, int64(req.ClassificationID))
+    if err != nil {
+        return nil, err
+    }
+    if !exists {
+        return nil, ErrClassificationNotFound
+    }
+
+
+    existing, err := s.repo.GetByName(ctx, req.Name)
+    if err != nil {
+        return nil, err
+    }
+    if existing != nil {
+        return nil, ErrDuplicateName
+    }
+
     model := Manufacturer{
         Name:            req.Name,
         ClassificationID: req.ClassificationID,
@@ -56,13 +90,33 @@ func (s *manufacturerService) Update(ctx context.Context, id string, req UpdateR
     if err != nil {
         return nil, ErrInvalidID
     }
-
     current, err := s.repo.GetByID(ctx, mID)
     if err != nil {
         return nil, err
     }
+    if req.ClassificationID != nil {
+        exists, err := s.classificationRepo.Exists(ctx, int64(*req.ClassificationID))
+        if err != nil {
+            return nil, err
+        }
+        if !exists {
+            return nil, ErrClassificationNotFound
+        }
+    }
+    if req.Name != nil && *req.Name != "" {
+        if len(*req.Name) > 200 {
+            return nil, ErrNameTooLong
+        }
+        existing, err := s.repo.GetByName(ctx, *req.Name)
+        if err != nil {
+            return nil, err
+        }
+        if existing != nil {
+            return nil, ErrDuplicateName
+        }
+    }
 
-    if req.Name != nil {
+    if req.Name != nil && *req.Name != "" {
         current.Name = *req.Name
     }
     if req.ClassificationID != nil {
@@ -85,18 +139,8 @@ func (s *manufacturerService) Delete(ctx context.Context, id string) error {
     return s.repo.Delete(ctx, mID)
 }
 
-func (s *manufacturerService) List(ctx context.Context, limit, offset int32) ([]*ManufacturerResponse, int64, error) {
-    if limit <= 0 {
-        limit = 10
-    }
-    if limit > 100 {
-        limit = 100
-    }
-    if offset < 0 {
-        offset = 0
-    }
-
-    items, total, err := s.repo.List(ctx, limit, offset)
+func (s *manufacturerService) List(ctx context.Context, pg Pagination) ([]*ManufacturerResponse, int64, error) {
+    items, total, err := s.repo.List(ctx, pg.Limit, pg.Offset)
     if err != nil {
         return nil, 0, err
     }
@@ -113,7 +157,5 @@ func toResponse(m *Manufacturer) *ManufacturerResponse {
         ID:              m.ID.String(),
         Name:            m.Name,
         ClassificationID: m.ClassificationID,
-        CreatedAt:       m.CreatedAt.Format(time.RFC3339),
-        UpdatedAt:       m.UpdatedAt.Format(time.RFC3339),
     }
 }

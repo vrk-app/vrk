@@ -19,7 +19,7 @@ type EquipmentDictionary struct {
 type MeasuringInstrumentsDictionary struct {
     ID                           uuid.UUID
     RegistryNumber               string
-    MetrologicalOperationTypeID  *int32
+    MetrologicalOperationTypeID  int32
     CreatedAt                    time.Time
     UpdatedAt                    time.Time
 }
@@ -54,7 +54,7 @@ type EquipmentDictionaryFull struct {
 type MeasuringInstrumentsDictionaryFull struct {
     ID                         string
     RegistryNumber             string
-    MetrologicalOperationTypeID *int32
+    MetrologicalOperationTypeID int32
     MetrologicalOperationType   *string
     Standards                  []StandardsDictionaryFull
 }
@@ -73,18 +73,27 @@ type CreateEquipmentDictionaryRequest struct {
 
 type MeasuringInstrumentInput struct {
     RegistryNumber             string   `json:"registryNumber"`
-    MetrologicalOperationTypeID *int32    `json:"metrologicalOperationTypeId,omitempty"`
+    MetrologicalOperationTypeID int32    `json:"metrologicalOperationTypeId,omitempty"`
     Standards                  []string `json:"standards" example:"standardModel"`
 }
 
 type UpdateEquipmentDictionaryRequest struct {
     FullName    *string `json:"fullName,omitempty"`
     Model       *string `json:"model,omitempty"`
-    MeasuringInstrumentsDictionaryID *string `json:"measuringInstrumentDictionaryId,omitempty"`
-    MeasuringInstrument             *MeasuringInstrumentInput `json:"measuringInstrument,omitempty"`
+    MeasuringInstrument             *MeasuringInstrumentUpdateInput `json:"measuringInstrument,omitempty"`
 }
 
-// Ответ API
+type MeasuringInstrumentUpdateInput struct {
+    RegistryNumber             *string   `json:"registryNumber"`
+    MetrologicalOperationTypeID *int32    `json:"metrologicalOperationTypeId,omitempty"`
+    Standards                  []string `json:"standards" example:"standardModel"`
+}
+
+type Pagination struct {
+    Limit  int32
+    Offset int32
+}
+
 type ApiResponse struct {
     Success bool        `json:"success"`
     Data    interface{} `json:"data,omitempty"`

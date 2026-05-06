@@ -414,7 +414,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "equipment-dictionaries"
+                    "equipment"
                 ],
                 "summary": "Получить список словарей оборудования",
                 "parameters": [
@@ -469,7 +469,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "equipment-dictionaries"
+                    "equipment"
                 ],
                 "summary": "Создать словарь оборудования",
                 "parameters": [
@@ -523,7 +523,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "equipment-dictionaries"
+                    "equipment"
                 ],
                 "summary": "Получить словарь оборудования по ID",
                 "parameters": [
@@ -570,7 +570,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "equipment-dictionaries"
+                    "equipment"
                 ],
                 "summary": "Обновить словарь оборудования",
                 "parameters": [
@@ -626,7 +626,7 @@ const docTemplate = `{
             },
             "delete": {
                 "tags": [
-                    "equipment-dictionaries"
+                    "equipment"
                 ],
                 "summary": "Удалить словарь оборудования",
                 "parameters": [
@@ -1017,7 +1017,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "metrological-types"
+                    "equipment"
                 ],
                 "summary": "Получить список типов метрологических операций",
                 "parameters": [
@@ -1071,7 +1071,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "metrological-types"
+                    "equipment"
                 ],
                 "summary": "Создать тип метрологической операции",
                 "parameters": [
@@ -1125,7 +1125,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "metrological-types"
+                    "equipment"
                 ],
                 "summary": "Получить тип метрологической операции по ID",
                 "parameters": [
@@ -1166,7 +1166,7 @@ const docTemplate = `{
             },
             "delete": {
                 "tags": [
-                    "metrological-types"
+                    "equipment"
                 ],
                 "summary": "Удалить тип метрологической операции",
                 "parameters": [
@@ -1471,7 +1471,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "usage-classifications"
+                    "equipment"
                 ],
                 "summary": "Получить список классификаций использования",
                 "parameters": [
@@ -1525,7 +1525,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "usage-classifications"
+                    "equipment"
                 ],
                 "summary": "Создать классификацию использования",
                 "parameters": [
@@ -1579,7 +1579,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "usage-classifications"
+                    "equipment"
                 ],
                 "summary": "Получить классификацию использования по ID",
                 "parameters": [
@@ -1620,7 +1620,7 @@ const docTemplate = `{
             },
             "delete": {
                 "tags": [
-                    "usage-classifications"
+                    "equipment"
                 ],
                 "summary": "Удалить классификацию использования",
                 "parameters": [
@@ -2053,6 +2053,26 @@ const docTemplate = `{
                 }
             }
         },
+        "equipmentdictionary.MeasuringInstrumentUpdateInput": {
+            "type": "object",
+            "properties": {
+                "metrologicalOperationTypeId": {
+                    "type": "integer"
+                },
+                "registryNumber": {
+                    "type": "string"
+                },
+                "standards": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "standardModel"
+                    ]
+                }
+            }
+        },
         "equipmentdictionary.MeasuringInstrumentsDictionaryFull": {
             "type": "object",
             "properties": {
@@ -2109,10 +2129,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "measuringInstrument": {
-                    "$ref": "#/definitions/equipmentdictionary.MeasuringInstrumentInput"
-                },
-                "measuringInstrumentDictionaryId": {
-                    "type": "string"
+                    "$ref": "#/definitions/equipmentdictionary.MeasuringInstrumentUpdateInput"
                 },
                 "model": {
                     "type": "string"
@@ -2141,16 +2158,10 @@ const docTemplate = `{
                     "type": "integer",
                     "format": "int32"
                 },
-                "createdAt": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "updatedAt": {
                     "type": "string"
                 }
             }
@@ -2224,9 +2235,6 @@ const docTemplate = `{
         "metrologicaltype.MetrologicalTypeResponse": {
             "type": "object",
             "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "integer"
                 },

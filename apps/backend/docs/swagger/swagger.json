@@ -405,7 +405,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "equipment-dictionaries"
+                    "equipment"
                 ],
                 "summary": "Получить список словарей оборудования",
                 "parameters": [
@@ -460,7 +460,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "equipment-dictionaries"
+                    "equipment"
                 ],
                 "summary": "Создать словарь оборудования",
                 "parameters": [
@@ -514,7 +514,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "equipment-dictionaries"
+                    "equipment"
                 ],
                 "summary": "Получить словарь оборудования по ID",
                 "parameters": [
@@ -561,7 +561,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "equipment-dictionaries"
+                    "equipment"
                 ],
                 "summary": "Обновить словарь оборудования",
                 "parameters": [
@@ -617,7 +617,7 @@
             },
             "delete": {
                 "tags": [
-                    "equipment-dictionaries"
+                    "equipment"
                 ],
                 "summary": "Удалить словарь оборудования",
                 "parameters": [
@@ -1008,7 +1008,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "metrological-types"
+                    "equipment"
                 ],
                 "summary": "Получить список типов метрологических операций",
                 "parameters": [
@@ -1062,7 +1062,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "metrological-types"
+                    "equipment"
                 ],
                 "summary": "Создать тип метрологической операции",
                 "parameters": [
@@ -1116,7 +1116,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "metrological-types"
+                    "equipment"
                 ],
                 "summary": "Получить тип метрологической операции по ID",
                 "parameters": [
@@ -1157,7 +1157,7 @@
             },
             "delete": {
                 "tags": [
-                    "metrological-types"
+                    "equipment"
                 ],
                 "summary": "Удалить тип метрологической операции",
                 "parameters": [
@@ -1462,7 +1462,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "usage-classifications"
+                    "equipment"
                 ],
                 "summary": "Получить список классификаций использования",
                 "parameters": [
@@ -1516,7 +1516,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "usage-classifications"
+                    "equipment"
                 ],
                 "summary": "Создать классификацию использования",
                 "parameters": [
@@ -1570,7 +1570,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "usage-classifications"
+                    "equipment"
                 ],
                 "summary": "Получить классификацию использования по ID",
                 "parameters": [
@@ -1611,7 +1611,7 @@
             },
             "delete": {
                 "tags": [
-                    "usage-classifications"
+                    "equipment"
                 ],
                 "summary": "Удалить классификацию использования",
                 "parameters": [
@@ -2044,6 +2044,26 @@
                 }
             }
         },
+        "equipmentdictionary.MeasuringInstrumentUpdateInput": {
+            "type": "object",
+            "properties": {
+                "metrologicalOperationTypeId": {
+                    "type": "integer"
+                },
+                "registryNumber": {
+                    "type": "string"
+                },
+                "standards": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "standardModel"
+                    ]
+                }
+            }
+        },
         "equipmentdictionary.MeasuringInstrumentsDictionaryFull": {
             "type": "object",
             "properties": {
@@ -2100,10 +2120,7 @@
                     "type": "string"
                 },
                 "measuringInstrument": {
-                    "$ref": "#/definitions/equipmentdictionary.MeasuringInstrumentInput"
-                },
-                "measuringInstrumentDictionaryId": {
-                    "type": "string"
+                    "$ref": "#/definitions/equipmentdictionary.MeasuringInstrumentUpdateInput"
                 },
                 "model": {
                     "type": "string"
@@ -2132,16 +2149,10 @@
                     "type": "integer",
                     "format": "int32"
                 },
-                "createdAt": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "string"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "updatedAt": {
                     "type": "string"
                 }
             }
@@ -2215,9 +2226,6 @@
         "metrologicaltype.MetrologicalTypeResponse": {
             "type": "object",
             "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "integer"
                 },

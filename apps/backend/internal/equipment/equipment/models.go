@@ -57,7 +57,7 @@ type EquipmentWithDetails struct {
     StatusID                     int16
     StatusName                   string
     MeasuringInstrument *MeasuringInstrumentInfo
-    Standard           *StandardInfo
+   Standards           []StandardInfo
 }
 
 type EquipmentDictionaryInfo struct {
@@ -141,14 +141,13 @@ type EquipmentResponse struct {
     CreatedAt            string  `json:"createdAt"`
     UpdatedAt            string  `json:"updatedAt"`
     MeasuringInstrument  *MeasuringInstrumentInfo `json:"measuringInstrument,omitempty"`
-    Standard             *StandardInfo            `json:"standard,omitempty"`
+    Standards            []StandardInfo            `json:"standard,omitempty"`
 }
 
-type ListFilter struct {
+type Pagination struct {
     Limit  int32
     Offset int32
 }
-
 type Meta struct {
     Total  int64 `json:"total"`
     Limit  int32 `json:"limit"`

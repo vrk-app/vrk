@@ -58,37 +58,18 @@ func New(cfg *config.Config) (*App, error) {
 	queries := generated.New(database)
 
 	// Инициализация репозиториев и сервисов
-	// Organization
 	orgRepo := organization.NewRepository(queries)
 	orgService := organization.NewService(orgRepo)
 	orgHandler := organization.NewHandler(orgService)
 
-	// Equipment
 	eqRepo := equipment.NewRepository(queries)
 	eqService := equipment.NewService(eqRepo)
 	eqHandler := equipment.NewHandler(eqService)
 
-	// Standard
-	// stdRepo := standard.NewRepository(queries)
-	// stdService := standard.NewService(stdRepo)
-	// stdHandler := standard.NewHandler(stdService)
-
-	// // Measuring Instrument
-	// miRepo := measuringinstrument.NewRepository(queries)
-	// miService := measuringinstrument.NewService(miRepo)
-	// miHandler := measuringinstrument.NewHandler(miService)
 
 	agreementRepo := agreement.NewRepository(queries)
 	agreementService := agreement.NewService(agreementRepo)
 	agreementHandler := agreement.NewHandler(agreementService)
-
-	manufacturerRepo := manufacturer.NewRepository(queries)
-	manufacturerService := manufacturer.NewService(manufacturerRepo)
-	manufacturerHandler := manufacturer.NewHandler(manufacturerService)
-
-	equipDictRepo := equipmentdictionary.NewRepository(queries)
-	equipDictService := equipmentdictionary.NewService(equipDictRepo)
-	equipDictHandler := equipmentdictionary.NewHandler(equipDictService)
 
 	usageClassRepo := usageclassification.NewRepository(queries)
 	usageClassService := usageclassification.NewService(usageClassRepo)
@@ -97,6 +78,14 @@ func New(cfg *config.Config) (*App, error) {
 	metrologicalTypeRepo := metrologicaltype.NewRepository(queries)
 	metrologicalTypeService := metrologicaltype.NewService(metrologicalTypeRepo)
 	metrologicalTypeHandler := metrologicaltype.NewHandler(metrologicalTypeService)
+
+	manufacturerRepo := manufacturer.NewRepository(queries)
+	manufacturerService := manufacturer.NewService(manufacturerRepo, usageClassRepo)
+	manufacturerHandler := manufacturer.NewHandler(manufacturerService)
+
+	equipDictRepo := equipmentdictionary.NewRepository(queries)
+	equipDictService := equipmentdictionary.NewService(equipDictRepo, metrologicalTypeRepo)
+	equipDictHandler := equipmentdictionary.NewHandler(equipDictService)
 
 	// router
 	router := chi.NewRouter()
@@ -142,8 +131,6 @@ func (a *App) registerRoutes(
 	usageClassHandler *usageclassification.Handler,
 	metrologicalTypeHandler *metrologicaltype.Handler,
 ) {
-	// Health/readiness вынесены из `/api/v1`, чтобы compose, CI и внешние
-	// health probes могли проверять процесс и БД без зависимости от business API.
 	a.router.Get("/healthz", a.handleHealth)
 	a.router.Get("/readyz", a.handleReady)
 
@@ -174,7 +161,7 @@ func (a *App) registerRoutes(
 			r.Get("/", manufacturerHandler.List)
 			r.Post("/", manufacturerHandler.Create)
 			r.Get("/{id}", manufacturerHandler.GetByID)
-			r.Put("/{id}", manufacturerHandler.Update)
+			r.Patch("/{id}", manufacturerHandler.Update)
 			r.Delete("/{id}", manufacturerHandler.Delete)
 		})
 
@@ -182,7 +169,7 @@ func (a *App) registerRoutes(
 			r.Get("/", equipDictHandler.List)
 			r.Post("/", equipDictHandler.Create)
 			r.Get("/{id}", equipDictHandler.GetByID)
-			r.Put("/{id}", equipDictHandler.Update)
+			r.Patch("/{id}", equipDictHandler.Update)
 			r.Delete("/{id}", equipDictHandler.Delete)
 		})
 
@@ -199,24 +186,6 @@ func (a *App) registerRoutes(
 			r.Get("/{id}", metrologicalTypeHandler.GetByID)
 			r.Delete("/{id}", metrologicalTypeHandler.Delete)
 		})
-
-		// Standards
-		// r.Route("/standards", func(r chi.Router) {
-		// 	r.Get("/", stdHandler.List)
-		// 	r.Post("/", stdHandler.Create)
-		// 	r.Get("/{id}", stdHandler.GetByID)
-		// 	r.Patch("/{id}", stdHandler.Update)
-		// 	r.Delete("/{id}", stdHandler.Delete)
-		// })
-
-		// Measuring Instruments
-		// r.Route("/measuring-instruments", func(r chi.Router) {
-		// 	r.Get("/", miHandler.List)
-		// 	r.Post("/", miHandler.Create)
-		// 	r.Get("/{id}", miHandler.GetByID)
-		// 	r.Patch("/{id}", miHandler.Update)
-		// 	r.Delete("/{id}", miHandler.Delete)
-		// })
 
 		// Agreements
 		// r.Route("/agreements", func(r chi.Router) {

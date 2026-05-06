@@ -77,6 +77,25 @@ func (q *Queries) GetManufacturerByID(ctx context.Context, id pgtype.UUID) (GetM
 	return i, err
 }
 
+const getManufacturerByName = `-- name: GetManufacturerByName :one
+SELECT id, name, classification_id
+FROM manufacturers
+WHERE name = $1
+`
+
+type GetManufacturerByNameRow struct {
+	ID               pgtype.UUID `json:"id"`
+	Name             string      `json:"name"`
+	ClassificationID int32       `json:"classificationId"`
+}
+
+func (q *Queries) GetManufacturerByName(ctx context.Context, name string) (GetManufacturerByNameRow, error) {
+	row := q.db.QueryRow(ctx, getManufacturerByName, name)
+	var i GetManufacturerByNameRow
+	err := row.Scan(&i.ID, &i.Name, &i.ClassificationID)
+	return i, err
+}
+
 const listManufacturers = `-- name: ListManufacturers :many
 SELECT id, name, classification_id
 FROM manufacturers

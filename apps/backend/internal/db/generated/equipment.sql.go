@@ -287,15 +287,7 @@ SELECT
     mi.last_operation_date as mi_last_operation_date,
     mi.next_operation_date as mi_next_operation_date,
     mi.document_provider_organization as mi_document_provider_organization,
-    mi.document_url as mi_document_url,
-    -- Данные эталона
-    s.id as standard_id,
-    s.certificate_number as std_certificate_number,
-    s.last_operation_date as std_last_operation_date,
-    s.next_operation_date as std_next_operation_date,
-    s.document_provider_organization as std_document_provider_organization,
-    s.document_url as std_document_url,
-    s.metrological_characteristics as std_metrological_characteristics
+    mi.document_url as mi_document_url
 FROM equipment e
 LEFT JOIN manufacturers m ON e.manufacturer_id = m.id
 LEFT JOIN usage_classifications uc ON m.classification_id = uc.id
@@ -305,7 +297,6 @@ LEFT JOIN metrological_types mt ON mid.metrological_operation_type_id = mt.id
 LEFT JOIN organization_units ou ON e.organization_id = ou.id
 LEFT JOIN equipment_statuses es ON e.status_id = es.id
 LEFT JOIN measuring_instruments mi ON e.id = mi.equipment_id
-LEFT JOIN standards s ON e.id = s.equipment_id
 ORDER BY e.created_at DESC
 LIMIT $1 OFFSET $2
 `
@@ -341,13 +332,6 @@ type ListEquipmentRow struct {
 	MiNextOperationDate              pgtype.Date        `json:"miNextOperationDate"`
 	MiDocumentProviderOrganization   *string            `json:"miDocumentProviderOrganization"`
 	MiDocumentUrl                    *string            `json:"miDocumentUrl"`
-	StandardID                       pgtype.UUID        `json:"standardId"`
-	StdCertificateNumber             *string            `json:"stdCertificateNumber"`
-	StdLastOperationDate             pgtype.Date        `json:"stdLastOperationDate"`
-	StdNextOperationDate             pgtype.Date        `json:"stdNextOperationDate"`
-	StdDocumentProviderOrganization  *string            `json:"stdDocumentProviderOrganization"`
-	StdDocumentUrl                   *string            `json:"stdDocumentUrl"`
-	StdMetrologicalCharacteristics   *string            `json:"stdMetrologicalCharacteristics"`
 }
 
 func (q *Queries) ListEquipment(ctx context.Context, arg ListEquipmentParams) ([]ListEquipmentRow, error) {
@@ -385,13 +369,57 @@ func (q *Queries) ListEquipment(ctx context.Context, arg ListEquipmentParams) ([
 			&i.MiNextOperationDate,
 			&i.MiDocumentProviderOrganization,
 			&i.MiDocumentUrl,
-			&i.StandardID,
-			&i.StdCertificateNumber,
-			&i.StdLastOperationDate,
-			&i.StdNextOperationDate,
-			&i.StdDocumentProviderOrganization,
-			&i.StdDocumentUrl,
-			&i.StdMetrologicalCharacteristics,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listStandardsByEquipmentID = `-- name: ListStandardsByEquipmentID :many
+SELECT 
+    id,
+    certificate_number,
+    last_operation_date,
+    next_operation_date,
+    document_provider_organization,
+    document_url,
+    metrological_characteristics
+FROM standards
+WHERE equipment_id = $1
+`
+
+type ListStandardsByEquipmentIDRow struct {
+	ID                           pgtype.UUID `json:"id"`
+	CertificateNumber            *string     `json:"certificateNumber"`
+	LastOperationDate            pgtype.Date `json:"lastOperationDate"`
+	NextOperationDate            pgtype.Date `json:"nextOperationDate"`
+	DocumentProviderOrganization *string     `json:"documentProviderOrganization"`
+	DocumentUrl                  *string     `json:"documentUrl"`
+	MetrologicalCharacteristics  *string     `json:"metrologicalCharacteristics"`
+}
+
+func (q *Queries) ListStandardsByEquipmentID(ctx context.Context, equipmentID pgtype.UUID) ([]ListStandardsByEquipmentIDRow, error) {
+	rows, err := q.db.Query(ctx, listStandardsByEquipmentID, equipmentID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListStandardsByEquipmentIDRow{}
+	for rows.Next() {
+		var i ListStandardsByEquipmentIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.CertificateNumber,
+			&i.LastOperationDate,
+			&i.NextOperationDate,
+			&i.DocumentProviderOrganization,
+			&i.DocumentUrl,
+			&i.MetrologicalCharacteristics,
 		); err != nil {
 			return nil, err
 		}

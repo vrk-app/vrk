@@ -3,13 +3,16 @@ package metrologicaltype
 import (
     "context"
     "fmt"
+    "errors"
 
+    "github.com/jackc/pgx/v5"
     "backend/internal/db/generated"
 )
 
 type Repository interface {
     Create(ctx context.Context, operationType string) (*MetrologicalType, error)
     GetByID(ctx context.Context, id int64) (*MetrologicalType, error)
+    GetByOperationType(ctx context.Context, operationType string) (*MetrologicalType, error)
     Delete(ctx context.Context, id int64) error
     List(ctx context.Context, limit, offset int32) ([]*MetrologicalType, int64, error)
     Exists(ctx context.Context, id int64) (bool, error)
@@ -42,6 +45,17 @@ func (r *repository) GetByID(ctx context.Context, id int64) (*MetrologicalType, 
     row, err := r.q.GetMetrologicalTypeByID(ctx, int32(id))
     if err != nil {
         return nil, fmt.Errorf("%w: %v", ErrNotFound, err)
+    }
+    return mapRow((*generated.CreateMetrologicalTypeRow)(&row)), nil
+}
+
+func (r *repository) GetByOperationType(ctx context.Context, operationType string) (*MetrologicalType, error) {
+    row, err := r.q.GetMetrologicalTypeByOperationType(ctx, operationType)
+    if err != nil {
+        if errors.Is(err, pgx.ErrNoRows) {
+            return nil, nil
+        }
+        return nil, fmt.Errorf("failed to get metrological type by name: %w", err)
     }
     return mapRow((*generated.CreateMetrologicalTypeRow)(&row)), nil
 }
