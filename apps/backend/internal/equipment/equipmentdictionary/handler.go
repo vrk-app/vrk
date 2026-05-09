@@ -1,20 +1,20 @@
 package equipmentdictionary
 
 import (
-    "encoding/json"
-    "net/http"
-    "strconv"
-    "errors"
+	"encoding/json"
+	"errors"
+	"net/http"
+	"strconv"
 
-    "github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5"
 )
 
 type Handler struct {
-    service Service
+	service Service
 }
 
 func NewHandler(service Service) *Handler {
-    return &Handler{service: service}
+	return &Handler{service: service}
 }
 
 // CreateEquipmentDictionary создаёт новый equipment_dictionary с вложенными MID и стандартами
@@ -29,26 +29,26 @@ func NewHandler(service Service) *Handler {
 // @Failure      500  {object}  ApiResponse
 // @Router       /equipment-dictionaries [post]
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
-    var req CreateEquipmentDictionaryRequest
-    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-        sendError(w, http.StatusBadRequest, "Invalid request body")
-        return
-    }
-    resp, err := h.service.Create(r.Context(), req)
-    if err != nil {
-        switch {
-        case errors.Is(err, ErrRegistryNumberRequired), errors.Is(err, ErrRegistryNumberTooLong), errors.Is(err, ErrStandardModelTooLong):
-            sendError(w, http.StatusBadRequest, err.Error())
-        case errors.Is(err, ErrMetrologicalTypeNotFound):
-            sendError(w, http.StatusNotFound, err.Error())
-        case errors.Is(err, ErrRegistryNumberNotUnique):
-            sendError(w, http.StatusConflict, err.Error())
-        default:
-            sendError(w, http.StatusInternalServerError, err.Error())
-        }
-        return
-    }
-    sendSuccess(w, http.StatusCreated, resp, nil)
+	var req CreateEquipmentDictionaryRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		sendError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+	resp, err := h.service.Create(r.Context(), req)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrRegistryNumberRequired), errors.Is(err, ErrRegistryNumberTooLong), errors.Is(err, ErrStandardModelTooLong):
+			sendError(w, http.StatusBadRequest, err.Error())
+		case errors.Is(err, ErrMetrologicalTypeNotFound):
+			sendError(w, http.StatusNotFound, err.Error())
+		case errors.Is(err, ErrRegistryNumberNotUnique):
+			sendError(w, http.StatusConflict, err.Error())
+		default:
+			sendError(w, http.StatusInternalServerError, err.Error())
+		}
+		return
+	}
+	sendSuccess(w, http.StatusCreated, resp, nil)
 }
 
 // GetByID возвращает equipment_dictionary с полной информацией
@@ -60,17 +60,17 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure      404  {object}  ApiResponse
 // @Router       /equipment-dictionaries/{id} [get]
 func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
-    id := chi.URLParam(r, "id")
-    if id == "" {
-        sendError(w, http.StatusBadRequest, "ID is required")
-        return
-    }
-    resp, err := h.service.GetByID(r.Context(), id)
-    if err != nil {
-        sendError(w, http.StatusNotFound, err.Error())
-        return
-    }
-    sendSuccess(w, http.StatusOK, resp, nil)
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		sendError(w, http.StatusBadRequest, "ID is required")
+		return
+	}
+	resp, err := h.service.GetByID(r.Context(), id)
+	if err != nil {
+		sendError(w, http.StatusNotFound, err.Error())
+		return
+	}
+	sendSuccess(w, http.StatusOK, resp, nil)
 }
 
 // UpdateEquipmentDictionary обновляет dictionary
@@ -83,33 +83,33 @@ func (h *Handler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Success      200      {object}  ApiResponse{data=EquipmentDictionaryFull}
 // @Failure      400      {object}  ApiResponse
 // @Failure      404      {object}  ApiResponse
-// @Router       /equipment-dictionaries/{id} [put]
+// @Router       /equipment-dictionaries/{id} [patch]
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
-    id := chi.URLParam(r, "id")
-    if id == "" {
-        sendError(w, http.StatusBadRequest, "ID is required")
-        return
-    }
-    var req UpdateEquipmentDictionaryRequest
-    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-        sendError(w, http.StatusBadRequest, "Invalid request body")
-        return
-    }
-    resp, err := h.service.Update(r.Context(), id, req)
-    if err != nil {
-        switch {
-        case errors.Is(err, ErrRegistryNumberTooLong), errors.Is(err, ErrStandardModelTooLong):
-            sendError(w, http.StatusBadRequest, err.Error())
-        case errors.Is(err, ErrMetrologicalTypeNotFound), errors.Is(err, ErrMIDNotFound):
-            sendError(w, http.StatusNotFound, err.Error())
-        case errors.Is(err, ErrRegistryNumberNotUnique):
-            sendError(w, http.StatusConflict, err.Error())
-        default:
-            sendError(w, http.StatusInternalServerError, err.Error())
-        }
-        return
-    }
-    sendSuccess(w, http.StatusOK, resp, nil)
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		sendError(w, http.StatusBadRequest, "ID is required")
+		return
+	}
+	var req UpdateEquipmentDictionaryRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		sendError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+	resp, err := h.service.Update(r.Context(), id, req)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrRegistryNumberTooLong), errors.Is(err, ErrStandardModelTooLong):
+			sendError(w, http.StatusBadRequest, err.Error())
+		case errors.Is(err, ErrMetrologicalTypeNotFound), errors.Is(err, ErrMIDNotFound):
+			sendError(w, http.StatusNotFound, err.Error())
+		case errors.Is(err, ErrRegistryNumberNotUnique):
+			sendError(w, http.StatusConflict, err.Error())
+		default:
+			sendError(w, http.StatusInternalServerError, err.Error())
+		}
+		return
+	}
+	sendSuccess(w, http.StatusOK, resp, nil)
 }
 
 // Delete удаляет equipment_dictionary и связанные данные
@@ -120,16 +120,16 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 // @Failure      404  {object}  ApiResponse
 // @Router       /equipment-dictionaries/{id} [delete]
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
-    id := chi.URLParam(r, "id")
-    if id == "" {
-        sendError(w, http.StatusBadRequest, "ID is required")
-        return
-    }
-    if err := h.service.Delete(r.Context(), id); err != nil {
-        sendError(w, http.StatusInternalServerError, err.Error())
-        return
-    }
-    sendSuccess(w, http.StatusNoContent, nil, nil)
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		sendError(w, http.StatusBadRequest, "ID is required")
+		return
+	}
+	if err := h.service.Delete(r.Context(), id); err != nil {
+		sendError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	sendSuccess(w, http.StatusNoContent, nil, nil)
 }
 
 // List возвращает список equipment_dictionaries
@@ -141,52 +141,51 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 // @Success      200     {object}  ApiResponse{data=[]EquipmentDictionaryFull,meta=Meta}
 // @Router       /equipment-dictionaries [get]
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
-    limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
-    offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
 
-    pg := toPagination(int32(limit), int32(offset))
+	pg := toPagination(int32(limit), int32(offset))
 
-    items, total, err := h.service.List(r.Context(), pg)
-    if err != nil {
-        sendError(w, http.StatusInternalServerError, err.Error())
-        return
-    }
-    sendSuccess(w, http.StatusOK, items, &Meta{
-        Total:  total,
-        Limit:  int32(limit),
-        Offset: int32(offset),
-    })
+	items, total, err := h.service.List(r.Context(), pg)
+	if err != nil {
+		sendError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	sendSuccess(w, http.StatusOK, items, &Meta{
+		Total:  total,
+		Limit:  int32(limit),
+		Offset: int32(offset),
+	})
 }
 
 func toPagination(limit, offset int32) Pagination {
-    if limit <= 0 {
-        limit = 1000
-    }
-    if limit > 1000 {
-        limit = 1000
-    }
-    if offset < 0 {
-        offset = 0
-    }
-    return Pagination{Limit: limit, Offset: offset}
+	if limit <= 0 {
+		limit = 1000
+	}
+	if limit > 1000 {
+		limit = 1000
+	}
+	if offset < 0 {
+		offset = 0
+	}
+	return Pagination{Limit: limit, Offset: offset}
 }
 
-
 func sendSuccess(w http.ResponseWriter, status int, data interface{}, meta *Meta) {
-    w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(status)
-    json.NewEncoder(w).Encode(ApiResponse{
-        Success: true,
-        Data:    data,
-        Meta:    meta,
-    })
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(ApiResponse{
+		Success: true,
+		Data:    data,
+		Meta:    meta,
+	})
 }
 
 func sendError(w http.ResponseWriter, status int, message string) {
-    w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(status)
-    json.NewEncoder(w).Encode(ApiResponse{
-        Success: false,
-        Error:   message,
-    })
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(ApiResponse{
+		Success: false,
+		Error:   message,
+	})
 }

@@ -562,7 +562,33 @@ const docTemplate = `{
                     }
                 }
             },
-            "put": {
+            "delete": {
+                "tags": [
+                    "equipment"
+                ],
+                "summary": "Удалить словарь оборудования",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/equipmentdictionary.ApiResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
                 "consumes": [
                     "application/json"
                 ],
@@ -615,32 +641,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/equipmentdictionary.ApiResponse"
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/equipmentdictionary.ApiResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "tags": [
-                    "equipment"
-                ],
-                "summary": "Удалить словарь оборудования",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
                     },
                     "404": {
                         "description": "Not Found",
@@ -721,6 +721,75 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "Успешное удаление"
+                    },
+                    "404": {
+                        "description": "Оборудование не найдено",
+                        "schema": {
+                            "$ref": "#/definitions/equipment.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/equipment.Response"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Обновляет данные оборудования",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "equipment"
+                ],
+                "summary": "Обновить оборудование",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID оборудования",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Данные для обновления",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/equipment.UpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешное обновление",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/equipment.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/equipment.EquipmentResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос",
+                        "schema": {
+                            "$ref": "#/definitions/equipment.Response"
+                        }
                     },
                     "404": {
                         "description": "Оборудование не найдено",
@@ -908,7 +977,40 @@ const docTemplate = `{
                     }
                 }
             },
-            "put": {
+            "delete": {
+                "description": "Удаляет производителя по ID",
+                "tags": [
+                    "equipment"
+                ],
+                "summary": "Удалить производителя",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID производителя",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Успешное удаление"
+                    },
+                    "404": {
+                        "description": "Производитель не найден",
+                        "schema": {
+                            "$ref": "#/definitions/manufacturer.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "$ref": "#/definitions/manufacturer.Response"
+                        }
+                    }
+                }
+            },
+            "patch": {
                 "description": "Обновляет данные производителя",
                 "consumes": [
                     "application/json"
@@ -962,39 +1064,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/manufacturer.Response"
                         }
-                    },
-                    "404": {
-                        "description": "Производитель не найден",
-                        "schema": {
-                            "$ref": "#/definitions/manufacturer.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Внутренняя ошибка сервера",
-                        "schema": {
-                            "$ref": "#/definitions/manufacturer.Response"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Удаляет производителя по ID",
-                "tags": [
-                    "equipment"
-                ],
-                "summary": "Удалить производителя",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID производителя",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "Успешное удаление"
                     },
                     "404": {
                         "description": "Производитель не найден",
@@ -1817,10 +1886,6 @@ const docTemplate = `{
                 "manufacturerId": {
                     "type": "string"
                 },
-                "metrologicalCharacteristics": {
-                    "description": "Для эталонов",
-                    "type": "string"
-                },
                 "metrologicalOperationTypeId": {
                     "description": "Для средств измерения",
                     "type": "integer"
@@ -1833,6 +1898,13 @@ const docTemplate = `{
                 },
                 "standardId": {
                     "type": "string"
+                },
+                "standards": {
+                    "description": "Для эталонов",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/equipment.StandardCreateRequest"
+                    }
                 },
                 "statusId": {
                     "type": "integer",
@@ -1874,8 +1946,11 @@ const docTemplate = `{
                 "organizationName": {
                     "type": "string"
                 },
-                "standard": {
-                    "$ref": "#/definitions/equipment.StandardInfo"
+                "standards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/equipment.StandardInfo"
+                    }
                 },
                 "statusId": {
                     "type": "integer"
@@ -1955,6 +2030,35 @@ const docTemplate = `{
                 }
             }
         },
+        "equipment.StandardCreateRequest": {
+            "type": "object",
+            "required": [
+                "model"
+            ],
+            "properties": {
+                "certificateNumber": {
+                    "type": "string"
+                },
+                "documentProviderOrganization": {
+                    "type": "string"
+                },
+                "documentUrl": {
+                    "type": "string"
+                },
+                "lastOperationDate": {
+                    "type": "string"
+                },
+                "metrologicalCharacteristics": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "nextOperationDate": {
+                    "type": "string"
+                }
+            }
+        },
         "equipment.StandardInfo": {
             "type": "object",
             "properties": {
@@ -1976,8 +2080,93 @@ const docTemplate = `{
                 "metrologicalCharacteristics": {
                     "type": "string"
                 },
+                "model": {
+                    "type": "string"
+                },
                 "nextOperationDate": {
                     "type": "string"
+                }
+            }
+        },
+        "equipment.StandardUpdateRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "certificateNumber": {
+                    "type": "string"
+                },
+                "documentProviderOrganization": {
+                    "type": "string"
+                },
+                "documentUrl": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastOperationDate": {
+                    "type": "string"
+                },
+                "metrologicalCharacteristics": {
+                    "type": "string"
+                },
+                "nextOperationDate": {
+                    "type": "string"
+                }
+            }
+        },
+        "equipment.UpdateRequest": {
+            "type": "object",
+            "properties": {
+                "certificateNumber": {
+                    "type": "string"
+                },
+                "documentProviderOrganization": {
+                    "type": "string"
+                },
+                "documentUrl": {
+                    "type": "string"
+                },
+                "equipmentDictionaryId": {
+                    "type": "string"
+                },
+                "factoryNumber": {
+                    "description": "Основные поля оборудования",
+                    "type": "string"
+                },
+                "inventoryNumber": {
+                    "type": "string"
+                },
+                "lastOperationDate": {
+                    "type": "string"
+                },
+                "manufactureYear": {
+                    "type": "string"
+                },
+                "manufacturerId": {
+                    "type": "string"
+                },
+                "metrologicalOperationTypeId": {
+                    "description": "Поля средства измерения",
+                    "type": "integer"
+                },
+                "nextOperationDate": {
+                    "type": "string"
+                },
+                "organizationId": {
+                    "type": "string"
+                },
+                "standards": {
+                    "description": "Эталоны",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/equipment.StandardUpdateRequest"
+                    }
+                },
+                "statusId": {
+                    "type": "integer"
                 }
             }
         },

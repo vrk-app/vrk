@@ -217,6 +217,7 @@ type ServiceType struct {
 type Standard struct {
 	ID                           pgtype.UUID        `json:"id"`
 	EquipmentID                  pgtype.UUID        `json:"equipmentId"`
+	StandardsDictionaryID        pgtype.UUID        `json:"standardsDictionaryId"`
 	CertificateNumber            *string            `json:"certificateNumber"`
 	LastOperationDate            pgtype.Date        `json:"lastOperationDate"`
 	NextOperationDate            pgtype.Date        `json:"nextOperationDate"`

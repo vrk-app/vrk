@@ -67,6 +67,10 @@ migrate-version:
 migrate-force:
 	migrate -path $(MIGRATIONS_PATH) -database "$(DB_URL)" force $(version)
 
+test-data:
+	docker cp test_data.sql db:/tmp/script.sql
+	docker exec -it db psql -U postgres -d db -f /tmp/script.sql
+
 install-tools:
 	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.19.1
 	go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0

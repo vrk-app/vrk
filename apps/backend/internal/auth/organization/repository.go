@@ -40,7 +40,6 @@ func toNullPGUUID(id *uuid.UUID) pgtype.UUID {
 	return pgtype.UUID{Bytes: *id, Valid: true}
 }
 
-
 func toNullDate(t *time.Time) pgtype.Date {
 	if t == nil {
 		return pgtype.Date{}
@@ -97,27 +96,27 @@ func (r *organizationRepository) GetByID(ctx context.Context, id uuid.UUID) (*Or
 }
 
 func (r *organizationRepository) GetByIDForUpdate(ctx context.Context, id uuid.UUID) (*Organization, error) {
-    row, err := r.q.GetOrganizationByID(ctx, toPGUUID(id))
-    if err != nil {
-        return nil, fmt.Errorf("%w: %v", ErrNotFound, err)
-    }
-    
-    return &Organization{
-        ID:                    uuid.UUID(row.ID.Bytes),
-        PropertyTypeID:        uuid.UUID(row.PropertyTypeID.Bytes),
-        Name:                  row.Name,
-        Inn:                   row.Inn,
-        Kpp:                   row.Kpp,
-        Address:               row.Address,
-        RoleID:                uuid.UUID(row.RoleID.Bytes),
-        DirectorID:            uuid.UUID(row.DirectorID.Bytes),
-        ParentID:              fromNullUUID(row.ParentID),
-        ShortName:             row.ShortName,
-        PowerOfAttorneyNumber: row.PowerOfAttorneyNumber,
-        PoaIssueDate:          fromNullDate(row.PoaIssueDate),
-        PoaExpirationDate:     fromNullDate(row.PoaExpirationDate),
-        Logo:                  row.Logo,
-    }, nil
+	row, err := r.q.GetOrganizationByID(ctx, toPGUUID(id))
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrNotFound, err)
+	}
+
+	return &Organization{
+		ID:                    uuid.UUID(row.ID.Bytes),
+		PropertyTypeID:        uuid.UUID(row.PropertyTypeID.Bytes),
+		Name:                  row.Name,
+		Inn:                   row.Inn,
+		Kpp:                   row.Kpp,
+		Address:               row.Address,
+		RoleID:                uuid.UUID(row.RoleID.Bytes),
+		DirectorID:            uuid.UUID(row.DirectorID.Bytes),
+		ParentID:              fromNullUUID(row.ParentID),
+		ShortName:             row.ShortName,
+		PowerOfAttorneyNumber: row.PowerOfAttorneyNumber,
+		PoaIssueDate:          fromNullDate(row.PoaIssueDate),
+		PoaExpirationDate:     fromNullDate(row.PoaExpirationDate),
+		Logo:                  row.Logo,
+	}, nil
 }
 
 func (r *organizationRepository) Update(ctx context.Context, m Organization) (*Organization, error) {
@@ -172,7 +171,6 @@ func (r *organizationRepository) List(ctx context.Context, limit, offset int32) 
 
 	return result, total, nil
 }
-
 
 func mapRow(r *generated.CreateOrganizationRow) *Organization {
 	return &Organization{

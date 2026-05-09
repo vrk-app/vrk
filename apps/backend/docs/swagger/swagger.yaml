@@ -110,9 +110,6 @@ definitions:
         type: string
       manufacturerId:
         type: string
-      metrologicalCharacteristics:
-        description: Для эталонов
-        type: string
       metrologicalOperationTypeId:
         description: Для средств измерения
         type: integer
@@ -122,6 +119,11 @@ definitions:
         type: string
       standardId:
         type: string
+      standards:
+        description: Для эталонов
+        items:
+          $ref: '#/definitions/equipment.StandardCreateRequest'
+        type: array
       statusId:
         maximum: 5
         minimum: 1
@@ -156,8 +158,10 @@ definitions:
         type: string
       organizationName:
         type: string
-      standard:
-        $ref: '#/definitions/equipment.StandardInfo'
+      standards:
+        items:
+          $ref: '#/definitions/equipment.StandardInfo'
+        type: array
       statusId:
         type: integer
       statusName:
@@ -209,7 +213,45 @@ definitions:
       success:
         type: boolean
     type: object
+  equipment.StandardCreateRequest:
+    properties:
+      certificateNumber:
+        type: string
+      documentProviderOrganization:
+        type: string
+      documentUrl:
+        type: string
+      lastOperationDate:
+        type: string
+      metrologicalCharacteristics:
+        type: string
+      model:
+        type: string
+      nextOperationDate:
+        type: string
+    required:
+    - model
+    type: object
   equipment.StandardInfo:
+    properties:
+      certificateNumber:
+        type: string
+      documentProviderOrganization:
+        type: string
+      documentUrl:
+        type: string
+      id:
+        type: string
+      lastOperationDate:
+        type: string
+      metrologicalCharacteristics:
+        type: string
+      model:
+        type: string
+      nextOperationDate:
+        type: string
+    type: object
+  equipment.StandardUpdateRequest:
     properties:
       certificateNumber:
         type: string
@@ -225,6 +267,44 @@ definitions:
         type: string
       nextOperationDate:
         type: string
+    required:
+    - id
+    type: object
+  equipment.UpdateRequest:
+    properties:
+      certificateNumber:
+        type: string
+      documentProviderOrganization:
+        type: string
+      documentUrl:
+        type: string
+      equipmentDictionaryId:
+        type: string
+      factoryNumber:
+        description: Основные поля оборудования
+        type: string
+      inventoryNumber:
+        type: string
+      lastOperationDate:
+        type: string
+      manufactureYear:
+        type: string
+      manufacturerId:
+        type: string
+      metrologicalOperationTypeId:
+        description: Поля средства измерения
+        type: integer
+      nextOperationDate:
+        type: string
+      organizationId:
+        type: string
+      standards:
+        description: Эталоны
+        items:
+          $ref: '#/definitions/equipment.StandardUpdateRequest'
+        type: array
+      statusId:
+        type: integer
     type: object
   equipmentdictionary.ApiResponse:
     properties:
@@ -920,7 +1000,7 @@ paths:
       summary: Получить словарь оборудования по ID
       tags:
       - equipment
-    put:
+    patch:
       consumes:
       - application/json
       parameters:
@@ -1010,6 +1090,49 @@ paths:
           schema:
             $ref: '#/definitions/equipment.Response'
       summary: Получить оборудование по ID
+      tags:
+      - equipment
+    patch:
+      consumes:
+      - application/json
+      description: Обновляет данные оборудования
+      parameters:
+      - description: ID оборудования
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Данные для обновления
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/equipment.UpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешное обновление
+          schema:
+            allOf:
+            - $ref: '#/definitions/equipment.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/equipment.EquipmentResponse'
+              type: object
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/equipment.Response'
+        "404":
+          description: Оборудование не найдено
+          schema:
+            $ref: '#/definitions/equipment.Response'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/equipment.Response'
+      summary: Обновить оборудование
       tags:
       - equipment
   /manufacturers:
@@ -1140,7 +1263,7 @@ paths:
       summary: Получить производителя по ID
       tags:
       - equipment
-    put:
+    patch:
       consumes:
       - application/json
       description: Обновляет данные производителя

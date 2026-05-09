@@ -116,6 +116,56 @@ func (q *Queries) CreateMeasuringInstrument(ctx context.Context, arg CreateMeasu
 	return i, err
 }
 
+const createStandard = `-- name: CreateStandard :one
+INSERT INTO standards (
+    equipment_id, standards_dictionary_id, certificate_number,
+    last_operation_date, next_operation_date, document_provider_organization,
+    document_url, metrological_characteristics
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8
+)
+RETURNING id, equipment_id, standards_dictionary_id, certificate_number, last_operation_date, next_operation_date, document_provider_organization, document_url, metrological_characteristics, created_at, updated_at
+`
+
+type CreateStandardParams struct {
+	EquipmentID                  pgtype.UUID `json:"equipmentId"`
+	StandardsDictionaryID        pgtype.UUID `json:"standardsDictionaryId"`
+	CertificateNumber            *string     `json:"certificateNumber"`
+	LastOperationDate            pgtype.Date `json:"lastOperationDate"`
+	NextOperationDate            pgtype.Date `json:"nextOperationDate"`
+	DocumentProviderOrganization *string     `json:"documentProviderOrganization"`
+	DocumentUrl                  *string     `json:"documentUrl"`
+	MetrologicalCharacteristics  *string     `json:"metrologicalCharacteristics"`
+}
+
+func (q *Queries) CreateStandard(ctx context.Context, arg CreateStandardParams) (Standard, error) {
+	row := q.db.QueryRow(ctx, createStandard,
+		arg.EquipmentID,
+		arg.StandardsDictionaryID,
+		arg.CertificateNumber,
+		arg.LastOperationDate,
+		arg.NextOperationDate,
+		arg.DocumentProviderOrganization,
+		arg.DocumentUrl,
+		arg.MetrologicalCharacteristics,
+	)
+	var i Standard
+	err := row.Scan(
+		&i.ID,
+		&i.EquipmentID,
+		&i.StandardsDictionaryID,
+		&i.CertificateNumber,
+		&i.LastOperationDate,
+		&i.NextOperationDate,
+		&i.DocumentProviderOrganization,
+		&i.DocumentUrl,
+		&i.MetrologicalCharacteristics,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const deleteEquipment = `-- name: DeleteEquipment :exec
 DELETE FROM equipment WHERE id = $1
 `
@@ -125,12 +175,41 @@ func (q *Queries) DeleteEquipment(ctx context.Context, id pgtype.UUID) error {
 	return err
 }
 
+const deleteMeasuringInstrumentByEquipmentID = `-- name: DeleteMeasuringInstrumentByEquipmentID :exec
+DELETE FROM measuring_instruments WHERE equipment_id = $1
+`
+
+func (q *Queries) DeleteMeasuringInstrumentByEquipmentID(ctx context.Context, equipmentID pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteMeasuringInstrumentByEquipmentID, equipmentID)
+	return err
+}
+
+const deleteStandardsByEquipmentID = `-- name: DeleteStandardsByEquipmentID :exec
+DELETE FROM standards WHERE equipment_id = $1
+`
+
+func (q *Queries) DeleteStandardsByEquipmentID(ctx context.Context, equipmentID pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteStandardsByEquipmentID, equipmentID)
+	return err
+}
+
 const equipmentExists = `-- name: EquipmentExists :one
 SELECT EXISTS(SELECT 1 FROM equipment WHERE id = $1)
 `
 
 func (q *Queries) EquipmentExists(ctx context.Context, id pgtype.UUID) (bool, error) {
 	row := q.db.QueryRow(ctx, equipmentExists, id)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
+const equipmentStatusExists = `-- name: EquipmentStatusExists :one
+SELECT EXISTS(SELECT 1 FROM equipment_statuses WHERE id = $1)
+`
+
+func (q *Queries) EquipmentStatusExists(ctx context.Context, id int32) (bool, error) {
+	row := q.db.QueryRow(ctx, equipmentStatusExists, id)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
@@ -155,23 +234,13 @@ SELECT
     ou.name as organization_name,
     e.status_id,
     es.status as status_name,
-    e.created_at,
-    e.updated_at,
     -- Данные средства измерения
     mi.id as measuring_instrument_id,
     mi.certificate_number as mi_certificate_number,
     mi.last_operation_date as mi_last_operation_date,
     mi.next_operation_date as mi_next_operation_date,
     mi.document_provider_organization as mi_document_provider_organization,
-    mi.document_url as mi_document_url,
-    -- Данные эталона
-    s.id as standard_id,
-    s.certificate_number as std_certificate_number,
-    s.last_operation_date as std_last_operation_date,
-    s.next_operation_date as std_next_operation_date,
-    s.document_provider_organization as std_document_provider_organization,
-    s.document_url as std_document_url,
-    s.metrological_characteristics as std_metrological_characteristics
+    mi.document_url as mi_document_url
 FROM equipment e
 LEFT JOIN manufacturers m ON e.manufacturer_id = m.id
 LEFT JOIN usage_classifications uc ON m.classification_id = uc.id
@@ -181,43 +250,33 @@ LEFT JOIN metrological_types mt ON mid.metrological_operation_type_id = mt.id
 LEFT JOIN organization_units ou ON e.organization_id = ou.id
 LEFT JOIN equipment_statuses es ON e.status_id = es.id
 LEFT JOIN measuring_instruments mi ON e.id = mi.equipment_id
-LEFT JOIN standards s ON e.id = s.equipment_id
 WHERE e.id = $1
 `
 
 type GetEquipmentByIDRow struct {
-	ID                               pgtype.UUID        `json:"id"`
-	ManufacturerID                   pgtype.UUID        `json:"manufacturerId"`
-	ManufacturerName                 *string            `json:"manufacturerName"`
-	UsageClassification              *string            `json:"usageClassification"`
-	EquipmentDictionaryID            pgtype.UUID        `json:"equipmentDictionaryId"`
-	EquipmentName                    *string            `json:"equipmentName"`
-	Model                            *string            `json:"model"`
-	MeasuringInstrumentsDictionaryID pgtype.UUID        `json:"measuringInstrumentsDictionaryId"`
-	RegistryNumber                   *string            `json:"registryNumber"`
-	MetrologicalOperationType        *string            `json:"metrologicalOperationType"`
-	FactoryNumber                    string             `json:"factoryNumber"`
-	InventoryNumber                  *string            `json:"inventoryNumber"`
-	ManufactureYear                  pgtype.Date        `json:"manufactureYear"`
-	OrganizationID                   pgtype.UUID        `json:"organizationId"`
-	OrganizationName                 *string            `json:"organizationName"`
-	StatusID                         int16              `json:"statusId"`
-	StatusName                       *string            `json:"statusName"`
-	CreatedAt                        pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt                        pgtype.Timestamptz `json:"updatedAt"`
-	MeasuringInstrumentID            pgtype.UUID        `json:"measuringInstrumentId"`
-	MiCertificateNumber              *string            `json:"miCertificateNumber"`
-	MiLastOperationDate              pgtype.Date        `json:"miLastOperationDate"`
-	MiNextOperationDate              pgtype.Date        `json:"miNextOperationDate"`
-	MiDocumentProviderOrganization   *string            `json:"miDocumentProviderOrganization"`
-	MiDocumentUrl                    *string            `json:"miDocumentUrl"`
-	StandardID                       pgtype.UUID        `json:"standardId"`
-	StdCertificateNumber             *string            `json:"stdCertificateNumber"`
-	StdLastOperationDate             pgtype.Date        `json:"stdLastOperationDate"`
-	StdNextOperationDate             pgtype.Date        `json:"stdNextOperationDate"`
-	StdDocumentProviderOrganization  *string            `json:"stdDocumentProviderOrganization"`
-	StdDocumentUrl                   *string            `json:"stdDocumentUrl"`
-	StdMetrologicalCharacteristics   *string            `json:"stdMetrologicalCharacteristics"`
+	ID                               pgtype.UUID `json:"id"`
+	ManufacturerID                   pgtype.UUID `json:"manufacturerId"`
+	ManufacturerName                 *string     `json:"manufacturerName"`
+	UsageClassification              *string     `json:"usageClassification"`
+	EquipmentDictionaryID            pgtype.UUID `json:"equipmentDictionaryId"`
+	EquipmentName                    *string     `json:"equipmentName"`
+	Model                            *string     `json:"model"`
+	MeasuringInstrumentsDictionaryID pgtype.UUID `json:"measuringInstrumentsDictionaryId"`
+	RegistryNumber                   *string     `json:"registryNumber"`
+	MetrologicalOperationType        *string     `json:"metrologicalOperationType"`
+	FactoryNumber                    string      `json:"factoryNumber"`
+	InventoryNumber                  *string     `json:"inventoryNumber"`
+	ManufactureYear                  pgtype.Date `json:"manufactureYear"`
+	OrganizationID                   pgtype.UUID `json:"organizationId"`
+	OrganizationName                 *string     `json:"organizationName"`
+	StatusID                         int16       `json:"statusId"`
+	StatusName                       *string     `json:"statusName"`
+	MeasuringInstrumentID            pgtype.UUID `json:"measuringInstrumentId"`
+	MiCertificateNumber              *string     `json:"miCertificateNumber"`
+	MiLastOperationDate              pgtype.Date `json:"miLastOperationDate"`
+	MiNextOperationDate              pgtype.Date `json:"miNextOperationDate"`
+	MiDocumentProviderOrganization   *string     `json:"miDocumentProviderOrganization"`
+	MiDocumentUrl                    *string     `json:"miDocumentUrl"`
 }
 
 func (q *Queries) GetEquipmentByID(ctx context.Context, id pgtype.UUID) (GetEquipmentByIDRow, error) {
@@ -241,23 +300,66 @@ func (q *Queries) GetEquipmentByID(ctx context.Context, id pgtype.UUID) (GetEqui
 		&i.OrganizationName,
 		&i.StatusID,
 		&i.StatusName,
-		&i.CreatedAt,
-		&i.UpdatedAt,
 		&i.MeasuringInstrumentID,
 		&i.MiCertificateNumber,
 		&i.MiLastOperationDate,
 		&i.MiNextOperationDate,
 		&i.MiDocumentProviderOrganization,
 		&i.MiDocumentUrl,
-		&i.StandardID,
-		&i.StdCertificateNumber,
-		&i.StdLastOperationDate,
-		&i.StdNextOperationDate,
-		&i.StdDocumentProviderOrganization,
-		&i.StdDocumentUrl,
-		&i.StdMetrologicalCharacteristics,
 	)
 	return i, err
+}
+
+const getMeasuringInstrumentByEquipmentID = `-- name: GetMeasuringInstrumentByEquipmentID :one
+SELECT 
+    id, equipment_id, metrological_operation_type_id, certificate_number,
+    last_operation_date, next_operation_date, document_provider_organization, document_url
+FROM measuring_instruments
+WHERE equipment_id = $1
+`
+
+type GetMeasuringInstrumentByEquipmentIDRow struct {
+	ID                           pgtype.UUID `json:"id"`
+	EquipmentID                  pgtype.UUID `json:"equipmentId"`
+	MetrologicalOperationTypeID  *int32      `json:"metrologicalOperationTypeId"`
+	CertificateNumber            *string     `json:"certificateNumber"`
+	LastOperationDate            pgtype.Date `json:"lastOperationDate"`
+	NextOperationDate            pgtype.Date `json:"nextOperationDate"`
+	DocumentProviderOrganization *string     `json:"documentProviderOrganization"`
+	DocumentUrl                  *string     `json:"documentUrl"`
+}
+
+func (q *Queries) GetMeasuringInstrumentByEquipmentID(ctx context.Context, equipmentID pgtype.UUID) (GetMeasuringInstrumentByEquipmentIDRow, error) {
+	row := q.db.QueryRow(ctx, getMeasuringInstrumentByEquipmentID, equipmentID)
+	var i GetMeasuringInstrumentByEquipmentIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.EquipmentID,
+		&i.MetrologicalOperationTypeID,
+		&i.CertificateNumber,
+		&i.LastOperationDate,
+		&i.NextOperationDate,
+		&i.DocumentProviderOrganization,
+		&i.DocumentUrl,
+	)
+	return i, err
+}
+
+const getStandardDictionaryIDByModelAndMID = `-- name: GetStandardDictionaryIDByModelAndMID :one
+SELECT id FROM standards_dictionaries
+WHERE model = $1 AND measuring_instruments_dictionary_id = $2
+`
+
+type GetStandardDictionaryIDByModelAndMIDParams struct {
+	Model                            string      `json:"model"`
+	MeasuringInstrumentsDictionaryID pgtype.UUID `json:"measuringInstrumentsDictionaryId"`
+}
+
+func (q *Queries) GetStandardDictionaryIDByModelAndMID(ctx context.Context, arg GetStandardDictionaryIDByModelAndMIDParams) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, getStandardDictionaryIDByModelAndMID, arg.Model, arg.MeasuringInstrumentsDictionaryID)
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const listEquipment = `-- name: ListEquipment :many
@@ -382,15 +484,17 @@ func (q *Queries) ListEquipment(ctx context.Context, arg ListEquipmentParams) ([
 
 const listStandardsByEquipmentID = `-- name: ListStandardsByEquipmentID :many
 SELECT 
-    id,
-    certificate_number,
-    last_operation_date,
-    next_operation_date,
-    document_provider_organization,
-    document_url,
-    metrological_characteristics
-FROM standards
-WHERE equipment_id = $1
+    s.id,
+    s.certificate_number,
+    s.last_operation_date,
+    s.next_operation_date,
+    s.document_provider_organization,
+    s.document_url,
+    s.metrological_characteristics,
+    sd.model
+FROM standards s
+LEFT JOIN standards_dictionaries sd ON s.standards_dictionary_id = sd.id
+WHERE s.equipment_id = $1
 `
 
 type ListStandardsByEquipmentIDRow struct {
@@ -401,6 +505,7 @@ type ListStandardsByEquipmentIDRow struct {
 	DocumentProviderOrganization *string     `json:"documentProviderOrganization"`
 	DocumentUrl                  *string     `json:"documentUrl"`
 	MetrologicalCharacteristics  *string     `json:"metrologicalCharacteristics"`
+	Model                        *string     `json:"model"`
 }
 
 func (q *Queries) ListStandardsByEquipmentID(ctx context.Context, equipmentID pgtype.UUID) ([]ListStandardsByEquipmentIDRow, error) {
@@ -420,6 +525,7 @@ func (q *Queries) ListStandardsByEquipmentID(ctx context.Context, equipmentID pg
 			&i.DocumentProviderOrganization,
 			&i.DocumentUrl,
 			&i.MetrologicalCharacteristics,
+			&i.Model,
 		); err != nil {
 			return nil, err
 		}
@@ -431,59 +537,169 @@ func (q *Queries) ListStandardsByEquipmentID(ctx context.Context, equipmentID pg
 	return items, nil
 }
 
+const standardExistsForEquipment = `-- name: StandardExistsForEquipment :one
+SELECT EXISTS(SELECT 1 FROM standards WHERE id = $1 AND equipment_id = $2)
+`
+
+type StandardExistsForEquipmentParams struct {
+	ID          pgtype.UUID `json:"id"`
+	EquipmentID pgtype.UUID `json:"equipmentId"`
+}
+
+func (q *Queries) StandardExistsForEquipment(ctx context.Context, arg StandardExistsForEquipmentParams) (bool, error) {
+	row := q.db.QueryRow(ctx, standardExistsForEquipment, arg.ID, arg.EquipmentID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const updateEquipment = `-- name: UpdateEquipment :one
 UPDATE equipment SET
-    factory_number = $2,
-    inventory_number = $3,
-    manufacture_year = $4,
-    equipment_dictionary_id = $5,
+    manufacturer_id = $2,
+    factory_number = $3,
+    inventory_number = $4,
+    manufacture_year = $5,
     organization_id = $6,
     status_id = $7,
     updated_at = NOW()
 WHERE id = $1
-RETURNING id, factory_number, inventory_number, manufacture_year,
-    equipment_dictionary_id, organization_id, status_id
+RETURNING id, manufacturer_id, equipment_dictionary_id, factory_number, inventory_number, manufacture_year, organization_id, status_id, created_at, updated_at
 `
 
 type UpdateEquipmentParams struct {
-	ID                    pgtype.UUID `json:"id"`
-	FactoryNumber         string      `json:"factoryNumber"`
-	InventoryNumber       *string     `json:"inventoryNumber"`
-	ManufactureYear       pgtype.Date `json:"manufactureYear"`
-	EquipmentDictionaryID pgtype.UUID `json:"equipmentDictionaryId"`
-	OrganizationID        pgtype.UUID `json:"organizationId"`
-	StatusID              int16       `json:"statusId"`
+	ID              pgtype.UUID `json:"id"`
+	ManufacturerID  pgtype.UUID `json:"manufacturerId"`
+	FactoryNumber   string      `json:"factoryNumber"`
+	InventoryNumber *string     `json:"inventoryNumber"`
+	ManufactureYear pgtype.Date `json:"manufactureYear"`
+	OrganizationID  pgtype.UUID `json:"organizationId"`
+	StatusID        int16       `json:"statusId"`
 }
 
-type UpdateEquipmentRow struct {
-	ID                    pgtype.UUID `json:"id"`
-	FactoryNumber         string      `json:"factoryNumber"`
-	InventoryNumber       *string     `json:"inventoryNumber"`
-	ManufactureYear       pgtype.Date `json:"manufactureYear"`
-	EquipmentDictionaryID pgtype.UUID `json:"equipmentDictionaryId"`
-	OrganizationID        pgtype.UUID `json:"organizationId"`
-	StatusID              int16       `json:"statusId"`
-}
-
-func (q *Queries) UpdateEquipment(ctx context.Context, arg UpdateEquipmentParams) (UpdateEquipmentRow, error) {
+func (q *Queries) UpdateEquipment(ctx context.Context, arg UpdateEquipmentParams) (Equipment, error) {
 	row := q.db.QueryRow(ctx, updateEquipment,
 		arg.ID,
+		arg.ManufacturerID,
 		arg.FactoryNumber,
 		arg.InventoryNumber,
 		arg.ManufactureYear,
-		arg.EquipmentDictionaryID,
 		arg.OrganizationID,
 		arg.StatusID,
 	)
-	var i UpdateEquipmentRow
+	var i Equipment
 	err := row.Scan(
 		&i.ID,
+		&i.ManufacturerID,
+		&i.EquipmentDictionaryID,
 		&i.FactoryNumber,
 		&i.InventoryNumber,
 		&i.ManufactureYear,
-		&i.EquipmentDictionaryID,
 		&i.OrganizationID,
 		&i.StatusID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateMeasuringInstrument = `-- name: UpdateMeasuringInstrument :one
+UPDATE measuring_instruments SET
+    metrological_operation_type_id = COALESCE($2, metrological_operation_type_id),
+    certificate_number = COALESCE($3, certificate_number),
+    last_operation_date = COALESCE($4, last_operation_date),
+    next_operation_date = COALESCE($5, next_operation_date),
+    document_provider_organization = COALESCE($6, document_provider_organization),
+    document_url = COALESCE($7, document_url),
+    updated_at = NOW()
+WHERE id = $1
+RETURNING id, equipment_id, metrological_operation_type_id, certificate_number, last_operation_date, next_operation_date, document_provider_organization, document_url, created_at, updated_at
+`
+
+type UpdateMeasuringInstrumentParams struct {
+	ID                           pgtype.UUID `json:"id"`
+	MetrologicalOperationTypeID  *int32      `json:"metrologicalOperationTypeId"`
+	CertificateNumber            *string     `json:"certificateNumber"`
+	LastOperationDate            pgtype.Date `json:"lastOperationDate"`
+	NextOperationDate            pgtype.Date `json:"nextOperationDate"`
+	DocumentProviderOrganization *string     `json:"documentProviderOrganization"`
+	DocumentUrl                  *string     `json:"documentUrl"`
+}
+
+func (q *Queries) UpdateMeasuringInstrument(ctx context.Context, arg UpdateMeasuringInstrumentParams) (MeasuringInstrument, error) {
+	row := q.db.QueryRow(ctx, updateMeasuringInstrument,
+		arg.ID,
+		arg.MetrologicalOperationTypeID,
+		arg.CertificateNumber,
+		arg.LastOperationDate,
+		arg.NextOperationDate,
+		arg.DocumentProviderOrganization,
+		arg.DocumentUrl,
+	)
+	var i MeasuringInstrument
+	err := row.Scan(
+		&i.ID,
+		&i.EquipmentID,
+		&i.MetrologicalOperationTypeID,
+		&i.CertificateNumber,
+		&i.LastOperationDate,
+		&i.NextOperationDate,
+		&i.DocumentProviderOrganization,
+		&i.DocumentUrl,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateStandard = `-- name: UpdateStandard :one
+UPDATE standards SET
+    standards_dictionary_id = COALESCE($2, standards_dictionary_id),
+    certificate_number = COALESCE($3, certificate_number),
+    last_operation_date = COALESCE($4, last_operation_date),
+    next_operation_date = COALESCE($5, next_operation_date),
+    document_provider_organization = COALESCE($6, document_provider_organization),
+    document_url = COALESCE($7, document_url),
+    metrological_characteristics = COALESCE($8, metrological_characteristics),
+    updated_at = NOW()
+WHERE id = $1
+RETURNING id, equipment_id, standards_dictionary_id, certificate_number, last_operation_date, next_operation_date, document_provider_organization, document_url, metrological_characteristics, created_at, updated_at
+`
+
+type UpdateStandardParams struct {
+	ID                           pgtype.UUID `json:"id"`
+	StandardsDictionaryID        pgtype.UUID `json:"standardsDictionaryId"`
+	CertificateNumber            *string     `json:"certificateNumber"`
+	LastOperationDate            pgtype.Date `json:"lastOperationDate"`
+	NextOperationDate            pgtype.Date `json:"nextOperationDate"`
+	DocumentProviderOrganization *string     `json:"documentProviderOrganization"`
+	DocumentUrl                  *string     `json:"documentUrl"`
+	MetrologicalCharacteristics  *string     `json:"metrologicalCharacteristics"`
+}
+
+func (q *Queries) UpdateStandard(ctx context.Context, arg UpdateStandardParams) (Standard, error) {
+	row := q.db.QueryRow(ctx, updateStandard,
+		arg.ID,
+		arg.StandardsDictionaryID,
+		arg.CertificateNumber,
+		arg.LastOperationDate,
+		arg.NextOperationDate,
+		arg.DocumentProviderOrganization,
+		arg.DocumentUrl,
+		arg.MetrologicalCharacteristics,
+	)
+	var i Standard
+	err := row.Scan(
+		&i.ID,
+		&i.EquipmentID,
+		&i.StandardsDictionaryID,
+		&i.CertificateNumber,
+		&i.LastOperationDate,
+		&i.NextOperationDate,
+		&i.DocumentProviderOrganization,
+		&i.DocumentUrl,
+		&i.MetrologicalCharacteristics,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }

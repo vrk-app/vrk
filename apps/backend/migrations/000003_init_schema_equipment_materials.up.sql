@@ -115,7 +115,8 @@ CREATE TABLE application_equipment (
 
 CREATE TABLE standards (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    equipment_id UUID NOT NULL REFERENCES equipment(id) ON DELETE RESTRICT,
+    equipment_id UUID NOT NULL REFERENCES equipment(id) ON DELETE CASCADE,
+    standards_dictionary_id UUID NOT NULL REFERENCES standards_dictionaries(id) ON DELETE RESTRICT,
     certificate_number VARCHAR(100),
     last_operation_date DATE,
     next_operation_date DATE,
@@ -128,7 +129,7 @@ CREATE TABLE standards (
 
 CREATE TABLE measuring_instruments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    equipment_id UUID NOT NULL REFERENCES equipment(id) ON DELETE RESTRICT,
+    equipment_id UUID NOT NULL REFERENCES equipment(id) ON DELETE CASCADE,
     metrological_operation_type_id INT REFERENCES metrological_types(id) ON DELETE RESTRICT,
     certificate_number VARCHAR(100),
     last_operation_date DATE,

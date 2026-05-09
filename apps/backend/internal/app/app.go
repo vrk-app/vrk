@@ -17,12 +17,10 @@ import (
 	"backend/internal/auth/organization"
 	"backend/internal/db/generated"
 	"backend/internal/equipment/equipment"
-	"backend/internal/equipment/manufacturer"
 	"backend/internal/equipment/equipmentdictionary"
+	"backend/internal/equipment/manufacturer"
+	"backend/internal/equipment/metrologicaltype"
 	"backend/internal/equipment/usageclassification"
-    "backend/internal/equipment/metrologicaltype"
-	// "backend/internal/equipment/measuringinstrument"
-	// "backend/internal/equipment/standard"
 	"backend/internal/infrastructure/config"
 	"backend/internal/infrastructure/db"
 )
@@ -65,7 +63,6 @@ func New(cfg *config.Config) (*App, error) {
 	eqRepo := equipment.NewRepository(queries)
 	eqService := equipment.NewService(eqRepo)
 	eqHandler := equipment.NewHandler(eqService)
-
 
 	agreementRepo := agreement.NewRepository(queries)
 	agreementService := agreement.NewService(agreementRepo)
@@ -153,7 +150,7 @@ func (a *App) registerRoutes(
 			r.Get("/", eqHandler.List)
 			r.Post("/", eqHandler.Create)
 			r.Get("/{id}", eqHandler.GetByID)
-		//	r.Patch("/{id}", eqHandler.Update)
+			r.Patch("/{id}", eqHandler.Update)
 			r.Delete("/{id}", eqHandler.Delete)
 		})
 
