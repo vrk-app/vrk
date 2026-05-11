@@ -52,15 +52,7 @@ export function PlatformAdminInviteForm() {
 
   return (
     <Card className="gap-5" padding="lg">
-      <div className="space-y-2">
-        <p className="text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground">Платформенный доступ</p>
-        <div className="space-y-2">
-          <h2 className="text-balance text-2xl font-bold tracking-tight text-foreground">Выдать приглашение</h2>
-          <p className="text-sm leading-6 text-muted-foreground">
-            Укажите организацию и контакт администратора. Ссылка для активации появится после создания приглашения.
-          </p>
-        </div>
-      </div>
+      <h2 className="text-balance text-2xl font-bold tracking-tight text-foreground">Выдать приглашение</h2>
 
       <form
         className="grid gap-5"

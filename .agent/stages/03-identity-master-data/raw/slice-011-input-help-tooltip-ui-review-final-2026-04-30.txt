@@ -1,0 +1,19 @@
+## apps/web/shared/ui/InputField.tsx
+
+✓ pass
+
+## apps/web/stories/primitives/InputField.stories.tsx
+
+✓ pass
+
+## docs/design/storybook-component-backlog.md
+
+✓ pass
+
+Review source: `.agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-30-slice-011-input-help-tooltip-final.md`.
+
+Notes:
+- Help trigger is a real `button` with a specific `aria-label`, hover state, visible focus ring, and 44px hit target.
+- Non-error hint is no longer an always-visible helper row; the trigger has a stable screen-reader description and visible tooltip on hover/focus.
+- Error text remains visible below the input and keeps `aria-describedby` priority on the input.
+- No `transition: all`, unlabeled input, clickable `div`/`span`, or removed focus outline without replacement was introduced.

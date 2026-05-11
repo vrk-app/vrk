@@ -1,0 +1,103 @@
+{
+  "status": "PASS",
+  "checked_at": "2026-04-30T13:29:13.874866+00:00",
+  "repo_root": "/Users/yura-posledov/cursor/vrk",
+  "stage_id": "03-identity-master-data",
+  "checks": [
+    {
+      "id": "agents-managed-block",
+      "status": "PASS",
+      "detail": "AGENTS.md contains the managed VRK harness block."
+    },
+    {
+      "id": "skill-layout",
+      "status": "PASS",
+      "detail": "Repo-local orchestrator skill files are present."
+    },
+    {
+      "id": "documentation-workflow",
+      "status": "PASS",
+      "detail": "Documentation workflow source of truth is present."
+    },
+    {
+      "id": "codex-config",
+      "status": "PASS",
+      "detail": ".codex/config.toml is present."
+    },
+    {
+      "id": "ui-component-lookup",
+      "status": "PASS",
+      "detail": "Storybook component lookup workflow files are present."
+    },
+    {
+      "id": "codex-agents",
+      "status": "PASS",
+      "detail": "Stage agent definitions are present in .codex/agents."
+    },
+    {
+      "id": "stage-directories",
+      "status": "PASS",
+      "detail": "Expected stage directories 00..07 are present."
+    },
+    {
+      "id": "stage-artifacts",
+      "status": "PASS",
+      "detail": "Stage artifacts are complete for 03-identity-master-data."
+    },
+    {
+      "id": "stage-freeze",
+      "status": "PASS",
+      "detail": "Stage spec and sprint contract are frozen for 03-identity-master-data."
+    },
+    {
+      "id": "feature-list-quality",
+      "status": "PASS",
+      "detail": "feature_list.json is actionable for 03-identity-master-data."
+    },
+    {
+      "id": "proof-bundle-consistency",
+      "status": "PASS",
+      "detail": "evidence.json and verdict.json are internally consistent for 03-identity-master-data."
+    }
+  ],
+  "stage_directories": {
+    "path": "/Users/yura-posledov/cursor/vrk/.agent/stages",
+    "expected": [
+      "00-harness-and-source-of-truth",
+      "01-ui-storybook-foundation",
+      "02-platform-foundation",
+      "03-identity-master-data",
+      "04-request-core-and-customer-cabinet",
+      "05-contractor-execution",
+      "06-field-engineer-offline",
+      "07-acceptance-reporting-hardening-release"
+    ],
+    "missing": [],
+    "present": [
+      "00-harness-and-source-of-truth",
+      "01-ui-storybook-foundation",
+      "02-platform-foundation",
+      "03-identity-master-data",
+      "04-request-core-and-customer-cabinet",
+      "05-contractor-execution",
+      "06-field-engineer-offline",
+      "07-acceptance-reporting-hardening-release"
+    ]
+  },
+  "stage_artifacts": {
+    "path": "/Users/yura-posledov/cursor/vrk/.agent/stages/03-identity-master-data",
+    "exists": true,
+    "missing": [],
+    "present": [
+      "evidence.json",
+      "evidence.md",
+      "feature_list.json",
+      "problems.md",
+      "progress.md",
+      "raw",
+      "sprint_contract.md",
+      "stage_spec.md",
+      "verdict.json"
+    ]
+  }
+}

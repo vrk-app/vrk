@@ -1,0 +1,18 @@
+PASS found exactly five in-scope archive trigger buttons keyed by requestArchive dedupe keys
+PASS equipment-archive-error: line 1850: Archive icon + visible Архивировать + size=sm + variant=ghost + loading + entity aria-label preserved
+PASS equipment-mi-archive-error: line 2143: Archive icon + visible Архивировать + size=sm + variant=ghost + loading + entity aria-label preserved
+PASS equipment-mi-selected-archive-error: line 2308: Archive icon + visible Архивировать + size=sm + variant=ghost + loading + entity aria-label preserved
+PASS equipment-standard-archive-error: line 2608: Archive icon + visible Архивировать + size=sm + variant=ghost + loading + entity aria-label preserved
+PASS equipment-standard-selected-archive-error: line 2777: Archive icon + visible Архивировать + size=sm + variant=ghost + loading + entity aria-label preserved
+PASS stale selected action label absent: Архивировать выбранное СИ
+PASS stale selected action label absent: Архивировать выбранный эталон
+PASS division/unit reference pattern present in CompanyStructureWorkspace: Archive icon + visible Архивировать + size=sm + variant=ghost
+PASS buildEquipmentRoute: unchanged versus HEAD
+PASS handleArchiveVisibilityChange: unchanged versus HEAD
+PASS archiveEquipment: unchanged versus HEAD
+PASS archiveMeasuringInstrument: unchanged versus HEAD
+PASS archiveStandard: unchanged versus HEAD
+PASS requestArchive: unchanged versus HEAD
+PASS confirmArchive: unchanged versus HEAD
+PASS ArchiveConfirmDialog: existing shared ConfirmDialog confirmation path and archive visibility copy preserved
+RESULT PASS

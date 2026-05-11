@@ -1,0 +1,12 @@
+apiRequestContext.post: connect ECONNREFUSED ::1:3101
+Call log:
+[2m  - → POST http://localhost:3101/api/auth/session[22m
+[2m    - user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/147.0.7727.15 Safari/537.36[22m
+[2m    - accept: */*[22m
+[2m    - accept-encoding: gzip,deflate,br[22m
+[2m    - content-type: application/json[22m
+[2m    - content-length: 96[22m
+
+    at [stdin]:12:44 {
+  name: 'Error'
+}

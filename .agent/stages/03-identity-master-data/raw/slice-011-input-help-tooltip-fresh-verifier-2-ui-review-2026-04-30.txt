@@ -1,0 +1,13 @@
+## apps/web/shared/ui/InputField.tsx
+
+✓ pass
+
+## apps/web/stories/primitives/InputField.stories.tsx
+
+✓ pass
+
+## Review Notes
+
+Guidelines source: .agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-web-interface-guidelines-source-2026-04-30.md
+Scope: active slice UI files only. The fixed WithHintAndError story args are present: autoComplete="off", name="kpp", placeholder="770501001…".
+Unrelated dirty Stage 03 UI/equipment files were not reviewed for this slice gate.

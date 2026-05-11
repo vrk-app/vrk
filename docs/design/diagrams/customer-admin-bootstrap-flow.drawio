@@ -208,7 +208,7 @@
         <mxCell id="Uvl7SCXHovZ_TvcCf32a-76" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="Uvl7SCXHovZ_TvcCf32a-69" target="Uvl7SCXHovZ_TvcCf32a-75" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="Uvl7SCXHovZ_TvcCf32a-69" value="Рассылка представителям СП/ф-лов ключей доступа" style="whiteSpace=wrap;html=1;rounded=0;" parent="1" vertex="1">
+        <mxCell id="Uvl7SCXHovZ_TvcCf32a-69" value="Рассылка представителям дивизионов ключей доступа" style="whiteSpace=wrap;html=1;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="818.75" y="450" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="Uvl7SCXHovZ_TvcCf32a-71" value="ВЕТКА АДМИНИСТРАТОР" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" parent="1" vertex="1">
@@ -446,7 +446,7 @@
         <mxCell id="Uvl7SCXHovZ_TvcCf32a-178" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="Uvl7SCXHovZ_TvcCf32a-177" target="Uvl7SCXHovZ_TvcCf32a-107" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="Uvl7SCXHovZ_TvcCf32a-177" value="Выбор СП/ф-ла из выпадающего списка" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+        <mxCell id="Uvl7SCXHovZ_TvcCf32a-177" value="Выбор дивизиона из выпадающего списка" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
           <mxGeometry x="818.75" y="985" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="Uvl7SCXHovZ_TvcCf32a-179" value="Если база оборудования не пустая, становятся активны вкладки ДОГОВОР и ЗАЯВКИ" style="text;html=1;whiteSpace=wrap;strokeColor=#d79b00;fillColor=#ffe6cc;align=center;verticalAlign=middle;rounded=0;" parent="1" vertex="1">
@@ -510,7 +510,7 @@
         <mxCell id="9rR8Ady_3ZOeerbZvLVX-44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#3333FF;" parent="1" source="9rR8Ady_3ZOeerbZvLVX-23" target="9rR8Ady_3ZOeerbZvLVX-47" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="9rR8Ady_3ZOeerbZvLVX-23" value="Ввод данных графика СП/ф-ов" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFF00;" parent="1" vertex="1">
+        <mxCell id="9rR8Ady_3ZOeerbZvLVX-23" value="Ввод данных графика дивизионов" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#FFFF00;" parent="1" vertex="1">
           <mxGeometry x="2271.7" y="689" width="140" height="149" as="geometry">
             <mxRectangle x="380" y="190" width="220" height="30" as="alternateBounds" />
           </mxGeometry>
@@ -527,7 +527,7 @@
         <mxCell id="9rR8Ady_3ZOeerbZvLVX-26" value="Дата выполнения работ" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" parent="9rR8Ady_3ZOeerbZvLVX-23" vertex="1">
           <mxGeometry y="119" width="140" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="9rR8Ady_3ZOeerbZvLVX-30" value="Выбор из списка ранее зарегистрированых СП/ф-ов, модальное окно checkbox" style="text;html=1;whiteSpace=wrap;strokeColor=#d6b656;fillColor=#fff2cc;align=center;verticalAlign=middle;rounded=0;" parent="1" vertex="1">
+        <mxCell id="9rR8Ady_3ZOeerbZvLVX-30" value="Выбор из списка ранее зарегистрированных дивизионов, модальное окно checkbox" style="text;html=1;whiteSpace=wrap;strokeColor=#d6b656;fillColor=#fff2cc;align=center;verticalAlign=middle;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="2514" y="684" width="210" height="43" as="geometry" />
         </mxCell>
         <mxCell id="9rR8Ady_3ZOeerbZvLVX-31" value="" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#3333FF;" parent="1" source="9rR8Ady_3ZOeerbZvLVX-24" target="9rR8Ady_3ZOeerbZvLVX-30" edge="1">
@@ -536,7 +536,7 @@
             <mxPoint x="2597.17" y="785.25" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="9rR8Ady_3ZOeerbZvLVX-32" value="Выбор из списка оборудования, принадлежащего СП/ф-лу с помощью вкладка с checkbox" style="text;html=1;whiteSpace=wrap;strokeColor=#d6b656;fillColor=#fff2cc;align=center;verticalAlign=middle;rounded=0;" parent="1" vertex="1">
+        <mxCell id="9rR8Ady_3ZOeerbZvLVX-32" value="Выбор из списка оборудования, принадлежащего дивизиону с помощью вкладка с checkbox" style="text;html=1;whiteSpace=wrap;strokeColor=#d6b656;fillColor=#fff2cc;align=center;verticalAlign=middle;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="2514" y="791" width="210" height="47" as="geometry" />
         </mxCell>
         <mxCell id="9rR8Ady_3ZOeerbZvLVX-33" value="" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#3333FF;" parent="1" source="9rR8Ady_3ZOeerbZvLVX-25" target="9rR8Ady_3ZOeerbZvLVX-32" edge="1">
@@ -554,7 +554,7 @@
             <mxPoint x="2602.17" y="885.75" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="9rR8Ady_3ZOeerbZvLVX-41" value="Предусмотреть возможность фильтрации по СП/ф-л, Оборудованию, числу, месяцу, году" style="text;html=1;whiteSpace=wrap;strokeColor=#82b366;fillColor=#d5e8d4;align=center;verticalAlign=middle;rounded=0;" parent="1" vertex="1">
+        <mxCell id="9rR8Ady_3ZOeerbZvLVX-41" value="Предусмотреть возможность фильтрации по дивизиону, Оборудованию, числу, месяцу, году" style="text;html=1;whiteSpace=wrap;strokeColor=#82b366;fillColor=#d5e8d4;align=center;verticalAlign=middle;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="2513.5" y="625" width="210" height="52" as="geometry" />
         </mxCell>
         <mxCell id="9rR8Ady_3ZOeerbZvLVX-42" value="" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0.75;exitY=0;exitDx=0;exitDy=0;strokeColor=#3333FF;" parent="1" source="9rR8Ady_3ZOeerbZvLVX-23" target="9rR8Ady_3ZOeerbZvLVX-41" edge="1">
@@ -566,7 +566,7 @@
         <mxCell id="9rR8Ady_3ZOeerbZvLVX-53" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;strokeColor=#3333FF;" parent="1" source="9rR8Ady_3ZOeerbZvLVX-43" target="9rR8Ady_3ZOeerbZvLVX-52" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="9rR8Ady_3ZOeerbZvLVX-43" value="Рассылка уведомлений о необходимости согласования графиков СП/ф-ла причастным ответственным в СП/ф-ах" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFF00;" parent="1" vertex="1">
+        <mxCell id="9rR8Ady_3ZOeerbZvLVX-43" value="Рассылка уведомлений о необходимости согласования графиков дивизиона причастным ответственным в дивизионах" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFF00;" parent="1" vertex="1">
           <mxGeometry x="2416.2" y="1001" width="129" height="131" as="geometry" />
         </mxCell>
         <mxCell id="9rR8Ady_3ZOeerbZvLVX-48" value="Да" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#3333FF;" parent="1" source="9rR8Ady_3ZOeerbZvLVX-47" target="9rR8Ady_3ZOeerbZvLVX-43" edge="1">
@@ -581,7 +581,7 @@
             <mxPoint x="2232" y="1022" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="9rR8Ady_3ZOeerbZvLVX-47" value="Согласование графика с причастными СП/ф-ми" style="rhombus;whiteSpace=wrap;html=1;rounded=0;fillColor=#FFFF00;" parent="1" vertex="1">
+        <mxCell id="9rR8Ady_3ZOeerbZvLVX-47" value="Согласование графика с причастными дивизионами" style="rhombus;whiteSpace=wrap;html=1;rounded=0;fillColor=#FFFF00;" parent="1" vertex="1">
           <mxGeometry x="2258.83" y="873" width="165.75" height="124.5" as="geometry" />
         </mxCell>
         <mxCell id="ykzvYM_jzRUPByPcKZ8K-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="9rR8Ady_3ZOeerbZvLVX-49" target="ykzvYM_jzRUPByPcKZ8K-10">
@@ -599,13 +599,13 @@
         <mxCell id="9rR8Ady_3ZOeerbZvLVX-55" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;strokeColor=#3333FF;" parent="1" source="9rR8Ady_3ZOeerbZvLVX-52" target="9rR8Ady_3ZOeerbZvLVX-54" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="9rR8Ady_3ZOeerbZvLVX-52" value="Рассылка графиков СП/ф-ла причастным ответственным в СП/ф-ах" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFF00;" parent="1" vertex="1">
+        <mxCell id="9rR8Ady_3ZOeerbZvLVX-52" value="Рассылка графиков дивизиона причастным ответственным в дивизионах" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFF00;" parent="1" vertex="1">
           <mxGeometry x="2411.7" y="1176" width="138" height="65" as="geometry" />
         </mxCell>
         <mxCell id="9rR8Ady_3ZOeerbZvLVX-57" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#3333FF;" parent="1" source="9rR8Ady_3ZOeerbZvLVX-54" target="9rR8Ady_3ZOeerbZvLVX-56" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="9rR8Ady_3ZOeerbZvLVX-54" value="Внесение изменений при необходимости и согласование графиков ответственным в СП/ф-ах" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFF00;" parent="1" vertex="1">
+        <mxCell id="9rR8Ady_3ZOeerbZvLVX-54" value="Внесение изменений при необходимости и согласование графиков ответственным в дивизионах" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFF00;" parent="1" vertex="1">
           <mxGeometry x="2409.2" y="1276" width="143" height="84" as="geometry" />
         </mxCell>
         <mxCell id="9rR8Ady_3ZOeerbZvLVX-58" value="Да" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeColor=#3333FF;" parent="1" source="9rR8Ady_3ZOeerbZvLVX-56" target="9rR8Ady_3ZOeerbZvLVX-49" edge="1">
@@ -621,7 +621,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="9rR8Ady_3ZOeerbZvLVX-56" value="Графики согласованы всеми причастными СП/ф-ми" style="rhombus;whiteSpace=wrap;html=1;rounded=0;fillColor=#FFFF00;" parent="1" vertex="1">
+        <mxCell id="9rR8Ady_3ZOeerbZvLVX-56" value="Графики согласованы всеми причастными дивизионами" style="rhombus;whiteSpace=wrap;html=1;rounded=0;fillColor=#FFFF00;" parent="1" vertex="1">
           <mxGeometry x="2392.01" y="1391" width="177.37" height="106" as="geometry" />
         </mxCell>
         <mxCell id="9rR8Ady_3ZOeerbZvLVX-69" value="Да" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#3333FF;" parent="1" source="9rR8Ady_3ZOeerbZvLVX-66" target="9rR8Ady_3ZOeerbZvLVX-83" edge="1">
@@ -680,7 +680,7 @@
         <mxCell id="9rR8Ady_3ZOeerbZvLVX-84" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#3333FF;" parent="1" source="9rR8Ady_3ZOeerbZvLVX-83" target="9rR8Ady_3ZOeerbZvLVX-68" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="9rR8Ady_3ZOeerbZvLVX-83" value="Выбор причастных СП/ф-ов" style="whiteSpace=wrap;html=1;fillColor=#FFFF00;rounded=0;" parent="1" vertex="1">
+        <mxCell id="9rR8Ady_3ZOeerbZvLVX-83" value="Выбор причастных дивизионов" style="whiteSpace=wrap;html=1;fillColor=#FFFF00;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="2904.875" y="639" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="9rR8Ady_3ZOeerbZvLVX-88" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#3333FF;" parent="1" source="9rR8Ady_3ZOeerbZvLVX-85" target="9rR8Ady_3ZOeerbZvLVX-87" edge="1">
@@ -788,13 +788,13 @@
         <mxCell id="UMtaSA0q1cn5iB3DaMNm-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#3333FF;" parent="1" source="UMtaSA0q1cn5iB3DaMNm-6" target="UMtaSA0q1cn5iB3DaMNm-2" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="UMtaSA0q1cn5iB3DaMNm-6" value="Выбор причастных СП/ф-ов" style="whiteSpace=wrap;html=1;fillColor=#FFFF00;rounded=0;" parent="1" vertex="1">
+        <mxCell id="UMtaSA0q1cn5iB3DaMNm-6" value="Выбор причастных дивизионов" style="whiteSpace=wrap;html=1;fillColor=#FFFF00;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="3347.875" y="639" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="UMtaSA0q1cn5iB3DaMNm-7" value="" style="whiteSpace=wrap;html=1;fillColor=#FFFF00;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="3347.875" y="958" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="ykzvYM_jzRUPByPcKZ8K-2" value="Выбор причастных СП/ф-ов" style="whiteSpace=wrap;html=1;fillColor=#FFFF00;rounded=0;" vertex="1" parent="1">
+        <mxCell id="ykzvYM_jzRUPByPcKZ8K-2" value="Выбор причастных дивизионов" style="whiteSpace=wrap;html=1;fillColor=#FFFF00;rounded=0;" vertex="1" parent="1">
           <mxGeometry x="4278.995" y="645" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="ykzvYM_jzRUPByPcKZ8K-4" value="Доработаем позже" style="text;html=1;whiteSpace=wrap;strokeColor=#d6b656;fillColor=#fff2cc;align=center;verticalAlign=middle;rounded=0;" vertex="1" parent="1">

@@ -1,0 +1,27 @@
+Web Interface Guidelines review for slice-013-access-confirmation-dialogs
+
+Guidelines source:
+.agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-30-slice-013-access-confirmation-dialogs.md
+
+Files reviewed:
+- apps/web/features/Stage03Access/ui/EmployeeAccessWorkspace.tsx
+- apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx
+- apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+- apps/web/stories/access/EmployeeAccessWorkspace.stories.tsx
+- apps/web/stories/access/EmployeeInviteManager.stories.tsx
+- apps/web/shared/storybook/runtime-api-mock.tsx
+
+Result: PASS
+
+Findings:
+- apps/web/features/Stage03Access/ui/EmployeeAccessWorkspace.tsx: pass
+- apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx: pass
+- apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx: pass for confirmation-dialog replacement scope
+- apps/web/stories/access/EmployeeAccessWorkspace.stories.tsx: pass
+- apps/web/stories/access/EmployeeInviteManager.stories.tsx: pass after async list wait was made explicit
+- apps/web/shared/storybook/runtime-api-mock.tsx: pass
+
+Notes:
+- Destructive access actions now open the shared ConfirmDialog instead of immediate/native confirmation.
+- Confirm dialogs use semantic Radix dialog structure, focus handling, visible destructive buttons, action-specific copy, and decorative icons marked aria-hidden.
+- Remaining company file layout changes are pre-existing worktree context outside this access confirmation slice; review was limited to the window.confirm replacement and modal interaction scope.

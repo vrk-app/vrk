@@ -64,15 +64,7 @@ export function LoginForm({
 
   return (
     <Card className={cn("gap-5", className)} padding="lg" {...props}>
-      <div className="space-y-2">
-        <p className="text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground">Доступ в VRK</p>
-        <div className="space-y-2">
-          <h2 className="text-balance text-2xl font-bold tracking-tight text-foreground">Вход в систему</h2>
-          <p className="text-sm leading-6 text-muted-foreground">
-            Введите корпоративную почту и пароль, чтобы продолжить работу.
-          </p>
-        </div>
-      </div>
+      <h2 className="text-balance text-2xl font-bold tracking-tight text-foreground">Вход в систему</h2>
 
       <form aria-busy={loading} className="grid gap-5" onSubmit={onSubmit}>
         <div className="grid gap-4">

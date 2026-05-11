@@ -1,0 +1,13 @@
+Source audit for slice-012 equipment registry declutter
+Removed-copy search:
+PASS: removed copy and dead symbols are absent from touched files
+Required compact controls:
+apps/web/app/(runtime)/equipment/page.tsx:90:          Оборудование, средства измерения и эталоны
+apps/web/app/(runtime)/equipment/page.tsx:93:          {canManageRegistry ? "Управление реестрами" : "Только просмотр"}
+apps/web/tests/equipment-registries.smoke.spec.ts:356:    await expect(page.getByRole("heading", { level: 1, name: "Оборудование, средства измерения и эталоны" })).toBeVisible();
+apps/web/tests/equipment-registries.smoke.spec.ts:505:    await expect(page.getByRole("button", { name: "Архив показан" })).toHaveAttribute("aria-pressed", "true");
+apps/web/tests/equipment-registries.smoke.spec.ts:525:    await expect(page.getByText("Только просмотр").first()).toBeVisible();
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:2039:                title="Только просмотр"
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:2861:        <div className="grid gap-4 md:grid-cols-3">
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:2906:            aria-pressed={showArchived}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:2914:            {showArchived ? "Архив показан" : "Показать архив"}

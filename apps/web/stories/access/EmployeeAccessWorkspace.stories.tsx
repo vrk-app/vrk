@@ -1,4 +1,5 @@
 import type { Decorator, Meta, StoryObj } from "@storybook/react";
+import { expect, userEvent, waitFor, within } from "@storybook/test";
 import { EmployeeAccessWorkspace } from "@/features/Stage03Access";
 import {
   divisionHeadSession,
@@ -39,6 +40,35 @@ type Story = StoryObj<typeof meta>;
 
 export const AdminEditable: Story = {
   decorators: [withRuntimeApi({ employees: employeeAccessRows, session: runtimeSession })],
+};
+
+export const DeactivateConfirmation: Story = {
+  decorators: [withRuntimeApi({ employees: employeeAccessRows, session: runtimeSession })],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(document.body);
+    const deactivateButtons = await canvas.findAllByRole("button", { name: "Отключить" });
+    const activeDeactivateButton = deactivateButtons.find((button) => !button.hasAttribute("disabled"));
+
+    await expect(canvas.getByText("Дмитрий Ковалев")).toBeVisible();
+    await expect(activeDeactivateButton).toBeDefined();
+    await userEvent.click(activeDeactivateButton!);
+
+    const dialog = await body.findByRole("dialog", { name: "Отключить сотрудника?" });
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toHaveTextContent("Дмитрий Ковалев");
+
+    await userEvent.click(within(dialog).getByRole("button", { name: "Отмена" }));
+    await waitFor(() =>
+      expect(body.queryByRole("dialog", { name: "Отключить сотрудника?" })).not.toBeInTheDocument(),
+    );
+    await expect(canvas.getByText("Дмитрий Ковалев")).toBeVisible();
+
+    await userEvent.click(activeDeactivateButton!);
+    const confirmDialog = await body.findByRole("dialog", { name: "Отключить сотрудника?" });
+    await userEvent.click(within(confirmDialog).getByRole("button", { name: "Отключить" }));
+    await waitFor(() => expect(canvas.queryByText("Дмитрий Ковалев")).not.toBeInTheDocument());
+  },
 };
 
 export const OrganizationHeadReadonly: Story = {

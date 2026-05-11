@@ -36,10 +36,6 @@ export default async function CompanyPage() {
   }
 
   return (
-    <>
-      <PageHeader title={session.workspace.landingTitle} />
-
-      <CompanyStructureWorkspace initialSession={session} />
-    </>
+    <CompanyStructureWorkspace initialSession={session} />
   );
 }

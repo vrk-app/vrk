@@ -1,0 +1,10 @@
+{
+  "status": "SKIPPED_STALE_RUNTIME",
+  "route": "http://localhost:3100/company",
+  "reason": "The existing compose-backed runtime accepted login and rendered /company, but did not expose the new InputField help trigger (`Справка: КПП`). The running web bundle is stale relative to the rebuilt local source. Per AGENTS.md runtime policy, no ad-hoc dev or preview server was started.",
+  "fallback_proof": [
+    "Shared InputField implementation now owns all /company profile hint rendering.",
+    "Storybook DOM proof confirms non-error hint has no persistent helper row and opens by hover/focus.",
+    "apps/web production build and Storybook build passed after the InputField change."
+  ]
+}

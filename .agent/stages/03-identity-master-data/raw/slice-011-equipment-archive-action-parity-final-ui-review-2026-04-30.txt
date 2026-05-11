@@ -1,0 +1,3 @@
+## apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+
+✓ pass

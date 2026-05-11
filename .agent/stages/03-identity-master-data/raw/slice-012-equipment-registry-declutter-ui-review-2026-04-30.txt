@@ -1,0 +1,19 @@
+## apps/web/app/(runtime)/equipment/page.tsx
+
+✓ pass
+- Compact customer-only header keeps a semantic `h1`, `text-balance`, and existing `Badge` status.
+- Anonymous and contractor explanatory `PageHeader` states remain unchanged.
+
+## apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+
+✓ pass
+- Registry summary now renders exactly three KPI cards and keeps text containers bounded by the existing card layout.
+- Archive visibility is a real `Button`, uses visible focus/hover states from the shared primitive, keeps URL-backed state through existing routing, and exposes pressed state through `aria-pressed`.
+- Destructive archive actions still use confirmation dialogs; no immediate destructive action was introduced.
+- Project copy convention remains Russian sentence case per `docs/design/serviceops-design-system.md`.
+
+## apps/web/tests/equipment-registries.smoke.spec.ts
+
+✓ pass
+- Focused assertions now verify the compact archive state via accessible button name and `aria-pressed`.
+- Read-only proof now targets the retained compact status badge instead of removed explanatory copy.

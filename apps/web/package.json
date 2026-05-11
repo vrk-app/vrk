@@ -18,6 +18,7 @@
     "build-storybook": "storybook build --quiet"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-toast": "^1.2.15",
     "class-variance-authority": "^0.7.1",

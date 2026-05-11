@@ -299,5 +299,64 @@
       ".agent/stages/03-identity-master-data/raw/company-profile-access-harness-2026-04-29.txt",
       ".agent/stages/03-identity-master-data/raw/company-profile-access-diff-check-2026-04-29.txt"
     ]
+  },
+  {
+    "id": "stage03-slice011-input-help-tooltip",
+    "category": "ui-accessibility",
+    "description": "Shared InputField hint text is no longer rendered as always-visible helper copy under fields; it is exposed as hover/focus-accessible auxiliary help in the label/control area while field errors stay visible and accessible.",
+    "steps": [
+      "Extend the existing story-backed InputField instead of creating a new input component family",
+      "Render non-error hint content through a hover/focus-accessible help affordance associated with the input or label/control area",
+      "Preserve visible below-field error messages, aria-invalid state, and error announcement behavior",
+      "Update InputField stories and prove the /company КПП hint no longer appears as persistent helper text while invalid КПП still shows a field error"
+    ],
+    "passes": true,
+    "evidence_refs": [
+      "docs/design/storybook-component-backlog.md",
+      "apps/web/shared/ui/InputField.tsx",
+      "apps/web/stories/primitives/InputField.stories.tsx",
+      ".agent/stages/03-identity-master-data/sprint_contract.md",
+      ".agent/stages/03-identity-master-data/evidence.md",
+      ".agent/stages/03-identity-master-data/evidence.json",
+      ".agent/stages/03-identity-master-data/verdict.json",
+      ".agent/stages/03-identity-master-data/problems.md",
+      ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-011-input-help-tooltip-final-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-storybook-dom-proof-final-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-storybook-dom-proof-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-ui-review-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-web-lint-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-web-typecheck-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-web-build-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-web-build-storybook-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-harness-post-verdict-2026-04-30.txt"
+    ]
+  },
+  {
+    "id": "stage03-slice012-equipment-registry-declutter",
+    "category": "ui-polish",
+    "description": "The customer /equipment registry removes duplicated onboarding copy and extra surfaces while preserving a compact page title, three registry counters, tab navigation, read-only status, and explicit archive visibility control.",
+    "steps": [
+      "Replace the logged-in customer PageHeader card with a compact h1 and capability badge",
+      "Remove the duplicate manageability note and access-area summary card from EquipmentRegistryWorkspace",
+      "Keep three registry counters for equipment, measuring instruments, and standards",
+      "Move archive visibility into the tab row as a compact Button with aria-pressed state",
+      "Keep URL-backed tab and archive query state unchanged"
+    ],
+    "passes": false,
+    "evidence_refs": [
+      ".agent/stages/03-identity-master-data/evidence.md",
+      ".agent/stages/03-identity-master-data/evidence.json",
+      ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-012-equipment-registry-declutter-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-harness-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-web-lint-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-web-typecheck-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-web-build-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-storybook-build-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-ui-review-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-source-audit-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-diff-check-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-json-audit-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-harness-post-evidence-2026-04-30.txt"
+    ]
   }
 ]

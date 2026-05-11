@@ -24,6 +24,38 @@ const defaultApi = {
   standards: standardRecords,
 };
 
+const manyEquipmentRecords = [
+  ...equipmentRecords,
+  ...Array.from({ length: 12 }, (_, index) => ({
+    ...equipmentRecords[index % equipmentRecords.length],
+    factoryNumber: `EQ-LONG-${String(index + 1).padStart(3, "0")}`,
+    fullName: `Оборудование производственного контура ${String(index + 1).padStart(2, "0")}`,
+    id: `equipment-long-${index + 1}`,
+    inventoryNumber: `INV-LONG-${String(index + 1).padStart(3, "0")}`,
+  })),
+];
+
+const manyMeasuringInstrumentRecords = [
+  ...measuringInstrumentRecords,
+  ...Array.from({ length: 12 }, (_, index) => ({
+    ...measuringInstrumentRecords[index % measuringInstrumentRecords.length],
+    id: `mi-long-${index + 1}`,
+    name: `Средство измерения ${String(index + 1).padStart(2, "0")}`,
+    registrationNumber: `ФИФ-${String(index + 1).padStart(5, "0")}`,
+    serialNumber: `MI-LONG-${String(index + 1).padStart(3, "0")}`,
+  })),
+];
+
+const manyStandardRecords = [
+  ...standardRecords,
+  ...Array.from({ length: 12 }, (_, index) => ({
+    ...standardRecords[index % standardRecords.length],
+    id: `standard-long-${index + 1}`,
+    identifier: `STD-LONG-${String(index + 1).padStart(3, "0")}`,
+    serialNumber: `SER-LONG-${String(index + 1).padStart(3, "0")}`,
+  })),
+];
+
 const meta = {
   title: "Equipment/EquipmentRegistryWorkspace",
   component: EquipmentRegistryWorkspace,
@@ -92,4 +124,22 @@ export const ScopedReadonly: Story = {
 
 export const LoadError: Story = {
   decorators: [withRuntimeApi({ ...defaultApi, failurePaths: ["/api/equipment"] })],
+};
+
+export const LongEquipmentList: Story = {
+  decorators: [withRuntimeApi({ ...defaultApi, equipment: manyEquipmentRecords })],
+};
+
+export const LongMeasuringInstrumentList: Story = {
+  args: {
+    initialTab: "mi",
+  },
+  decorators: [withRuntimeApi({ ...defaultApi, measuringInstruments: manyMeasuringInstrumentRecords })],
+};
+
+export const LongStandardsList: Story = {
+  args: {
+    initialTab: "standards",
+  },
+  decorators: [withRuntimeApi({ ...defaultApi, standards: manyStandardRecords })],
 };

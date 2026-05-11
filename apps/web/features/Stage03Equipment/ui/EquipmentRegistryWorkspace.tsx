@@ -1,18 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useTransition, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   Archive,
-  Building2,
   Cable,
-  FileSpreadsheet,
   Pencil,
-  RefreshCw,
   Ruler,
   Save,
   Wrench,
-  X,
 } from "lucide-react";
 import type {
   ApiEnvelope,
@@ -27,7 +23,21 @@ import type {
   StandardRecord,
 } from "@/shared/api";
 import { sessionHasCapability } from "@/shared/api";
-import { Badge, Button, Card, InputField, SelectField, Tabs, TextareaField, useToast } from "@/shared/ui";
+import {
+  Badge,
+  Button,
+  Card,
+  ConfirmDialog,
+  Dialog,
+  FormListScrollArea,
+  FormListSplitLayout,
+  InputField,
+  IslandCard,
+  SelectField,
+  Tabs,
+  TextareaField,
+  useToast,
+} from "@/shared/ui";
 
 type RegistryTab = "equipment" | "mi" | "standards";
 
@@ -120,25 +130,21 @@ type EditDialogState =
 const tabMeta: Array<{
   key: RegistryTab;
   label: string;
-  description: string;
   icon: typeof Wrench;
 }> = [
   {
     key: "equipment",
     label: "Оборудование",
-    description: "Карточки оборудования с привязкой к юнитам и текущим статусом.",
     icon: Wrench,
   },
   {
     key: "mi",
     label: "Средства измерения",
-    description: "Журнал операций показывает поверку, документы и срок действия.",
     icon: Cable,
   },
   {
     key: "standards",
     label: "Эталоны",
-    description: "Эталоны со связями, документами и журналом операций.",
     icon: Ruler,
   },
 ];
@@ -556,118 +562,26 @@ function ArchiveConfirmDialog({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
-  const dialogRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!confirmation) {
-      return undefined;
-    }
-
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const previousBodyOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    window.requestAnimationFrame(() => {
-      const firstFocusable = dialogRef.current?.querySelector<HTMLElement>(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      );
-      firstFocusable?.focus();
-    });
-
-    return () => {
-      document.body.style.overflow = previousBodyOverflow;
-      previousFocus?.focus({ preventScroll: true });
-    };
-  }, [confirmation]);
-
   if (!confirmation) {
     return null;
   }
 
-  const trapDialogFocus = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      onCancel();
-      return;
-    }
-
-    if (event.key !== "Tab") {
-      return;
-    }
-
-    const focusableElements = Array.from(
-      dialogRef.current?.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      ) ?? [],
-    );
-
-    if (!focusableElements.length) {
-      event.preventDefault();
-      return;
-    }
-
-    const firstElement = focusableElements[0];
-    const lastElement = focusableElements[focusableElements.length - 1];
-
-    if (event.shiftKey && document.activeElement === firstElement) {
-      event.preventDefault();
-      lastElement.focus();
-    }
-
-    if (!event.shiftKey && document.activeElement === lastElement) {
-      event.preventDefault();
-      firstElement.focus();
-    }
-  };
-
   return (
-    <div
-      className="fixed inset-0 z-50 grid place-items-center overscroll-contain bg-foreground/30 px-4 py-6 backdrop-blur-[2px]"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onCancel();
-        }
-      }}
-    >
-      <div
-        ref={dialogRef}
-        aria-describedby="archive-confirm-description"
-        aria-labelledby="archive-confirm-title"
-        aria-modal="true"
-        className="w-full max-w-lg rounded-[var(--radius-xl)] border border-border bg-card p-5 text-card-foreground shadow-lg"
-        onKeyDown={trapDialogFocus}
-        role="dialog"
-      >
-        <div className="flex items-start gap-3">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-[var(--radius-lg)] bg-warning-soft text-warning-strong">
-            <Archive aria-hidden="true" className="size-5" />
-          </div>
-          <div className="min-w-0 space-y-2">
-            <h2 className="text-lg font-semibold text-foreground" id="archive-confirm-title">
-              Архивировать запись?
-            </h2>
-            <p className="break-words text-sm leading-6 text-muted-foreground" id="archive-confirm-description">
-              {confirmation.recordLabel} исчезнет из активных списков и останется доступна при включенной видимости
-              архива.
-            </p>
-          </div>
-        </div>
-        <div className="mt-5 flex flex-wrap justify-end gap-3">
-          <Button disabled={loading} onClick={onCancel} type="button" variant="secondary">
-            Отмена
-          </Button>
-          <Button
-            leftIcon={<Archive className="size-4" />}
-            loading={loading}
-            onClick={onConfirm}
-            type="button"
-            variant="danger"
-          >
-            Архивировать
-          </Button>
-        </div>
-      </div>
-    </div>
+    <ConfirmDialog
+      confirmLabel="Архивировать"
+      description={
+        <>
+          {confirmation.recordLabel} исчезнет из активных списков и останется доступна при включенной видимости архива.
+        </>
+      }
+      icon={<Archive aria-hidden="true" className="size-5" />}
+      loading={loading}
+      onCancel={onCancel}
+      onConfirm={onConfirm}
+      open={Boolean(confirmation)}
+      title="Архивировать запись?"
+      tone="danger"
+    />
   );
 }
 
@@ -688,30 +602,6 @@ function EditRegistryDialog({
   onSubmit: () => void;
   session: SessionSummaryResponse;
 }) {
-  const dialogRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!editor) {
-      return undefined;
-    }
-
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const previousBodyOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    window.requestAnimationFrame(() => {
-      const firstFocusable = dialogRef.current?.querySelector<HTMLElement>(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      );
-      firstFocusable?.focus();
-    });
-
-    return () => {
-      document.body.style.overflow = previousBodyOverflow;
-      previousFocus?.focus({ preventScroll: true });
-    };
-  }, [editor]);
-
   if (!editor) {
     return null;
   }
@@ -722,6 +612,8 @@ function EditRegistryDialog({
       : editor.kind === "measuringInstrument"
         ? "Редактировать средство измерения"
         : "Редактировать эталон";
+  const HeaderIcon =
+    editor.kind === "equipment" ? Wrench : editor.kind === "measuringInstrument" ? Cable : Ruler;
   const canSubmit =
     editor.kind === "equipment"
       ? isEquipmentFormReady(editor.form)
@@ -748,42 +640,6 @@ function EditRegistryDialog({
       return;
     }
     onChange({ ...editor, form: { ...editor.form, ...patch } });
-  };
-
-  const trapDialogFocus = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      onCancel();
-      return;
-    }
-
-    if (event.key !== "Tab") {
-      return;
-    }
-
-    const focusableElements = Array.from(
-      dialogRef.current?.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      ) ?? [],
-    );
-
-    if (!focusableElements.length) {
-      event.preventDefault();
-      return;
-    }
-
-    const firstElement = focusableElements[0];
-    const lastElement = focusableElements[focusableElements.length - 1];
-
-    if (event.shiftKey && document.activeElement === firstElement) {
-      event.preventDefault();
-      lastElement.focus();
-    }
-
-    if (!event.shiftKey && document.activeElement === lastElement) {
-      event.preventDefault();
-      firstElement.focus();
-    }
   };
 
   const renderEquipmentForm = (state: Extract<EditDialogState, { kind: "equipment" }>) => (
@@ -1111,45 +967,16 @@ function EditRegistryDialog({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 grid place-items-center overscroll-contain bg-foreground/30 px-3 py-4 backdrop-blur-[2px] sm:px-4 sm:py-6"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onCancel();
-        }
-      }}
-    >
-      <div
-        ref={dialogRef}
-        aria-describedby="registry-edit-description"
-        aria-labelledby="registry-edit-title"
-        aria-modal="true"
-        className="flex max-h-[calc(100vh-2rem)] w-full max-w-4xl flex-col overflow-hidden rounded-[var(--radius-xl)] border border-border bg-card text-card-foreground shadow-lg"
-        onKeyDown={trapDialogFocus}
-        role="dialog"
-      >
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-4">
-          <div className="min-w-0 space-y-1">
-            <Badge icon={<Pencil className="size-4" />} tone="interactive">
-              Редактирование
-            </Badge>
-            <h2 className="break-words text-xl font-semibold text-foreground" id="registry-edit-title">
-              {title}
-            </h2>
-            <p className="break-words text-sm leading-6 text-muted-foreground" id="registry-edit-description">
-              {editor.recordLabel}
-            </p>
-          </div>
-          <Button disabled={loading} leftIcon={<X className="size-4" />} onClick={onCancel} type="button" variant="ghost">
-            Закрыть
-          </Button>
-        </div>
-        <div className="overflow-y-auto px-5 py-5">
-          {editor.kind === "equipment" ? renderEquipmentForm(editor) : null}
-          {editor.kind === "measuringInstrument" ? renderMeasuringInstrumentForm(editor) : null}
-          {editor.kind === "standard" ? renderStandardForm(editor) : null}
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-muted/40 px-5 py-4">
+    <Dialog
+      badge={
+        <Badge icon={<Pencil className="size-4" />} tone="interactive">
+          Редактирование
+        </Badge>
+      }
+      description={editor.recordLabel}
+      dismissible={!loading}
+      footer={
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
             {!canSubmit ? "Заполните обязательные поля перед сохранением." : "Изменения попадут в текущий реестр после сохранения."}
           </p>
@@ -1168,8 +995,23 @@ function EditRegistryDialog({
             </Button>
           </div>
         </div>
-      </div>
-    </div>
+      }
+      onOpenChange={(open) => {
+        if (!open && !loading) {
+          onCancel();
+        }
+      }}
+      headerIcon={<HeaderIcon aria-hidden="true" className="size-4" />}
+      headerVariant="muted"
+      open={Boolean(editor)}
+      showClose={!loading}
+      size="lg"
+      title={title}
+    >
+      {editor.kind === "equipment" ? renderEquipmentForm(editor) : null}
+      {editor.kind === "measuringInstrument" ? renderMeasuringInstrumentForm(editor) : null}
+      {editor.kind === "standard" ? renderStandardForm(editor) : null}
+    </Dialog>
   );
 }
 
@@ -1260,6 +1102,15 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
     measuringInstruments.find((item) => item.id === selectedMeasuringInstrumentId) ?? null;
   const selectedStandard = standards.find((item) => item.id === selectedStandardId) ?? null;
   const isMutating = isPending || mutationInFlight;
+  const registryTabCounts: Record<RegistryTab, number> = {
+    equipment: equipmentRecords.length,
+    mi: measuringInstruments.length,
+    standards: standards.length,
+  };
+  const registryTabItems = tabMeta.map((item) => ({
+    ...item,
+    badge: String(registryTabCounts[item.key]),
+  }));
 
   const showSuccessToast = useCallback((title: string, dedupeKey: string) => {
     showToast({
@@ -1770,37 +1621,13 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
     runMutation(confirmation.task, confirmation.fallbackMessage, confirmation.dedupeKey);
   }
 
-  function renderManageabilityNote() {
-    if (canManageRegistry) {
-      return (
-        <div className="rounded-[var(--radius-xl)] border border-info-soft bg-info-soft/50 px-4 py-3 text-sm text-info-strong">
-          Вы можете создавать записи, вести журналы и переносить неактуальные записи в архив.
-        </div>
-      );
-    }
-
-    return (
-      <div className="rounded-[var(--radius-xl)] border border-warning-soft bg-warning-soft/50 px-4 py-3 text-sm text-warning-strong">
-        Текущая область доступна только для просмотра: активные записи, архив и журналы
-        фильтруются по выданному доступу, а создание и архивирование скрыты.
-      </div>
-    );
-  }
-
   function renderEquipmentTab() {
-    return (
-      <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        <Card className="gap-5" padding="lg">
-          <div className="space-y-2">
-            <Badge tone="interactive">Оборудование</Badge>
-            <div className="space-y-1">
-              <h2 className="text-xl font-semibold text-foreground">Новое оборудование</h2>
-              <p className="text-sm leading-6 text-muted-foreground">
-                Добавьте оборудование, владельца, статус, основные идентификаторы и связанные СИ.
-              </p>
-            </div>
-          </div>
-
+    const equipmentFormCard = (
+        <IslandCard
+          headingLevel={2}
+          icon={<Wrench aria-hidden="true" className="size-4" />}
+          title="Новое оборудование"
+        >
           {canManageRegistry ? (
             <>
               <div className="grid gap-4 md:grid-cols-2">
@@ -1971,18 +1798,19 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
               title="Создание скрыто"
             />
           )}
-        </Card>
+        </IslandCard>
+    );
 
-        <Card className="gap-5" padding="lg">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="space-y-1">
-              <Badge tone="info">{showArchived ? "Активные и архив" : "Только активные"}</Badge>
-              <h2 className="text-xl font-semibold text-foreground">Оборудование в учете</h2>
-            </div>
-            <Button onClick={() => void loadRegistries()} rightIcon={<RefreshCw className="size-4" />} variant="secondary">
-              Обновить
-            </Button>
-          </div>
+    const equipmentListCard = (
+        <IslandCard
+          bodyClassName={canManageRegistry ? "min-h-0 flex-1" : undefined}
+          className={canManageRegistry ? "h-full min-h-0 overflow-hidden" : undefined}
+          headingLevel={2}
+          icon={<Wrench aria-hidden="true" className="size-4" />}
+          metric={equipmentRecords.length}
+          title="Оборудование в учете"
+        >
+          <Badge tone="info">{showArchived ? "Активные и архив" : "Только активные"}</Badge>
 
           {!equipmentRecords.length && !loading ? (
             <EmptyState
@@ -1991,7 +1819,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
             />
           ) : null}
 
-          <div className="grid gap-4">
+          <FormListScrollArea className="grid gap-4">
             {equipmentRecords.map((item) => (
               <Card
                 className="gap-4 [contain-intrinsic-size:1px_320px] [content-visibility:auto]"
@@ -2034,6 +1862,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                       aria-label={`Редактировать оборудование ${item.fullName}`}
                       leftIcon={<Pencil className="size-4" />}
                       onClick={() => openEquipmentEditor(item)}
+                      size="sm"
                       type="button"
                       variant="secondary"
                     >
@@ -2051,8 +1880,9 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                           "equipment-archive-error",
                         )
                       }
+                      size="sm"
                       type="button"
-                      variant="secondary"
+                      variant="ghost"
                     >
                       Архивировать
                     </Button>
@@ -2060,27 +1890,27 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                 ) : null}
               </Card>
             ))}
-          </div>
-        </Card>
+          </FormListScrollArea>
+        </IslandCard>
+    );
+
+    return canManageRegistry ? (
+      <FormListSplitLayout form={equipmentFormCard} list={equipmentListCard} />
+    ) : (
+      <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+        {equipmentFormCard}
+        {equipmentListCard}
       </div>
     );
   }
 
   function renderMeasuringInstrumentTab() {
-    return (
-      <div className="grid gap-4">
-        <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-          <Card className="gap-5" padding="lg">
-            <div className="space-y-2">
-              <Badge tone="interactive">Средства измерения</Badge>
-              <div className="space-y-1">
-                <h2 className="text-xl font-semibold text-foreground">Новое средство измерения</h2>
-                <p className="text-sm leading-6 text-muted-foreground">
-                  Средство измерения создается отдельно. Метрологический статус считается по последним записям журнала.
-                </p>
-              </div>
-            </div>
-
+    const measuringInstrumentFormCard = (
+          <IslandCard
+            headingLevel={2}
+            icon={<Cable aria-hidden="true" className="size-4" />}
+            title="Новое средство измерения"
+          >
             {canManageRegistry ? (
               <>
                 <div className="grid gap-4 md:grid-cols-2">
@@ -2230,18 +2060,19 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                 title="Только просмотр"
               />
             )}
-          </Card>
+          </IslandCard>
+    );
 
-          <Card className="gap-5" padding="lg">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="space-y-1">
-                <Badge tone="info">{showArchived ? "Активные и архив" : "Только активные"}</Badge>
-                <h2 className="text-xl font-semibold text-foreground">Средства измерения в учете</h2>
-              </div>
-              <Button onClick={() => void loadRegistries()} rightIcon={<RefreshCw className="size-4" />} variant="secondary">
-                Обновить
-              </Button>
-            </div>
+    const measuringInstrumentListCard = (
+          <IslandCard
+            bodyClassName={canManageRegistry ? "min-h-0 flex-1" : undefined}
+            className={canManageRegistry ? "h-full min-h-0 overflow-hidden" : undefined}
+            headingLevel={2}
+            icon={<Cable aria-hidden="true" className="size-4" />}
+            metric={measuringInstruments.length}
+            title="Средства измерения в учете"
+          >
+            <Badge tone="info">{showArchived ? "Активные и архив" : "Только активные"}</Badge>
 
             {!measuringInstruments.length && !loading ? (
               <EmptyState
@@ -2250,7 +2081,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
               />
             ) : null}
 
-            <div className="grid gap-4">
+            <FormListScrollArea className="grid gap-4">
               {measuringInstruments.map((item) => (
                 <Card
                   className="gap-4 [contain-intrinsic-size:1px_360px] [content-visibility:auto]"
@@ -2329,6 +2160,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                         aria-label={`Редактировать средство измерения ${item.name}`}
                         leftIcon={<Pencil className="size-4" />}
                         onClick={() => openMeasuringInstrumentEditor(item)}
+                        size="sm"
                         type="button"
                         variant="secondary"
                       >
@@ -2346,8 +2178,9 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                             "equipment-mi-archive-error",
                           )
                         }
+                        size="sm"
                         type="button"
-                        variant="secondary"
+                        variant="ghost"
                       >
                         Архивировать
                       </Button>
@@ -2355,16 +2188,224 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                   ) : null}
                 </Card>
               ))}
-            </div>
-          </Card>
-        </div>
+            </FormListScrollArea>
+          </IslandCard>
+    );
 
-        <Card className="gap-5" padding="lg">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+    const measuringInstrumentRegistryPair = canManageRegistry ? (
+      <FormListSplitLayout form={measuringInstrumentFormCard} list={measuringInstrumentListCard} />
+    ) : (
+      <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+        {measuringInstrumentFormCard}
+        {measuringInstrumentListCard}
+      </div>
+    );
+
+    function renderMeasuringInstrumentJournalPair() {
+      if (!selectedMeasuringInstrument) {
+        return (
+          <EmptyState
+            detail="Выберите средство измерения из текущей области доступа, чтобы посмотреть историю операций и рассчитанный статус."
+            title="Журнал еще не выбран"
+          />
+        );
+      }
+
+      const hasActiveJournalForm = canManageRegistry && !selectedMeasuringInstrument.archivedAt;
+      const journalFormCard = (
+        <Card className={hasActiveJournalForm ? "h-full min-h-0 gap-4" : "gap-4"} padding="md" tone="muted">
+          <div className="space-y-1">
+            <h3 className="text-lg font-semibold text-foreground">{selectedMeasuringInstrument.name}</h3>
+            <p className="text-sm text-muted-foreground">
+              Текущий статус:{" "}
+              <span className="font-medium text-foreground">{statusLabelMap[selectedMeasuringInstrument.status]}</span>
+              {selectedMeasuringInstrument.nextDueDate
+                ? ` • действует до ${formatDate(selectedMeasuringInstrument.nextDueDate)}`
+                : " • срок пока не рассчитан"}
+            </p>
+          </div>
+          {hasActiveJournalForm ? (
+            <>
+              <div className="grid gap-4 md:grid-cols-2">
+                <SelectField
+                  label="Тип операции"
+                  name="mi-journal-operation-type"
+                  onChange={(event) =>
+                    setMeasuringInstrumentJournalForm((current) => ({
+                      ...current,
+                      operationType: event.target.value as JournalRecord["operationType"],
+                    }))
+                  }
+                  options={journalOperationOptions}
+                  value={measuringInstrumentJournalForm.operationType}
+                />
+                <InputField
+                  autoComplete={defaultAutoComplete("text")}
+                  label="Дата операции"
+                  name="mi-journal-operation-date"
+                  onChange={(event) =>
+                    setMeasuringInstrumentJournalForm((current) => ({
+                      ...current,
+                      operationDate: event.target.value,
+                    }))
+                  }
+                  type="date"
+                  value={measuringInstrumentJournalForm.operationDate}
+                />
+                <InputField
+                  autoComplete={defaultAutoComplete("text")}
+                  label="Документ"
+                  name="mi-journal-document-number"
+                  onChange={(event) =>
+                    setMeasuringInstrumentJournalForm((current) => ({
+                      ...current,
+                      documentNumber: event.target.value,
+                    }))
+                  }
+                  spellCheck={false}
+                  translate="no"
+                  value={measuringInstrumentJournalForm.documentNumber}
+                />
+                <InputField
+                  autoComplete={defaultAutoComplete("text")}
+                  label="Действует до"
+                  name="mi-journal-valid-until"
+                  onChange={(event) =>
+                    setMeasuringInstrumentJournalForm((current) => ({
+                      ...current,
+                      validUntil: event.target.value,
+                    }))
+                  }
+                  type="date"
+                  value={measuringInstrumentJournalForm.validUntil}
+                />
+                <InputField
+                  autoComplete={defaultAutoComplete("text")}
+                  label="Организация-исполнитель"
+                  name="mi-journal-executor"
+                  onChange={(event) =>
+                    setMeasuringInstrumentJournalForm((current) => ({
+                      ...current,
+                      executorOrganization: event.target.value,
+                    }))
+                  }
+                  value={measuringInstrumentJournalForm.executorOrganization}
+                />
+                <InputField
+                  autoComplete={defaultAutoComplete("url")}
+                  label="Вложение / ссылка"
+                  name="mi-journal-attachment"
+                  onChange={(event) =>
+                    setMeasuringInstrumentJournalForm((current) => ({
+                      ...current,
+                      attachmentUrl: event.target.value,
+                    }))
+                  }
+                  type="url"
+                  value={measuringInstrumentJournalForm.attachmentUrl}
+                />
+              </div>
+              <TextareaField
+                label="Комментарий"
+                name="mi-journal-comment"
+                onChange={(event) =>
+                  setMeasuringInstrumentJournalForm((current) => ({
+                    ...current,
+                    comment: event.target.value,
+                  }))
+                }
+                value={measuringInstrumentJournalForm.comment}
+              />
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  loading={isMutating}
+                  onClick={() =>
+                    runMutation(
+                      createMeasuringInstrumentJournal,
+                      "Не удалось добавить запись в журнал средства измерения.",
+                      "equipment-mi-journal-create-error",
+                    )
+                  }
+                  type="button"
+                >
+                  Добавить запись журнала
+                </Button>
+                <Button
+                  aria-label="Архивировать выбранное СИ"
+                  leftIcon={<Archive className="size-4" />}
+                  loading={isMutating}
+                  onClick={() =>
+                    requestArchive(
+                      () => archiveMeasuringInstrument(selectedMeasuringInstrument.id),
+                      "Не удалось архивировать средство измерения.",
+                      `средство измерения «${selectedMeasuringInstrument.name}»`,
+                      "equipment-mi-selected-archive-error",
+                    )
+                  }
+                  size="sm"
+                  type="button"
+                  variant="ghost"
+                >
+                  Архивировать
+                </Button>
+              </div>
+            </>
+          ) : (
+            <EmptyState
+              detail={
+                selectedMeasuringInstrument.archivedAt
+                  ? "Архивированное СИ остается доступным для истории, но новые операции в него не добавляются."
+                  : "В текущей области доступа журнал можно только читать."
+              }
+              title="Редактирование скрыто"
+            />
+          )}
+        </Card>
+      );
+      const journalTimeline = loadingMeasuringInstrumentJournals ? (
+        <EmptyState detail="История операций средства измерения загружается." title="Загрузка журнала" />
+      ) : (
+        <JournalTimeline
+          emptyDetail="Для выбранного СИ еще нет операций. После первой записи статус и срок станут производными."
+          emptyTitle="Журнал пока пуст"
+          journals={measuringInstrumentJournals}
+        />
+      );
+      const journalTimelineCard = (
+        <Card
+          className={hasActiveJournalForm ? "h-full min-h-0 gap-4 overflow-hidden" : "gap-4"}
+          padding="md"
+          tone="muted"
+        >
+          <div className="flex items-center gap-3">
             <div className="space-y-1">
-              <Badge tone="interactive">Метрологический журнал</Badge>
-              <h2 className="text-xl font-semibold text-foreground">Журнал операций по СИ</h2>
+              <h3 className="text-lg font-semibold text-foreground">Хронология операций</h3>
             </div>
+          </div>
+          {hasActiveJournalForm ? <FormListScrollArea>{journalTimeline}</FormListScrollArea> : journalTimeline}
+        </Card>
+      );
+
+      return hasActiveJournalForm ? (
+        <FormListSplitLayout form={journalFormCard} list={journalTimelineCard} />
+      ) : (
+        <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+          {journalFormCard}
+          {journalTimelineCard}
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid gap-4">
+        {measuringInstrumentRegistryPair}
+
+        <IslandCard
+          headingLevel={2}
+          icon={<Cable aria-hidden="true" className="size-4" />}
+          title="Журнал операций по СИ"
+        >
+          <div className="flex flex-wrap justify-end gap-3">
             <div className="min-w-64">
               <SelectField
                 label="Выбранное средство измерения"
@@ -2380,186 +2421,8 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
             </div>
           </div>
 
-          {selectedMeasuringInstrument ? (
-            <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-              <Card className="gap-4" padding="md" tone="muted">
-                <div className="space-y-1">
-                  <h3 className="text-lg font-semibold text-foreground">{selectedMeasuringInstrument.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Текущий статус: <span className="font-medium text-foreground">{statusLabelMap[selectedMeasuringInstrument.status]}</span>
-                    {selectedMeasuringInstrument.nextDueDate
-                      ? ` • действует до ${formatDate(selectedMeasuringInstrument.nextDueDate)}`
-                      : " • срок пока не рассчитан"}
-                  </p>
-                </div>
-                {canManageRegistry && !selectedMeasuringInstrument.archivedAt ? (
-                  <>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <SelectField
-                        label="Тип операции"
-                        name="mi-journal-operation-type"
-                        onChange={(event) =>
-                          setMeasuringInstrumentJournalForm((current) => ({
-                            ...current,
-                            operationType: event.target.value as JournalRecord["operationType"],
-                          }))
-                        }
-                        options={journalOperationOptions}
-                        value={measuringInstrumentJournalForm.operationType}
-                      />
-                      <InputField
-                        autoComplete={defaultAutoComplete("text")}
-                        label="Дата операции"
-                        name="mi-journal-operation-date"
-                        onChange={(event) =>
-                          setMeasuringInstrumentJournalForm((current) => ({
-                            ...current,
-                            operationDate: event.target.value,
-                          }))
-                        }
-                        type="date"
-                        value={measuringInstrumentJournalForm.operationDate}
-                      />
-                      <InputField
-                        autoComplete={defaultAutoComplete("text")}
-                        label="Документ"
-                        name="mi-journal-document-number"
-                        onChange={(event) =>
-                          setMeasuringInstrumentJournalForm((current) => ({
-                            ...current,
-                            documentNumber: event.target.value,
-                          }))
-                        }
-                        spellCheck={false}
-                        translate="no"
-                        value={measuringInstrumentJournalForm.documentNumber}
-                      />
-                      <InputField
-                        autoComplete={defaultAutoComplete("text")}
-                        label="Действует до"
-                        name="mi-journal-valid-until"
-                        onChange={(event) =>
-                          setMeasuringInstrumentJournalForm((current) => ({
-                            ...current,
-                            validUntil: event.target.value,
-                          }))
-                        }
-                        type="date"
-                        value={measuringInstrumentJournalForm.validUntil}
-                      />
-                      <InputField
-                        autoComplete={defaultAutoComplete("text")}
-                        label="Организация-исполнитель"
-                        name="mi-journal-executor"
-                        onChange={(event) =>
-                          setMeasuringInstrumentJournalForm((current) => ({
-                            ...current,
-                            executorOrganization: event.target.value,
-                          }))
-                        }
-                        value={measuringInstrumentJournalForm.executorOrganization}
-                      />
-                      <InputField
-                        autoComplete={defaultAutoComplete("url")}
-                        label="Вложение / ссылка"
-                        name="mi-journal-attachment"
-                        onChange={(event) =>
-                          setMeasuringInstrumentJournalForm((current) => ({
-                            ...current,
-                            attachmentUrl: event.target.value,
-                          }))
-                        }
-                        type="url"
-                        value={measuringInstrumentJournalForm.attachmentUrl}
-                      />
-                    </div>
-                    <TextareaField
-                      label="Комментарий"
-                      name="mi-journal-comment"
-                      onChange={(event) =>
-                        setMeasuringInstrumentJournalForm((current) => ({
-                          ...current,
-                          comment: event.target.value,
-                        }))
-                      }
-                      value={measuringInstrumentJournalForm.comment}
-                    />
-                    <div className="flex flex-wrap gap-3">
-                      <Button
-                        loading={isMutating}
-                        onClick={() =>
-                          runMutation(
-                            createMeasuringInstrumentJournal,
-                            "Не удалось добавить запись в журнал средства измерения.",
-                            "equipment-mi-journal-create-error",
-                          )
-                        }
-                        type="button"
-                      >
-                        Добавить запись журнала
-                      </Button>
-                      <Button
-                        leftIcon={<Archive className="size-4" />}
-                        loading={isMutating}
-                        onClick={() =>
-                          requestArchive(
-                            () => archiveMeasuringInstrument(selectedMeasuringInstrument.id),
-                            "Не удалось архивировать средство измерения.",
-                            `средство измерения «${selectedMeasuringInstrument.name}»`,
-                            "equipment-mi-selected-archive-error",
-                          )
-                        }
-                        type="button"
-                        variant="secondary"
-                      >
-                        Архивировать выбранное СИ
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  <EmptyState
-                    detail={
-                      selectedMeasuringInstrument.archivedAt
-                        ? "Архивированное СИ остается доступным для истории, но новые операции в него не добавляются."
-                        : "В текущей области доступа журнал можно только читать."
-                    }
-                    title="Редактирование скрыто"
-                  />
-                )}
-              </Card>
-
-              <Card className="gap-4" padding="md" tone="muted">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="space-y-1">
-                    <Badge tone="info">История</Badge>
-                    <h3 className="text-lg font-semibold text-foreground">Хронология операций</h3>
-                  </div>
-                  <Button
-                    onClick={() => void loadMeasuringInstrumentJournals(selectedMeasuringInstrument.id)}
-                    rightIcon={<RefreshCw className="size-4" />}
-                    variant="secondary"
-                  >
-                    Обновить журнал
-                  </Button>
-                </div>
-                {loadingMeasuringInstrumentJournals ? (
-                  <EmptyState detail="История операций средства измерения загружается." title="Загрузка журнала" />
-                ) : (
-                  <JournalTimeline
-                    emptyDetail="Для выбранного СИ еще нет операций. После первой записи статус и срок станут производными."
-                    emptyTitle="Журнал пока пуст"
-                    journals={measuringInstrumentJournals}
-                  />
-                )}
-              </Card>
-            </div>
-          ) : (
-            <EmptyState
-              detail="Выберите средство измерения из текущей области доступа, чтобы посмотреть историю операций и рассчитанный статус."
-              title="Журнал еще не выбран"
-            />
-          )}
-        </Card>
+          {renderMeasuringInstrumentJournalPair()}
+        </IslandCard>
       </div>
     );
   }
@@ -2568,20 +2431,12 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
     const scopeOptions =
       standardForm.ownershipScopeType === "division" ? session.divisions : session.units;
 
-    return (
-      <div className="grid gap-4">
-        <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-          <Card className="gap-5" padding="lg">
-            <div className="space-y-2">
-              <Badge tone="interactive">Эталоны</Badge>
-              <div className="space-y-1">
-                <h2 className="text-xl font-semibold text-foreground">Новый эталон</h2>
-                <p className="text-sm leading-6 text-muted-foreground">
-                  Эталон остается отдельной записью. Текущий статус и срок действия выводятся из журнала операций.
-                </p>
-              </div>
-            </div>
-
+    const standardFormCard = (
+          <IslandCard
+            headingLevel={2}
+            icon={<Ruler aria-hidden="true" className="size-4" />}
+            title="Новый эталон"
+          >
             {canManageRegistry ? (
               <>
                 <div className="grid gap-4 md:grid-cols-2">
@@ -2715,18 +2570,19 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                 title="Создание эталонов скрыто"
               />
             )}
-          </Card>
+          </IslandCard>
+    );
 
-          <Card className="gap-5" padding="lg">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="space-y-1">
-                <Badge tone="info">{showArchived ? "Активные и архив" : "Только активные"}</Badge>
-                <h2 className="text-xl font-semibold text-foreground">Эталоны в учете</h2>
-              </div>
-              <Button onClick={() => void loadRegistries()} rightIcon={<RefreshCw className="size-4" />} variant="secondary">
-                Обновить
-              </Button>
-            </div>
+    const standardListCard = (
+          <IslandCard
+            bodyClassName={canManageRegistry ? "min-h-0 flex-1" : undefined}
+            className={canManageRegistry ? "h-full min-h-0 overflow-hidden" : undefined}
+            headingLevel={2}
+            icon={<Ruler aria-hidden="true" className="size-4" />}
+            metric={standards.length}
+            title="Эталоны в учете"
+          >
+            <Badge tone="info">{showArchived ? "Активные и архив" : "Только активные"}</Badge>
 
             {!standards.length && !loading ? (
               <EmptyState
@@ -2735,7 +2591,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
               />
             ) : null}
 
-            <div className="grid gap-4">
+            <FormListScrollArea className="grid gap-4">
               {standards.map((item) => (
                 <Card
                   className="gap-4 [contain-intrinsic-size:1px_400px] [content-visibility:auto]"
@@ -2801,6 +2657,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                         aria-label={`Редактировать эталон ${item.identifier}`}
                         leftIcon={<Pencil className="size-4" />}
                         onClick={() => openStandardEditor(item)}
+                        size="sm"
                         type="button"
                         variant="secondary"
                       >
@@ -2818,8 +2675,9 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                             "equipment-standard-archive-error",
                           )
                         }
+                        size="sm"
                         type="button"
-                        variant="secondary"
+                        variant="ghost"
                       >
                         Архивировать
                       </Button>
@@ -2827,16 +2685,226 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
                   ) : null}
                 </Card>
               ))}
-            </div>
-          </Card>
-        </div>
+            </FormListScrollArea>
+          </IslandCard>
+    );
 
-        <Card className="gap-5" padding="lg">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+    const standardRegistryPair = canManageRegistry ? (
+      <FormListSplitLayout form={standardFormCard} list={standardListCard} />
+    ) : (
+      <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+        {standardFormCard}
+        {standardListCard}
+      </div>
+    );
+
+    function renderStandardJournalPair() {
+      if (!selectedStandard) {
+        return (
+          <EmptyState
+            detail="Выберите эталон из текущей области доступа, чтобы посмотреть историю операций и рассчитанный статус."
+            title="Журнал еще не выбран"
+          />
+        );
+      }
+
+      const hasActiveJournalForm = canManageRegistry && !selectedStandard.archivedAt;
+      const journalFormCard = (
+        <Card className={hasActiveJournalForm ? "h-full min-h-0 gap-4" : "gap-4"} padding="md" tone="muted">
+          <div className="space-y-1">
+            <h3 className="text-lg font-semibold text-foreground">
+              <span translate="no">
+                {selectedStandard.standardType} • {selectedStandard.identifier}
+              </span>
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Текущий статус: <span className="font-medium text-foreground">{statusLabelMap[selectedStandard.status]}</span>
+              {selectedStandard.nextDueDate
+                ? ` • действует до ${formatDate(selectedStandard.nextDueDate)}`
+                : " • срок пока не рассчитан"}
+            </p>
+          </div>
+          {hasActiveJournalForm ? (
+            <>
+              <div className="grid gap-4 md:grid-cols-2">
+                <SelectField
+                  label="Тип операции"
+                  name="standard-journal-operation-type"
+                  onChange={(event) =>
+                    setStandardJournalForm((current) => ({
+                      ...current,
+                      operationType: event.target.value as JournalRecord["operationType"],
+                    }))
+                  }
+                  options={journalOperationOptions}
+                  value={standardJournalForm.operationType}
+                />
+                <InputField
+                  autoComplete={defaultAutoComplete("text")}
+                  label="Дата операции"
+                  name="standard-journal-operation-date"
+                  onChange={(event) =>
+                    setStandardJournalForm((current) => ({
+                      ...current,
+                      operationDate: event.target.value,
+                    }))
+                  }
+                  type="date"
+                  value={standardJournalForm.operationDate}
+                />
+                <InputField
+                  autoComplete={defaultAutoComplete("text")}
+                  label="Документ"
+                  name="standard-journal-document-number"
+                  onChange={(event) =>
+                    setStandardJournalForm((current) => ({
+                      ...current,
+                      documentNumber: event.target.value,
+                    }))
+                  }
+                  spellCheck={false}
+                  translate="no"
+                  value={standardJournalForm.documentNumber}
+                />
+                <InputField
+                  autoComplete={defaultAutoComplete("text")}
+                  label="Действует до"
+                  name="standard-journal-valid-until"
+                  onChange={(event) =>
+                    setStandardJournalForm((current) => ({
+                      ...current,
+                      validUntil: event.target.value,
+                    }))
+                  }
+                  type="date"
+                  value={standardJournalForm.validUntil}
+                />
+                <InputField
+                  autoComplete={defaultAutoComplete("text")}
+                  label="Организация-исполнитель"
+                  name="standard-journal-executor"
+                  onChange={(event) =>
+                    setStandardJournalForm((current) => ({
+                      ...current,
+                      executorOrganization: event.target.value,
+                    }))
+                  }
+                  value={standardJournalForm.executorOrganization}
+                />
+                <InputField
+                  autoComplete={defaultAutoComplete("url")}
+                  label="Вложение / ссылка"
+                  name="standard-journal-attachment"
+                  onChange={(event) =>
+                    setStandardJournalForm((current) => ({
+                      ...current,
+                      attachmentUrl: event.target.value,
+                    }))
+                  }
+                  type="url"
+                  value={standardJournalForm.attachmentUrl}
+                />
+              </div>
+              <TextareaField
+                label="Комментарий"
+                name="standard-journal-comment"
+                onChange={(event) =>
+                  setStandardJournalForm((current) => ({
+                    ...current,
+                    comment: event.target.value,
+                  }))
+                }
+                value={standardJournalForm.comment}
+              />
+              <div className="flex flex-wrap gap-3">
+                <Button
+                  loading={isMutating}
+                  onClick={() =>
+                    runMutation(
+                      createStandardJournal,
+                      "Не удалось добавить запись в журнал эталона.",
+                      "equipment-standard-journal-create-error",
+                    )
+                  }
+                  type="button"
+                >
+                  Добавить запись журнала
+                </Button>
+                <Button
+                  leftIcon={<Archive className="size-4" />}
+                  loading={isMutating}
+                  onClick={() =>
+                    requestArchive(
+                      () => archiveStandard(selectedStandard.id),
+                      "Не удалось архивировать эталон.",
+                      `эталон «${selectedStandard.identifier}»`,
+                      "equipment-standard-selected-archive-error",
+                    )
+                  }
+                  size="sm"
+                  type="button"
+                  variant="ghost"
+                >
+                  Архивировать выбранный эталон
+                </Button>
+              </div>
+            </>
+          ) : (
+            <EmptyState
+              detail={
+                selectedStandard.archivedAt
+                  ? "Архивированный эталон остается доступным для истории, но новые операции в него не добавляются."
+                  : "В текущей области доступа журнал можно только читать."
+              }
+              title="Редактирование скрыто"
+            />
+          )}
+        </Card>
+      );
+      const journalTimeline = loadingStandardJournals ? (
+        <EmptyState detail="История операций эталона загружается." title="Загрузка журнала" />
+      ) : (
+        <JournalTimeline
+          emptyDetail="Для выбранного эталона еще нет операций. После первой записи статус и срок действия станут производными."
+          emptyTitle="Журнал пока пуст"
+          journals={standardJournals}
+        />
+      );
+      const journalTimelineCard = (
+        <Card
+          className={hasActiveJournalForm ? "h-full min-h-0 gap-4 overflow-hidden" : "gap-4"}
+          padding="md"
+          tone="muted"
+        >
+          <div className="flex items-center gap-3">
             <div className="space-y-1">
-              <Badge tone="interactive">Метрологический журнал</Badge>
-              <h2 className="text-xl font-semibold text-foreground">Журнал операций по эталонам</h2>
+              <h3 className="text-lg font-semibold text-foreground">Хронология операций</h3>
             </div>
+          </div>
+          {hasActiveJournalForm ? <FormListScrollArea>{journalTimeline}</FormListScrollArea> : journalTimeline}
+        </Card>
+      );
+
+      return hasActiveJournalForm ? (
+        <FormListSplitLayout form={journalFormCard} list={journalTimelineCard} />
+      ) : (
+        <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+          {journalFormCard}
+          {journalTimelineCard}
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid gap-4">
+        {standardRegistryPair}
+
+        <IslandCard
+          headingLevel={2}
+          icon={<Ruler aria-hidden="true" className="size-4" />}
+          title="Журнал операций по эталонам"
+        >
+          <div className="flex flex-wrap justify-end gap-3">
             <div className="min-w-64">
               <SelectField
                 label="Выбранный эталон"
@@ -2852,198 +2920,11 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
             </div>
           </div>
 
-          {selectedStandard ? (
-            <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-              <Card className="gap-4" padding="md" tone="muted">
-                <div className="space-y-1">
-                  <h3 className="text-lg font-semibold text-foreground">
-                    <span translate="no">
-                      {selectedStandard.standardType} • {selectedStandard.identifier}
-                    </span>
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Текущий статус: <span className="font-medium text-foreground">{statusLabelMap[selectedStandard.status]}</span>
-                    {selectedStandard.nextDueDate
-                      ? ` • действует до ${formatDate(selectedStandard.nextDueDate)}`
-                      : " • срок пока не рассчитан"}
-                  </p>
-                </div>
-                {canManageRegistry && !selectedStandard.archivedAt ? (
-                  <>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <SelectField
-                        label="Тип операции"
-                        name="standard-journal-operation-type"
-                        onChange={(event) =>
-                          setStandardJournalForm((current) => ({
-                            ...current,
-                            operationType: event.target.value as JournalRecord["operationType"],
-                          }))
-                        }
-                        options={journalOperationOptions}
-                        value={standardJournalForm.operationType}
-                      />
-                      <InputField
-                        autoComplete={defaultAutoComplete("text")}
-                        label="Дата операции"
-                        name="standard-journal-operation-date"
-                        onChange={(event) =>
-                          setStandardJournalForm((current) => ({
-                            ...current,
-                            operationDate: event.target.value,
-                          }))
-                        }
-                        type="date"
-                        value={standardJournalForm.operationDate}
-                      />
-                      <InputField
-                        autoComplete={defaultAutoComplete("text")}
-                        label="Документ"
-                        name="standard-journal-document-number"
-                        onChange={(event) =>
-                          setStandardJournalForm((current) => ({
-                            ...current,
-                            documentNumber: event.target.value,
-                          }))
-                        }
-                        spellCheck={false}
-                        translate="no"
-                        value={standardJournalForm.documentNumber}
-                      />
-                      <InputField
-                        autoComplete={defaultAutoComplete("text")}
-                        label="Действует до"
-                        name="standard-journal-valid-until"
-                        onChange={(event) =>
-                          setStandardJournalForm((current) => ({
-                            ...current,
-                            validUntil: event.target.value,
-                          }))
-                        }
-                        type="date"
-                        value={standardJournalForm.validUntil}
-                      />
-                      <InputField
-                        autoComplete={defaultAutoComplete("text")}
-                        label="Организация-исполнитель"
-                        name="standard-journal-executor"
-                        onChange={(event) =>
-                          setStandardJournalForm((current) => ({
-                            ...current,
-                            executorOrganization: event.target.value,
-                          }))
-                        }
-                        value={standardJournalForm.executorOrganization}
-                      />
-                      <InputField
-                        autoComplete={defaultAutoComplete("url")}
-                        label="Вложение / ссылка"
-                        name="standard-journal-attachment"
-                        onChange={(event) =>
-                          setStandardJournalForm((current) => ({
-                            ...current,
-                            attachmentUrl: event.target.value,
-                          }))
-                        }
-                        type="url"
-                        value={standardJournalForm.attachmentUrl}
-                      />
-                    </div>
-                    <TextareaField
-                      label="Комментарий"
-                      name="standard-journal-comment"
-                      onChange={(event) =>
-                        setStandardJournalForm((current) => ({
-                          ...current,
-                          comment: event.target.value,
-                        }))
-                      }
-                      value={standardJournalForm.comment}
-                    />
-                    <div className="flex flex-wrap gap-3">
-                      <Button
-                        loading={isMutating}
-                        onClick={() =>
-                          runMutation(
-                            createStandardJournal,
-                            "Не удалось добавить запись в журнал эталона.",
-                            "equipment-standard-journal-create-error",
-                          )
-                        }
-                        type="button"
-                      >
-                        Добавить запись журнала
-                      </Button>
-                      <Button
-                        leftIcon={<Archive className="size-4" />}
-                        loading={isMutating}
-                        onClick={() =>
-                          requestArchive(
-                            () => archiveStandard(selectedStandard.id),
-                            "Не удалось архивировать эталон.",
-                            `эталон «${selectedStandard.identifier}»`,
-                            "equipment-standard-selected-archive-error",
-                          )
-                        }
-                        type="button"
-                        variant="secondary"
-                      >
-                        Архивировать выбранный эталон
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  <EmptyState
-                    detail={
-                      selectedStandard.archivedAt
-                        ? "Архивированный эталон остается доступным для истории, но новые операции в него не добавляются."
-                        : "В текущей области доступа журнал можно только читать."
-                    }
-                    title="Редактирование скрыто"
-                  />
-                )}
-              </Card>
-
-              <Card className="gap-4" padding="md" tone="muted">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="space-y-1">
-                    <Badge tone="info">История</Badge>
-                    <h3 className="text-lg font-semibold text-foreground">Хронология операций</h3>
-                  </div>
-                  <Button
-                    onClick={() => void loadStandardJournals(selectedStandard.id)}
-                    rightIcon={<RefreshCw className="size-4" />}
-                    variant="secondary"
-                  >
-                    Обновить журнал
-                  </Button>
-                </div>
-                {loadingStandardJournals ? (
-                  <EmptyState detail="История операций эталона загружается." title="Загрузка журнала" />
-                ) : (
-                  <JournalTimeline
-                    emptyDetail="Для выбранного эталона еще нет операций. После первой записи статус и срок действия станут производными."
-                    emptyTitle="Журнал пока пуст"
-                    journals={standardJournals}
-                  />
-                )}
-              </Card>
-            </div>
-          ) : (
-            <EmptyState
-              detail="Выберите эталон из текущей области доступа, чтобы посмотреть историю операций и рассчитанный статус."
-              title="Журнал еще не выбран"
-            />
-          )}
-        </Card>
+          {renderStandardJournalPair()}
+        </IslandCard>
       </div>
     );
   }
-
-  const activeTabDetails = tabMeta.find((tab) => tab.key === activeTab) ?? tabMeta[0];
-  const archiveVisibilityText = showArchived
-    ? "Архивные записи включены в текущий список."
-    : "Архив скрыт из активных списков до отдельного включения.";
 
   return (
     <>
@@ -3065,42 +2946,9 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
 
       <div
         aria-hidden={archiveConfirmation || editDialog ? true : undefined}
-        className="grid gap-4"
+        className="grid min-w-0 gap-4"
         inert={archiveConfirmation || editDialog ? true : undefined}
       >
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Card className="gap-3" padding="md">
-            <Badge icon={<Wrench className="size-4" />} tone="interactive">
-              Оборудование
-            </Badge>
-            <div className="text-3xl font-semibold text-foreground">{equipmentRecords.length}</div>
-            <p className="text-sm text-muted-foreground">Карточки оборудования в текущей области.</p>
-          </Card>
-          <Card className="gap-3" padding="md">
-            <Badge icon={<Cable className="size-4" />} tone="interactive">
-              Средства измерения
-            </Badge>
-            <div className="text-3xl font-semibold text-foreground">{measuringInstruments.length}</div>
-            <p className="text-sm text-muted-foreground">Статус рассчитывается по журналам операций.</p>
-          </Card>
-          <Card className="gap-3" padding="md">
-            <Badge icon={<Ruler className="size-4" />} tone="interactive">
-              Эталоны
-            </Badge>
-            <div className="text-3xl font-semibold text-foreground">{standards.length}</div>
-            <p className="text-sm text-muted-foreground">Эталоны и связи со средствами измерения.</p>
-          </Card>
-          <Card className="gap-3" padding="md">
-            <Badge icon={<Building2 className="size-4" />} tone={canManageRegistry ? "success" : "warning"}>
-              {canManageRegistry ? "Управление областью" : "Только просмотр"}
-            </Badge>
-            <div className="text-lg font-semibold text-foreground">{session.workspace.scopeName}</div>
-            <p className="text-sm text-muted-foreground">Данные показаны для текущей области доступа.</p>
-          </Card>
-        </div>
-
-        {renderManageabilityNote()}
-
         {loadError ? (
           <div
             aria-live="polite"
@@ -3110,30 +2958,26 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
           </div>
         ) : null}
 
-        <Tabs
-          activeKey={activeTab}
-          ariaLabel="Реестры оборудования"
-          fullWidth
-          getPanelId={(key) => `equipment-panel-${key}`}
-          idPrefix="equipment-registry"
-          items={tabMeta}
-          onChange={handleTabChange}
-        />
-
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-border bg-card px-4 py-3">
-          <div className="min-w-0 space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge icon={<FileSpreadsheet className="size-4" />} tone={showArchived ? "warning" : "interactive"}>
-                {showArchived ? "Архив показан" : "Только активные"}
-              </Badge>
-              <Badge tone="info">{activeTabDetails.label}</Badge>
-            </div>
-            <p className="text-sm leading-6 text-muted-foreground">
-              {activeTabDetails.description} {archiveVisibilityText}
-            </p>
-          </div>
-          <Button onClick={handleArchiveVisibilityChange} type="button" variant="secondary">
-            {showArchived ? "Скрыть архив" : "Показать архив"}
+        <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center">
+          <Tabs
+            activeKey={activeTab}
+            ariaLabel="Реестры оборудования"
+            className="min-w-0 flex-1"
+            fullWidth
+            getPanelId={(key) => `equipment-panel-${key}`}
+            idPrefix="equipment-registry"
+            items={registryTabItems}
+            onChange={handleTabChange}
+          />
+          <Button
+            aria-pressed={showArchived}
+            className="h-[54px] w-[175px] self-start justify-center text-center lg:self-auto lg:shrink-0"
+            leftIcon={<Archive className="size-4" />}
+            onClick={handleArchiveVisibilityChange}
+            type="button"
+            variant="secondary"
+          >
+            {showArchived ? "Архив показан" : "Показать архив"}
           </Button>
         </div>
 

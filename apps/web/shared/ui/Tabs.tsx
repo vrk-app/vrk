@@ -46,7 +46,7 @@ const TabButton = forwardRef<HTMLButtonElement, TabButtonProps>(function TabButt
       ref={ref}
       aria-selected={active}
       className={cn(
-        "inline-flex h-11 items-center justify-center gap-2 rounded-[var(--radius-md)] border px-3.5 text-sm font-medium transition-[background-color,border-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-55",
+        "inline-flex h-11 min-w-0 items-center justify-center gap-2 rounded-[var(--radius-md)] border px-3.5 text-sm font-medium transition-[background-color,border-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-55",
         active
           ? "border-accent bg-accent-soft text-accent-strong shadow-xs"
           : "border-transparent text-muted-foreground hover:bg-card hover:text-foreground",
@@ -58,9 +58,9 @@ const TabButton = forwardRef<HTMLButtonElement, TabButtonProps>(function TabButt
       {...props}
     >
       {Icon ? <Icon aria-hidden="true" className="size-4 shrink-0" /> : null}
-      <span className="truncate">{item.label}</span>
+      <span className="min-w-0 truncate">{item.label}</span>
       {item.badge ? (
-        <span className="rounded-full bg-card px-2 py-0.5 text-xs text-muted-foreground">
+        <span className="shrink-0 rounded-full bg-card px-2 py-0.5 text-xs tabular-nums text-muted-foreground">
           {item.badge}
         </span>
       ) : null}

@@ -1,0 +1,166 @@
+
+> @vrk/web@0.1.0 build-storybook /Users/yura-posledov/cursor/vrk/apps/web
+> storybook build --quiet
+
+@storybook/core v8.5.8
+
+info => Cleaning outputDir: storybook-static
+info => Loading presets
+info => Building manager..
+info => Manager built ([38;2;181;126;229m59 ms[39m)
+info => Building preview..
+info Using tsconfig paths for react-docgen
+vite v6.4.2 building for production...
+transforming...
+info => Copying static files: public at storybook-static
+shared/ui/Tabs.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+shared/ui/Tabs.tsx (1:0): Module level directives cause errors when bundled, "use client" in "shared/ui/Tabs.tsx" was ignored.
+shared/ui/CopyableText.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+shared/ui/CopyableText.tsx (1:0): Module level directives cause errors when bundled, "use client" in "shared/ui/CopyableText.tsx" was ignored.
+shared/ui/InputField.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+shared/ui/InputField.tsx (1:0): Module level directives cause errors when bundled, "use client" in "shared/ui/InputField.tsx" was ignored.
+shared/ui/Toast.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+shared/ui/Toast.tsx (1:0): Module level directives cause errors when bundled, "use client" in "shared/ui/Toast.tsx" was ignored.
+shared/ui/TextareaField.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+shared/ui/TextareaField.tsx (1:0): Module level directives cause errors when bundled, "use client" in "shared/ui/TextareaField.tsx" was ignored.
+shared/ui/SelectField.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+shared/ui/SelectField.tsx (1:0): Module level directives cause errors when bundled, "use client" in "shared/ui/SelectField.tsx" was ignored.
+shared/ui/Dialog.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+shared/ui/Dialog.tsx (1:0): Module level directives cause errors when bundled, "use client" in "shared/ui/Dialog.tsx" was ignored.
+app/(runtime)/company/_components/CompanyStructureWorkspace.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+app/(runtime)/company/_components/CompanyStructureWorkspace.tsx (1:0): Module level directives cause errors when bundled, "use client" in "app/(runtime)/company/_components/CompanyStructureWorkspace.tsx" was ignored.
+../../node_modules/.pnpm/@radix-ui+react-dialog@1.1.15_@types+react-dom@19.2.3_@types+react@19.2.14__@types+reac_779045218dc2799d336e7197abef9d38/node_modules/@radix-ui/react-dialog/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/.pnpm/@radix-ui+react-dialog@1.1.15_@types+react-dom@19.2.3_@types+react@19.2.14__@types+reac_779045218dc2799d336e7197abef9d38/node_modules/@radix-ui/react-dialog/dist/index.mjs" was ignored.
+../../node_modules/.pnpm/@radix-ui+react-toast@1.2.15_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_4581e89c6ba13e4159ce65546c8b2a16/node_modules/@radix-ui/react-toast/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/.pnpm/@radix-ui+react-toast@1.2.15_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_4581e89c6ba13e4159ce65546c8b2a16/node_modules/@radix-ui/react-toast/dist/index.mjs" was ignored.
+../../node_modules/.pnpm/@radix-ui+react-select@2.2.6_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_53894a32562cb9eeb6aef8b357a4f4e3/node_modules/@radix-ui/react-select/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/.pnpm/@radix-ui+react-select@2.2.6_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_53894a32562cb9eeb6aef8b357a4f4e3/node_modules/@radix-ui/react-select/dist/index.mjs" was ignored.
+features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx (1:0): Module level directives cause errors when bundled, "use client" in "features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx" was ignored.
+widgets/Auth/ui/ConsentRow.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+widgets/Auth/ui/ConsentRow.tsx (1:0): Module level directives cause errors when bundled, "use client" in "widgets/Auth/ui/ConsentRow.tsx" was ignored.
+features/Stage03Bootstrap/ui/PlatformAdminInviteForm.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+features/Stage03Bootstrap/ui/PlatformAdminInviteForm.tsx (1:0): Module level directives cause errors when bundled, "use client" in "features/Stage03Bootstrap/ui/PlatformAdminInviteForm.tsx" was ignored.
+features/Stage03Bootstrap/ui/LaunchWizardForm.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+features/Stage03Bootstrap/ui/LaunchWizardForm.tsx (1:0): Module level directives cause errors when bundled, "use client" in "features/Stage03Bootstrap/ui/LaunchWizardForm.tsx" was ignored.
+features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx (1:0): Module level directives cause errors when bundled, "use client" in "features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx" was ignored.
+widgets/OperatorShell/ui/TopBar.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+widgets/OperatorShell/ui/TopBar.tsx (1:0): Module level directives cause errors when bundled, "use client" in "widgets/OperatorShell/ui/TopBar.tsx" was ignored.
+../../node_modules/.pnpm/@radix-ui+react-dismissable-layer@1.1.11_@types+react-dom@19.2.3_@types+react@19.2.14___3d3960154a4c07d09bb90cb341135fc5/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/.pnpm/@radix-ui+react-dismissable-layer@1.1.11_@types+react-dom@19.2.3_@types+react@19.2.14___3d3960154a4c07d09bb90cb341135fc5/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs" was ignored.
+../../node_modules/.pnpm/@radix-ui+react-focus-scope@1.1.7_@types+react-dom@19.2.3_@types+react@19.2.14__@types+_f62f3af4ca2ba305a7aecf04c8534604/node_modules/@radix-ui/react-focus-scope/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/.pnpm/@radix-ui+react-focus-scope@1.1.7_@types+react-dom@19.2.3_@types+react@19.2.14__@types+_f62f3af4ca2ba305a7aecf04c8534604/node_modules/@radix-ui/react-focus-scope/dist/index.mjs" was ignored.
+../../node_modules/.pnpm/@radix-ui+react-focus-guards@1.1.3_@types+react@19.2.14_react@19.2.4/node_modules/@radix-ui/react-focus-guards/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/.pnpm/@radix-ui+react-focus-guards@1.1.3_@types+react@19.2.14_react@19.2.4/node_modules/@radix-ui/react-focus-guards/dist/index.mjs" was ignored.
+../../node_modules/.pnpm/@radix-ui+react-presence@1.1.5_@types+react-dom@19.2.3_@types+react@19.2.14__@types+rea_c01c26c80b5ab5e3ecefbda6eca51ad1/node_modules/@radix-ui/react-presence/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/.pnpm/@radix-ui+react-presence@1.1.5_@types+react-dom@19.2.3_@types+react@19.2.14__@types+rea_c01c26c80b5ab5e3ecefbda6eca51ad1/node_modules/@radix-ui/react-presence/dist/index.mjs" was ignored.
+../../node_modules/.pnpm/@radix-ui+react-portal@1.1.9_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_7668895bec2444446faa4e0f4eb5244b/node_modules/@radix-ui/react-portal/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/.pnpm/@radix-ui+react-portal@1.1.9_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_7668895bec2444446faa4e0f4eb5244b/node_modules/@radix-ui/react-portal/dist/index.mjs" was ignored.
+../../node_modules/.pnpm/@radix-ui+react-collection@1.1.7_@types+react-dom@19.2.3_@types+react@19.2.14__@types+r_161926fa2509d0b7370b60b8bb4eb8b0/node_modules/@radix-ui/react-collection/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/.pnpm/@radix-ui+react-collection@1.1.7_@types+react-dom@19.2.3_@types+react@19.2.14__@types+r_161926fa2509d0b7370b60b8bb4eb8b0/node_modules/@radix-ui/react-collection/dist/index.mjs" was ignored.
+../../node_modules/.pnpm/@radix-ui+react-popper@1.2.8_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_13e0521d8aea7ebfbfb8bee1fb615c05/node_modules/@radix-ui/react-popper/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/.pnpm/@radix-ui+react-popper@1.2.8_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_13e0521d8aea7ebfbfb8bee1fb615c05/node_modules/@radix-ui/react-popper/dist/index.mjs" was ignored.
+features/Stage03Access/ui/EmployeeAccessWorkspace.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+features/Stage03Access/ui/EmployeeAccessWorkspace.tsx (1:0): Module level directives cause errors when bundled, "use client" in "features/Stage03Access/ui/EmployeeAccessWorkspace.tsx" was ignored.
+features/Stage03Access/ui/EmployeeInviteManager.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+features/Stage03Access/ui/EmployeeInviteManager.tsx (1:0): Module level directives cause errors when bundled, "use client" in "features/Stage03Access/ui/EmployeeInviteManager.tsx" was ignored.
+features/Stage03Contracts/ui/ContractsRegistry.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+features/Stage03Contracts/ui/ContractsRegistry.tsx (1:0): Module level directives cause errors when bundled, "use client" in "features/Stage03Contracts/ui/ContractsRegistry.tsx" was ignored.
+✓ 1909 modules transformed.
+../../node_modules/.pnpm/@storybook+core@8.5.8/node_modules/@storybook/core/dist/preview/runtime.js (3212:15): Use of eval in "../../node_modules/.pnpm/@storybook+core@8.5.8/node_modules/@storybook/core/dist/preview/runtime.js" is strongly discouraged as it poses security risks and may cause issues with minification.
+../../node_modules/.pnpm/@storybook+core@8.5.8/node_modules/@storybook/core/dist/preview/runtime.js (3214:16): Use of eval in "../../node_modules/.pnpm/@storybook+core@8.5.8/node_modules/@storybook/core/dist/preview/runtime.js" is strongly discouraged as it poses security risks and may cause issues with minification.
+rendering chunks...
+computing gzip size...
+storybook-static/iframe.html                                             17.56 kB │ gzip:   4.98 kB
+storybook-static/assets/preview-95NYBwkJ.css                             53.52 kB │ gzip:   9.78 kB
+storybook-static/assets/_commonjsHelpers-CqkleIqs.js                      0.12 kB │ gzip:   0.13 kB
+storybook-static/assets/next-navigation-mock-BEpP7TZW.js                  0.13 kB │ gzip:   0.11 kB
+storybook-static/assets/index-CzYbgw1e.js                                 0.14 kB │ gzip:   0.13 kB
+storybook-static/assets/preview-D8Rral7M.js                               0.16 kB │ gzip:   0.16 kB
+storybook-static/assets/preview-Br-h4d84.js                               0.17 kB │ gzip:   0.15 kB
+storybook-static/assets/client-envelope-CohWVMWj.js                       0.23 kB │ gzip:   0.18 kB
+storybook-static/assets/plus-CyZLlVD6.js                                  0.33 kB │ gzip:   0.25 kB
+storybook-static/assets/arrow-right-lBMsGw14.js                           0.34 kB │ gzip:   0.26 kB
+storybook-static/assets/arrow-up-right-C_0pMrpZ.js                        0.34 kB │ gzip:   0.26 kB
+storybook-static/assets/search-2Zthru3m.js                                0.34 kB │ gzip:   0.27 kB
+storybook-static/assets/user-round-BCaBM28G.js                            0.35 kB │ gzip:   0.28 kB
+storybook-static/assets/mail-Bwwv59yT.js                                  0.39 kB │ gzip:   0.31 kB
+storybook-static/assets/archive-MmSSYFD0.js                               0.43 kB │ gzip:   0.31 kB
+storybook-static/assets/lock-keyhole-DSwsoVgC.js                          0.43 kB │ gzip:   0.32 kB
+storybook-static/assets/pencil-DO0SlCeC.js                                0.45 kB │ gzip:   0.33 kB
+storybook-static/assets/send-horizontal-BbnB7m5q.js                       0.46 kB │ gzip:   0.33 kB
+storybook-static/assets/index-DA9HuKLV.js                                 0.46 kB │ gzip:   0.30 kB
+storybook-static/assets/bell-Cm_5r3Ab.js                                  0.46 kB │ gzip:   0.34 kB
+storybook-static/assets/wrench-C_S9L7r6.js                                0.47 kB │ gzip:   0.34 kB
+storybook-static/assets/shield-check-B1p1BovF.js                          0.49 kB │ gzip:   0.35 kB
+storybook-static/assets/save-Cam6Dl6o.js                                  0.50 kB │ gzip:   0.33 kB
+storybook-static/assets/preview-DGUiP6tS.js                               0.71 kB │ gzip:   0.50 kB
+storybook-static/assets/chunk-XP5HYGXS-B_VsWcPe.js                        0.72 kB │ gzip:   0.40 kB
+storybook-static/assets/jsx-runtime-D_zvdyIk.js                           0.73 kB │ gzip:   0.46 kB
+storybook-static/assets/index-DrFu-skq.js                                 0.77 kB │ gzip:   0.47 kB
+storybook-static/assets/preview-BaabyrcF.js                               0.84 kB │ gzip:   0.54 kB
+storybook-static/assets/preview-DENP-Ljy.js                               1.02 kB │ gzip:   0.63 kB
+storybook-static/assets/sparkles-SxTEnnKP.js                              1.05 kB │ gzip:   0.48 kB
+storybook-static/assets/StoryFrame-Dpmol3gz.js                            1.11 kB │ gzip:   0.52 kB
+storybook-static/assets/Breadcrumbs.stories-kAgivpac.js                   1.15 kB │ gzip:   0.59 kB
+storybook-static/assets/ruler-DPviZ0w0.js                                 1.19 kB │ gzip:   0.52 kB
+storybook-static/assets/AuthPage.stories-B8e2yzeq.js                      1.28 kB │ gzip:   0.78 kB
+storybook-static/assets/FirstAdminActivationForm.stories-CFaLZ8td.js      1.50 kB │ gzip:   0.76 kB
+storybook-static/assets/PlatformAdminInviteForm.stories-_iCHkeSi.js       1.55 kB │ gzip:   0.75 kB
+storybook-static/assets/preview-DYE-PwNC.js                               2.12 kB │ gzip:   1.17 kB
+storybook-static/assets/AuthSplitLayout.stories-BS7Kpcsj.js               2.24 kB │ gzip:   1.03 kB
+storybook-static/assets/ConsentRow.stories-1vbHPVA2.js                    2.38 kB │ gzip:   1.11 kB
+storybook-static/assets/CopyableText.stories-ChuW3-Tm.js                  2.39 kB │ gzip:   0.97 kB
+storybook-static/assets/RequestsPage.stories-DVStkfbe.js                  2.45 kB │ gzip:   1.34 kB
+storybook-static/assets/PageHeader.stories-A_nzPhur.js                    2.58 kB │ gzip:   1.11 kB
+storybook-static/assets/RequestListItem.stories-Dgm7rMyh.js               2.59 kB │ gzip:   0.87 kB
+storybook-static/assets/Card.stories-DL2E5A2g.js                          2.68 kB │ gzip:   1.11 kB
+storybook-static/assets/RequestStatusBadge.stories-CVp-juoJ.js            2.77 kB │ gzip:   0.87 kB
+storybook-static/assets/Tabs.stories-Dq4njmXz.js                          2.82 kB │ gzip:   1.22 kB
+storybook-static/assets/LoginForm.stories-BrnYXliR.js                     3.00 kB │ gzip:   1.25 kB
+storybook-static/assets/IconGallery.stories-DMWEpmG_.js                   3.18 kB │ gzip:   1.34 kB
+storybook-static/assets/preview-1l6V4UsQ.js                               3.50 kB │ gzip:   1.69 kB
+storybook-static/assets/TopBar.stories-n_i4gF6n.js                        3.68 kB │ gzip:   1.48 kB
+storybook-static/assets/index-DuyKIudj.js                                 3.89 kB │ gzip:   1.52 kB
+storybook-static/assets/EmployeeInviteManager.stories-j-zv3gaL.js         4.05 kB │ gzip:   1.37 kB
+storybook-static/assets/RequestList.stories-C5HjYX62.js                   4.06 kB │ gzip:   1.39 kB
+storybook-static/assets/TextareaField.stories-BsljOvtE.js                 4.21 kB │ gzip:   1.43 kB
+storybook-static/assets/InlineAlert.stories-uHgaiWOQ.js                   4.31 kB │ gzip:   1.50 kB
+storybook-static/assets/Badge.stories-CdatVQS1.js                         4.45 kB │ gzip:   1.62 kB
+storybook-static/assets/ConfirmDialog.stories-DtfmutZT.js                 4.78 kB │ gzip:   1.75 kB
+storybook-static/assets/SidebarNav.stories-CywapUGs.js                    4.96 kB │ gzip:   1.95 kB
+storybook-static/assets/RegisterForm.stories-CgCoZlR8.js                  4.99 kB │ gzip:   2.15 kB
+storybook-static/assets/preview-D77C14du.js                               5.03 kB │ gzip:   1.86 kB
+storybook-static/assets/Button.stories-DH9ogjk3.js                        5.14 kB │ gzip:   1.64 kB
+storybook-static/assets/AppShell.stories-Bc9DysWs.js                      5.68 kB │ gzip:   2.43 kB
+storybook-static/assets/SelectField.stories-DGGa9DUn.js                   5.87 kB │ gzip:   1.80 kB
+storybook-static/assets/Toast.stories-BFBro-D7.js                         6.18 kB │ gzip:   2.32 kB
+storybook-static/assets/EmployeeAccessWorkspace.stories-DWjRtLsx.js       6.62 kB │ gzip:   1.80 kB
+storybook-static/assets/Dialog.stories-DORjYfb1.js                        7.39 kB │ gzip:   2.51 kB
+storybook-static/assets/preview-BWzBA1C2.js                               7.62 kB │ gzip:   1.56 kB
+storybook-static/assets/IslandCard.stories-DQpmbe97.js                    7.62 kB │ gzip:   2.03 kB
+storybook-static/assets/preview-BBWR9nbA.js                               8.12 kB │ gzip:   3.10 kB
+storybook-static/assets/index-DSvP83uV.js                                 8.31 kB │ gzip:   3.29 kB
+storybook-static/assets/fixtures-jYe9oy7U.js                              9.81 kB │ gzip:   3.15 kB
+storybook-static/assets/InputField.stories-vwZ_sj8H.js                   10.07 kB │ gzip:   2.46 kB
+storybook-static/assets/PlatformAdminInviteForm-xZH7BiYq.js              10.81 kB │ gzip:   3.43 kB
+storybook-static/assets/TokenDocs.stories-C0KNGlk7.js                    12.32 kB │ gzip:   3.68 kB
+storybook-static/assets/RequestList-CT81ltzn.js                          13.75 kB │ gzip:   4.19 kB
+storybook-static/assets/LoginForm-DOvDpfvS.js                            14.71 kB │ gzip:   4.12 kB
+storybook-static/assets/TopBar-CezKerLW.js                               17.75 kB │ gzip:   4.69 kB
+storybook-static/assets/cn-BQHNewu7.js                                   26.69 kB │ gzip:   8.42 kB
+storybook-static/assets/Color-YHDXOIA2-BX7iOvWz.js                       29.41 kB │ gzip:  11.09 kB
+storybook-static/assets/matchers-57EZJSQE-DWPG-1WF.js                    29.75 kB │ gzip:  10.28 kB
+storybook-static/assets/entry-preview-Cj1YjkMU.js                        29.84 kB │ gzip:   9.72 kB
+storybook-static/assets/ContractsRegistry.stories-DVcVUlrU.js            33.65 kB │ gzip:   7.19 kB
+storybook-static/assets/runtime-api-mock-Bhx5PZAF.js                     38.30 kB │ gzip:   8.42 kB
+storybook-static/assets/EmployeeAccessWorkspace-yLgHgush.js              38.85 kB │ gzip:   6.87 kB
+storybook-static/assets/CompanyStructureWorkspace.stories-D2QEJYec.js    41.82 kB │ gzip:   9.98 kB
+storybook-static/assets/index-DgH-xKnr.js                                57.15 kB │ gzip:  16.28 kB
+storybook-static/assets/EquipmentRegistryWorkspace.stories-SOH0tCcq.js   78.05 kB │ gzip:  14.67 kB
+storybook-static/assets/Toast-DiwuF8lp.js                               139.93 kB │ gzip:  43.16 kB
+storybook-static/assets/react-18-D04w7MkK.js                            181.75 kB │ gzip:  57.20 kB
+storybook-static/assets/iframe-CA7Ck5Mx.js                              204.13 kB │ gzip:  68.68 kB
+storybook-static/assets/entry-preview-docs-B3hRfkkC.js                  247.01 kB │ gzip:  73.41 kB
+storybook-static/assets/axe-CpEqoGoD.js                                 582.57 kB │ gzip: 160.58 kB
+storybook-static/assets/index-CwE67Ieu.js                               661.54 kB │ gzip: 156.54 kB
+storybook-static/assets/DocsRenderer-CFRXHY34-Bif01s9_.js               875.16 kB │ gzip: 273.07 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.89s
+info => Preview built ([38;2;181;126;229m5.27 s[39m)
+info => Output directory: /Users/yura-posledov/cursor/vrk/apps/web/storybook-static

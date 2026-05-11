@@ -1,0 +1,10 @@
+## apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+
+✓ pass
+
+Notes:
+- Checked against fresh Web Interface Guidelines source saved at `.agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-30-equipment-archive.md`.
+- Archive actions remain real `<button>` controls with visible focus inherited from shared `Button`.
+- Archive icons are passed through `leftIcon`; shared `Button` wraps them in `aria-hidden="true"`.
+- Entity-specific `aria-label` values are present for equipment, measuring instrument, selected measuring instrument, standard, and selected standard archive triggers.
+- Destructive behavior still uses the existing shared `ConfirmDialog`; no immediate destructive archive action was introduced.

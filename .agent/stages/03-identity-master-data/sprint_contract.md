@@ -1,140 +1,72 @@
 # Sprint Contract
 
-- Stage ID: 03-identity-master-data
-- Slice ID: `slice-010-stage03-org-structure-management`
+- Stage ID: `03-identity-master-data`
+- Slice ID: `slice-011-input-help-tooltip`
 - Status: `PENDING` until implementation evidence and one fresh verifier `PASS`
 
 ## Objective
 
-Replace the historical first-admin launch wizard target with a persistent `/company` organization structure management surface.
+Reduce visual clutter in Stage 03 forms by changing the shared `InputField` hint behavior: non-error `hint` copy must no longer render as always-visible helper text under the field. The same hint content must remain available as hover/focus-accessible auxiliary help in the field label/control area.
 
-This correction must stay bounded to Stage 03 identity/master-data behavior:
+The motivating runtime example is the organization profile `КПП` field in `/company`, where `hint="9 цифр."` currently renders below the input. After this slice, that copy should be available through the field help affordance, while validation errors still render visibly under the field.
 
-- first-admin invite acceptance lands on `/company`, not `/company/setup`;
-- `/company` becomes the durable place to view, edit, create, and archive organization profile, divisions/branches, and units;
-- organization admins can create first and repeat structure nodes at any time;
-- scoped division/unit admins can manage the allowed structure/access/employees/equipment/contracts slice inside their subtree; non-admin scoped users remain read-only;
-- employee invite creation no longer depends on a completed wizard gate, while division/unit invite target validation remains strict.
-
-Do not widen this slice into Stage 04 request flows, request creation, contractor execution, materials, schedules, or operations loops.
+Do not widen this slice into redesigning `/company`, changing validation rules, changing requisites persistence, or introducing a new form component family.
 
 ## Frozen Decisions
 
-- `/company/setup` and `POST /launch-wizard` are historical implementation artifacts, not the product target for new Stage 03 proof.
-- The target route after successful first-admin accept is `/company`; any remaining `/company/setup` route must be non-canonical and must not be required for normal activation.
-- `requiresLaunchWizard` must not block `/company` or employee invite management once an explicit active session exists; contracts/equipment routes may keep their own existing Stage 03 master-data prerequisites.
-- Organization structure management is persistent master data, not a one-time onboarding task.
-- Unit parent division is optional:
-  - `organization -> division -> unit` is valid;
-  - `organization -> unit` is equally valid.
-- Archive replaces delete for divisions and units.
-- Canonical role templates are `organization_admin`, `organization_head`, `division_admin`, `division_head`, `division_operator`, `unit_admin`, `unit_head`, `unit_operator`, and `auditor`.
-- Role/scope compatibility is strict: organization roles only use organization scope, division roles only use division scope, unit roles only use unit scope, and `auditor` may use organization, division, or unit scope.
-- Mutation authority is granted to active customer `organization_admin`, `division_admin`, and `unit_admin` according to their scope; organization profile remains organization-admin-only.
-- Division-scope and unit-scope users read only their visible subtree; they must not receive broader graph data or mutate controls.
-- Stage 03 stays singular-session and grant-scoped; do not add a workspace picker/switcher UI.
-
-## Data Contract
-
-The persistent `/company` profile and org-structure forms must expose and persist these business fields where the record type carries them:
-
-- organization `propertyType` / `type` compatibility alias: legal-form selector with exactly these visible values for the correction slice: `ООО`, `ПАО`, `НАО`, `ИП`;
-- legacy organization legal-form input maps `АО -> НАО`, `ЗАО -> НАО`, `ОАО -> ПАО`, and `LLC -> ООО`; those legacy aliases are not visible selector options;
-- division/branch `type`: not user-facing and not selectable; keep the existing `auth_divisions.division_type` storage/API shape with hidden internal default `division`;
-- unit `type`: selector with exactly these operational values for the correction slice: `ВРД`, `ВРЗ`, `ВУ`, `ВРП`;
-- `name`;
-- `registeredAddress` as the canonical organization address field;
-- `address` as a compatibility/display alias where existing division/unit APIs or payloads still use it;
-- `leaderFullName` as the canonical leader display field;
-- `managerName` remains a migration/read-display compatibility alias when existing stored data or session payloads still carry that field;
-- `leaderPosition`;
-- `contractPhone`;
-- `contractEmail`;
-- `actingBasis`;
-- preserve `region`, `status`, and `comment` if current backend/session/UI contracts still consume them.
-
-Optional requisites and logo metadata are in scope for this continuation slice. No hard requirement is introduced for document upload, Excel import, external registry sync, or custom role building.
+- Keep the existing shared `InputField` and its public `hint?: string` prop; this is an `extend` slice, not a component replacement.
+- `hint` means auxiliary field help, not persistent below-field helper copy.
+- `error` remains a visible below-field message and keeps priority over hint in the visual error area.
+- The field remains accessible:
+  - pointer hover and keyboard focus expose the hint through a compact help affordance in the label/control area;
+  - the hint content remains programmatically associated with the field or the help trigger;
+  - `aria-invalid` and error announcement behavior are preserved.
+- The help affordance should use the existing UI stack and design tokens. Prefer a small extension inside `InputField`; create a net-new reusable tooltip/help component only if lookup proves no safe extension path and then follow the full Storybook/backlog rules.
+- No backend, API, database, or business validation contract changes are in scope.
 
 ## Acceptance Criteria
 
-- First-admin activation:
-  - accepting a valid first-admin invite creates/restores the explicit active session and lands on `/company`;
-  - fresh acceptance proof shows no normal redirect to `/company/setup`;
-  - replay/expired/revoked invite behavior remains unchanged and does not create duplicate membership/session side effects.
-- `/company` states:
-  - empty organization state shows profile data and available organization-admin actions before any division or unit exists;
-  - partial state works for organization with profile-only data, division without units, and direct unit without division;
-  - populated state shows divisions, direct organization units, and units under divisions in one readable structure surface;
-  - state rendering remains truthful for missing optional fields and does not claim Stage 04 request readiness.
-- Organization profile and business fields:
-  - create/edit flows handle legal-form `propertyType`/`type` alias, `name`, `registeredAddress`/`address`, `leaderFullName`/`managerName`, `leaderPosition`, `contractPhone`, `contractEmail`, and `actingBasis`;
-  - visible profile type selector shows `ООО`, `ПАО`, `НАО`, `ИП` only, while legacy `АО`, `ОАО`, `ЗАО`, and `LLC` inputs normalize for compatibility;
-  - optional requisites validate digit-only formats and `ИП` clears/disables `КПП`;
-  - logo upload stores only private object key and metadata in Postgres;
-  - existing `region`, `status`, and `comment` fields remain visible/preserved if still used by the model;
-  - saved data survives session restore and is reflected in `/company`.
-- Division/branch management:
-  - organization admin can create the first division/branch from `/company`;
-  - organization admin can create a subsequent division/branch from the same UI;
-  - create/edit does not expose or require a user-facing `type` selector and persists business fields above;
-  - backend stores hidden default division type only for storage/generated-response compatibility;
-  - archive is available instead of delete and removes archived nodes from default active selection.
-- Unit management:
-  - organization admin can create the first unit from `/company`;
-  - organization admin can create repeat units from the same UI;
-  - unit can be created under a division;
-  - unit can be created directly under the organization;
-  - create/edit uses the frozen unit type selector values `ВРД`, `ВРЗ`, `ВУ`, `ВРП` and business fields above;
-  - archive is available instead of delete and removes archived units from default active selection.
-- Archive behavior:
-  - no hard-delete UI action is introduced for divisions or units;
-  - backend/API behavior preserves archived rows;
-  - active create/select flows do not target archived parent scopes;
-  - archive requests return truthful blocking errors if active equipment, active scoped grants, or other Stage 03 references prevent safe archive.
-- Access control:
-  - only customer organization-scope `organization_admin` can mutate organization profile, divisions, and units;
-  - `organization_head`, `division_head`, `division_operator`, `unit_head`, `unit_operator`, and `auditor` do not receive Stage 03 mutate capabilities in v1;
-  - division-scope users can read only the target division and child units;
-  - unit-scope users can read only the target unit;
-  - scoped users see no create/edit/archive controls and backend mutation attempts are rejected.
-- Employee invites:
-  - active organization admin can create an organization-scope employee invite without completing any wizard and before any division/unit exists;
-  - division-scope invite requires an existing visible active division target;
-  - unit-scope invite requires an existing visible active unit target;
-  - hidden, archived, missing, or out-of-scope target IDs are rejected truthfully;
-  - invite lifecycle statuses from prior Stage 03 proof remain intact.
-- Non-regression:
-  - session restore still binds to explicit `membership_id + grant_id`;
-  - direct login with multiple eligible access paths still returns truthful `409`;
-  - contractor `/contracts` landing remains unchanged;
-  - `/equipment` remains outside this slice except for entry links that require an existing visible active unit.
+- Shared component behavior:
+  - `apps/web/shared/ui/InputField.tsx` no longer renders non-error `hint` as an always-visible text row under the input.
+  - When `hint` is present and `error` is absent, the visible form footprint remains the label/control row plus input; the hint is reachable by hover and keyboard focus in the label/control area.
+  - When `error` is present, the error remains visible below the field, uses the existing destructive styling, and is announced as before.
+  - If both `hint` and `error` are provided, the error remains visible and the hint remains available as auxiliary help without replacing the error.
+  - Disabled fields and password fields keep their existing disabled/password-toggle behavior.
+- Runtime example:
+  - In `/company` organization profile, requisites hints such as `КПП` `9 цифр.` and INN/OGRN hints no longer appear as persistent helper rows under each field.
+  - Invalid requisite values still show field-level validation errors below the relevant input.
+  - No `/company` data payload, validation length, legal-form, logo, division, unit, access, contract, or equipment behavior changes.
+- Storybook:
+  - Update `apps/web/stories/primitives/InputField.stories.tsx` so `WithHint` proves the hover/focus help behavior.
+  - Keep or add story coverage for error behavior so a verifier can distinguish hint help from visible errors.
+  - Do not create a parallel `HelpInput`, `TooltipInput`, or similar component family.
 
 ## Proof Requirements
 
 - Harness:
   - `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data`
-- Backend:
-  - update migrations/sqlc/OpenAPI if the org-structure contract changes persistence or public API;
-  - `PATH=/Users/yura-posledov/cursor/vrk/.agent/tmp-tools/go/bin:$PATH /Users/yura-posledov/cursor/vrk/.agent/tmp-tools/sqlc generate -f apps/backend/sqlc.yaml` when SQL changes;
-  - `cd apps/backend && env PATH=/Users/yura-posledov/cursor/vrk/.agent/tmp-tools/go/bin:$PATH go test ./...`;
-  - `cd apps/backend && env PATH=/Users/yura-posledov/cursor/vrk/.agent/tmp-tools/go/bin:$PATH go build -buildvcs=false ./...`;
-  - focused proof for first-admin accept to `/company`, org profile legal-form validation/legacy aliases, division without user-facing type, unit type validation, org/division/unit create/edit/archive, access rejection, and employee invite target validation.
-- Web:
-  - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run typecheck`;
+- Component lookup and UI workflow:
+  - run `python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query "InputField hint helper help tooltip"`;
+  - record the matched `Primitives/InputField` story/source and the `extend` decision in evidence;
+  - use `$vrk-web-ui-workflow`;
+  - run `$web-design-guidelines` on touched UI files and close or explicitly document findings.
+- Web checks:
   - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run lint`;
+  - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run typecheck`;
   - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run build`;
-  - browser/runtime smoke for `/register/[token] -> /company`, `/company` legal-form options `ООО`/`ПАО`/`НАО`/`ИП`, no division type selector, unit type selector, empty/partial/populated states, org-admin profile controls, scoped admin controls, and scoped read-only views.
-- UI review:
-  - use `$vrk-web-ui-workflow` for implementation;
-  - run `$web-design-guidelines` on touched UI files and close findings before claiming done.
+  - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run build-storybook`.
+- Focused proof:
+  - DOM or browser proof that `WithHint` does not expose the hint as persistent below-field text, but does expose it on hover/focus;
+  - focused `/company` proof against the existing runtime stack if available at `http://localhost:3100`, or a documented skip if the stack is unavailable and the user did not ask to start a dev server;
+  - proof that an invalid `КПП` still renders a visible field error below the input.
 - Verifier:
-  - one fresh verifier must independently reproduce the slice-010 acceptance;
+  - one fresh verifier must independently reproduce the slice-011 acceptance;
   - verifier must not edit production code;
-  - `feature_list.json` entries for this correction remain `passes: false` until that verifier returns `PASS`.
+  - `feature_list.json` entry for this slice remains `passes: false` until that verifier returns `PASS`.
 
 ## Mandatory UI Workflow
 
-This slice touches `apps/web`, so the reuse-first VRK UI workflow is mandatory.
+This slice touches `apps/web/shared/ui`, so the reuse-first VRK UI workflow is mandatory.
 
 - Design context to read before implementation:
   - `.impeccable.md`
@@ -143,64 +75,44 @@ This slice touches `apps/web`, so the reuse-first VRK UI workflow is mandatory.
   - `docs/architecture/frontend-architecture.md`
   - `docs/design/storybook-component-backlog.md`
 - Component lookup target:
-  - `company organization structure management profile division unit invite scope empty partial populated form archive`
-- Secondary lookup target for expected primitive reuse:
-  - `input select textarea tabs inline alert card button invite organization form`
+  - `InputField hint helper help tooltip`
 - Expected lookup result:
-  - current Storybook inventory does not contain a complete organization-structure management family;
-  - primitive candidates exist for forms and state messaging: `Button`, `Card`, `InputField`, `SelectField`, `TextareaField`, `InlineAlert`, and `Tabs`;
-  - existing feature-local surfaces `EmployeeInviteManager` and Stage 03 bootstrap/session helpers should be reused or adapted instead of creating parallel invite/auth UI.
+  - `Primitives/InputField [InputField]`
+  - story: `apps/web/stories/primitives/InputField.stories.tsx`
+  - source: `apps/web/shared/ui/InputField.tsx`
+  - relevant stories already include `WithHint` and `WithError`.
 - Expected reuse strategy:
-  - reuse shared primitives and current runtime shell;
-  - extend feature-local Stage 03 company/structure components if needed;
-  - create a net-new reusable/domain component only if lookup proves no viable candidate, and then add stories plus update `docs/design/storybook-component-backlog.md`;
-  - remove or bypass launch-wizard dependency through route/data behavior, not by introducing a second onboarding family.
+  - `extend` the existing `InputField`;
+  - update the existing InputField stories;
+  - use the existing label/input/error API shape;
+  - do not create a new reusable input family;
+  - create a separate reusable tooltip/help primitive only if implementation proves the local extension is unsafe, and then add stories plus the required backlog update.
 
 ## File / Module Ownership
 
-- `apps/backend/internal/auth/**`
-- `apps/backend/internal/app/**`
-- `apps/backend/internal/db/**`
-- `apps/backend/migrations/**`
-- `apps/backend/docs/swagger/**`
-- `apps/web/app/(runtime)/company/**`
-- `apps/web/app/(runtime)/company/setup/**`
-- `apps/web/app/api/auth/**`
-- `apps/web/app/api/company/**` if introduced
-- `apps/web/features/Stage03Bootstrap/**`
-- `apps/web/features/Stage03Access/**`
-- `apps/web/shared/api/**`
-- `apps/web/shared/ui/**` only when extending existing primitives is justified
-- `apps/web/tests/**`
-- `.agent/stages/03-identity-master-data/**`
+- `apps/web/shared/ui/InputField.tsx`
+- `apps/web/stories/primitives/InputField.stories.tsx`
+- `/company` form consumers only for minimal integration fixes if the shared component extension requires usage adjustments:
+  - `apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx`
+- `apps/web/shared/ui/index.ts` only if a justified reusable help/tooltip export is introduced
+- `apps/web/package.json` and `pnpm-lock.yaml` only if a justified existing-stack tooltip dependency is added
+- `.agent/stages/03-identity-master-data/**` for evidence, verifier outputs, and proof notes
 
 ## Canonical Doc Targets If Slice Lands
 
-- `docs/roadmap.md`
-  - keep Stage 03 acceptance aligned to persistent `/company`;
-  - keep Stage 04 request flows out of Stage 03.
-- `docs/architecture/identity-master-data.md`
-  - update the activation/org-structure diagrams if route or API flow changes;
-  - document the final business field aliases and archive constraints.
-- `docs/design/customer-admin-bootstrap-flow.md`
-  - update route contour diagrams for `/register/[token] -> /company`;
-  - keep `/company/setup` marked historical/non-canonical if it remains in code.
-- `docs/architecture/frontend-architecture.md`
-  - update runtime contour and web boundary diagrams for persistent `/company` management;
-  - record component reuse/story evidence if new UI families land.
-- `docs/PRD-MVP.md`
-  - update only if product wording still says launch wizard is the target.
 - `docs/design/storybook-component-backlog.md`
-  - update only if the builder creates a new reusable/domain component family or missing backlog slice.
-- `apps/backend/docs/swagger/**`
-  - refresh if endpoint contracts, payload fields, archive endpoints, or session summary shapes change.
+  - narrow update likely needed for `UI-03 InputField` if the implemented contract formalizes `hint` as hover/focus help instead of inline helper text;
+  - no new component backlog family is expected because this should extend existing `InputField`.
+- `docs/design/serviceops-design-system.md`
+  - update only if implementation changes the general field/help/error rules beyond this `InputField` contract.
+- `docs/architecture/frontend-architecture.md`
+  - no update expected unless implementation introduces a new reusable tooltip primitive, dependency policy, or broader UI architecture decision.
+- No `docs/roadmap.md`, API, Swagger, or backend docs update is expected for this UI-only clutter/accessibility slice.
 
 ## Non-Goals
 
-- Stage 04 request creation, request routing UI, request detail lifecycle, or request readiness proof;
-- contractor execution, materials, schedules, acceptance, estimates, or documents;
-- full platform identity/RBAC rewrite;
-- multi-workspace picker/switcher;
-- Yandex ID, 2FA, Excel import, external organization registry sync, or custom role builder;
-- replacing contracts/equipment/metrology proof outside the minimal links needed from `/company`;
-- generic cleanup of unrelated dirty worktree paths.
+- Reworking organization profile layout, requisites validation, legal-form behavior, logo upload, division/unit forms, employees, contracts, equipment, or metrology registries;
+- changing backend APIs, database schema, OpenAPI/Swagger, seeds, or runtime auth/session behavior;
+- adding Stage 04 request flows or any post-MVP form-builder/help-center behavior;
+- replacing `SelectField` or `TextareaField` hint contracts in this slice unless a direct regression is introduced by shared helpers;
+- starting an ad-hoc dev server without an explicit user request.

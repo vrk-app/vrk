@@ -1,4 +1,5 @@
 import type { Decorator, Meta, StoryObj } from "@storybook/react";
+import { expect, userEvent, within } from "@storybook/test";
 import { CompanyStructureWorkspace } from "@/app/(runtime)/company/_components/CompanyStructureWorkspace";
 import {
   divisionHeadSession,
@@ -9,6 +10,29 @@ import {
   unitHeadSession,
 } from "@/shared/storybook/runtime-fixtures";
 import { withRuntimeApi } from "@/shared/storybook/runtime-api-mock";
+
+const longStructureSession = {
+  ...runtimeSession,
+  divisions: [
+    ...runtimeSession.divisions,
+    ...Array.from({ length: 10 }, (_, index) => ({
+      ...runtimeSession.divisions[index % runtimeSession.divisions.length],
+      id: `division-long-${index + 1}`,
+      name: `Производственный дивизион ${String(index + 1).padStart(2, "0")}`,
+      region: index % 2 === 0 ? "Москва" : "Санкт-Петербург",
+    })),
+  ],
+  units: [
+    ...runtimeSession.units,
+    ...Array.from({ length: 12 }, (_, index) => ({
+      ...runtimeSession.units[index % runtimeSession.units.length],
+      divisionId: runtimeSession.divisions[index % runtimeSession.divisions.length]?.id,
+      id: `unit-long-${index + 1}`,
+      name: `Участок эксплуатации ${String(index + 1).padStart(2, "0")}`,
+      region: index % 2 === 0 ? "Москва" : "Ленинградская область",
+    })),
+  ],
+} satisfies typeof runtimeSession;
 
 const workspaceFrame: Decorator = (Story) => (
   <div className="story-shell">
@@ -75,4 +99,17 @@ export const UnitHeadEmployees: Story = {
     initialSession: unitHeadSession,
   },
   decorators: [withRuntimeApi({ session: unitHeadSession })],
+};
+
+export const DivisionsLongList: Story = {
+  args: {
+    initialSession: longStructureSession,
+  },
+  decorators: [withRuntimeApi({ session: longStructureSession })],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(await canvas.findByRole("tab", { name: "Дивизионы" }));
+    await expect(await canvas.findByText("Производственный дивизион 10")).toBeVisible();
+  },
 };

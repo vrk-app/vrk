@@ -98,8 +98,9 @@
 
 - Назначение: единое поле для `text` / `email` / `password` / `search`.
 - Обязательные props: `type`, `label`, `placeholder`, `value`, `hint`, `error`, `leftIcon`, `rightIcon`, `disabled`.
-- Состояния: `empty`, `filled`, `error`, `disabled`, `with icon`.
-- Stories: `Text`, `Email`, `Password`, `Search`, `WithHint`, `WithError`, `Disabled`.
+- Контракт `hint`: вспомогательная справка показывается через compact help-trigger рядом с label/control и раскрывается по hover/focus; она не занимает постоянную строку под полем. `error` остается видимым текстом под полем и имеет приоритет в `aria-describedby`.
+- Состояния: `empty`, `filled`, `hint`, `error`, `hint + error`, `disabled`, `with icon`.
+- Stories: `Text`, `Email`, `Password`, `Search`, `WithHint`, `WithError`, `WithHintAndError`, `Disabled`.
 
 ### UI-04 SelectField [P0]
 
@@ -159,6 +160,23 @@
 - Состояния: `plain`, `bordered`, `elevated`.
 - Stories: `Base`, `Bordered`, `Elevated`, `Dense`.
 
+### UI-11.1 IslandCard [P0]
+
+- Назначение: wrapper над `Card` для рабочих островов с верхней neutral-челкой, доменной иконкой, optional metric и правым action badge.
+- Обязательные props: `title`, `children`, `icon`, `metric`, `action`, `headingLevel`, `className`, `bodyClassName`.
+- Состояния: `form`, `form with action`, `with metric`, `long title`, `mobile`.
+- Реализация: `apps/web/shared/ui/IslandCard.tsx`, stories в `apps/web/stories/primitives/IslandCard.stories.tsx`.
+- Примечание: компонент не заменяет базовый `Card`; он фиксирует выбранный островной паттерн поверх существующей поверхности.
+
+### UI-11.2 FormListSplitLayout [P0]
+
+- Назначение: общий layout для operational surfaces, где слева форма добавления/редактирования, а справа список объектов.
+- Обязательные props: `form`, `list`, `className`, `formClassName`, `listClassName`, `columnsClassName`.
+- Поведение: на desktop (`xl+`) измеряет высоту левой формы, задает эту высоту правой колонке и переносит переполнение в `FormListScrollArea`; на tablet/mobile складывает колонки в обычный стек без height-lock.
+- Состояния: `desktop short list`, `desktop long list scroll`, `mobile stacked`.
+- Stories: `DesktopShortList`, `DesktopLongListScroll`, `MobileStacked`.
+- Реализация: `apps/web/shared/ui/FormListSplitLayout.tsx`, stories в `apps/web/stories/primitives/FormListSplitLayout.stories.tsx`.
+
 ### UI-12 DropdownMenu [P0]
 
 - Назначение: «многоточие», actions-меню, профильное меню.
@@ -172,6 +190,15 @@
 - Обязательные props: `open`, `anchor`, `placement`, `title`, `content`.
 - Состояния: `closed`, `open`, `with scroll`, `empty`.
 - Stories: `Basic`, `Scrollable`, `Empty`.
+
+### UI-13.1 Dialog [P0]
+
+- Назначение: базовое модальное окно для редактирования сущностей и вложенных operator actions.
+- Обязательные props: `open`, `onOpenChange`, `title`, `description`, `badge`, `children`, `footer`, `size`, `dismissible`, `showClose`, `headerVariant`, `headerIcon`.
+- Header variants: `neutral`, `muted`, `dark`. `muted` является runtime default для рабочих editor-модалок и островов; `neutral` остается более белым вариантом для поверхностей, где нужен меньший контраст с body; `dark` сохраняет исходную темную челку для акцентных и критичных модалок. Все три варианта используют одну геометрию верхней челки.
+- Состояния: `default`, `neutral header`, `muted header`, `dark header`, `long content`, `dismiss disabled`, `mobile`.
+- Stories: `Default`, `NeutralHeader`, `MutedHeader`, `DarkHeader`, `LongContent`, `DismissDisabled`, `Mobile`.
+- Реализация: `apps/web/shared/ui/Dialog.tsx`, stories в `apps/web/stories/primitives/Dialog.stories.tsx`.
 
 ### UI-14 Drawer [P0]
 
@@ -728,6 +755,7 @@
 - Обязательные props: `open`, `title`, `description`, `confirmLabel`, `cancelLabel`, `tone`, `reasonField`, `loading`, `onConfirm`, `onCancel`.
 - Состояния: `standard confirm`, `destructive confirm`, `with required reason`, `loading`.
 - Stories: `Standard`, `Destructive`, `WithReason`, `Loading`.
+- Реализация: `apps/web/shared/ui/Dialog.tsx`, stories в `apps/web/stories/primitives/ConfirmDialog.stories.tsx`.
 
 #### STATE-03 `ToastCenter` / `Toast` [P0]
 

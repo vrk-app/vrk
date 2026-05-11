@@ -20,19 +20,9 @@ export function RegisterForm({
 }: RegisterFormProps) {
   return (
     <Card className={cn("gap-5", className)} padding="lg" {...props}>
-      <div className="space-y-2">
-        <p className="text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground">
-          Старт кабинета администратора заказчика
-        </p>
-        <div className="space-y-2">
-          <h2 className="text-2xl font-bold tracking-tight text-foreground">
-            Зарегистрировать компанию
-          </h2>
-          <p className="text-sm leading-6 text-muted-foreground">
-            Укажите контактное лицо, компанию и рабочие контакты.
-          </p>
-        </div>
-      </div>
+      <h2 className="text-balance text-2xl font-bold tracking-tight text-foreground">
+        Зарегистрировать компанию
+      </h2>
 
       <form className="grid gap-5" onSubmit={onSubmit}>
         <div className="grid gap-4 md:grid-cols-2">

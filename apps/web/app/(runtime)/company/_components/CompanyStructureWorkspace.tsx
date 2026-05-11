@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition, type ChangeEvent, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition, type ChangeEvent } from "react";
 import {
   Archive,
   Building2,
@@ -8,12 +8,10 @@ import {
   Image as ImageIcon,
   MapPinned,
   Pencil,
-  Plus,
   Save,
   Trash2,
   UploadCloud,
   UsersRound,
-  X,
 } from "lucide-react";
 import { EmployeeAccessWorkspace } from "@/features/Stage03Access";
 import {
@@ -23,7 +21,22 @@ import {
   type SessionSummaryResponse,
   type StructureNodePayload,
 } from "@/shared/api";
-import { Badge, Button, Card, InlineAlert, InputField, SelectField, Tabs, TextareaField, useToast } from "@/shared/ui";
+import {
+  Badge,
+  Button,
+  Card,
+  ConfirmDialog,
+  Dialog,
+  FormListScrollArea,
+  FormListSplitLayout,
+  InlineAlert,
+  InputField,
+  IslandCard,
+  SelectField,
+  Tabs,
+  TextareaField,
+  useToast,
+} from "@/shared/ui";
 
 type Props = {
   initialSession: SessionSummaryResponse;
@@ -65,6 +78,11 @@ type StructureEditDialogState =
       recordLabel: string;
       form: StructureForm;
     };
+
+type ArchiveConfirmation = {
+  label: string;
+  path: string;
+};
 
 const organizationPropertyTypeOptions = [
   { label: "ООО", value: "ООО" },
@@ -287,6 +305,7 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
   const [divisionForm, setDivisionForm] = useState<StructureForm>(() => emptyStructureForm());
   const [unitForm, setUnitForm] = useState<StructureForm>(() => emptyStructureForm());
   const [structureEditDialog, setStructureEditDialog] = useState<StructureEditDialogState | null>(null);
+  const [archiveConfirmation, setArchiveConfirmation] = useState<ArchiveConfirmation | null>(null);
   const [isPending, startTransition] = useTransition();
   const logoInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -560,29 +579,126 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
   }
 
   function archiveNode(path: string, label: string) {
-    if (!window.confirm(`${label} будет скрыт из активной структуры. Продолжить архивирование?`)) {
+    setArchiveConfirmation({ label, path });
+  }
+
+  function confirmArchiveNode() {
+    if (!archiveConfirmation) {
       return;
     }
 
+    const confirmation = archiveConfirmation;
+    setArchiveConfirmation(null);
     startTransition(() => {
-      void mutateSession(path, { method: "POST" }, `Не удалось архивировать ${label}.`)
+      void mutateSession(confirmation.path, { method: "POST" }, `Не удалось архивировать ${confirmation.label}.`)
         .then(() =>
           showToast({
-            dedupeKey: `company-archive-success:${path}`,
-            title: `${label} архивирован.`,
+            dedupeKey: `company-archive-success:${confirmation.path}`,
+            title: `${confirmation.label} архивирован.`,
             tone: "success",
           }),
         )
         .catch((error) =>
           showToast({
-            dedupeKey: `company-archive-error:${path}`,
+            dedupeKey: `company-archive-error:${confirmation.path}`,
             description: error instanceof Error ? error.message : undefined,
-            title: `Не удалось архивировать ${label}.`,
+            title: `Не удалось архивировать ${confirmation.label}.`,
             tone: "error",
           }),
         );
     });
   }
+
+  const divisionList = (
+    <div className={canCreateDivision ? "h-full min-h-0" : undefined} data-testid="scope-graph">
+      <IslandCard
+        bodyClassName={canCreateDivision ? "min-h-0 flex-1" : undefined}
+        className={canCreateDivision ? "h-full min-h-0 overflow-hidden" : undefined}
+        headingLevel={2}
+        icon={<Building2 aria-hidden="true" className="size-4" />}
+        metric={session.divisions.length}
+        title="Активные дивизионы"
+      >
+        {session.divisions.length ? (
+          <FormListScrollArea className="grid gap-3">
+            {session.divisions.map((division) => (
+              <NodeRow
+                canManage={canManageDivisions}
+                editLabel={`Редактировать дивизион ${division.name}`}
+                key={division.id}
+                meta={formatNodeMeta(division)}
+                name={division.name}
+                onArchive={() => archiveNode(`/api/company/divisions/${division.id}/archive`, "Дивизион")}
+                onEdit={() => openDivisionEditor(division)}
+              />
+            ))}
+          </FormListScrollArea>
+        ) : (
+          <EmptyBlock text="В текущей области нет активных дивизионов." />
+        )}
+      </IslandCard>
+    </div>
+  );
+
+  const unitList = (
+    <div className={canCreateUnit ? "h-full min-h-0" : undefined} data-testid="scope-graph">
+      <IslandCard
+        bodyClassName={canCreateUnit ? "min-h-0 flex-1" : undefined}
+        className={canCreateUnit ? "h-full min-h-0 overflow-hidden" : undefined}
+        headingLevel={2}
+        icon={<MapPinned aria-hidden="true" className="size-4" />}
+        metric={session.units.length}
+        title="Активные юниты"
+      >
+        <FormListScrollArea className="grid gap-4">
+          {session.divisions.map((division) => {
+            const childUnits = session.units.filter((unit) => unit.divisionId === division.id);
+            return (
+              <div className="grid gap-3" key={division.id}>
+                <div className="text-sm font-semibold text-foreground">{division.name}</div>
+                {childUnits.length ? (
+                  childUnits.map((unit) => (
+                    <NodeRow
+                      canManage={canManageUnits}
+                      editLabel={`Редактировать юнит ${unit.name}`}
+                      key={unit.id}
+                      meta={formatNodeMeta(unit)}
+                      name={unit.name}
+                      onArchive={() => archiveNode(`/api/company/units/${unit.id}/archive`, "Юнит")}
+                      onEdit={() => openUnitEditor(unit)}
+                      type={unit.type}
+                    />
+                  ))
+                ) : (
+                  <EmptyBlock text="В дивизионе нет активных юнитов." />
+                )}
+              </div>
+            );
+          })}
+
+          <div className="grid gap-3">
+            <div className="text-sm font-semibold text-foreground">Прямое подчинение организации</div>
+            {directUnits.length ? (
+              directUnits.map((unit) => (
+                <NodeRow
+                  canManage={canManageUnits}
+                  editLabel={`Редактировать юнит ${unit.name}`}
+                  key={unit.id}
+                  meta={formatNodeMeta(unit)}
+                  name={unit.name}
+                  onArchive={() => archiveNode(`/api/company/units/${unit.id}/archive`, "Юнит")}
+                  onEdit={() => openUnitEditor(unit)}
+                  type={unit.type}
+                />
+              ))
+            ) : (
+              <EmptyBlock text="Прямых юнитов пока нет." />
+            )}
+          </div>
+        </FormListScrollArea>
+      </IslandCard>
+    </div>
+  );
 
   return (
     <>
@@ -595,11 +711,26 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
         onChange={setStructureEditDialog}
         onSubmit={submitStructureEdit}
       />
+      <ConfirmDialog
+        confirmLabel="Архивировать"
+        description={
+          archiveConfirmation
+            ? `${archiveConfirmation.label} будет скрыт из активной структуры и останется доступен в истории.`
+            : ""
+        }
+        icon={<Archive aria-hidden="true" className="size-5" />}
+        loading={isPending}
+        onCancel={() => setArchiveConfirmation(null)}
+        onConfirm={confirmArchiveNode}
+        open={Boolean(archiveConfirmation)}
+        title="Архивировать запись?"
+        tone="danger"
+      />
 
       <div
-        aria-hidden={structureEditDialog ? true : undefined}
+        aria-hidden={structureEditDialog || archiveConfirmation ? true : undefined}
         className="grid gap-4"
-        inert={structureEditDialog ? true : undefined}
+        inert={structureEditDialog || archiveConfirmation ? true : undefined}
       >
         {!hasStructure && canManageCompany(session) ? (
           <InlineAlert
@@ -626,71 +757,11 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
 
         {activeTab === "profile" ? (
           <div className="grid gap-4 xl:grid-cols-[1fr_0.58fr]">
-            <Card className="gap-5" padding="lg">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="space-y-2">
-                  <Badge tone="info">Профиль организации</Badge>
-                  <h2 className="text-xl font-semibold text-foreground">Реквизиты и ответственные</h2>
-                </div>
-                <Badge tone={session.organization.launchState === "active" ? "success" : "warning"}>
-                  {session.organization.launchState === "active" ? "Активна" : "Подготовка"}
-                </Badge>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-4 rounded-[var(--radius-lg)] border border-border bg-muted/40 p-4">
-                <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-[var(--radius-md)] border border-border bg-card">
-                  {session.organization.logo ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      alt={`Логотип ${session.organization.name}`}
-                      className="size-full object-contain"
-                      src={`${session.organization.logo.url}?v=${encodeURIComponent(session.organization.logo.updatedAt)}`}
-                    />
-                  ) : (
-                    <ImageIcon aria-hidden="true" className="size-6 text-muted-foreground" />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1 space-y-1">
-                  <p className="break-words text-sm font-medium text-foreground">
-                    {session.organization.logo?.fileName ?? "Логотип не загружен"}
-                  </p>
-                  <p className="break-words text-sm leading-6 text-muted-foreground">
-                    PNG, JPEG, WebP или SVG. Файл хранится в приватном объектном хранилище.
-                  </p>
-                </div>
-                {canManageProfile ? (
-                  <div className="flex flex-wrap gap-2">
-                    <input
-                      ref={logoInputRef}
-                      accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                      className="sr-only"
-                      onChange={uploadLogo}
-                      type="file"
-                    />
-                    <Button
-                      disabled={isPending}
-                      leftIcon={<UploadCloud className="size-4" />}
-                      onClick={() => logoInputRef.current?.click()}
-                      type="button"
-                      variant="secondary"
-                    >
-                      Загрузить
-                    </Button>
-                    {session.organization.logo ? (
-                      <Button
-                        disabled={isPending}
-                        leftIcon={<Trash2 className="size-4" />}
-                        onClick={deleteLogo}
-                        type="button"
-                        variant="ghost"
-                      >
-                        Удалить
-                      </Button>
-                    ) : null}
-                  </div>
-                ) : null}
-              </div>
-
+            <IslandCard
+              headingLevel={2}
+              icon={<Building2 aria-hidden="true" className="size-4" />}
+              title="Профиль организации"
+            >
               <div className="grid gap-4 md:grid-cols-2">
                 <SelectField
                   autoComplete="off"
@@ -864,6 +935,63 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
                 value={profile.postalAddress ?? ""}
               />
 
+              <div className="flex flex-wrap items-center gap-4 rounded-[var(--radius-lg)] border border-border bg-muted/40 p-4">
+                <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-[var(--radius-md)] border border-border bg-card">
+                  {session.organization.logo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      alt={`Логотип ${session.organization.name}`}
+                      className="size-full object-contain"
+                      height={64}
+                      src={`${session.organization.logo.url}?v=${encodeURIComponent(session.organization.logo.updatedAt)}`}
+                      width={64}
+                    />
+                  ) : (
+                    <ImageIcon aria-hidden="true" className="size-6 text-muted-foreground" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1 space-y-1">
+                  <p className="break-words text-sm font-medium text-foreground">
+                    {session.organization.logo?.fileName ?? "Логотип не загружен"}
+                  </p>
+                  <p className="break-words text-sm leading-6 text-muted-foreground">
+                    PNG, JPEG, WebP или SVG. Файл хранится в приватном объектном хранилище.
+                  </p>
+                </div>
+                {canManageProfile ? (
+                  <div className="flex flex-wrap gap-2">
+                    <input
+                      ref={logoInputRef}
+                      accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                      aria-label="Загрузить логотип организации"
+                      className="sr-only"
+                      onChange={uploadLogo}
+                      type="file"
+                    />
+                    <Button
+                      disabled={isPending}
+                      leftIcon={<UploadCloud className="size-4" />}
+                      onClick={() => logoInputRef.current?.click()}
+                      type="button"
+                      variant="secondary"
+                    >
+                      Загрузить
+                    </Button>
+                    {session.organization.logo ? (
+                      <Button
+                        disabled={isPending}
+                        leftIcon={<Trash2 className="size-4" />}
+                        onClick={deleteLogo}
+                        type="button"
+                        variant="ghost"
+                      >
+                        Удалить
+                      </Button>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+
               {canManageProfile ? (
                 <Button
                   disabled={!profile.name.trim() || hasProfileErrors(profileErrors)}
@@ -874,7 +1002,7 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
                   Сохранить профиль
                 </Button>
               ) : null}
-            </Card>
+            </IslandCard>
 
             {session.workspace.scopeType !== "organization" ? (
               <Card className="gap-3 self-start" data-testid="scope-graph" padding="lg">
@@ -887,117 +1015,50 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
         ) : null}
 
         {activeTab === "divisions" ? (
-          <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
-            {canCreateDivision ? (
-              <StructureFormCard
-                form={divisionForm}
-                isPending={isPending}
-                onChange={setDivisionForm}
-                onSubmit={submitDivision}
-                namePrefix="division"
-                submitLabel="Создать дивизион"
-                showType={false}
-                title="Новый дивизион"
-              />
-            ) : null}
-
-            <Card className="gap-4" data-testid="scope-graph" padding="lg">
-              <div className="space-y-2">
-                <Badge tone="interactive">Дивизионы</Badge>
-                <h2 className="text-lg font-semibold text-foreground">Активные дивизионы</h2>
-              </div>
-              {session.divisions.length ? (
-                <div className="grid gap-3">
-                  {session.divisions.map((division) => (
-                    <NodeRow
-                      canManage={canManageDivisions}
-                      editLabel={`Редактировать дивизион ${division.name}`}
-                      key={division.id}
-                      meta={formatNodeMeta(division)}
-                      name={division.name}
-                      onArchive={() =>
-                        archiveNode(`/api/company/divisions/${division.id}/archive`, "Дивизион")
-                      }
-                      onEdit={() => openDivisionEditor(division)}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <EmptyBlock text="В текущей области нет активных дивизионов." />
-              )}
-            </Card>
-          </div>
+          canCreateDivision ? (
+            <FormListSplitLayout
+              columnsClassName="xl:grid-cols-[0.9fr_1.1fr]"
+              form={
+                <StructureFormCard
+                  form={divisionForm}
+                  isPending={isPending}
+                  onChange={setDivisionForm}
+                  onSubmit={submitDivision}
+                  namePrefix="division"
+                  submitLabel="Создать дивизион"
+                  showType={false}
+                  title="Новый дивизион"
+                />
+              }
+              list={divisionList}
+            />
+          ) : (
+            divisionList
+          )
         ) : null}
 
         {activeTab === "units" ? (
-          <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
-            {canCreateUnit ? (
-              <StructureFormCard
-                form={unitForm}
-                includeDivision
-                isPending={isPending}
-                onChange={setUnitForm}
-                onSubmit={submitUnit}
-                namePrefix="unit"
-                divisionOptions={divisionOptions}
-                submitLabel="Создать юнит"
-                title="Новый юнит"
-              />
-            ) : null}
-
-            <Card className="gap-4" data-testid="scope-graph" padding="lg">
-              <div className="space-y-2">
-                <Badge tone="interactive">Юниты</Badge>
-                <h2 className="text-lg font-semibold text-foreground">Активные юниты</h2>
-              </div>
-              <div className="grid gap-4">
-                {session.divisions.map((division) => {
-                  const childUnits = session.units.filter((unit) => unit.divisionId === division.id);
-                  return (
-                    <div className="grid gap-3" key={division.id}>
-                      <div className="text-sm font-semibold text-foreground">{division.name}</div>
-                      {childUnits.length ? (
-                        childUnits.map((unit) => (
-                            <NodeRow
-                            canManage={canManageUnits}
-                            editLabel={`Редактировать юнит ${unit.name}`}
-                            key={unit.id}
-                            meta={formatNodeMeta(unit)}
-                            name={unit.name}
-                            onArchive={() => archiveNode(`/api/company/units/${unit.id}/archive`, "Юнит")}
-                            onEdit={() => openUnitEditor(unit)}
-                            type={unit.type}
-                          />
-                        ))
-                      ) : (
-                        <EmptyBlock text="В дивизионе нет активных юнитов." />
-                      )}
-                    </div>
-                  );
-                })}
-
-                <div className="grid gap-3">
-                  <div className="text-sm font-semibold text-foreground">Прямое подчинение организации</div>
-                  {directUnits.length ? (
-                    directUnits.map((unit) => (
-                      <NodeRow
-                        canManage={canManageUnits}
-                        editLabel={`Редактировать юнит ${unit.name}`}
-                        key={unit.id}
-                        meta={formatNodeMeta(unit)}
-                        name={unit.name}
-                        onArchive={() => archiveNode(`/api/company/units/${unit.id}/archive`, "Юнит")}
-                        onEdit={() => openUnitEditor(unit)}
-                        type={unit.type}
-                      />
-                    ))
-                  ) : (
-                    <EmptyBlock text="Прямых юнитов пока нет." />
-                  )}
-                </div>
-              </div>
-            </Card>
-          </div>
+          canCreateUnit ? (
+            <FormListSplitLayout
+              columnsClassName="xl:grid-cols-[0.9fr_1.1fr]"
+              form={
+                <StructureFormCard
+                  form={unitForm}
+                  includeDivision
+                  isPending={isPending}
+                  onChange={setUnitForm}
+                  onSubmit={submitUnit}
+                  namePrefix="unit"
+                  divisionOptions={divisionOptions}
+                  submitLabel="Создать юнит"
+                  title="Новый юнит"
+                />
+              }
+              list={unitList}
+            />
+          ) : (
+            unitList
+          )
         ) : null}
 
         {activeTab === "employees" && session.workspace.canViewEmployees ? <EmployeeAccessWorkspace session={session} /> : null}
@@ -1036,14 +1097,11 @@ function StructureFormCard({
     (!includeDivision || divisionOptions.some((item) => item.value === form.divisionId));
 
   return (
-    <Card className="gap-5" padding="lg">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="space-y-2">
-          <Badge tone="info">Создание</Badge>
-          <h2 className="text-xl font-semibold text-foreground">{title}</h2>
-        </div>
-      </div>
-
+    <IslandCard
+      icon={<Building2 aria-hidden="true" className="size-4" />}
+      headingLevel={2}
+      title={title}
+    >
       <StructureFormFields
         divisionOptions={divisionOptions}
         form={form}
@@ -1053,10 +1111,14 @@ function StructureFormCard({
         showType={showType}
       />
 
-      <Button disabled={!canSubmit} leftIcon={<Plus className="size-4" />} loading={isPending} onClick={onSubmit}>
+      <Button
+        disabled={!canSubmit || isPending}
+        loading={isPending}
+        onClick={onSubmit}
+      >
         {submitLabel}
       </Button>
-    </Card>
+    </IslandCard>
   );
 }
 
@@ -1193,30 +1255,6 @@ function StructureEditDialog({
   onChange: (next: StructureEditDialogState) => void;
   onSubmit: () => void;
 }) {
-  const dialogRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!dialog) {
-      return undefined;
-    }
-
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const previousBodyOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    window.requestAnimationFrame(() => {
-      const firstFocusable = dialogRef.current?.querySelector<HTMLElement>(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      );
-      firstFocusable?.focus();
-    });
-
-    return () => {
-      document.body.style.overflow = previousBodyOverflow;
-      previousFocus?.focus({ preventScroll: true });
-    };
-  }, [dialog]);
-
   if (!dialog) {
     return null;
   }
@@ -1226,88 +1264,18 @@ function StructureEditDialog({
   const canSubmit = isStructureFormReady(dialog.form, isUnit);
   const update = (form: StructureForm) => onChange({ ...dialog, form });
 
-  const trapDialogFocus = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      onCancel();
-      return;
-    }
-
-    if (event.key !== "Tab") {
-      return;
-    }
-
-    const focusableElements = Array.from(
-      dialogRef.current?.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      ) ?? [],
-    );
-
-    if (!focusableElements.length) {
-      event.preventDefault();
-      return;
-    }
-
-    const firstElement = focusableElements[0];
-    const lastElement = focusableElements[focusableElements.length - 1];
-
-    if (event.shiftKey && document.activeElement === firstElement) {
-      event.preventDefault();
-      lastElement.focus();
-    }
-
-    if (!event.shiftKey && document.activeElement === lastElement) {
-      event.preventDefault();
-      firstElement.focus();
-    }
-  };
-
   return (
-    <div
-      className="fixed inset-0 z-50 grid place-items-center overscroll-contain bg-foreground/30 px-3 py-4 backdrop-blur-[2px] sm:px-4 sm:py-6"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onCancel();
-        }
-      }}
-    >
-      <div
-        ref={dialogRef}
-        aria-describedby="company-structure-edit-description"
-        aria-labelledby="company-structure-edit-title"
-        aria-modal="true"
-        className="flex max-h-[calc(100vh-2rem)] w-full max-w-4xl flex-col overflow-hidden rounded-[var(--radius-xl)] border border-border bg-card text-card-foreground shadow-lg"
-        onKeyDown={trapDialogFocus}
-        role="dialog"
-      >
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-4">
-          <div className="min-w-0 space-y-1">
-            <Badge icon={<Pencil className="size-4" />} tone="interactive">
-              Редактирование
-            </Badge>
-            <h2 className="break-words text-xl font-semibold text-foreground" id="company-structure-edit-title">
-              {title}
-            </h2>
-            <p className="break-words text-sm leading-6 text-muted-foreground" id="company-structure-edit-description">
-              {dialog.recordLabel}
-            </p>
-          </div>
-          <Button disabled={isPending} leftIcon={<X className="size-4" />} onClick={onCancel} type="button" variant="ghost">
-            Закрыть
-          </Button>
-        </div>
-        <div className="grid gap-5 overflow-y-auto px-5 py-5">
-          <StructureFormFields
-            divisionOptions={divisionOptions}
-            form={dialog.form}
-            includeDivision={isUnit}
-            namePrefix={isUnit ? "editUnit" : "editDivision"}
-            onChange={update}
-            showDivisionSelector={isUnit && canChangeUnitParent}
-            showType={isUnit}
-          />
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-muted/40 px-5 py-4">
+    <Dialog
+      badge={
+        <Badge icon={<Pencil className="size-4" />} tone="interactive">
+          Редактирование
+        </Badge>
+      }
+      bodyClassName="grid gap-5"
+      description={dialog.recordLabel}
+      dismissible={!isPending}
+      footer={
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
             {!canSubmit
               ? "Заполните обязательные поля перед сохранением."
@@ -1328,8 +1296,35 @@ function StructureEditDialog({
             </Button>
           </div>
         </div>
-      </div>
-    </div>
+      }
+      onOpenChange={(open) => {
+        if (!open && !isPending) {
+          onCancel();
+        }
+      }}
+      headerIcon={
+        isUnit ? (
+          <MapPinned aria-hidden="true" className="size-4" />
+        ) : (
+          <Building2 aria-hidden="true" className="size-4" />
+        )
+      }
+      headerVariant="muted"
+      open={Boolean(dialog)}
+      showClose={!isPending}
+      size="lg"
+      title={title}
+    >
+      <StructureFormFields
+        divisionOptions={divisionOptions}
+        form={dialog.form}
+        includeDivision={isUnit}
+        namePrefix={isUnit ? "editUnit" : "editDivision"}
+        onChange={update}
+        showDivisionSelector={isUnit && canChangeUnitParent}
+        showType={isUnit}
+      />
+    </Dialog>
   );
 }
 

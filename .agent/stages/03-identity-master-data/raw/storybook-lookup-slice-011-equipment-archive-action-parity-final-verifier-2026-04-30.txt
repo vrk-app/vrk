@@ -1,0 +1,27 @@
+Storybook registry entries: 35
+Query: "archive action button equipment registry confirm dialog destructive"
+
+1. Equipment/EquipmentRegistryWorkspace [EquipmentRegistryWorkspace]
+   story: apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+   source: apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+   stories: EquipmentTab, MeasuringInstrumentsTab, StandardsTab, WithArchiveVisible, ScopedReadonly, LoadError
+   tags: autodocs
+2. Primitives/ConfirmDialog [ConfirmDialog]
+   story: apps/web/stories/primitives/ConfirmDialog.stories.tsx
+   source: apps/web/shared/ui/Dialog.tsx
+   stories: Standard, Destructive, WithReason, Loading
+   tags: autodocs
+3. Contracts/ContractsRegistry [ContractsRegistry]
+   story: apps/web/stories/contracts/ContractsRegistry.stories.tsx
+   source: apps/web/features/Stage03Contracts/ui/ContractsRegistry.tsx
+   stories: CustomerAdmin, CustomerEmpty, CustomerRestricted, DivisionAdminScoped, UnitAdminScoped, ContractorReadonly
+   tags: autodocs
+4. Foundations/IconGallery [IconGalleryShowcase]
+   story: apps/web/stories/foundations/IconGallery.stories.tsx
+   stories: NavigationIcons, ActionIcons, FileTypeIcons, StatusIcons
+   tags: autodocs
+5. Primitives/Dialog [Dialog]
+   story: apps/web/stories/primitives/Dialog.stories.tsx
+   source: apps/web/shared/ui/Dialog.tsx
+   stories: Default, LargeEditor, LongContent, DismissDisabled, Mobile
+   tags: autodocs

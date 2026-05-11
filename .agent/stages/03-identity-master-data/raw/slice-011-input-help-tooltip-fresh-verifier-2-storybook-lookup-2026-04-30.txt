@@ -1,0 +1,28 @@
+Storybook registry entries: 35
+Query: "InputField hint helper help tooltip"
+
+1. Primitives/InputField [InputField]
+   story: apps/web/stories/primitives/InputField.stories.tsx
+   source: apps/web/shared/ui/InputField.tsx
+   stories: Default, Hover, Focus, Text, Email, Password, SearchField, WithHint, WithError, WithHintAndError, Disabled
+   tags: autodocs
+2. Primitives/SelectField [SelectField]
+   story: apps/web/stories/primitives/SelectField.stories.tsx
+   source: apps/web/shared/ui/SelectField.tsx
+   stories: Single, Default, Hover, Focus, WithPlaceholder, Multiple, WithHint, WithError, Disabled, LoadingOptions
+   tags: autodocs
+3. Primitives/TextareaField [TextareaField]
+   story: apps/web/stories/primitives/TextareaField.stories.tsx
+   source: apps/web/shared/ui/TextareaField.tsx
+   stories: Default, Hover, Focus, WithHint, WithCounter, AutoResize, WithError, Disabled
+   tags: autodocs
+4. Auth/LoginForm [LoginForm]
+   story: apps/web/stories/auth/LoginForm.stories.tsx
+   source: apps/web/widgets/Auth/ui/LoginForm.tsx
+   stories: Default, ValidationError, ServerError, WithWorkspaceHint, Loading
+   tags: autodocs
+5. Requests/RequestListItem [RequestListItem]
+   story: apps/web/stories/requests/RequestListItem.stories.tsx
+   source: apps/web/entities/Request/ui/RequestListItem.tsx
+   stories: Base, Selected, LongEnterpriseName, WithoutNote, Completed, ZeroProgress, OverflowInput
+   tags: autodocs

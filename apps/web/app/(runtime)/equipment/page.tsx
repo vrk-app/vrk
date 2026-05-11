@@ -85,19 +85,14 @@ export default async function EquipmentPage({ searchParams }: EquipmentPageProps
 
   return (
     <>
-      <PageHeader
-        actions={
-          <Badge tone={canManageRegistry ? "interactive" : "warning"}>
-            {canManageRegistry ? "Управление реестрами" : "Только просмотр"}
-          </Badge>
-        }
-        subtitle={
-          canManageRegistry
-            ? "Создавайте записи, ведите журналы операций и переносите неактуальные записи в архив."
-            : "Вам доступны записи, журналы и архив в назначенной области."
-        }
-        title="Оборудование, средства измерения и эталоны"
-      />
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <h1 className="text-balance text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+          Оборудование, средства измерения и эталоны
+        </h1>
+        <Badge tone={canManageRegistry ? "interactive" : "warning"}>
+          {canManageRegistry ? "Управление реестрами" : "Только просмотр"}
+        </Badge>
+      </div>
 
       <EquipmentRegistryWorkspace
         initialShowArchived={initialShowArchived}

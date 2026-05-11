@@ -1,0 +1,1 @@
+PASS: no window.confirm matches in apps/web

@@ -1,0 +1,10 @@
+Runtime /company proof not claimed by fresh verifier.
+
+Check performed:
+- curl -fsS -I --max-time 5 http://localhost:3100/company
+- Result: HTTP 200 saved in slice-011-input-help-tooltip-fresh-verifier-localhost-3100-company-head-2026-04-30.txt
+
+Reason:
+- The sprint instructions warned localhost:3100 may be stale and forbade starting an ad-hoc dev server.
+- This verifier did not start next dev or any long-running web runtime.
+- Acceptance is therefore proven from the shared InputField source and built Storybook DOM proof, not from the existing /company runtime bundle.

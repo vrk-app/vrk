@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "staticRoot": "/Users/yura-posledov/cursor/vrk/apps/web/storybook-static",
+  "baseUrl": "http://127.0.0.1:51089",
+  "checks": [
+    {
+      "story": "WithHint",
+      "inputAriaDescribedBy": null,
+      "helpTriggerDescription": "Используйте корпоративный логин без домена.",
+      "persistentHintRows": 0,
+      "tooltipAfterHover": true,
+      "tooltipAfterFocus": true
+    },
+    {
+      "story": "WithHintAndError",
+      "inputAriaDescribedBy": "_r_0_-message",
+      "describedByText": "КПП должен содержать 9 цифр.",
+      "errorBelowInput": true,
+      "helpTriggerDescription": "9 цифр.",
+      "persistentHintRows": 0,
+      "tooltipAfterHover": true,
+      "tooltipAfterFocus": true
+    }
+  ]
+}

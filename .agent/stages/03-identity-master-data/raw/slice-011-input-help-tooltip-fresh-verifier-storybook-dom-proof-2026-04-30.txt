@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "server": "http://127.0.0.1:55909",
+  "stories": {
+    "WithHint": {
+      "persistentVisibleHintRowsBeforeHoverFocus": 0,
+      "tooltipVisibleOnHover": true,
+      "tooltipVisibleOnFocus": true,
+      "inputAriaDescribedByWithoutError": null
+    },
+    "WithHintAndError": {
+      "errorVisibleBelowInput": true,
+      "inputAriaDescribedBy": "_r_0_-message",
+      "inputDescriptionText": "КПП должен содержать 9 цифр.",
+      "helpTriggerHasHintDescription": true,
+      "hintTooltipVisibleOnHover": true
+    }
+  }
+}
