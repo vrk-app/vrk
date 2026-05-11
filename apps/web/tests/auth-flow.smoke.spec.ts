@@ -133,9 +133,10 @@ test.describe("stage 03 first-admin bootstrap", () => {
 
     await page.getByRole("tab", { name: "Сотрудники" }).click();
     await expect(page.getByRole("heading", { level: 2, name: "Сотрудники и доступ" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Пригласить сотрудника" })).toBeVisible();
+    const unitHeadInviteButton = page.getByRole("button", { name: "Пригласить сотрудника" }).first();
+    await expect(unitHeadInviteButton).toBeVisible();
 
-    await page.getByRole("button", { name: "Пригласить сотрудника" }).first().click();
+    await unitHeadInviteButton.click();
     const unitHeadInviteDialog = page.getByRole("dialog", { name: "Пригласить сотрудника" });
     await expect(unitHeadInviteDialog).toBeVisible();
     await unitHeadInviteDialog.getByLabel("Имя сотрудника").fill(unitHead.fullName);
@@ -170,9 +171,10 @@ test.describe("stage 03 first-admin bootstrap", () => {
 
     await expect(page).toHaveURL(/\/company$/);
     await page.getByRole("tab", { name: "Сотрудники" }).click();
-    await expect(page.getByRole("button", { name: "Пригласить сотрудника" })).toBeVisible();
+    const employeeInviteButton = page.getByRole("button", { name: "Пригласить сотрудника" }).first();
+    await expect(employeeInviteButton).toBeVisible();
 
-    await page.getByRole("button", { name: "Пригласить сотрудника" }).first().click();
+    await employeeInviteButton.click();
     const employeeInviteDialog = page.getByRole("dialog", { name: "Пригласить сотрудника" });
     await expect(employeeInviteDialog).toBeVisible();
     await employeeInviteDialog.getByLabel("Имя сотрудника").fill(employee.fullName);
