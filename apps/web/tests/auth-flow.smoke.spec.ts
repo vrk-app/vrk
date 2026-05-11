@@ -80,13 +80,13 @@ test.describe("stage 03 first-admin bootstrap", () => {
     await expect(page.getByRole("heading", { level: 1, name: admin.organizationName })).toBeVisible();
     await expect(page.getByRole("tab", { name: "Сотрудники" })).toBeVisible();
 
-    await page.getByLabel("Краткое наименование").fill("ВРК Тест");
-    await page.getByLabel("ИНН").fill("1234567890");
-    await page.getByLabel("КПП").fill("123456789");
-    await page.getByLabel("Контактный email").fill(admin.email);
-    await page.getByLabel("Контактный телефон").fill("+7 (999) 123-45-67");
-    await page.getByLabel("Руководитель").fill(admin.adminName);
-    await page.getByLabel("Юридический адрес").fill("г. Москва, ул. Тестовая, д. 1");
+    await page.getByLabel("Краткое наименование", { exact: true }).fill("ВРК Тест");
+    await page.getByLabel("ИНН", { exact: true }).fill("1234567890");
+    await page.getByLabel("КПП", { exact: true }).fill("123456789");
+    await page.getByLabel("Контактный email", { exact: true }).fill(admin.email);
+    await page.getByLabel("Контактный телефон", { exact: true }).fill("+7 (999) 123-45-67");
+    await page.getByLabel("Руководитель", { exact: true }).fill(admin.adminName);
+    await page.getByLabel("Юридический адрес", { exact: true }).fill("г. Москва, ул. Тестовая, д. 1");
     await page.getByRole("button", { name: "Сохранить профиль" }).click();
 
     await page.getByRole("tab", { name: "Дивизионы" }).click();
