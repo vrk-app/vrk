@@ -24,14 +24,6 @@ const runtimeMetaByPath = {
     activeKey: "equipment",
     breadcrumbs: [{ label: "Рабочая область", href: "/company" }, { label: "Оборудование" }],
   },
-  "/equipment/card-variants": {
-    activeKey: "equipment",
-    breadcrumbs: [
-      { label: "Рабочая область", href: "/company" },
-      { label: "Оборудование", href: "/equipment" },
-      { label: "Варианты карточек" },
-    ],
-  },
   "/contracts": {
     activeKey: "contracts",
     breadcrumbs: [{ label: "Рабочая область", href: "/company" }, { label: "Договоры" }],
@@ -43,10 +35,6 @@ const runtimeMetaByPath = {
 } as const;
 
 function resolveRuntimeMeta(pathname: string) {
-  if (pathname.startsWith("/equipment/card-variants")) {
-    return runtimeMetaByPath["/equipment/card-variants"];
-  }
-
   if (pathname.startsWith("/equipment")) {
     return runtimeMetaByPath["/equipment"];
   }

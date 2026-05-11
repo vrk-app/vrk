@@ -160,6 +160,38 @@ body {
 }
 
 @layer components {
+  .equipment-passport-card {
+    container-type: inline-size;
+  }
+
+  .equipment-passport-layout {
+    display: grid;
+    overflow: hidden;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius-lg);
+  }
+
+  .equipment-passport-main,
+  .equipment-passport-aside {
+    min-width: 0;
+  }
+
+  .equipment-passport-aside {
+    border-top: 1px solid hsl(var(--border));
+    background: hsl(var(--muted) / 0.4);
+  }
+
+  @container (min-width: 760px) {
+    .equipment-passport-layout--split {
+      grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.75fr);
+    }
+
+    .equipment-passport-layout--split .equipment-passport-aside {
+      border-top: 0;
+      border-left: 1px solid hsl(var(--border));
+    }
+  }
+
   .vrk-toast-motion {
     --vrk-toast-enter-x: 0px;
     --vrk-toast-enter-y: 10px;

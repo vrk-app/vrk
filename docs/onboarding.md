@@ -91,6 +91,38 @@ make smoke
 
 Если вывод потерялся, открой `.local/dev-seed.json`. Повторный запуск `make dev-seed` не создает дубли для уже успешной версии seed, а печатает `seed already applied`, версию и путь к локальному файлу.
 
+### Seed реестра оборудования
+
+Для демо-наполнения актуальных реестровых таблиц оборудования используйте отдельный hard-replace seed. По умолчанию он берет последнюю успешную organization из `dev_seed_runs`, выбирает первые 3 active units и работает только с выбранной organization.
+
+Перед изменением данных проверьте цель и текущие counts:
+
+```bash
+make equipment-seed-dry-run
+```
+
+Чтобы удалить старые записи оборудования в выбранной organization и создать новый набор, выполните:
+
+```bash
+make equipment-seed
+```
+
+Команда удаляет строки выбранной organization из `registry_metrology_journal_entries`, `registry_standards`, `registry_measuring_instruments`, `registry_equipment`, затем создает 3 единицы технического оборудования, 3 диагностических оборудования, по одному эталону на каждое диагностическое оборудование и 2 записи журнала на каждое диагностическое оборудование. Legacy-таблицы `equipment`, `measuring_instruments`, `standards` не изменяются.
+
+Для prod-like или production базы не используйте implicit latest dev seed. Передавайте organization явно и сначала запускайте dry-run:
+
+```bash
+DATABASE_URL="postgres://..." python scripts/equipment_registry_seed.py --organization-id <uuid> --dry-run
+DATABASE_URL="postgres://..." python scripts/equipment_registry_seed.py --organization-id <uuid> --yes
+```
+
+В compose-backed локальном target можно переопределить цель так:
+
+```bash
+make equipment-seed-dry-run EQUIPMENT_SEED_TARGET="--organization-id <uuid>"
+make equipment-seed EQUIPMENT_SEED_TARGET="--organization-id <uuid>"
+```
+
 `make smoke` можно запускать сразу после `make dev`: smoke сам подождет короткое bounded окно, пока host-порты backend/web/field начнут принимать подключения, и только потом перейдет к строгим runtime assertions.
 
 Если порты заняты, их можно переопределить через `BACKEND_HOST_PORT`, `WEB_HOST_PORT`, `FIELD_HOST_PORT`, `OBJECT_STORAGE_HOST_PORT`, `OBJECT_STORAGE_CONSOLE_HOST_PORT`.

@@ -44,6 +44,18 @@ type Story = StoryObj<typeof meta>;
 
 export const WithInvites: Story = {
   decorators: [withRuntimeApi({ invites: employeeInvites, session: runtimeSession })],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(document.body);
+
+    await expect(await canvas.findByRole("heading", { level: 2, name: "Статусы приглашений" })).toBeVisible();
+    await expect(canvas.queryByRole("heading", { level: 2, name: "Пригласить сотрудника" })).toBeNull();
+    await userEvent.click(await canvas.findByRole("button", { name: "Пригласить сотрудника" }));
+
+    const dialog = await body.findByRole("dialog", { name: "Пригласить сотрудника" });
+    await expect(dialog).toBeVisible();
+    await expect(within(dialog).getByLabelText("Email приглашения")).toBeVisible();
+  },
 };
 
 export const RevokeConfirmation: Story = {
@@ -66,6 +78,14 @@ export const RevokeConfirmation: Story = {
 
 export const Empty: Story = {
   decorators: [withRuntimeApi({ invites: [], session: runtimeSession })],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(document.body);
+
+    await expect(await canvas.findByText("После первого черновика здесь появится список приглашений сотрудников и их текущие статусы.")).toBeVisible();
+    await userEvent.click((await canvas.findAllByRole("button", { name: "Пригласить сотрудника" }))[0]);
+    await expect(await body.findByRole("dialog", { name: "Пригласить сотрудника" })).toBeVisible();
+  },
 };
 
 export const Loading: Story = {

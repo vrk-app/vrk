@@ -88,6 +88,23 @@ export const TechnicalEquipmentList: Story = {
       standards: [],
     }),
   ],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(document.body);
+
+    await expect(await canvas.findByRole("tab", { name: "Оборудование" })).toHaveAttribute("aria-selected", "true");
+    await expect(canvas.getByRole("tab", { name: "Журнал операций" })).toHaveAttribute("aria-selected", "false");
+    await expect(canvas.queryByRole("tab", { name: "Средства измерения" })).toBeNull();
+    await expect(canvas.queryByRole("tab", { name: "Эталоны" })).toBeNull();
+    await expect(await canvas.findByRole("heading", { level: 2, name: "Оборудование в учете" })).toBeVisible();
+    await expect(canvas.queryByRole("heading", { level: 2, name: "Журнал операций по оборудованию" })).toBeNull();
+    await expect(canvas.queryByRole("heading", { level: 2, name: "Новое оборудование" })).toBeNull();
+    await userEvent.click(await canvas.findByRole("button", { name: "Добавить оборудование" }));
+
+    const dialog = await body.findByRole("dialog", { name: "Новое оборудование" });
+    await expect(dialog).toBeVisible();
+    await expect(within(dialog).getByLabelText("Тип оборудования")).toBeVisible();
+  },
 };
 
 export const DiagnosticEquipmentWithStandards: Story = {
@@ -136,6 +153,14 @@ export const DiagnosticEquipmentEditStandards: Story = {
 
 export const UnifiedJournal: Story = {
   decorators: [withRuntimeApi(defaultApi)],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(await canvas.findByRole("tab", { name: "Журнал операций" }));
+    await expect(await canvas.findByRole("heading", { level: 2, name: "Журнал операций по оборудованию" })).toBeVisible();
+    await expect(await canvas.findByText("Хронология операций")).toBeVisible();
+    await expect(canvas.queryByRole("heading", { level: 2, name: "Оборудование в учете" })).toBeNull();
+  },
 };
 
 export const ScopedReadonly: Story = {
@@ -151,10 +176,14 @@ export const ScopedReadonly: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
 
+    await expect(await canvas.findByRole("tab", { name: "Оборудование" })).toHaveAttribute("aria-selected", "true");
     await expect(await canvas.findByRole("heading", { level: 2, name: "Оборудование в учете" })).toBeVisible();
+    await expect(canvas.queryByRole("heading", { level: 2, name: "Журнал операций по оборудованию" })).toBeNull();
+    await expect(canvas.queryByRole("heading", { level: 2, name: "Новое оборудование" })).toBeNull();
+    await expect(canvas.queryByRole("button", { name: "Добавить оборудование" })).toBeNull();
+    await userEvent.click(canvas.getByRole("tab", { name: "Журнал операций" }));
     await expect(await canvas.findByRole("heading", { level: 2, name: "Журнал операций по оборудованию" })).toBeVisible();
     await expect(await canvas.findByText("Хронология операций")).toBeVisible();
-    await expect(canvas.queryByRole("heading", { level: 2, name: "Новое оборудование" })).toBeNull();
     await expect(canvas.queryByRole("button", { name: "Создать оборудование" })).toBeNull();
     await expect(canvas.queryByRole("button", { name: /^Редактировать/ })).toBeNull();
     await expect(canvas.queryByRole("button", { name: /^Архивировать/ })).toBeNull();

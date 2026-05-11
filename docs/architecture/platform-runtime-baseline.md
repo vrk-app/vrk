@@ -117,6 +117,7 @@ flowchart LR
 
 - Если локально уже заняты стандартные frontend ports, compose не должен ломаться: используются отдельные host defaults `3100` и `3102`.
 - `make dev-seed` можно запускать отдельно после поднятого stack; при уже успешной версии он не создает дубли и переписывает `.local/dev-seed.json` из marker metadata.
+- `make equipment-seed-dry-run` и `make equipment-seed` используют отдельный direct-DB script для hard replace актуальных `registry_*` данных оборудования в последней successful dev seed organization; для production базы запускать скрипт только с явным `--organization-id` и предварительным `--dry-run`.
 - `X-VRK-Session-Token` is the preferred app-session header for server-to-backend calls in deployed serverless environments; `Authorization: Bearer` remains supported for local Compose, smoke tests, and backward compatibility.
 - Agent-driven feature work must use the existing compose-backed runtime on `localhost:3100` for web verification. Do not start ad-hoc `next dev`, `pnpm dev`, `storybook dev`, static preview servers, or separate feature instances unless the user explicitly requests a dev server / separate instance in the prompt.
 - Для локального `pnpm run web:smoke` нужен установленный Playwright Chromium; первый прогон на новой машине делайте через `pnpm run web:browser-install`.

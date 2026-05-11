@@ -37,7 +37,13 @@ function FormPreview() {
   );
 }
 
-function ListPreview({ count = 3 }: { count?: number }) {
+function ListPreview({
+  count = 3,
+  scrollMode = "contained",
+}: {
+  count?: number;
+  scrollMode?: "page" | "contained";
+}) {
   return (
     <IslandCard
       bodyClassName="min-h-0 flex-1"
@@ -48,7 +54,7 @@ function ListPreview({ count = 3 }: { count?: number }) {
       title="Активные дивизионы"
     >
       <Badge tone="info">Только активные</Badge>
-      <FormListScrollArea className="grid gap-3">
+      <FormListScrollArea className="grid gap-3" scrollMode={scrollMode}>
         {rows.slice(0, count).map((row) => (
           <div className="rounded-[var(--radius-lg)] border border-border bg-card px-4 py-3" key={row.name}>
             <div className="text-sm font-semibold text-foreground">{row.name}</div>

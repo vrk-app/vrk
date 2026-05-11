@@ -172,7 +172,8 @@
 
 - Назначение: общий layout для operational surfaces, где слева форма добавления/редактирования, а справа список объектов.
 - Обязательные props: `form`, `list`, `className`, `formClassName`, `listClassName`, `columnsClassName`.
-- Поведение: на desktop (`xl+`) измеряет высоту левой формы, задает эту высоту правой колонке и переносит переполнение в `FormListScrollArea`; на tablet/mobile складывает колонки в обычный стек без height-lock.
+- `FormListScrollArea` поддерживает `scrollMode: "page" | "contained"`; default `page` оставляет список в обычном page-flow, а `contained` включает desktop-only внутренний scroll без блокировки scroll chaining.
+- Поведение: на desktop (`xl+`) измеряет высоту левой формы и задает эту высоту правой колонке; переполнение переносится во внутренний scroll только при явном `scrollMode="contained"`. На tablet/mobile колонки складываются в обычный стек без height-lock.
 - Состояния: `desktop short list`, `desktop long list scroll`, `mobile stacked`.
 - Stories: `DesktopShortList`, `DesktopLongListScroll`, `MobileStacked`.
 - Реализация: `apps/web/shared/ui/FormListSplitLayout.tsx`, stories в `apps/web/stories/primitives/FormListSplitLayout.stories.tsx`.
@@ -589,9 +590,9 @@
 
 ### RUN-05 EquipmentRegistryWorkspace [P1]
 
-- Назначение: единый workspace реестров оборудования, СИ, эталонов, журналов и архива.
-- Состояния: `equipment tab`, `measuring instruments tab`, `standards tab`, `archive visible`, `scoped admin`, `scoped read-only`, `load error`.
-- Stories: `EquipmentTab`, `MeasuringInstrumentsTab`, `StandardsTab`, `WithArchiveVisible`, `ScopedReadonly`, `LoadError`.
+- Назначение: единый workspace оборудования с вкладками `Оборудование` и `Журнал операций`, owned standards внутри диагностических карточек и explicit archive visibility.
+- Состояния: `equipment tab`, `journal tab`, `archive visible`, `scoped admin`, `scoped read-only`, `load error`.
+- Stories: `TechnicalEquipmentList`, `UnifiedJournal`, `ArchiveVisible`, `ScopedReadonly`, `LoadError`, `LongEquipmentList`.
 
 ## 10. P1: шаблоны реестров и отчетов
 

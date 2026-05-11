@@ -536,25 +536,33 @@ test.describe("stage 03 unified equipment workspace", () => {
 
     await expect(page.getByRole("heading", { level: 1, name: "Оборудование" })).toBeVisible();
     await expect(page.getByText("Управление реестром").first()).toBeVisible();
-    await expect(page.getByRole("tablist")).toHaveCount(0);
-    await expect(page.getByRole("tab")).toHaveCount(0);
-    await expect(page.getByRole("heading", { level: 2, name: "Новое оборудование" })).toBeVisible();
+    await expect(page.getByRole("tablist", { name: "Разделы оборудования" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "Оборудование" })).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByRole("tab", { name: "Журнал операций" })).toHaveAttribute("aria-selected", "false");
+    await expect(page.getByRole("tab", { name: "Средства измерения" })).toHaveCount(0);
+    await expect(page.getByRole("tab", { name: "Эталоны" })).toHaveCount(0);
+    await expect(page.getByRole("heading", { level: 2, name: "Новое оборудование" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Добавить оборудование" })).toBeVisible();
     await expect(page.getByRole("heading", { level: 2, name: "Оборудование в учете" })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 2, name: "Журнал операций по оборудованию" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Журнал операций по оборудованию" })).toHaveCount(0);
     await expectNoStandaloneMetrologySurfaces(page);
 
-    await expect(page.getByLabel("Тип оборудования")).toBeVisible();
+    await page.getByRole("button", { name: "Добавить оборудование" }).click();
+    const equipmentCreateDialog = page.getByRole("dialog", { name: "Новое оборудование" });
+    await expect(equipmentCreateDialog).toBeVisible();
+    await expect(equipmentCreateDialog.getByLabel("Тип оборудования")).toBeVisible();
     await page.getByLabel("Тип оборудования").click();
     await expect(page.getByRole("option", { name: "Техническое" })).toBeVisible();
     await expect(page.getByRole("option", { name: "Диагностическое" })).toBeVisible();
     await page.keyboard.press("Escape");
 
-    await page.getByLabel("Производитель").fill("Трансмаш");
-    await page.getByLabel("Класс / тип").fill("Насос");
-    await page.getByLabel("Модель").first().fill("НП-01");
-    await page.getByLabel("Полное наименование").fill(equipmentName);
-    await page.getByLabel("Заводской номер").fill(`FAC-${seed}`);
-    await page.getByRole("button", { name: "Создать оборудование" }).click();
+    await equipmentCreateDialog.getByLabel("Производитель").fill("Трансмаш");
+    await equipmentCreateDialog.getByLabel("Класс / тип").fill("Насос");
+    await equipmentCreateDialog.getByLabel("Модель").first().fill("НП-01");
+    await equipmentCreateDialog.getByLabel("Полное наименование").fill(equipmentName);
+    await equipmentCreateDialog.getByLabel("Заводской номер").fill(`FAC-${seed}`);
+    await equipmentCreateDialog.getByRole("button", { name: "Создать оборудование" }).click();
+    await expect(equipmentCreateDialog).toHaveCount(0);
     await expect(page.getByText("Техническое оборудование создано и появилось в учете.", { exact: true })).toBeVisible();
     await expect(page.getByText(equipmentName).first()).toBeVisible();
     await expect(page.getByText("Техническое").first()).toBeVisible();
@@ -570,23 +578,27 @@ test.describe("stage 03 unified equipment workspace", () => {
     await expect(page.getByText(updatedEquipmentName).first()).toBeVisible();
     await page.setViewportSize({ height: 720, width: 1280 });
 
+    await page.getByRole("button", { name: "Добавить оборудование" }).click();
+    const diagnosticCreateDialog = page.getByRole("dialog", { name: "Новое оборудование" });
+    await expect(diagnosticCreateDialog).toBeVisible();
     await selectFieldOption(page, "Тип оборудования", "Диагностическое");
-    await page.getByLabel("Наименование").fill(diagnosticName);
-    await page.getByLabel("Тип / класс").fill("Манометр");
-    await page.getByLabel("Модель").first().fill("MN-12");
-    await page.getByLabel("ФИФ").fill(`DIAG-${seed}`);
-    await page.getByLabel("Серийный номер").fill(`SER-${seed}`);
-    await page.getByRole("button", { name: "Добавить меру" }).click();
-    await page.getByRole("button", { name: "Добавить меру" }).click();
-    await page.locator('input[name^="diagnostic-standard-type-"]').nth(0).fill("Кольцо установочное");
-    await page.locator('input[name^="diagnostic-standard-model-"]').nth(0).fill("КУ-25");
-    await page.locator('input[name^="diagnostic-standard-identifier-"]').nth(0).fill(diagnosticStandardOne);
-    await page.locator('textarea[name^="diagnostic-standard-characteristics-"]').nth(0).fill("25 мм, класс 0.01");
-    await page.locator('input[name^="diagnostic-standard-type-"]').nth(1).fill("Скоба контрольная");
-    await page.locator('input[name^="diagnostic-standard-model-"]').nth(1).fill("СК-40");
-    await page.locator('input[name^="diagnostic-standard-identifier-"]').nth(1).fill(diagnosticStandardTwo);
-    await page.locator('textarea[name^="diagnostic-standard-characteristics-"]').nth(1).fill("40 мм, класс 0.01");
-    await page.getByRole("button", { name: "Создать оборудование" }).click();
+    await diagnosticCreateDialog.getByLabel("Наименование").fill(diagnosticName);
+    await diagnosticCreateDialog.getByLabel("Тип / класс").fill("Манометр");
+    await diagnosticCreateDialog.getByLabel("Модель").first().fill("MN-12");
+    await diagnosticCreateDialog.getByLabel("ФИФ").fill(`DIAG-${seed}`);
+    await diagnosticCreateDialog.getByLabel("Серийный номер").fill(`SER-${seed}`);
+    await diagnosticCreateDialog.getByRole("button", { name: "Добавить меру" }).click();
+    await diagnosticCreateDialog.getByRole("button", { name: "Добавить меру" }).click();
+    await diagnosticCreateDialog.locator('input[name^="diagnostic-standard-type-"]').nth(0).fill("Кольцо установочное");
+    await diagnosticCreateDialog.locator('input[name^="diagnostic-standard-model-"]').nth(0).fill("КУ-25");
+    await diagnosticCreateDialog.locator('input[name^="diagnostic-standard-identifier-"]').nth(0).fill(diagnosticStandardOne);
+    await diagnosticCreateDialog.locator('textarea[name^="diagnostic-standard-characteristics-"]').nth(0).fill("25 мм, класс 0.01");
+    await diagnosticCreateDialog.locator('input[name^="diagnostic-standard-type-"]').nth(1).fill("Скоба контрольная");
+    await diagnosticCreateDialog.locator('input[name^="diagnostic-standard-model-"]').nth(1).fill("СК-40");
+    await diagnosticCreateDialog.locator('input[name^="diagnostic-standard-identifier-"]').nth(1).fill(diagnosticStandardTwo);
+    await diagnosticCreateDialog.locator('textarea[name^="diagnostic-standard-characteristics-"]').nth(1).fill("40 мм, класс 0.01");
+    await diagnosticCreateDialog.getByRole("button", { name: "Создать оборудование" }).click();
+    await expect(diagnosticCreateDialog).toHaveCount(0);
     await expect(page.getByText("Диагностическое оборудование создано с комплектом эталонов.", { exact: true })).toBeVisible();
     await expect(page.getByText(diagnosticName).first()).toBeVisible();
     await expect(page.getByText("Эталоны: 2").first()).toBeVisible();
@@ -614,6 +626,9 @@ test.describe("stage 03 unified equipment workspace", () => {
     await expect(page.getByText(diagnosticStandardTwo).first()).toBeVisible();
     await expect(page.getByText(diagnosticStandardThree).first()).toBeVisible();
 
+    await page.getByRole("tab", { name: "Журнал операций" }).click();
+    await expect(page.getByRole("tab", { name: "Журнал операций" })).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByRole("heading", { level: 2, name: "Журнал операций по оборудованию" })).toBeVisible();
     await selectFieldOption(page, "Оборудование", `${updatedDiagnosticName} • DIAG-${seed}`);
     await selectFieldOption(page, "Тип операции", "Поверка");
     await page.getByLabel("Дата операции").fill("2026-03-12");
@@ -631,7 +646,10 @@ test.describe("stage 03 unified equipment workspace", () => {
 
     await page.goto("/equipment?tab=standards");
     await expect(page).toHaveURL(/\/equipment$/);
-    await expect(page.getByRole("tablist")).toHaveCount(0);
+    await expect(page.getByRole("tablist", { name: "Разделы оборудования" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "Оборудование" })).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByRole("tab", { name: "Средства измерения" })).toHaveCount(0);
+    await expect(page.getByRole("tab", { name: "Эталоны" })).toHaveCount(0);
     await expectNoStandaloneMetrologySurfaces(page);
 
     await page.goto("/equipment?tab=mi&archived=1");
@@ -644,6 +662,7 @@ test.describe("stage 03 unified equipment workspace", () => {
     await expect(page.getByRole("button", { name: `Редактировать диагностическое оборудование ${archiveInstrumentName}` })).toHaveCount(0);
 
     await page.goto("/equipment");
+    await page.getByRole("tab", { name: "Журнал операций" }).click();
     await selectFieldOption(page, "Оборудование", `${updatedDiagnosticName} • DIAG-${seed}`);
     await page.getByRole("button", { name: "Архивировать выбранное оборудование" }).click();
     await confirmArchiveModal(page);
@@ -663,15 +682,21 @@ test.describe("stage 03 unified equipment workspace", () => {
     await expect(page).toHaveURL(/\/company$/);
     await page.goto("/equipment");
     await expect(page.getByRole("heading", { level: 2, name: "Новое оборудование" })).toHaveCount(0);
+    await expect(page.getByRole("tablist", { name: "Разделы оборудования" })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "Оборудование" })).toHaveAttribute("aria-selected", "true");
     await expect(page.getByRole("heading", { level: 2, name: "Оборудование в учете" })).toBeVisible();
+    await expect(page.getByText(updatedEquipmentName).first()).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Журнал операций по оборудованию" })).toHaveCount(0);
+    await page.getByRole("tab", { name: "Журнал операций" }).click();
     await expect(page.getByRole("heading", { level: 2, name: "Журнал операций по оборудованию" })).toBeVisible();
     await expect(page.getByRole("heading", { level: 3, name: "Хронология операций" })).toBeVisible();
     await expect(page.getByText("Редактирование скрыто")).toHaveCount(0);
     await expect(page.getByLabel("Тип оборудования")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Создать оборудование" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Добавить оборудование" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /^Редактировать/ })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /^Архивировать/ })).toHaveCount(0);
-    await expect(page.getByText(updatedEquipmentName).first()).toBeVisible();
+    await page.getByRole("tab", { name: "Оборудование" }).click();
     await expect(page.getByRole("button", { name: "Показать архив" })).toBeVisible();
 
     await page.getByRole("button", { name: "Показать архив" }).click();

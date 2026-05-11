@@ -91,10 +91,10 @@ flowchart LR
 - анонимный пользователь все еще видит Stage 02 shell на `/company`, пока у него нет сессии;
 - платформенный админ выпускает invite через `/register`;
 - historical slice-001 implementation проводит приглашенного администратора по пути `/register/[token] -> /company/setup -> /company`;
-- target correction от 2026-04-29 заменяет этот одноразовый wizard на путь `/register/[token] -> /company`, где первый и последующие дивизионы и юниты создаются через постоянный organization management UI;
+- target correction от 2026-04-29 заменяет этот одноразовый wizard на путь `/register/[token] -> /company`, где первый и последующие дивизионы и юниты создаются через organization management UI;
 - `/company` разделяет semantics поля `Тип`: профиль организации показывает legal-form selector `ООО` / `ПАО` / `НАО` / `ИП`, дивизион не показывает type selector, а юнит сохраняет operational type selector `ВРД` / `ВРЗ` / `ВУ` / `ВРП`;
 - `/company` показывает optional requisites и логотип; логотип загружается через `app/api/company/logo`, а browser получает только authenticated proxy URL, не S3 object key;
-- `/company` держит формы создания дивизионов и юнитов постоянными create-surfaces: edit actions не подставляют значения в эти формы;
+- `/company` держит вкладки `Дивизионы` и `Юниты` как list-first поверхности: реестр занимает полную ширину, create action живет в header/empty state списка и открывает отдельный Dialog; edit actions не подставляют значения в create forms;
 - редактирование дивизионов и юнитов открывается отдельным modal PATCH surface с focus trap, `Escape`/backdrop close и restore focus, аналогично registry edit dialogs в `/equipment`;
 - server-side runtime layout читает текущую session и не пускает активированного администратора в пустой shell;
 - browser не ходит напрямую в container-only backend host: Next route handlers в `app/api/*` проксируют invite/session/bootstrap requests к `apps/backend`;
@@ -109,7 +109,7 @@ flowchart LR
     D --> C
     C --> E["HttpOnly vrk_session cookie"]
     E --> B
-    B --> F["/company<br/>persistent org management"]
+    B --> F["/company<br/>org management<br/>create dialogs"]
 ```
 
 ### 1.2.2. Реализованный Stage 03 runtime contour для slice-002
@@ -122,6 +122,7 @@ flowchart LR
   - organization-scope пользователь видит весь org graph; вкладка `Сотрудники` появляется при `workspace.canViewEmployees`, а invite/edit/deactivate controls только при admin-флагах;
   - division-scope пользователь видит только свой дивизион и его child units; `division_admin` получает scoped invite/edit/deactivate controls, а `division_head` и scoped `auditor` получают read-only employees registry;
   - unit-scope пользователь видит только один юнит и не видит broader org graph; `unit_admin` получает scoped invite/edit/deactivate controls, а `unit_head` и scoped `auditor` получают read-only employees registry;
+- employee invites стали list-first: `EmployeeInviteManager` показывает `Статусы приглашений` full-width, а `Пригласить сотрудника` открывает create Dialog из header списка или empty state;
 - `/login` после employee acceptance больше не возвращает пользователя в generic shell, а сразу восстанавливает его сохраненный scoped contour;
 - ссылка `политикой доступа` в login consent ведет на `/access-policy`, где временно живет non-legal draft/stub политики до замены юридически оформленной редакцией;
 - checkbox `Запомнить вход` на `/login` управляет только web-session UX: checked ставит HttpOnly `vrk_session` cookie с 24h `maxAge` и сохраняет localStorage-подсказку последнего workspace по hash нормализованного email; unchecked ставит session cookie без `maxAge` и чистит подсказку для текущего email;
@@ -192,31 +193,32 @@ Target `/equipment` frontend contract:
 - customer users попадают в один `EquipmentRegistryWorkspace`;
 - customer admins с `manage_equipment` получают create/edit/archive/journal controls внутри visible scope/subtree;
 - read-only роли видят single-column scope-filtered registry и journal history без create/edit/archive placeholders;
-- mutation panels (`Новое оборудование`, edit/archive actions, journal entry form) рендерятся только при `manage_equipment`;
-- manage UI показывает один form/list/journal composition:
-  - `Новое оборудование` с типом `Техническое` / `Диагностическое`;
-  - `Оборудование в учете`;
+- mutation surfaces (`Добавить оборудование` create Dialog, edit/archive actions, journal entry form) рендерятся только при `manage_equipment`;
+- manage UI показывает две верхнеуровневые client-side вкладки на том же route:
+  - `Оборудование` как default tab с surface `Оборудование в учете`;
+  - create action `Добавить оборудование`, который открывает Dialog `Новое оборудование` с типом `Техническое` / `Диагностическое`;
   - diagnostic equipment card with owned standards inside the card;
   - diagnostic edit modal with add-on-save and hard-delete-on-save controls for owned standards;
-  - `Журнал операций по оборудованию`.
+  - `Журнал операций` как separate tab с surface `Журнал операций по оборудованию`.
 
 ```mermaid
 flowchart LR
     A["Browser /equipment<br/>old tab params optional"] --> B["Next page"]
     B --> C["EquipmentRegistryWorkspace"]
-    C --> D["Unified create form"]
+    C --> T{"UI tab"}
+    T -->|"Оборудование"| H["Оборудование в учете"]
+    T -->|"Журнал операций"| K["Журнал операций по оборудованию"]
+    H --> D["Add equipment action<br/>create Dialog"]
     D --> E{"Тип оборудования"}
     E -->|"Техническое"| F["technical payload"]
     E -->|"Диагностическое"| G["diagnostic payload<br/>owned standards 0..N"]
-    C --> H["Оборудование в учете"]
     H --> I["technical cards"]
     H --> J["diagnostic cards<br/>standards inside"]
     J --> M["edit modal<br/>add / hard-delete standards on save"]
-    C --> K["Журнал операций по оборудованию"]
-    C --> L["archive visibility"]
+    C --> L["archive visibility<br/>shared control"]
 ```
 
-Диаграмма фиксирует текущий target boundary: route остается прежним, но tabs and standalone standards list are no longer part of the user-facing workspace.
+Диаграмма фиксирует текущий target boundary: route остается прежним, но old registry tabs (`mi`, `standards`) and standalone standards list are no longer part of the user-facing workspace.
 
 ### 1.2.5. Runtime contour for equipment correction
 

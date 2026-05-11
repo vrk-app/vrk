@@ -643,7 +643,8 @@ Equipment-domain correction moves the user-facing contract from three tabbed reg
 - public route remains `/equipment`;
 - old query params `tab=mi` and `tab=standards` are compatibility-only and must not expose separate active surfaces;
 - UI title is `Оборудование`;
-- create surface is one form `Новое оборудование` with required type `Техническое` / `Диагностическое`;
+- workspace uses two top-level client-side tabs: `Оборудование` and `Журнал операций`;
+- create surface is action `Добавить оборудование`, opening Dialog `Новое оборудование` with required type `Техническое` / `Диагностическое`;
 - list surface is `Оборудование в учете`;
 - technical cards show ordinary equipment data and lifecycle state;
 - diagnostic cards show diagnostic fields, ФИФ/serial data, owned standards count and standards list inside the card;
@@ -656,14 +657,15 @@ Equipment-domain correction moves the user-facing contract from three tabbed reg
 
 ```mermaid
 flowchart LR
-    A["/equipment"] --> B["Новое оборудование"]
+    A["/equipment"] --> T{"UI tab"}
+    T -->|"Оборудование"| G["Оборудование в учете"]
+    T -->|"Журнал операций"| I["Журнал операций по оборудованию"]
+    G --> B["Новое оборудование"]
     B --> C{"Техническое / Диагностическое"}
     C --> D["technical equipment"]
     C --> E["diagnostic equipment"]
     E --> F["owned standards 0..N"]
-    A --> G["Оборудование в учете"]
     G --> H["standards visible only in diagnostic card"]
-    A --> I["Журнал операций по оборудованию"]
 ```
 
 Эта диаграмма является target source of truth для Stage 03 correction: historical backend resources may remain as compatibility implementation detail, but product behavior is equipment -> owned standards -> equipment journal.

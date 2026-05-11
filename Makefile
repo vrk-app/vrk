@@ -2,8 +2,10 @@ COMPOSE_FILE := compose.platform.yml
 COMPOSE_DEV_FILE := compose.dev.yml
 COMPOSE := docker compose -f $(COMPOSE_FILE)
 COMPOSE_DEV := docker compose -f $(COMPOSE_FILE) -f $(COMPOSE_DEV_FILE)
+EQUIPMENT_SEED_TARGET ?= --latest-dev-seed
+EQUIPMENT_SEED_ARGS ?=
 
-.PHONY: dev web-dev dev-seed down clean logs smoke backend-test backend-build
+.PHONY: dev web-dev dev-seed equipment-seed-dry-run equipment-seed down clean logs smoke backend-test backend-build
 
 dev:
 	mkdir -p .local
@@ -17,6 +19,14 @@ web-dev:
 dev-seed:
 	mkdir -p .local
 	$(COMPOSE) run --rm --build dev-seed
+
+equipment-seed-dry-run:
+	mkdir -p .local
+	$(COMPOSE) run --rm --build --entrypoint python dev-seed /workspace/scripts/equipment_registry_seed.py $(EQUIPMENT_SEED_TARGET) --dry-run $(EQUIPMENT_SEED_ARGS)
+
+equipment-seed:
+	mkdir -p .local
+	$(COMPOSE) run --rm --build --entrypoint python dev-seed /workspace/scripts/equipment_registry_seed.py $(EQUIPMENT_SEED_TARGET) --yes $(EQUIPMENT_SEED_ARGS)
 
 down:
 	$(COMPOSE) down --remove-orphans

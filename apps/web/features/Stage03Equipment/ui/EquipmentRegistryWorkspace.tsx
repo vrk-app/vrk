@@ -5,9 +5,14 @@ import { useRouter } from "next/navigation";
 import {
   Archive,
   Cable,
+  FileText,
+  ListChecks,
+  MapPin,
+  Network,
   Pencil,
   Plus,
   Save,
+  ShieldCheck,
   Trash2,
   Wrench,
 } from "lucide-react";
@@ -35,11 +40,14 @@ import {
   InputField,
   IslandCard,
   SelectField,
+  Tabs,
   TextareaField,
   useToast,
 } from "@/shared/ui";
+import { cn } from "@/shared/lib/cn";
 
 type EquipmentFormKind = "technical" | "diagnostic";
+type EquipmentWorkspaceTab = "equipment" | "journal";
 
 type Props = {
   session: SessionSummaryResponse;
@@ -135,6 +143,13 @@ type EditDialogState =
       removedStandardIds: string[];
     };
 
+type EquipmentPassportSection = {
+  id: string;
+  title: string;
+  icon: ReactNode;
+  children: ReactNode;
+};
+
 const equipmentFormKindOptions: Array<{ value: EquipmentFormKind; label: string }> = [
   { value: "technical", label: "Техническое" },
   { value: "diagnostic", label: "Диагностическое" },
@@ -153,6 +168,15 @@ const journalOperationOptions: Array<{ value: JournalRecord["operationType"]; la
   { value: "suspension", label: "Приостановка" },
   { value: "decommission", label: "Вывод из эксплуатации" },
 ];
+
+const equipmentWorkspaceTabs = [
+  { key: "equipment", label: "Оборудование", icon: Wrench },
+  { key: "journal", label: "Журнал операций", icon: ListChecks },
+] as const;
+
+function getEquipmentWorkspacePanelId(key: EquipmentWorkspaceTab) {
+  return `equipment-workspace-panel-${key}`;
+}
 
 const statusToneMap: Record<RegistryStatus, "success" | "warning" | "neutral"> = {
   active: "success",
@@ -467,17 +491,109 @@ function fieldDetail(label: string, value: string | number | undefined | null, t
   );
 }
 
+function passportDetail(label: string, value: string | number | undefined | null, translateNo = false) {
+  const content = value || "—";
+
+  return (
+    <div className="min-w-0 space-y-1">
+      <dt className="text-xs font-medium leading-4 text-muted-foreground">{label}</dt>
+      <dd
+        className="break-words text-sm font-medium leading-5 text-foreground [overflow-wrap:anywhere]"
+        translate={translateNo && content !== "—" ? "no" : undefined}
+      >
+        {content}
+      </dd>
+    </div>
+  );
+}
+
+function passportSectionHeading({ children, icon }: { children: ReactNode; icon: ReactNode }) {
+  return (
+    <div className="flex min-w-0 items-center gap-2 text-sm font-semibold text-foreground">
+      <span className="flex size-5 shrink-0 items-center justify-center text-muted-foreground">{icon}</span>
+      <span className="min-w-0 break-words">{children}</span>
+    </div>
+  );
+}
+
+function renderPassportSections(sections: EquipmentPassportSection[]) {
+  return sections.map((section, index) => (
+    <div className={cn("min-w-0 space-y-2", index > 0 && "border-t border-border pt-4")} key={section.id}>
+      {passportSectionHeading({ children: section.title, icon: section.icon })}
+      {section.children}
+    </div>
+  ));
+}
+
+function EquipmentPassportCard({
+  actions,
+  badges,
+  icon,
+  intrinsicClassName,
+  label,
+  primarySections,
+  secondarySections,
+  subtitle,
+  title,
+}: {
+  actions?: ReactNode;
+  badges: ReactNode;
+  icon: ReactNode;
+  intrinsicClassName: string;
+  label: string;
+  primarySections: EquipmentPassportSection[];
+  secondarySections?: EquipmentPassportSection[];
+  subtitle: string;
+  title: string;
+}) {
+  const hasSecondarySections = Boolean(secondarySections?.length);
+
+  return (
+    <Card className={cn("equipment-passport-card gap-5 [content-visibility:auto]", intrinsicClassName)} padding="md" tone="muted">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-lg)] border border-border bg-muted/70 text-muted-foreground">
+            {icon}
+          </span>
+          <div className="min-w-0 space-y-1">
+            <p className="text-sm font-medium text-muted-foreground">{label}</p>
+            <h3 className="break-words text-xl font-semibold leading-7 text-foreground">{title}</h3>
+            <p className="break-words text-sm leading-6 text-muted-foreground">{subtitle}</p>
+          </div>
+        </div>
+        <div className="flex min-w-0 flex-wrap gap-2">{badges}</div>
+      </div>
+
+      <div className={cn("equipment-passport-layout", hasSecondarySections && "equipment-passport-layout--split")}>
+        <div className="equipment-passport-main space-y-4 p-4">{renderPassportSections(primarySections)}</div>
+        {hasSecondarySections ? (
+          <div className="equipment-passport-aside p-4">
+            <div className="grid gap-4">{renderPassportSections(secondarySections ?? [])}</div>
+          </div>
+        ) : null}
+      </div>
+
+      {actions ? <div className="grid gap-3 sm:grid-cols-2">{actions}</div> : null}
+    </Card>
+  );
+}
+
 function EmptyState({
   title,
   detail,
+  action,
 }: {
   title: string;
   detail: string;
+  action?: ReactNode;
 }) {
   return (
-    <div className="rounded-[var(--radius-xl)] border border-dashed border-border bg-muted/50 px-5 py-6 text-sm text-muted-foreground">
-      <div className="font-medium text-foreground">{title}</div>
-      <p className="mt-2 leading-6">{detail}</p>
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-xl)] border border-dashed border-border bg-muted/50 px-5 py-6 text-sm text-muted-foreground">
+      <div className="min-w-0">
+        <div className="font-medium text-foreground">{title}</div>
+        <p className="mt-2 leading-6">{detail}</p>
+      </div>
+      {action}
     </div>
   );
 }
@@ -1044,6 +1160,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
   const router = useRouter();
   const { showToast } = useToast();
   const [showArchived, setShowArchived] = useState(initialShowArchived);
+  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<EquipmentWorkspaceTab>("equipment");
   const [equipmentRecords, setEquipmentRecords] = useState<EquipmentRecord[]>([]);
   const [measuringInstruments, setMeasuringInstruments] = useState<MeasuringInstrumentRecord[]>([]);
   const [equipmentFormKind, setEquipmentFormKind] = useState<EquipmentFormKind>("technical");
@@ -1058,6 +1175,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
   const hasLoadedRegistriesRef = useRef(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [archiveConfirmation, setArchiveConfirmation] = useState<ArchiveConfirmation | null>(null);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialog, setEditDialog] = useState<EditDialogState | null>(null);
   const [mutationInFlight, setMutationInFlight] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -1182,7 +1300,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
     });
   }
 
-  async function createEquipment() {
+  async function createEquipment({ keepOpen = false }: { keepOpen?: boolean } = {}) {
     const response = await fetch("/api/equipment", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1192,10 +1310,13 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
     await parseEnvelope<EquipmentRecord>(response, "Не удалось создать карточку оборудования.");
     setEquipmentForm(defaultEquipmentForm(session));
     await loadRegistries();
+    if (!keepOpen) {
+      setCreateDialogOpen(false);
+    }
     showSuccessToast("Техническое оборудование создано и появилось в учете.", "equipment-create-success");
   }
 
-  async function createDiagnosticEquipment() {
+  async function createDiagnosticEquipment({ keepOpen = false }: { keepOpen?: boolean } = {}) {
     const response = await fetch("/api/equipment/measuring-instruments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1230,6 +1351,9 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
     setDiagnosticStandardDrafts([]);
     await loadRegistries();
     setSelectedMeasuringInstrumentId(created.id);
+    if (!keepOpen) {
+      setCreateDialogOpen(false);
+    }
     showSuccessToast(
       createdStandards.length
         ? "Диагностическое оборудование создано с комплектом эталонов."
@@ -1381,6 +1505,19 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
 
   function requestArchive(task: () => Promise<void>, fallbackMessage: string, recordLabel: string, dedupeKey: string) {
     setArchiveConfirmation({ dedupeKey, fallbackMessage, recordLabel, task });
+  }
+
+  function submitEquipmentCreate(keepOpen = false) {
+    runMutation(
+      () =>
+        equipmentFormKind === "technical"
+          ? createEquipment({ keepOpen })
+          : createDiagnosticEquipment({ keepOpen }),
+      equipmentFormKind === "technical"
+        ? "Не удалось создать техническое оборудование."
+        : "Не удалось создать диагностическое оборудование.",
+      equipmentFormKind === "technical" ? "equipment-create-error" : "equipment-diagnostic-create-error",
+    );
   }
 
   function confirmArchive() {
@@ -1695,14 +1832,61 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
     );
   }
 
-  function renderEquipmentFormCard() {
+  function renderEquipmentCreateDialog() {
+    if (!canManageRegistry) {
+      return null;
+    }
+
     const canSubmit =
       equipmentFormKind === "technical"
         ? isEquipmentFormReady(equipmentForm)
         : isMeasuringInstrumentFormReady(measuringInstrumentForm) && areDiagnosticStandardDraftsReady(diagnosticStandardDrafts);
 
     return (
-      <IslandCard headingLevel={2} icon={<Wrench aria-hidden="true" className="size-4" />} title="Новое оборудование">
+      <Dialog
+        bodyClassName="grid gap-5"
+        dismissible={!isMutating}
+        footer={
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">
+              {!canSubmit ? "Заполните обязательные поля перед созданием." : "Карточка появится в реестре после сохранения."}
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Button disabled={isMutating} onClick={() => setCreateDialogOpen(false)} type="button" variant="secondary">
+                Отмена
+              </Button>
+              <Button
+                disabled={!canSubmit || isMutating}
+                onClick={() => submitEquipmentCreate(true)}
+                type="button"
+                variant="secondary"
+              >
+                Создать и добавить ещё
+              </Button>
+              <Button
+                disabled={!canSubmit}
+                leftIcon={<Plus className="size-4" />}
+                loading={isMutating}
+                onClick={() => submitEquipmentCreate(false)}
+                type="button"
+              >
+                Создать оборудование
+              </Button>
+            </div>
+          </div>
+        }
+        headerIcon={<Wrench aria-hidden="true" className="size-4" />}
+        headerVariant="muted"
+        onOpenChange={(open) => {
+          if (!open && !isMutating) {
+            setCreateDialogOpen(false);
+          }
+        }}
+        open={createDialogOpen}
+        showClose={!isMutating}
+        size="xl"
+        title="Новое оборудование"
+      >
         <SelectField
           label="Тип оборудования"
           name="equipment-form-kind"
@@ -1711,24 +1895,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
           value={equipmentFormKind}
         />
         {equipmentFormKind === "technical" ? renderTechnicalEquipmentFields() : renderDiagnosticEquipmentFields()}
-        <Button
-          disabled={!canSubmit}
-          fullWidth
-          loading={isMutating}
-          onClick={() =>
-            runMutation(
-              equipmentFormKind === "technical" ? createEquipment : createDiagnosticEquipment,
-              equipmentFormKind === "technical"
-                ? "Не удалось создать техническое оборудование."
-                : "Не удалось создать диагностическое оборудование.",
-              equipmentFormKind === "technical" ? "equipment-create-error" : "equipment-diagnostic-create-error",
-            )
-          }
-          type="button"
-        >
-          Создать оборудование
-        </Button>
-      </IslandCard>
+      </Dialog>
     );
   }
 
@@ -1765,131 +1932,183 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
   }
 
   function renderTechnicalEquipmentCard(item: EquipmentRecord) {
+    const secondarySections: EquipmentPassportSection[] = [];
+
+    if (item.documentUrl || item.comment) {
+      secondarySections.push({
+        id: "technical-evidence",
+        title: "Документ и комментарий",
+        icon: <FileText aria-hidden="true" className="size-4" />,
+        children: (
+          <dl className="grid gap-3">
+            {item.documentUrl ? passportDetail("Документ", item.documentUrl, true) : null}
+            {item.comment ? passportDetail("Комментарий", item.comment) : null}
+          </dl>
+        ),
+      });
+    }
+
     return (
-      <Card className="gap-4 [contain-intrinsic-size:1px_320px] [content-visibility:auto]" key={`technical:${item.id}`} padding="md" tone="muted">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0 space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge tone="neutral">Техническое</Badge>
-              <Badge tone={statusToneMap[item.status]}>{statusLabelMap[item.status]}</Badge>
-              {item.archivedAt ? <Badge tone="neutral">В архиве</Badge> : null}
-            </div>
-            <h3 className="break-words text-lg font-semibold text-foreground">{item.fullName}</h3>
-            <p className="break-words text-sm text-muted-foreground">
-              {item.manufacturer} • {item.classification} • {item.model}
-            </p>
-          </div>
-        </div>
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {fieldDetail("Заводской номер", item.factoryNumber, true)}
-          {fieldDetail("Инвентарный номер", item.inventoryNumber, true)}
-          {fieldDetail("Год выпуска", item.manufactureYear)}
-          {fieldDetail("Юнит", item.unit.name)}
-          {fieldDetail("Дивизион", item.unit.divisionName)}
-          {fieldDetail("Архивирован", item.archivedAt ? formatTimestamp(item.archivedAt) : undefined)}
-        </div>
-        {item.comment || item.documentUrl ? (
-          <div className="grid gap-3 md:grid-cols-2">
-            {fieldDetail("Комментарий", item.comment)}
-            {fieldDetail("Документ", item.documentUrl)}
-          </div>
-        ) : null}
-        {canManageRegistry && !item.archivedAt ? (
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Button
-              aria-label={`Редактировать оборудование ${item.fullName}`}
-              leftIcon={<Pencil className="size-4" />}
-              onClick={() => openEquipmentEditor(item)}
-              size="sm"
-              type="button"
-              variant="secondary"
-            >
-              Редактировать
-            </Button>
-            <Button
-              aria-label={`Архивировать оборудование ${item.fullName}`}
-              leftIcon={<Archive className="size-4" />}
-              loading={isMutating}
-              onClick={() =>
-                requestArchive(
-                  () => archiveEquipment(item.id),
-                  "Не удалось архивировать оборудование.",
-                  `оборудование «${item.fullName}»`,
-                  "equipment-archive-error",
-                )
-              }
-              size="sm"
-              type="button"
-              variant="ghost"
-            >
-              Архивировать
-            </Button>
-          </div>
-        ) : null}
-      </Card>
+      <EquipmentPassportCard
+        actions={
+          canManageRegistry && !item.archivedAt ? (
+            <>
+              <Button
+                aria-label={`Редактировать оборудование ${item.fullName}`}
+                leftIcon={<Pencil className="size-4" />}
+                onClick={() => openEquipmentEditor(item)}
+                size="sm"
+                type="button"
+                variant="secondary"
+              >
+                Редактировать
+              </Button>
+              <Button
+                aria-label={`Архивировать оборудование ${item.fullName}`}
+                leftIcon={<Archive className="size-4" />}
+                loading={isMutating}
+                onClick={() =>
+                  requestArchive(
+                    () => archiveEquipment(item.id),
+                    "Не удалось архивировать оборудование.",
+                    `оборудование «${item.fullName}»`,
+                    "equipment-archive-error",
+                  )
+                }
+                size="sm"
+                type="button"
+                variant="ghost"
+              >
+                Архивировать
+              </Button>
+            </>
+          ) : null
+        }
+        badges={
+          <>
+            <Badge tone={statusToneMap[item.status]}>{statusLabelMap[item.status]}</Badge>
+            {item.archivedAt ? <Badge tone="neutral">В архиве</Badge> : null}
+          </>
+        }
+        icon={<Wrench aria-hidden="true" className="size-5" />}
+        intrinsicClassName="[contain-intrinsic-size:1px_420px]"
+        key={`technical:${item.id}`}
+        label="Техническое"
+        primarySections={[
+          {
+            id: "technical-requisites",
+            title: "Реквизиты записи",
+            icon: <Wrench aria-hidden="true" className="size-4" />,
+            children: (
+              <dl className="grid gap-3 sm:grid-cols-2">
+                {passportDetail("Заводской номер", item.factoryNumber, true)}
+                {passportDetail("Инвентарный номер", item.inventoryNumber, true)}
+                {passportDetail("Производитель", item.manufacturer)}
+                {passportDetail("Классификация", item.classification)}
+                {passportDetail("Модель", item.model)}
+                {passportDetail("Год выпуска", item.manufactureYear)}
+                {item.archivedAt ? passportDetail("Архивирован", formatTimestamp(item.archivedAt)) : null}
+              </dl>
+            ),
+          },
+          {
+            id: "technical-scope",
+            title: "Область учета",
+            icon: <MapPin aria-hidden="true" className="size-4" />,
+            children: (
+              <p className="mt-2 break-words text-sm leading-6 text-foreground">
+                {[item.unit.divisionName, item.unit.name].filter(Boolean).join(", ")}
+              </p>
+            ),
+          },
+        ]}
+        secondarySections={secondarySections}
+        subtitle={[item.manufacturer, item.classification, item.model].filter(Boolean).join(" • ")}
+        title={item.fullName}
+      />
     );
   }
 
   function renderDiagnosticEquipmentCard(item: MeasuringInstrumentRecord) {
-    return (
-      <Card className="gap-4 [contain-intrinsic-size:1px_380px] [content-visibility:auto]" key={`diagnostic:${item.id}`} padding="md" tone="muted">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0 space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge tone="interactive">Диагностическое</Badge>
-              <Badge tone={statusToneMap[item.status]}>{statusLabelMap[item.status]}</Badge>
-              <Badge tone={item.standards.length ? "interactive" : "neutral"}>Эталоны: {item.standards.length}</Badge>
-              {item.archivedAt ? <Badge tone="neutral">В архиве</Badge> : null}
+    const secondarySections: EquipmentPassportSection[] = [
+      {
+        id: "diagnostic-journal",
+        title: "Журнал",
+        icon: <ListChecks aria-hidden="true" className="size-4" />,
+        children: (
+          <>
+            {item.latestJournal ? (
+              <p className="break-words text-sm leading-6 text-foreground">
+                Последняя запись:{" "}
+                <span className="font-medium text-foreground">{formatOperationType(item.latestJournal.operationType)}</span> от{" "}
+                <span className="font-medium text-foreground">{formatDate(item.latestJournal.operationDate)}</span>, документ{" "}
+                <span className="font-medium text-foreground" translate="no">
+                  {item.latestJournal.documentNumber}
+                </span>
+                .
+              </p>
+            ) : (
+              <p className="break-words text-sm leading-6 text-muted-foreground">
+                После первой операции текущий статус и срок рассчитаются автоматически.
+              </p>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <Badge size="sm" tone="neutral">
+                {item.journalCount ? `${item.journalCount} записей` : "журнал пуст"}
+              </Badge>
+              <Badge size="sm" tone="neutral">
+                {item.nextDueDate ? `Действует до ${formatDate(item.nextDueDate)}` : "срок не рассчитан"}
+              </Badge>
             </div>
-            <h3 className="break-words text-lg font-semibold text-foreground">{item.name}</h3>
-            <p className="break-words text-sm text-muted-foreground">
-              {item.instrumentType} • {item.model}
-            </p>
+          </>
+        ),
+      },
+    ];
+
+    if (item.documentUrl) {
+      secondarySections.push({
+        id: "diagnostic-document",
+        title: "Паспорт СИ",
+        icon: <FileText aria-hidden="true" className="size-4" />,
+        children: (
+          <p className="mt-2 break-all font-mono text-sm leading-6 text-foreground" translate="no">
+            {item.documentUrl}
+          </p>
+        ),
+      });
+    }
+
+    secondarySections.push({
+      id: "diagnostic-standards",
+      title: "Эталоны / установочные меры",
+      icon: <Network aria-hidden="true" className="size-4" />,
+      children: (
+        <div className="min-w-0 space-y-3">
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Badge size="sm" tone={item.standards.length ? "interactive" : "neutral"}>
+              Эталоны: {item.standards.length}
+            </Badge>
           </div>
-        </div>
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {fieldDetail("ФИФ", item.registrationNumber, true)}
-          {fieldDetail("Серийный номер", item.serialNumber, true)}
-          {fieldDetail("Юнит", item.unit.name)}
-          {fieldDetail("Техническое оборудование", item.equipment?.fullName)}
-          {fieldDetail("Журнал", item.journalCount ? `${item.journalCount} записей` : "пока пуст")}
-          {fieldDetail("Действует до", item.nextDueDate ? formatDate(item.nextDueDate) : undefined)}
-          {fieldDetail("Архивирован", item.archivedAt ? formatTimestamp(item.archivedAt) : undefined)}
-        </div>
-        {item.latestJournal ? (
-          <div className="rounded-[var(--radius-lg)] border border-border bg-card px-4 py-3 text-sm leading-6 text-muted-foreground">
-            Последняя запись: <span className="font-medium text-foreground">{formatOperationType(item.latestJournal.operationType)}</span>{" "}
-            от <span className="font-medium text-foreground">{formatDate(item.latestJournal.operationDate)}</span>, документ{" "}
-            <span className="font-medium text-foreground" translate="no">
-              {item.latestJournal.documentNumber}
-            </span>
-            .
-          </div>
-        ) : (
-          <EmptyState
-            detail="После первой операции текущий статус и срок рассчитаются автоматически."
-            title="Журнал операций пока пуст"
-          />
-        )}
-        <div className="grid gap-3">
-          <div className="text-sm font-semibold text-foreground">Эталоны / установочные меры</div>
           {item.standards.length ? (
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid gap-2">
               {item.standards.map((standard) => (
-                <div className="rounded-[var(--radius-lg)] border border-border bg-card px-4 py-3" key={`${item.id}:${standard.id}`}>
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-sm font-semibold text-foreground">
+                <div
+                  className="grid min-w-0 gap-2 rounded-[var(--radius-md)] border border-border bg-card px-3 py-2 sm:grid-cols-[minmax(0,1fr)_auto]"
+                  key={`${item.id}:${standard.id}`}
+                >
+                  <div className="min-w-0">
+                    <p className="break-words text-sm font-semibold leading-5 text-foreground">
                       <span translate="no">
                         {standard.standardType} • {standard.identifier}
                       </span>
                     </p>
-                    <Badge size="sm" tone={statusToneMap[standard.status]}>
-                      {statusLabelMap[standard.status]}
-                    </Badge>
+                    <p className="mt-1 break-words text-sm leading-5 text-muted-foreground">
+                      {standard.model} • {standard.scopeLabel}
+                    </p>
                   </div>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {standard.model} • {standard.scopeLabel}
-                  </p>
+                  <Badge className="w-fit" size="sm" tone={statusToneMap[standard.status]}>
+                    {statusLabelMap[standard.status]}
+                  </Badge>
                 </div>
               ))}
             </div>
@@ -1897,47 +2116,106 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
             <EmptyState detail="Комплект эталонов для этой карточки не задан." title="Эталоны не привязаны" />
           )}
         </div>
-        {canManageRegistry && !item.archivedAt ? (
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Button
-              aria-label={`Редактировать диагностическое оборудование ${item.name}`}
-              leftIcon={<Pencil className="size-4" />}
-              onClick={() => openMeasuringInstrumentEditor(item)}
-              size="sm"
-              type="button"
-              variant="secondary"
-            >
-              Редактировать
-            </Button>
-            <Button
-              aria-label={`Архивировать диагностическое оборудование ${item.name}`}
-              leftIcon={<Archive className="size-4" />}
-              loading={isMutating}
-              onClick={() =>
-                requestArchive(
-                  () => archiveMeasuringInstrument(item.id),
-                  "Не удалось архивировать диагностическое оборудование.",
-                  `диагностическое оборудование «${item.name}»`,
-                  "equipment-mi-archive-error",
-                )
-              }
-              size="sm"
-              type="button"
-              variant="ghost"
-            >
-              Архивировать
-            </Button>
-          </div>
-        ) : null}
-      </Card>
+      ),
+    });
+
+    return (
+      <EquipmentPassportCard
+        actions={
+          canManageRegistry && !item.archivedAt ? (
+            <>
+              <Button
+                aria-label={`Редактировать диагностическое оборудование ${item.name}`}
+                leftIcon={<Pencil className="size-4" />}
+                onClick={() => openMeasuringInstrumentEditor(item)}
+                size="sm"
+                type="button"
+                variant="secondary"
+              >
+                Редактировать
+              </Button>
+              <Button
+                aria-label={`Архивировать диагностическое оборудование ${item.name}`}
+                leftIcon={<Archive className="size-4" />}
+                loading={isMutating}
+                onClick={() =>
+                  requestArchive(
+                    () => archiveMeasuringInstrument(item.id),
+                    "Не удалось архивировать диагностическое оборудование.",
+                    `диагностическое оборудование «${item.name}»`,
+                    "equipment-mi-archive-error",
+                  )
+                }
+                size="sm"
+                type="button"
+                variant="ghost"
+              >
+                Архивировать
+              </Button>
+            </>
+          ) : null
+        }
+        badges={
+          <>
+            <Badge tone={statusToneMap[item.status]}>{statusLabelMap[item.status]}</Badge>
+            <Badge tone={item.standards.length ? "interactive" : "neutral"}>Эталоны: {item.standards.length}</Badge>
+            {item.archivedAt ? <Badge tone="neutral">В архиве</Badge> : null}
+          </>
+        }
+        icon={<ShieldCheck aria-hidden="true" className="size-5" />}
+        intrinsicClassName="[contain-intrinsic-size:1px_520px]"
+        key={`diagnostic:${item.id}`}
+        label="Диагностическое"
+        primarySections={[
+          {
+            id: "diagnostic-requisites",
+            title: "Реквизиты записи",
+            icon: <Wrench aria-hidden="true" className="size-4" />,
+            children: (
+              <dl className="grid gap-3 sm:grid-cols-2">
+                {passportDetail("ФИФ", item.registrationNumber, true)}
+                {passportDetail("Серийный номер", item.serialNumber, true)}
+                {passportDetail("Тип", item.instrumentType)}
+                {passportDetail("Модель", item.model)}
+                {passportDetail("Юнит", item.unit.name)}
+                {passportDetail("Связанное оборудование", item.equipment?.fullName)}
+                {item.archivedAt ? passportDetail("Архивирован", formatTimestamp(item.archivedAt)) : null}
+              </dl>
+            ),
+          },
+          {
+            id: "diagnostic-scope",
+            title: "Область учета",
+            icon: <MapPin aria-hidden="true" className="size-4" />,
+            children: (
+              <p className="mt-2 break-words text-sm leading-6 text-foreground">
+                {[item.unit.divisionName, item.unit.name].filter(Boolean).join(", ")}
+              </p>
+            ),
+          },
+        ]}
+        secondarySections={secondarySections}
+        subtitle={`${item.instrumentType} • ${item.model}`}
+        title={item.name}
+      />
     );
   }
 
   function renderEquipmentListCard() {
     return (
       <IslandCard
-        bodyClassName={canManageRegistry ? "min-h-0 flex-1" : undefined}
-        className={canManageRegistry ? "h-full min-h-0 overflow-hidden" : undefined}
+        action={
+          canManageRegistry ? (
+            <button
+              aria-label="Добавить оборудование"
+              onClick={() => setCreateDialogOpen(true)}
+              title="Добавить оборудование"
+              type="button"
+            >
+              <Plus aria-hidden="true" className="size-4" />
+            </button>
+          ) : null
+        }
         headingLevel={2}
         icon={<Wrench aria-hidden="true" className="size-4" />}
         metric={unifiedEquipmentCount}
@@ -1950,6 +2228,19 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
 
         {!unifiedEquipmentCount && !loading ? (
           <EmptyState
+            action={
+              canManageRegistry ? (
+                <Button
+                  leftIcon={<Plus className="size-4" />}
+                  onClick={() => setCreateDialogOpen(true)}
+                  size="sm"
+                  type="button"
+                  variant="secondary"
+                >
+                  Добавить оборудование
+                </Button>
+              ) : undefined
+            }
             detail="Техническое и диагностическое оборудование еще не зарегистрировано."
             title="Оборудование пока не добавлено"
           />
@@ -1964,13 +2255,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
   }
 
   function renderUnifiedRegistry() {
-    const equipmentListCard = renderEquipmentListCard();
-
-    if (!canManageRegistry) {
-      return equipmentListCard;
-    }
-
-    return <FormListSplitLayout form={renderEquipmentFormCard()} list={equipmentListCard} />;
+    return renderEquipmentListCard();
   }
 
   function renderUnifiedJournalPair() {
@@ -2135,7 +2420,11 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
         <div className="space-y-1">
           <h3 className="text-lg font-semibold text-foreground">Хронология операций</h3>
         </div>
-        {hasActiveJournalForm ? <FormListScrollArea>{journalTimeline}</FormListScrollArea> : journalTimeline}
+        {hasActiveJournalForm ? (
+          <FormListScrollArea scrollMode="contained">{journalTimeline}</FormListScrollArea>
+        ) : (
+          journalTimeline
+        )}
       </Card>
     );
 
@@ -2175,6 +2464,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
 
   return (
     <>
+      {renderEquipmentCreateDialog()}
       <EditRegistryDialog
         editor={editDialog}
         loading={isMutating}
@@ -2191,9 +2481,9 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
       />
 
       <div
-        aria-hidden={archiveConfirmation || editDialog ? true : undefined}
+        aria-hidden={createDialogOpen || archiveConfirmation || editDialog ? true : undefined}
         className="grid min-w-0 gap-4"
-        inert={archiveConfirmation || editDialog ? true : undefined}
+        inert={createDialogOpen || archiveConfirmation || editDialog ? true : undefined}
       >
         {loadError ? (
           <div
@@ -2217,6 +2507,15 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
           </Button>
         </div>
 
+        <Tabs<EquipmentWorkspaceTab>
+          activeKey={activeWorkspaceTab}
+          ariaLabel="Разделы оборудования"
+          getPanelId={getEquipmentWorkspacePanelId}
+          idPrefix="equipment-workspace-tabs"
+          items={equipmentWorkspaceTabs}
+          onChange={setActiveWorkspaceTab}
+        />
+
         {loading ? (
           <EmptyState
             detail="Загружаем записи оборудования в текущей области."
@@ -2224,8 +2523,17 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
           />
         ) : null}
 
-        {!loading ? renderUnifiedRegistry() : null}
-        {!loading ? renderUnifiedJournal() : null}
+        {!loading ? (
+          <div
+            aria-labelledby={`equipment-workspace-tabs-${activeWorkspaceTab}`}
+            className="min-w-0"
+            id={getEquipmentWorkspacePanelId(activeWorkspaceTab)}
+            role="tabpanel"
+            tabIndex={0}
+          >
+            {activeWorkspaceTab === "equipment" ? renderUnifiedRegistry() : renderUnifiedJournal()}
+          </div>
+        ) : null}
       </div>
     </>
   );
