@@ -6,6 +6,7 @@ import {
   Archive,
   Cable,
   FileText,
+  Gauge,
   ListChecks,
   MapPin,
   Network,
@@ -2180,7 +2181,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
             {item.archivedAt ? <Badge tone="neutral">В архиве</Badge> : null}
           </>
         }
-        icon={<Wrench aria-hidden="true" className="size-5" />}
+        icon={<Gauge aria-hidden="true" className="size-5" />}
         intrinsicClassName="[contain-intrinsic-size:1px_520px]"
         key={`diagnostic:${item.id}`}
         label="Диагностическое"
@@ -2518,7 +2519,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
           />
           <Button
             aria-pressed={showArchived}
-            className="h-11 w-[175px] shrink-0 justify-center text-center"
+            className="h-[52px] w-[175px] shrink-0 justify-center text-center"
             leftIcon={<Archive className="size-4" />}
             onClick={handleArchiveVisibilityChange}
             type="button"
