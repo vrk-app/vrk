@@ -1,4 +1,4 @@
- version | dirty 
+ version | dirty
 ---------+-------
       16 | f
 (1 row)

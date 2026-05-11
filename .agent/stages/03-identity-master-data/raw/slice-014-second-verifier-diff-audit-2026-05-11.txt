@@ -210,9 +210,9 @@ index 1d45e25..76bce2b 100644
 --- a/apps/backend/internal/app/app.go
 +++ b/apps/backend/internal/app/app.go
 @@ -210,23 +210,13 @@ func (a *App) registerRoutes(
- 			r.Post("/{id}/archive", eqHandler.Archive)
- 		})
- 
+			r.Post("/{id}/archive", eqHandler.Archive)
+		})
+
 -		// Standards
 -		r.Route("/standards", func(r chi.Router) {
 -			r.Get("/", stdHandler.List)
@@ -224,16 +224,16 @@ index 1d45e25..76bce2b 100644
 -			r.Post("/{id}/archive", stdHandler.Archive)
 -		})
 -
- 		// Measuring Instruments
- 		r.Route("/measuring-instruments", func(r chi.Router) {
- 			r.Get("/", miHandler.List)
- 			r.Post("/", miHandler.Create)
- 			r.Get("/{id}", miHandler.GetByID)
- 			r.Patch("/{id}", miHandler.Update)
+		// Measuring Instruments
+		r.Route("/measuring-instruments", func(r chi.Router) {
+			r.Get("/", miHandler.List)
+			r.Post("/", miHandler.Create)
+			r.Get("/{id}", miHandler.GetByID)
+			r.Patch("/{id}", miHandler.Update)
 +			r.Post("/{id}/standards", stdHandler.CreateForDiagnostic)
- 			r.Get("/{id}/journals", miHandler.ListJournals)
- 			r.Post("/{id}/journals", miHandler.CreateJournal)
- 			r.Post("/{id}/archive", miHandler.Archive)
+			r.Get("/{id}/journals", miHandler.ListJournals)
+			r.Post("/{id}/journals", miHandler.CreateJournal)
+			r.Post("/{id}/archive", miHandler.Archive)
 
 ## git diff -- apps/backend/internal/equipment apps/backend/migrations apps/backend/docs/swagger/swagger.yaml
 diff --git a/apps/backend/docs/swagger/swagger.yaml b/apps/backend/docs/swagger/swagger.yaml
@@ -710,7 +710,7 @@ index d26b1f3..4b50e7c 100644
 +++ b/apps/backend/internal/equipment/measuringinstrument/repository.go
 @@ -9,9 +9,10 @@ import (
  )
- 
+
  type StandardScope struct {
 -	DivisionID *string
 -	UnitID        *string
@@ -720,11 +720,11 @@ index d26b1f3..4b50e7c 100644
 +	OwnerLabel            *string
 +	DiagnosticEquipmentID *string
  }
- 
+
  type MeasuringInstrumentRepository interface {
 @@ -261,34 +262,13 @@ func (r *measuringInstrumentRepository) Archive(ctx context.Context, id uuid.UUI
  }
- 
+
  func (r *measuringInstrumentRepository) ReplaceStandardLinks(ctx context.Context, measuringInstrumentID uuid.UUID, standardIDs []uuid.UUID) error {
 -	tx, err := r.db.Begin(ctx)
 -	if err != nil {
@@ -750,9 +750,9 @@ index d26b1f3..4b50e7c 100644
 -	return tx.Commit(ctx)
 +	return nil
  }
- 
+
  func (r *measuringInstrumentRepository) ListStandardLinksByOrganization(ctx context.Context, organizationID uuid.UUID) (map[string][]LinkedStandard, error) {
- 	rows, err := r.db.Query(ctx, `
+	rows, err := r.db.Query(ctx, `
          SELECT
 -            link.measuring_instrument_id,
 +            standard.diagnostic_equipment_id,
@@ -776,95 +776,95 @@ index d26b1f3..4b50e7c 100644
 +          AND standard.diagnostic_equipment_id IS NOT NULL
          ORDER BY standard.created_at DESC
      `, organizationID)
- 	if err != nil {
+	if err != nil {
 @@ -341,7 +321,7 @@ func (r *measuringInstrumentRepository) GetStandardScopes(ctx context.Context, o
- 	}
- 
- 	rows, err := r.db.Query(ctx, `
+	}
+
+	rows, err := r.db.Query(ctx, `
 -        SELECT id, division_id, unit_id, owner_label
 +		SELECT id, division_id, unit_id, owner_label, diagnostic_equipment_id
          FROM registry_standards
          WHERE organization_id = $1 AND id = ANY($2) AND archived_at IS NULL
      `, organizationID, standardIDs)
 @@ -356,7 +336,8 @@ func (r *measuringInstrumentRepository) GetStandardScopes(ctx context.Context, o
- 		var divisionID *uuid.UUID
- 		var unitID *uuid.UUID
- 		var ownerLabel *string
+		var divisionID *uuid.UUID
+		var unitID *uuid.UUID
+		var ownerLabel *string
 -		if err := rows.Scan(&id, &divisionID, &unitID, &ownerLabel); err != nil {
 +		var diagnosticEquipmentID *uuid.UUID
 +		if err := rows.Scan(&id, &divisionID, &unitID, &ownerLabel, &diagnosticEquipmentID); err != nil {
- 			return nil, err
- 		}
- 
+			return nil, err
+		}
+
 @@ -369,6 +350,10 @@ func (r *measuringInstrumentRepository) GetStandardScopes(ctx context.Context, o
- 			value := unitID.String()
- 			scope.UnitID = &value
- 		}
+			value := unitID.String()
+			scope.UnitID = &value
+		}
 +		if diagnosticEquipmentID != nil {
 +			value := diagnosticEquipmentID.String()
 +			scope.DiagnosticEquipmentID = &value
 +		}
- 		result[id.String()] = scope
- 	}
- 
+		result[id.String()] = scope
+	}
+
 diff --git a/apps/backend/internal/equipment/measuringinstrument/service.go b/apps/backend/internal/equipment/measuringinstrument/service.go
 index 2bfeee0..bf85a2f 100644
 --- a/apps/backend/internal/equipment/measuringinstrument/service.go
 +++ b/apps/backend/internal/equipment/measuringinstrument/service.go
 @@ -353,7 +353,7 @@ func (s *measuringInstrumentService) buildCreateModel(
- 	if err != nil {
- 		return MeasuringInstrument{}, nil, err
- 	}
+	if err != nil {
+		return MeasuringInstrument{}, nil, err
+	}
 -	standardIDs, err := s.validateStandardIDs(ctx, session, req.StandardIDs)
 +	standardIDs, err := s.validateStandardIDs(ctx, session, "", req.StandardIDs)
- 	if err != nil {
- 		return MeasuringInstrument{}, nil, err
- 	}
+	if err != nil {
+		return MeasuringInstrument{}, nil, err
+	}
 @@ -450,7 +450,7 @@ func (s *measuringInstrumentService) buildUpdatedModel(
- 		updated.DocumentURL = normalizeOptional(req.DocumentURL)
- 	}
- 	if req.StandardIDs != nil {
+		updated.DocumentURL = normalizeOptional(req.DocumentURL)
+	}
+	if req.StandardIDs != nil {
 -		standardIDs, err = s.validateStandardIDs(ctx, session, req.StandardIDs)
 +		standardIDs, err = s.validateStandardIDs(ctx, session, current.ID, req.StandardIDs)
- 		if err != nil {
- 			return nil, nil, err
- 		}
+		if err != nil {
+			return nil, nil, err
+		}
 @@ -514,6 +514,7 @@ func (s *measuringInstrumentService) validateEquipment(
  func (s *measuringInstrumentService) validateStandardIDs(
- 	ctx context.Context,
- 	session *bootstrap.SessionSummaryResponse,
+	ctx context.Context,
+	session *bootstrap.SessionSummaryResponse,
 +	measuringInstrumentID string,
- 	standardIDs []string,
+	standardIDs []string,
  ) ([]uuid.UUID, error) {
- 	if len(standardIDs) == 0 {
+	if len(standardIDs) == 0 {
 @@ -538,6 +539,9 @@ func (s *measuringInstrumentService) validateStandardIDs(
- 	}
- 	for _, id := range parsed {
- 		scope := scopes[id.String()]
+	}
+	for _, id := range parsed {
+		scope := scopes[id.String()]
 +		if scope.DiagnosticEquipmentID != nil && *scope.DiagnosticEquipmentID != measuringInstrumentID {
 +			return nil, ErrStandardInvalid
 +		}
- 		var divisionID *uuid.UUID
- 		var unitID *uuid.UUID
- 		if scope.DivisionID != nil {
+		var divisionID *uuid.UUID
+		var unitID *uuid.UUID
+		if scope.DivisionID != nil {
 @@ -591,8 +595,8 @@ func toResponse(item *MeasuringInstrument, derived metrologyjournal.DerivedState
- 		ID:             item.ID,
- 		OrganizationID: item.OrganizationID,
- 		Unit: UnitSummary{
+		ID:             item.ID,
+		OrganizationID: item.OrganizationID,
+		Unit: UnitSummary{
 -			ID:              item.UnitID,
 -			Name:            item.UnitName,
 +			ID:           item.UnitID,
 +			Name:         item.UnitName,
- 			DivisionID:   item.DivisionID,
- 			DivisionName: item.DivisionName,
- 		},
+			DivisionID:   item.DivisionID,
+			DivisionName: item.DivisionName,
+		},
 diff --git a/apps/backend/internal/equipment/standard/errors.go b/apps/backend/internal/equipment/standard/errors.go
 index 87ea262..02e0b24 100644
 --- a/apps/backend/internal/equipment/standard/errors.go
 +++ b/apps/backend/internal/equipment/standard/errors.go
 @@ -3,26 +3,28 @@ package standard
  import "errors"
- 
+
  var (
 -	ErrUnauthorized             = errors.New("unauthorized")
 -	ErrForbidden                = errors.New("forbidden")
@@ -918,17 +918,17 @@ index 29a0241..13e3260 100644
 --- a/apps/backend/internal/equipment/standard/handler.go
 +++ b/apps/backend/internal/equipment/standard/handler.go
 @@ -4,7 +4,6 @@ import (
- 	"encoding/json"
- 	"errors"
- 	"net/http"
+	"encoding/json"
+	"errors"
+	"net/http"
 -	"strconv"
- 	"strings"
- 
- 	"github.com/go-chi/chi/v5"
+	"strings"
+
+	"github.com/go-chi/chi/v5"
 @@ -18,18 +17,19 @@ func NewHandler(service StandardService) *StandardHandler {
- 	return &StandardHandler{service: service}
+	return &StandardHandler{service: service}
  }
- 
+
 -// @Summary      Create standard registry record
 -// @Description  Creates one standard registry record inside the authenticated customer organization.
 +// @Summary      Create diagnostic equipment standard
@@ -946,13 +946,13 @@ index 29a0241..13e3260 100644
 -func (h *StandardHandler) Create(w http.ResponseWriter, r *http.Request) {
 +// @Router       /measuring-instruments/{id}/standards [post]
 +func (h *StandardHandler) CreateForDiagnostic(w http.ResponseWriter, r *http.Request) {
- 	token, err := readBearerToken(r)
- 	if err != nil {
- 		sendError(w, http.StatusUnauthorized, "missing bearer token")
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
 @@ -42,171 +42,14 @@ func (h *StandardHandler) Create(w http.ResponseWriter, r *http.Request) {
- 		return
- 	}
- 
+		return
+	}
+
 -	resp, err := h.service.Create(r.Context(), token, req)
 -	if err != nil {
 -		writeServiceError(w, err)
@@ -1056,10 +1056,10 @@ index 29a0241..13e3260 100644
 +	diagnosticEquipmentID := strings.TrimSpace(chi.URLParam(r, "id"))
 +	if diagnosticEquipmentID == "" {
 +		sendError(w, http.StatusBadRequest, ErrDiagnosticEquipmentRequired.Error())
- 		return
- 	}
+		return
+	}
 +	req.DiagnosticEquipmentID = &diagnosticEquipmentID
- 
+
 -	resp, err := h.service.Update(r.Context(), token, chi.URLParam(r, "id"), req)
 -	if err != nil {
 -		writeServiceError(w, err)
@@ -1123,13 +1123,13 @@ index 29a0241..13e3260 100644
 -
 -	resp, err := h.service.CreateJournal(r.Context(), token, chi.URLParam(r, "id"), req)
 +	resp, err := h.service.Create(r.Context(), token, req)
- 	if err != nil {
- 		writeServiceError(w, err)
- 		return
+	if err != nil {
+		writeServiceError(w, err)
+		return
 @@ -215,32 +58,6 @@ func (h *StandardHandler) CreateJournal(w http.ResponseWriter, r *http.Request)
- 	sendSuccess(w, http.StatusCreated, resp, nil)
+	sendSuccess(w, http.StatusCreated, resp, nil)
  }
- 
+
 -// @Summary      Archive standard registry record
 -// @Description  Archives one standard record inside the authenticated customer organization/session scope.
 -// @Tags         equipment
@@ -1157,68 +1157,68 @@ index 29a0241..13e3260 100644
 -}
 -
  func sendSuccess(w http.ResponseWriter, status int, data interface{}, meta *Meta) {
- 	w.Header().Set("Content-Type", "application/json")
- 	w.WriteHeader(status)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
 @@ -273,6 +90,8 @@ func writeServiceError(w http.ResponseWriter, err error) {
- 		errors.Is(err, ErrModelRequired),
- 		errors.Is(err, ErrIdentifierRequired),
- 		errors.Is(err, ErrMetrologicalCharRequired),
+		errors.Is(err, ErrModelRequired),
+		errors.Is(err, ErrIdentifierRequired),
+		errors.Is(err, ErrMetrologicalCharRequired),
 +		errors.Is(err, ErrDiagnosticEquipmentRequired),
 +		errors.Is(err, ErrDiagnosticEquipmentInvalid),
- 		errors.Is(err, ErrScopeInvalid),
- 		errors.Is(err, ErrOperationTypeRequired),
- 		errors.Is(err, ErrOperationTypeInvalid),
+		errors.Is(err, ErrScopeInvalid),
+		errors.Is(err, ErrOperationTypeRequired),
+		errors.Is(err, ErrOperationTypeInvalid),
 diff --git a/apps/backend/internal/equipment/standard/models.go b/apps/backend/internal/equipment/standard/models.go
 index 2d407b0..9465765 100644
 --- a/apps/backend/internal/equipment/standard/models.go
 +++ b/apps/backend/internal/equipment/standard/models.go
 @@ -6,11 +6,13 @@ type Standard struct {
- 	ID                          string
- 	OrganizationID              string
- 	OrganizationName            string
+	ID                          string
+	OrganizationID              string
+	OrganizationName            string
 -	DivisionID               *string
 -	DivisionName             *string
 +	DivisionID                  *string
 +	DivisionName                *string
- 	UnitID                      *string
- 	UnitName                    *string
- 	OwnerLabel                  *string
+	UnitID                      *string
+	UnitName                    *string
+	OwnerLabel                  *string
 +	DiagnosticEquipmentID       *string
 +	DiagnosticEquipmentName     *string
- 	StandardType                string
- 	Model                       string
- 	Identifier                  string
+	StandardType                string
+	Model                       string
+	Identifier                  string
 @@ -19,14 +21,14 @@ type Standard struct {
- 	Status                      string
- 	Comment                     *string
- 	DocumentURL                 *string
+	Status                      string
+	Comment                     *string
+	DocumentURL                 *string
 -	LinkedMeasuringInstruments  int
- 	ArchivedAt                  *time.Time
- 	CreatedAt                   time.Time
- 	UpdatedAt                   time.Time
+	ArchivedAt                  *time.Time
+	CreatedAt                   time.Time
+	UpdatedAt                   time.Time
  }
- 
+
  type CreateRequest struct {
 -	DivisionID               *string `json:"divisionId,omitempty"`
 +	DiagnosticEquipmentID       *string `json:"diagnosticEquipmentId,omitempty"`
 +	DivisionID                  *string `json:"divisionId,omitempty"`
- 	UnitID                      *string `json:"unitId,omitempty"`
- 	OwnerLabel                  *string `json:"ownerLabel,omitempty"`
- 	StandardType                string  `json:"standardType"`
+	UnitID                      *string `json:"unitId,omitempty"`
+	OwnerLabel                  *string `json:"ownerLabel,omitempty"`
+	StandardType                string  `json:"standardType"`
 @@ -39,7 +41,8 @@ type CreateRequest struct {
  }
- 
+
  type UpdateRequest struct {
 -	DivisionID               *string `json:"divisionId,omitempty"`
 +	DiagnosticEquipmentID       *string `json:"diagnosticEquipmentId,omitempty"`
 +	DivisionID                  *string `json:"divisionId,omitempty"`
- 	UnitID                      *string `json:"unitId,omitempty"`
- 	OwnerLabel                  *string `json:"ownerLabel,omitempty"`
- 	StandardType                *string `json:"standardType,omitempty"`
+	UnitID                      *string `json:"unitId,omitempty"`
+	OwnerLabel                  *string `json:"ownerLabel,omitempty"`
+	StandardType                *string `json:"standardType,omitempty"`
 @@ -79,25 +82,27 @@ type OwnershipScopeResponse struct {
- 	Label     string  `json:"label"`
+	Label     string  `json:"label"`
  }
- 
+
 +type DiagnosticEquipmentSummary struct {
 +	ID   string `json:"id"`
 +	Name string `json:"name"`
@@ -1259,7 +1259,7 @@ index 2d407b0..9465765 100644
 +	CreatedAt                   string                      `json:"createdAt"`
 +	UpdatedAt                   string                      `json:"updatedAt"`
  }
- 
+
  type Meta struct {
 diff --git a/apps/backend/internal/equipment/standard/repository.go b/apps/backend/internal/equipment/standard/repository.go
 index cd4c96b..72e3d4f 100644
@@ -1267,24 +1267,24 @@ index cd4c96b..72e3d4f 100644
 +++ b/apps/backend/internal/equipment/standard/repository.go
 @@ -3,6 +3,7 @@ package standard
  import (
- 	"context"
- 	"fmt"
+	"context"
+	"fmt"
 +	"time"
- 
- 	"github.com/google/uuid"
- 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 @@ -14,6 +15,7 @@ type StandardRepository interface {
- 	ListByOrganization(ctx context.Context, organizationID uuid.UUID, includeArchived bool) ([]Standard, error)
- 	Update(ctx context.Context, item Standard) (*Standard, error)
- 	Archive(ctx context.Context, id uuid.UUID) (*Standard, error)
+	ListByOrganization(ctx context.Context, organizationID uuid.UUID, includeArchived bool) ([]Standard, error)
+	Update(ctx context.Context, item Standard) (*Standard, error)
+	Archive(ctx context.Context, id uuid.UUID) (*Standard, error)
 +	GetDiagnosticEquipmentScope(ctx context.Context, id uuid.UUID) (*DiagnosticEquipmentScope, error)
  }
- 
+
  type standardRepository struct {
 @@ -24,6 +26,15 @@ func NewRepository(db *pgxpool.Pool) StandardRepository {
- 	return &standardRepository{db: db}
+	return &standardRepository{db: db}
  }
- 
+
 +type DiagnosticEquipmentScope struct {
 +	ID             string
 +	Name           string
@@ -1320,40 +1320,40 @@ index cd4c96b..72e3d4f 100644
      standard.created_at,
      standard.updated_at
 @@ -59,6 +66,7 @@ func scanStandard(scanner interface {
- 	var organizationID uuid.UUID
- 	var divisionID *uuid.UUID
- 	var unitID *uuid.UUID
+	var organizationID uuid.UUID
+	var divisionID *uuid.UUID
+	var unitID *uuid.UUID
 +	var diagnosticEquipmentID *uuid.UUID
- 
- 	if err := scanner.Scan(
- 		&item.ID,
+
+	if err := scanner.Scan(
+		&item.ID,
 @@ -69,6 +77,8 @@ func scanStandard(scanner interface {
- 		&unitID,
- 		&item.UnitName,
- 		&item.OwnerLabel,
+		&unitID,
+		&item.UnitName,
+		&item.OwnerLabel,
 +		&diagnosticEquipmentID,
 +		&item.DiagnosticEquipmentName,
- 		&item.StandardType,
- 		&item.Model,
- 		&item.Identifier,
+		&item.StandardType,
+		&item.Model,
+		&item.Identifier,
 @@ -77,7 +87,6 @@ func scanStandard(scanner interface {
- 		&item.Status,
- 		&item.Comment,
- 		&item.DocumentURL,
+		&item.Status,
+		&item.Comment,
+		&item.DocumentURL,
 -		&item.LinkedMeasuringInstruments,
- 		&item.ArchivedAt,
- 		&item.CreatedAt,
- 		&item.UpdatedAt,
+		&item.ArchivedAt,
+		&item.CreatedAt,
+		&item.UpdatedAt,
 @@ -94,6 +103,10 @@ func scanStandard(scanner interface {
- 		value := unitID.String()
- 		item.UnitID = &value
- 	}
+		value := unitID.String()
+		item.UnitID = &value
+	}
 +	if diagnosticEquipmentID != nil {
 +		value := diagnosticEquipmentID.String()
 +		item.DiagnosticEquipmentID = &value
 +	}
- 
- 	return &item, nil
+
+	return &item, nil
  }
 @@ -105,6 +118,7 @@ func (r *standardRepository) Create(ctx context.Context, item Standard) (*Standa
              division_id,
@@ -1373,13 +1373,13 @@ index cd4c96b..72e3d4f 100644
          RETURNING id
      `
 @@ -127,6 +141,7 @@ func (r *standardRepository) Create(ctx context.Context, item Standard) (*Standa
- 		nullableUUID(item.DivisionID),
- 		nullableUUID(item.UnitID),
- 		item.OwnerLabel,
+		nullableUUID(item.DivisionID),
+		nullableUUID(item.UnitID),
+		item.OwnerLabel,
 +		nullableUUID(item.DiagnosticEquipmentID),
- 		item.StandardType,
- 		item.Model,
- 		item.Identifier,
+		item.StandardType,
+		item.Model,
+		item.Identifier,
 @@ -149,6 +164,7 @@ func (r *standardRepository) GetByID(ctx context.Context, id uuid.UUID) (*Standa
          JOIN auth_bootstrap_organizations org ON org.id = standard.organization_id
          LEFT JOIN auth_divisions division ON division.id = standard.division_id
@@ -1387,7 +1387,7 @@ index cd4c96b..72e3d4f 100644
 +        LEFT JOIN registry_measuring_instruments diagnostic ON diagnostic.id = standard.diagnostic_equipment_id
          WHERE standard.id = $1
      `, standardSelectColumns)
- 
+
 @@ -167,6 +183,7 @@ func (r *standardRepository) ListByOrganization(ctx context.Context, organizatio
          JOIN auth_bootstrap_organizations org ON org.id = standard.organization_id
          LEFT JOIN auth_divisions division ON division.id = standard.division_id
@@ -1421,17 +1421,17 @@ index cd4c96b..72e3d4f 100644
          WHERE id = $1
          RETURNING id
 @@ -222,6 +240,7 @@ func (r *standardRepository) Update(ctx context.Context, item Standard) (*Standa
- 		nullableUUID(item.DivisionID),
- 		nullableUUID(item.UnitID),
- 		item.OwnerLabel,
+		nullableUUID(item.DivisionID),
+		nullableUUID(item.UnitID),
+		item.OwnerLabel,
 +		nullableUUID(item.DiagnosticEquipmentID),
- 		item.StandardType,
- 		item.Model,
- 		item.Identifier,
+		item.StandardType,
+		item.Model,
+		item.Identifier,
 @@ -237,6 +256,42 @@ func (r *standardRepository) Update(ctx context.Context, item Standard) (*Standa
- 	return r.GetByID(ctx, id)
+	return r.GetByID(ctx, id)
  }
- 
+
 +func (r *standardRepository) GetDiagnosticEquipmentScope(ctx context.Context, id uuid.UUID) (*DiagnosticEquipmentScope, error) {
 +	var item DiagnosticEquipmentScope
 +	var diagnosticEquipmentID uuid.UUID
@@ -1469,76 +1469,76 @@ index cd4c96b..72e3d4f 100644
 +}
 +
  func (r *standardRepository) Archive(ctx context.Context, id uuid.UUID) (*Standard, error) {
- 	query := `
+	query := `
          UPDATE registry_standards
 diff --git a/apps/backend/internal/equipment/standard/service.go b/apps/backend/internal/equipment/standard/service.go
 index b8ce4f4..7a9157f 100644
 --- a/apps/backend/internal/equipment/standard/service.go
 +++ b/apps/backend/internal/equipment/standard/service.go
 @@ -46,7 +46,7 @@ func (s *standardService) Create(ctx context.Context, token string, req CreateRe
- 		return nil, mapAccessError(err)
- 	}
- 
+		return nil, mapAccessError(err)
+	}
+
 -	item, err := s.buildCreateModel(session, req)
 +	item, err := s.buildCreateModel(ctx, session, req)
- 	if err != nil {
- 		return nil, err
- 	}
+	if err != nil {
+		return nil, err
+	}
 @@ -173,7 +173,7 @@ func (s *standardService) Update(ctx context.Context, token string, id string, r
- 		return nil, ErrArchivedTarget
- 	}
- 
+		return nil, ErrArchivedTarget
+	}
+
 -	updated, err := s.buildUpdatedModel(session, current, req)
 +	updated, err := s.buildUpdatedModel(ctx, session, current, req)
- 	if err != nil {
- 		return nil, err
- 	}
+	if err != nil {
+		return nil, err
+	}
 @@ -300,10 +300,15 @@ func (s *standardService) CreateJournal(ctx context.Context, token string, id st
- 	return toJournalResponse(*created), nil
+	return toJournalResponse(*created), nil
  }
- 
+
 -func (s *standardService) buildCreateModel(session *bootstrap.SessionSummaryResponse, req CreateRequest) (Standard, error) {
 +func (s *standardService) buildCreateModel(
 +	ctx context.Context,
 +	session *bootstrap.SessionSummaryResponse,
 +	req CreateRequest,
 +) (Standard, error) {
- 	req.StandardType = strings.TrimSpace(req.StandardType)
- 	req.Model = strings.TrimSpace(req.Model)
- 	req.Identifier = strings.TrimSpace(req.Identifier)
+	req.StandardType = strings.TrimSpace(req.StandardType)
+	req.Model = strings.TrimSpace(req.Model)
+	req.Identifier = strings.TrimSpace(req.Identifier)
 +	req.DiagnosticEquipmentID = normalizeOptional(req.DiagnosticEquipmentID)
- 	req.SerialNumber = normalizeOptional(req.SerialNumber)
- 	req.MetrologicalCharacteristics = strings.TrimSpace(req.MetrologicalCharacteristics)
- 	req.Comment = normalizeOptional(req.Comment)
+	req.SerialNumber = normalizeOptional(req.SerialNumber)
+	req.MetrologicalCharacteristics = strings.TrimSpace(req.MetrologicalCharacteristics)
+	req.Comment = normalizeOptional(req.Comment)
 @@ -322,15 +327,21 @@ func (s *standardService) buildCreateModel(session *bootstrap.SessionSummaryResp
- 	if req.MetrologicalCharacteristics == "" {
- 		return Standard{}, ErrMetrologicalCharRequired
- 	}
+	if req.MetrologicalCharacteristics == "" {
+		return Standard{}, ErrMetrologicalCharRequired
+	}
 +	if req.DiagnosticEquipmentID == nil {
 +		return Standard{}, ErrDiagnosticEquipmentRequired
 +	}
- 
+
 -	divisionID, unitID, ownerLabel, err := registryaccess.ValidateStandardScope(session, req.DivisionID, req.UnitID, req.OwnerLabel)
 +	diagnosticScope, err := s.resolveDiagnosticEquipment(ctx, session, *req.DiagnosticEquipmentID)
- 	if err != nil {
+	if err != nil {
 -		return Standard{}, mapScopeError(err)
 +		return Standard{}, err
- 	}
- 
- 	item := Standard{
- 		OrganizationID:              session.Organization.ID,
+	}
+
+	item := Standard{
+		OrganizationID:              session.Organization.ID,
 -		OwnerLabel:                  ownerLabel,
 +		UnitID:                      &diagnosticScope.UnitID,
 +		OwnerLabel:                  &diagnosticScope.UnitName,
 +		DiagnosticEquipmentID:       &diagnosticScope.ID,
 +		DiagnosticEquipmentName:     &diagnosticScope.Name,
- 		StandardType:                req.StandardType,
- 		Model:                       req.Model,
- 		Identifier:                  req.Identifier,
+		StandardType:                req.StandardType,
+		Model:                       req.Model,
+		Identifier:                  req.Identifier,
 @@ -340,19 +351,16 @@ func (s *standardService) buildCreateModel(session *bootstrap.SessionSummaryResp
- 		Comment:                     req.Comment,
- 		DocumentURL:                 req.DocumentURL,
- 	}
+		Comment:                     req.Comment,
+		DocumentURL:                 req.DocumentURL,
+	}
 -	if divisionID != nil {
 -		value := divisionID.String()
 -		item.DivisionID = &value
@@ -1547,10 +1547,10 @@ index b8ce4f4..7a9157f 100644
 -		value := unitID.String()
 -		item.UnitID = &value
 -	}
- 
- 	return item, nil
+
+	return item, nil
  }
- 
+
 -func (s *standardService) buildUpdatedModel(session *bootstrap.SessionSummaryResponse, current *Standard, req UpdateRequest) (*Standard, error) {
 +func (s *standardService) buildUpdatedModel(
 +	ctx context.Context,
@@ -1558,13 +1558,13 @@ index b8ce4f4..7a9157f 100644
 +	current *Standard,
 +	req UpdateRequest,
 +) (*Standard, error) {
- 	updated := *current
- 	if current.ArchivedAt != nil {
- 		return nil, ErrArchivedTarget
+	updated := *current
+	if current.ArchivedAt != nil {
+		return nil, ErrArchivedTarget
 @@ -396,6 +404,22 @@ func (s *standardService) buildUpdatedModel(session *bootstrap.SessionSummaryRes
- 		updated.DocumentURL = normalizeOptional(req.DocumentURL)
- 	}
- 
+		updated.DocumentURL = normalizeOptional(req.DocumentURL)
+	}
+
 +	if req.DiagnosticEquipmentID != nil {
 +		updated.DiagnosticEquipmentID = normalizeOptional(req.DiagnosticEquipmentID)
 +	}
@@ -1581,13 +1581,13 @@ index b8ce4f4..7a9157f 100644
 +		return &updated, nil
 +	}
 +
- 	divisionValue := req.DivisionID
- 	unitValue := req.UnitID
- 	ownerLabel := req.OwnerLabel
+	divisionValue := req.DivisionID
+	unitValue := req.UnitID
+	ownerLabel := req.OwnerLabel
 @@ -423,6 +447,33 @@ func (s *standardService) buildUpdatedModel(session *bootstrap.SessionSummaryRes
- 	return &updated, nil
+	return &updated, nil
  }
- 
+
 +func (s *standardService) resolveDiagnosticEquipment(
 +	ctx context.Context,
 +	session *bootstrap.SessionSummaryResponse,
@@ -1616,12 +1616,12 @@ index b8ce4f4..7a9157f 100644
 +}
 +
  func toResponse(
- 	session *bootstrap.SessionSummaryResponse,
- 	item *Standard,
+	session *bootstrap.SessionSummaryResponse,
+	item *Standard,
 @@ -439,6 +490,13 @@ func toResponse(
- 		scopeType = "unit"
- 		scopeID = item.UnitID
- 	}
+		scopeType = "unit"
+		scopeID = item.UnitID
+	}
 +	var diagnosticEquipment *DiagnosticEquipmentSummary
 +	if item.DiagnosticEquipmentID != nil && item.DiagnosticEquipmentName != nil {
 +		diagnosticEquipment = &DiagnosticEquipmentSummary{
@@ -1629,21 +1629,21 @@ index b8ce4f4..7a9157f 100644
 +			Name: *item.DiagnosticEquipmentName,
 +		}
 +	}
- 	var archivedAt *string
- 	if item.ArchivedAt != nil {
- 		value := item.ArchivedAt.Format(time.RFC3339)
+	var archivedAt *string
+	if item.ArchivedAt != nil {
+		value := item.ArchivedAt.Format(time.RFC3339)
 @@ -453,6 +511,7 @@ func toResponse(
- 			ScopeID:   scopeID,
- 			Label:     scopeLabel,
- 		},
+			ScopeID:   scopeID,
+			Label:     scopeLabel,
+		},
 +		DiagnosticEquipment:         diagnosticEquipment,
- 		StandardType:                item.StandardType,
- 		Model:                       item.Model,
- 		Identifier:                  item.Identifier,
+		StandardType:                item.StandardType,
+		Model:                       item.Model,
+		Identifier:                  item.Identifier,
 @@ -461,15 +520,6 @@ func toResponse(
- 		Status:                      derived.Status,
- 		Comment:                     item.Comment,
- 		DocumentURL:                 item.DocumentURL,
+		Status:                      derived.Status,
+		Comment:                     item.Comment,
+		DocumentURL:                 item.DocumentURL,
 -		LinkedMeasuringInstruments:  item.LinkedMeasuringInstruments,
 -		JournalCount:                derived.JournalCount,
 -		NextDueDate:                 derived.NextDueDate,
@@ -1653,9 +1653,9 @@ index b8ce4f4..7a9157f 100644
 -			}
 -			return toJournalResponse(*derived.LatestJournal)
 -		}(),
- 		ArchivedAt: archivedAt,
- 		CreatedAt:  item.CreatedAt.Format(time.RFC3339),
- 		UpdatedAt:  item.UpdatedAt.Format(time.RFC3339),
+		ArchivedAt: archivedAt,
+		CreatedAt:  item.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:  item.UpdatedAt.Format(time.RFC3339),
 
 ## git diff -- apps/web/app/(runtime)/equipment/page.tsx apps/web/app/api/equipment apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx apps/web/shared/api/equipment.ts apps/web/shared/api/index.ts apps/web/shared/storybook apps/web/stories/equipment apps/web/tests/equipment-registries.smoke.spec.ts
 diff --git a/apps/web/app/(runtime)/equipment/page.tsx b/apps/web/app/(runtime)/equipment/page.tsx
@@ -1663,13 +1663,13 @@ index 1297c17..522d5f2 100644
 --- a/apps/web/app/(runtime)/equipment/page.tsx
 +++ b/apps/web/app/(runtime)/equipment/page.tsx
 @@ -17,7 +17,7 @@ type EquipmentPageProps = {
- 
+
  function resolveTab(value: string | string[] | undefined) {
    const raw = Array.isArray(value) ? value[0] : value;
 -  return raw === "mi" || raw === "standards" ? raw : "equipment";
 +  return raw;
  }
- 
+
  function resolveArchiveVisibility(value: string | string[] | undefined) {
 @@ -28,7 +28,7 @@ function resolveArchiveVisibility(value: string | string[] | undefined) {
  function AnonymousEquipmentShell() {
@@ -1677,7 +1677,7 @@ index 1297c17..522d5f2 100644
      <>
 -      <PageHeader title="Оборудование, СИ и эталоны" />
 +      <PageHeader title="Оборудование" />
- 
+
        <Card className="max-w-2xl gap-4" padding="lg">
          <div className="space-y-2">
 @@ -49,6 +49,13 @@ export default async function EquipmentPage({ searchParams }: EquipmentPageProps
@@ -1697,11 +1697,11 @@ index 1297c17..522d5f2 100644
 @@ -79,24 +86,21 @@ export default async function EquipmentPage({ searchParams }: EquipmentPageProps
      );
    }
- 
+
 -  const activeTab = resolveTab(resolvedSearchParams?.tab);
 -  const initialShowArchived = resolveArchiveVisibility(resolvedSearchParams?.archived);
    const canManageRegistry = sessionHasCapability(session, "manage_equipment");
- 
+
    return (
      <>
        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -1714,7 +1714,7 @@ index 1297c17..522d5f2 100644
 +          {canManageRegistry ? "Управление реестром" : "Только просмотр"}
          </Badge>
        </div>
- 
+
        <EquipmentRegistryWorkspace
          initialShowArchived={initialShowArchived}
 -        initialTab={activeTab}
@@ -1825,20 +1825,20 @@ index 14f3626..f380cf1 100644
    TextareaField,
    useToast,
  } from "@/shared/ui";
- 
+
 -type RegistryTab = "equipment" | "mi" | "standards";
 +type EquipmentFormKind = "technical" | "diagnostic";
- 
+
  type Props = {
    session: SessionSummaryResponse;
 -  initialTab: RegistryTab;
    initialShowArchived: boolean;
  };
- 
+
 @@ -89,6 +87,19 @@ type StandardFormState = {
    documentUrl: string;
  };
- 
+
 +type DiagnosticStandardDraft = Pick<
 +  StandardFormState,
 +  | "standardType"
@@ -1870,7 +1870,7 @@ index 14f3626..f380cf1 100644
 -      recordLabel: string;
 -      form: StandardFormState;
      };
- 
+
 -const tabMeta: Array<{
 -  key: RegistryTab;
 -  label: string;
@@ -1895,12 +1895,12 @@ index 14f3626..f380cf1 100644
 +  { value: "technical", label: "Техническое" },
 +  { value: "diagnostic", label: "Диагностическое" },
  ];
- 
+
  const registryStatusOptions: Array<{ value: RegistryStatus; label: string }> = [
 @@ -208,11 +195,11 @@ function defaultMeasuringInstrumentForm(session: SessionSummaryResponse): Measur
    };
  }
- 
+
 -function defaultStandardForm(session: SessionSummaryResponse): StandardFormState {
 +function createDiagnosticStandardDraft(): DiagnosticStandardDraft {
    return {
@@ -1916,7 +1916,7 @@ index 14f3626..f380cf1 100644
 @@ -268,21 +255,6 @@ function measuringInstrumentFormFromRecord(record: MeasuringInstrumentRecord): M
    };
  }
- 
+
 -function standardFormFromRecord(record: StandardRecord): StandardFormState {
 -  return {
 -    ownershipScopeType: record.ownershipScope.scopeType,
@@ -1938,7 +1938,7 @@ index 14f3626..f380cf1 100644
 @@ -370,21 +342,25 @@ function measuringInstrumentPayload(form: MeasuringInstrumentFormState) {
    };
  }
- 
+
 -function standardPayload(form: StandardFormState, session: SessionSummaryResponse) {
 +function diagnosticStandardPayload(
 +  draft: DiagnosticStandardDraft,
@@ -1974,11 +1974,11 @@ index 14f3626..f380cf1 100644
 +    documentUrl: optionalString(draft.documentUrl),
    };
  }
- 
+
 @@ -413,16 +389,19 @@ function isMeasuringInstrumentFormReady(form: MeasuringInstrumentFormState) {
    );
  }
- 
+
 -function isStandardFormReady(form: StandardFormState) {
 +function isDiagnosticStandardDraftReady(draft: DiagnosticStandardDraft) {
    return Boolean(
@@ -1993,7 +1993,7 @@ index 14f3626..f380cf1 100644
 +      draft.metrologicalCharacteristics.trim(),
    );
  }
- 
+
 +function areDiagnosticStandardDraftsReady(drafts: DiagnosticStandardDraft[]) {
 +  return drafts.every(isDiagnosticStandardDraftReady);
 +}
@@ -2004,7 +2004,7 @@ index 14f3626..f380cf1 100644
 @@ -451,21 +430,6 @@ function formatDate(value?: string) {
    }).format(new Date(value));
  }
- 
+
 -function formatPlacementKind(value: MeasuringInstrumentPlacement) {
 -  return value === "built_in" ? "Встроенное" : "Отдельное";
 -}
@@ -2026,7 +2026,7 @@ index 14f3626..f380cf1 100644
 @@ -477,45 +441,8 @@ function normalizeMeasuringInstrument(item: MeasuringInstrumentRecord): Measurin
    };
  }
- 
+
 -function standardLinkOptions(standards: StandardRecord[], linkedStandards: LinkedStandardRecord[] = []) {
 -  const seen = new Set<string>();
 -  const options = standards.map((standard) => {
@@ -2072,7 +2072,7 @@ index 14f3626..f380cf1 100644
    }
 @@ -586,7 +513,6 @@ function ArchiveConfirmDialog({
  }
- 
+
  function EditRegistryDialog({
 -  activeStandards,
    editor,
@@ -2104,13 +2104,13 @@ index 14f3626..f380cf1 100644
 -        ? isMeasuringInstrumentFormReady(editor.form)
 -        : isStandardFormReady(editor.form);
 +      : isMeasuringInstrumentFormReady(editor.form);
- 
+
    const updateEquipmentForm = (patch: Partial<EquipmentFormState>) => {
      if (editor.kind !== "equipment") {
 @@ -635,13 +555,6 @@ function EditRegistryDialog({
      onChange({ ...editor, form: { ...editor.form, ...patch } });
    };
- 
+
 -  const updateStandardForm = (patch: Partial<StandardFormState>) => {
 -    if (editor.kind !== "standard") {
 -      return;
@@ -2122,7 +2122,7 @@ index 14f3626..f380cf1 100644
      <div className="grid gap-4">
        <div className="grid gap-4 md:grid-cols-2">
 @@ -736,235 +649,76 @@ function EditRegistryDialog({
- 
+
    const renderMeasuringInstrumentForm = (
      state: Extract<EditDialogState, { kind: "measuringInstrument" }>,
 -  ) => {
@@ -2419,7 +2419,7 @@ index 14f3626..f380cf1 100644
 +      />
 +    </div>
 +  );
- 
+
    return (
      <Dialog
 @@ -1010,7 +764,6 @@ function EditRegistryDialog({
@@ -2433,7 +2433,7 @@ index 14f3626..f380cf1 100644
 @@ -1067,25 +820,20 @@ function JournalTimeline({
    );
  }
- 
+
 -export function EquipmentRegistryWorkspace({ session, initialShowArchived, initialTab }: Props) {
 +export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Props) {
    const router = useRouter();
@@ -2460,9 +2460,9 @@ index 14f3626..f380cf1 100644
    const hasLoadedRegistriesRef = useRef(false);
    const [loadError, setLoadError] = useState<string | null>(null);
 @@ -1096,21 +844,11 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
- 
+
    const canManageRegistry = sessionHasCapability(session, "manage_equipment");
- 
+
 -  const activeStandards = standards.filter((item) => !item.archivedAt);
 -  const linkableMeasuringInstrumentOptions = measuringInstrumentLinkOptions(measuringInstruments, equipmentForm.unitId);
    const selectedMeasuringInstrument =
@@ -2480,12 +2480,12 @@ index 14f3626..f380cf1 100644
 -  }));
 +  const unifiedEquipmentCount = equipmentRecords.length + measuringInstruments.length;
 +  const activeEquipmentCount = equipmentRecords.filter((item) => !item.archivedAt).length + measuringInstruments.filter((item) => !item.archivedAt).length;
- 
+
    const showSuccessToast = useCallback((title: string, dedupeKey: string) => {
      showToast({
 @@ -1136,19 +874,17 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
      setLoadError(null);
- 
+
      try {
 -      const [equipmentData, measuringInstrumentData, standardData] = await Promise.all([
 +      const [equipmentData, measuringInstrumentData] = await Promise.all([
@@ -2498,7 +2498,7 @@ index 14f3626..f380cf1 100644
          ),
 -        fetchAllRegistryPages<StandardRecord>("/api/equipment/standards", "Не удалось загрузить реестр эталонов.", showArchived),
        ]);
- 
+
        setEquipmentRecords(equipmentData);
        setMeasuringInstruments(measuringInstrumentData.map(normalizeMeasuringInstrument));
 -      setStandards(standardData);
@@ -2521,7 +2521,7 @@ index 14f3626..f380cf1 100644
        setLoadingMeasuringInstrumentJournals(false);
      }
    }, [showErrorToast]);
- 
+
 -  const loadStandardJournals = useCallback(async (id: string) => {
 -    setLoadingStandardJournals(true);
 -    try {
@@ -2546,7 +2546,7 @@ index 14f3626..f380cf1 100644
 @@ -1199,31 +915,6 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
      void loadRegistries();
    }, [loadRegistries]);
- 
+
 -  useEffect(() => {
 -    if (standardForm.ownershipScopeType === "organization") {
 -      if (standardForm.scopeId !== "") {
@@ -2578,7 +2578,7 @@ index 14f3626..f380cf1 100644
 @@ -1237,61 +928,6 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
      }
    }, [measuringInstruments, selectedMeasuringInstrumentId]);
- 
+
 -  useEffect(() => {
 -    if (!standards.length) {
 -      if (selectedStandardId !== "") {
@@ -2639,7 +2639,7 @@ index 14f3626..f380cf1 100644
        void loadMeasuringInstrumentJournals(selectedMeasuringInstrumentId);
 @@ -1301,24 +937,27 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
    }, [loadMeasuringInstrumentJournals, selectedMeasuringInstrumentId]);
- 
+
    useEffect(() => {
 -    if (selectedStandardId) {
 -      void loadStandardJournals(selectedStandardId);
@@ -2669,7 +2669,7 @@ index 14f3626..f380cf1 100644
 -    });
 -  }
 +  }, [equipmentRecords, measuringInstrumentForm.equipmentId, measuringInstrumentForm.unitId]);
- 
+
    function handleArchiveVisibilityChange() {
      setShowArchived((current) => {
        const next = !current;
@@ -2681,7 +2681,7 @@ index 14f3626..f380cf1 100644
 @@ -1330,80 +969,55 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
        body: JSON.stringify(equipmentPayload(equipmentForm)),
      });
- 
+
 -    const created = await parseEnvelope<EquipmentRecord>(response, "Не удалось создать карточку оборудования.");
 -    await Promise.all(
 -      equipmentForm.measuringInstrumentIds.map(async (id) => {
@@ -2720,7 +2720,7 @@ index 14f3626..f380cf1 100644
 -    );
 +    showSuccessToast("Техническое оборудование создано и появилось в учете.", "equipment-create-success");
    }
- 
+
 -  async function createMeasuringInstrument() {
 +  async function createDiagnosticEquipment() {
      const response = await fetch("/api/equipment/measuring-instruments", {
@@ -2735,7 +2735,7 @@ index 14f3626..f380cf1 100644
 +        }),
 +      ),
      });
- 
+
      const created = await parseEnvelope<MeasuringInstrumentRecord>(
        response,
 -      "Не удалось создать средство измерения.",
@@ -2767,7 +2767,7 @@ index 14f3626..f380cf1 100644
        "equipment-mi-create-success",
      );
    }
- 
+
 -  async function createStandard() {
 -    const response = await fetch("/api/equipment/standards", {
 -      method: "POST",
@@ -2798,7 +2798,7 @@ index 14f3626..f380cf1 100644
        form: measuringInstrumentFormFromRecord(record),
      });
    }
- 
+
 -  function openStandardEditor(record: StandardRecord) {
 -    setEditDialog({
 -      kind: "standard",
@@ -2825,7 +2825,7 @@ index 14f3626..f380cf1 100644
 +      showSuccessToast("Диагностическое оборудование обновлено.", "equipment-mi-update-success");
        return;
      }
- 
+
 -    const response = await fetch(`/api/equipment/standards/${editDialog.recordId}`, {
 -      method: "PATCH",
 -      headers: { "Content-Type": "application/json" },
@@ -2837,7 +2837,7 @@ index 14f3626..f380cf1 100644
 -    setEditDialog(null);
 -    showSuccessToast("Эталон обновлен.", "equipment-standard-update-success");
    }
- 
+
    async function archiveEquipment(id: string) {
 @@ -1495,32 +1089,20 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
      const response = await fetch(`/api/equipment/measuring-instruments/${id}/archive`, {
@@ -2855,7 +2855,7 @@ index 14f3626..f380cf1 100644
        "equipment-mi-archive-success",
      );
    }
- 
+
 -  async function archiveStandard(id: string) {
 -    const response = await fetch(`/api/equipment/standards/${id}/archive`, {
 -      method: "POST",
@@ -2873,12 +2873,12 @@ index 14f3626..f380cf1 100644
 -      throw new Error("Сначала выберите средство измерения для журнала.");
 +      throw new Error("Сначала выберите оборудование для журнала.");
      }
- 
+
      const response = await fetch(`/api/equipment/measuring-instruments/${selectedMeasuringInstrumentId}/journals`, {
 @@ -1537,63 +1119,16 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
        }),
      });
- 
+
 -    await parseEnvelope<JournalRecord>(response, "Не удалось добавить запись в журнал средства измерения.");
 +    await parseEnvelope<JournalRecord>(response, "Не удалось добавить запись в журнал оборудования.");
      setMeasuringInstrumentJournalForm(defaultJournalForm());
@@ -2890,7 +2890,7 @@ index 14f3626..f380cf1 100644
        "equipment-mi-journal-create-success",
      );
    }
- 
+
 -  async function createStandardJournal() {
 -    if (!selectedStandardId) {
 -      throw new Error("Сначала выберите эталон для журнала.");
@@ -2944,7 +2944,7 @@ index 14f3626..f380cf1 100644
 @@ -1621,1315 +1156,765 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
      runMutation(confirmation.task, confirmation.fallbackMessage, confirmation.dedupeKey);
    }
- 
+
 -  function renderEquipmentTab() {
 -    const equipmentFormCard = (
 -        <IslandCard
@@ -3128,7 +3128,7 @@ index 14f3626..f380cf1 100644
 +      current.map((draft) => (draft.localId === localId ? { ...draft, ...patch } : draft)),
      );
 +  }
- 
+
 -    const equipmentListCard = (
 -        <IslandCard
 -          bodyClassName={canManageRegistry ? "min-h-0 flex-1" : undefined}
@@ -3142,7 +3142,7 @@ index 14f3626..f380cf1 100644
 +  function removeDiagnosticStandardDraft(localId: string) {
 +    setDiagnosticStandardDrafts((current) => current.filter((draft) => draft.localId !== localId));
 +  }
- 
+
 -          {!equipmentRecords.length && !loading ? (
 -            <EmptyState
 -              detail="Оборудование еще не зарегистрировано. Средства измерения можно вести отдельно."
@@ -3247,7 +3247,7 @@ index 14f3626..f380cf1 100644
 +      </>
 +    );
 +  }
- 
+
 -          <FormListScrollArea className="grid gap-4">
 -            {equipmentRecords.map((item) => (
 -              <Card
@@ -3798,7 +3798,7 @@ index 14f3626..f380cf1 100644
 +      </>
      );
 +  }
- 
+
 -    const measuringInstrumentRegistryPair = canManageRegistry ? (
 -      <FormListSplitLayout form={measuringInstrumentFormCard} list={measuringInstrumentListCard} />
 -    ) : (
@@ -3812,7 +3812,7 @@ index 14f3626..f380cf1 100644
 +      equipmentFormKind === "technical"
 +        ? isEquipmentFormReady(equipmentForm)
 +        : isMeasuringInstrumentFormReady(measuringInstrumentForm) && areDiagnosticStandardDraftsReady(diagnosticStandardDrafts);
- 
+
 -    function renderMeasuringInstrumentJournalPair() {
 -      if (!selectedMeasuringInstrument) {
 -        return (
@@ -3859,7 +3859,7 @@ index 14f3626..f380cf1 100644
 +      </IslandCard>
 +    );
 +  }
- 
+
 -      const hasActiveJournalForm = canManageRegistry && !selectedMeasuringInstrument.archivedAt;
 -      const journalFormCard = (
 -        <Card className={hasActiveJournalForm ? "h-full min-h-0 gap-4" : "gap-4"} padding="md" tone="muted">
@@ -4105,7 +4105,7 @@ index 14f3626..f380cf1 100644
 +      </Card>
 +    );
 +  }
- 
+
 +  function renderDiagnosticEquipmentCard(item: MeasuringInstrumentRecord) {
      return (
 -      <div className="grid gap-4">
@@ -4379,7 +4379,7 @@ index 14f3626..f380cf1 100644
 +      </Card>
      );
 +  }
- 
+
 -    const standardListCard = (
 -          <IslandCard
 -            bodyClassName={canManageRegistry ? "min-h-0 flex-1" : undefined}
@@ -4404,7 +4404,7 @@ index 14f3626..f380cf1 100644
 +          <Badge tone="info">{showArchived ? "Активные и архив" : "Только активные"}</Badge>
 +          <Badge tone="neutral">Активных: {activeEquipmentCount}</Badge>
 +        </div>
- 
+
 -            {!standards.length && !loading ? (
 -              <EmptyState
 -                detail="После создания эталоны остаются отдельными записями и могут использоваться повторно в нескольких СИ."
@@ -4417,7 +4417,7 @@ index 14f3626..f380cf1 100644
 +            title="Оборудование пока не добавлено"
 +          />
 +        ) : null}
- 
+
 -            <FormListScrollArea className="grid gap-4">
 -              {standards.map((item) => (
 -                <Card
@@ -4525,7 +4525,7 @@ index 14f3626..f380cf1 100644
 +  function renderUnifiedRegistry() {
 +    const equipmentFormCard = renderEquipmentFormCard();
 +    const equipmentListCard = renderEquipmentListCard();
- 
+
 -    const standardRegistryPair = canManageRegistry ? (
 -      <FormListSplitLayout form={standardFormCard} list={standardListCard} />
 +    return canManageRegistry ? (
@@ -4539,7 +4539,7 @@ index 14f3626..f380cf1 100644
        </div>
      );
 +  }
- 
+
 -    function renderStandardJournalPair() {
 -      if (!selectedStandard) {
 -        return (
@@ -4558,7 +4558,7 @@ index 14f3626..f380cf1 100644
 +        />
 +      );
 +    }
- 
+
 -      const hasActiveJournalForm = canManageRegistry && !selectedStandard.archivedAt;
 -      const journalFormCard = (
 -        <Card className={hasActiveJournalForm ? "h-full min-h-0 gap-4" : "gap-4"} padding="md" tone="muted">
@@ -4859,7 +4859,7 @@ index 14f3626..f380cf1 100644
 +        )}
 +      </Card>
 +    );
- 
+
 -      return hasActiveJournalForm ? (
 -        <FormListSplitLayout form={journalFormCard} list={journalTimelineCard} />
 -      ) : (
@@ -4895,7 +4895,7 @@ index 14f3626..f380cf1 100644
 +      </div>
 +    );
 +  }
- 
+
 +  function renderUnifiedJournal() {
      return (
 -      <div className="grid gap-4">
@@ -4936,7 +4936,7 @@ index 14f3626..f380cf1 100644
 +            />
            </div>
 +        </div>
- 
+
 -          {renderStandardJournalPair()}
 -        </IslandCard>
 -      </div>
@@ -4944,7 +4944,7 @@ index 14f3626..f380cf1 100644
 +      </IslandCard>
      );
    }
- 
+
    return (
      <>
        <EditRegistryDialog
@@ -4955,7 +4955,7 @@ index 14f3626..f380cf1 100644
 @@ -2958,20 +1943,10 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
            </div>
          ) : null}
- 
+
 -        <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center">
 -          <Tabs
 -            activeKey={activeTab}
@@ -4976,7 +4976,7 @@ index 14f3626..f380cf1 100644
              onClick={handleArchiveVisibilityChange}
              type="button"
 @@ -2983,20 +1958,13 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived, initi
- 
+
          {loading ? (
            <EmptyState
 -            detail="Загружаем записи для выбранного режима."
@@ -4984,7 +4984,7 @@ index 14f3626..f380cf1 100644
              title="Загружаем учет…"
            />
          ) : null}
- 
+
 -        <div
 -          aria-labelledby={`equipment-registry-${activeTab}`}
 -          id={`equipment-panel-${activeTab}`}
@@ -5028,7 +5028,7 @@ index 66ac7aa..792e3c3 100644
 @@ -131,15 +131,6 @@ export async function fetchMeasuringInstrumentRegistry(sessionToken: string, inc
    return result.data;
  }
- 
+
 -export async function fetchStandardRegistry(sessionToken: string, includeArchived = false) {
 -  const search = includeArchived ? "?includeArchived=true" : "";
 -  const result = await fetchBackend<StandardRecord[]>(`/api/v1/standards${search}`, {
@@ -5042,7 +5042,7 @@ index 66ac7aa..792e3c3 100644
    const result = await fetchBackend<JournalRecord[]>(`/api/v1/measuring-instruments/${measuringInstrumentId}/journals`, {
      headers: sessionHeaders(sessionToken),
 @@ -147,11 +138,3 @@ export async function fetchMeasuringInstrumentJournals(sessionToken: string, mea
- 
+
    return result.data;
  }
 -
@@ -5073,7 +5073,7 @@ index b33f8af..1eb579b 100644
 @@ -415,10 +415,6 @@ async function handleRuntimeFetch(
      return pagedResponse(state.measuringInstruments, url.searchParams.get("includeArchived") === "true");
    }
- 
+
 -  if (pathname === "/api/equipment/standards" && method === "GET") {
 -    return pagedResponse(state.standards, url.searchParams.get("includeArchived") === "true");
 -  }
@@ -5082,7 +5082,7 @@ index b33f8af..1eb579b 100644
      const unit = state.session.units.find((item) => item.id === stringValue(payload, "unitId", "")) ?? state.session.units[0];
      const equipment: EquipmentRecord = {
 @@ -480,6 +476,9 @@ async function handleRuntimeFetch(
- 
+
    if (pathname === "/api/equipment/measuring-instruments" && method === "POST") {
      const unit = state.session.units.find((item) => item.id === stringValue(payload, "unitId", "")) ?? state.session.units[0];
 +    const standardIds = Array.isArray(payload.standardIds)
@@ -5113,7 +5113,7 @@ index b33f8af..1eb579b 100644
 @@ -556,13 +565,27 @@ async function handleRuntimeFetch(
      });
    }
- 
+
 -  if (pathname === "/api/equipment/standards" && method === "POST") {
 +  const measuringInstrumentStandardMatch = pathname.match(/^\/api\/equipment\/measuring-instruments\/([^/]+)\/standards$/);
 +  if (measuringInstrumentStandardMatch && method === "POST") {
@@ -5172,7 +5172,7 @@ index b33f8af..1eb579b 100644
 +    }
      return jsonResponse({ success: true, data: standard });
    }
- 
+
 -  const standardMatch = pathname.match(/^\/api\/equipment\/standards\/([^/]+)$/);
 -  if (standardMatch && method === "PATCH") {
 -    const divisionId = stringValue(payload, "divisionId", "");
@@ -5212,7 +5212,7 @@ index b33f8af..1eb579b 100644
 @@ -624,12 +631,6 @@ async function handleRuntimeFetch(
      return jsonResponse({ success: true, data: item });
    }
- 
+
 -  const archiveStandardMatch = pathname.match(/^\/api\/equipment\/standards\/([^/]+)\/archive$/);
 -  if (archiveStandardMatch && method === "POST") {
 -    const item = archiveById(state.standards, archiveStandardMatch[1]);
@@ -5225,7 +5225,7 @@ index b33f8af..1eb579b 100644
 @@ -641,17 +642,6 @@ async function handleRuntimeFetch(
      return jsonResponse({ success: true, data: journal });
    }
- 
+
 -  const standardJournalMatch = pathname.match(/^\/api\/equipment\/standards\/([^/]+)\/journals$/);
 -  if (standardJournalMatch && method === "GET") {
 -    return jsonResponse({ success: true, data: state.journals });
@@ -5239,7 +5239,7 @@ index b33f8af..1eb579b 100644
 -
    return jsonResponse({ success: false, error: "Storybook mock route is not configured." }, 404);
  }
- 
+
 diff --git a/apps/web/shared/storybook/runtime-fixtures.ts b/apps/web/shared/storybook/runtime-fixtures.ts
 index a33a830..3782f60 100644
 --- a/apps/web/shared/storybook/runtime-fixtures.ts
@@ -5316,7 +5316,7 @@ index 3e9a88a..8dce7e7 100644
 @@ -16,6 +17,15 @@ const workspaceFrame: Decorator = (Story) => (
    </div>
  );
- 
+
 +const diagnosticWithoutStandards = {
 +  ...cloneFixture(measuringInstrumentRecords[0]),
 +  id: "mi-without-standards",
@@ -5332,7 +5332,7 @@ index 3e9a88a..8dce7e7 100644
 @@ -35,24 +45,14 @@ const manyEquipmentRecords = [
    })),
  ];
- 
+
 -const manyMeasuringInstrumentRecords = [
 +const manyDiagnosticRecords = [
    ...measuringInstrumentRecords,
@@ -5358,7 +5358,7 @@ index 3e9a88a..8dce7e7 100644
 +    serialNumber: `DIAG-LONG-${String(index + 1).padStart(3, "0")}`,
    })),
  ];
- 
+
 @@ -66,14 +66,9 @@ const meta = {
    tags: ["autodocs"],
    args: {
@@ -5375,9 +5375,9 @@ index 3e9a88a..8dce7e7 100644
        control: false,
      },
 @@ -84,29 +79,38 @@ export default meta;
- 
+
  type Story = StoryObj<typeof meta>;
- 
+
 -export const EquipmentTab: Story = {
 -  decorators: [withRuntimeApi(defaultApi)],
 +export const TechnicalEquipmentList: Story = {
@@ -5389,7 +5389,7 @@ index 3e9a88a..8dce7e7 100644
 +    }),
 +  ],
  };
- 
+
 -export const MeasuringInstrumentsTab: Story = {
 -  args: {
 -    initialTab: "mi",
@@ -5404,7 +5404,7 @@ index 3e9a88a..8dce7e7 100644
 +    }),
 +  ],
  };
- 
+
 -export const StandardsTab: Story = {
 -  args: {
 -    initialTab: "standards",
@@ -5420,7 +5420,7 @@ index 3e9a88a..8dce7e7 100644
 +    }),
 +  ],
  };
- 
+
 -export const WithArchiveVisible: Story = {
 -  args: {
 -    initialShowArchived: true,
@@ -5429,11 +5429,11 @@ index 3e9a88a..8dce7e7 100644
 +export const UnifiedJournal: Story = {
    decorators: [withRuntimeApi(defaultApi)],
  };
- 
+
 @@ -122,24 +126,23 @@ export const ScopedReadonly: Story = {
    ],
  };
- 
+
 +export const ArchiveVisible: Story = {
 +  args: {
 +    initialShowArchived: true,
@@ -5444,7 +5444,7 @@ index 3e9a88a..8dce7e7 100644
  export const LoadError: Story = {
    decorators: [withRuntimeApi({ ...defaultApi, failurePaths: ["/api/equipment"] })],
  };
- 
+
  export const LongEquipmentList: Story = {
 -  decorators: [withRuntimeApi({ ...defaultApi, equipment: manyEquipmentRecords })],
 -};
@@ -5476,7 +5476,7 @@ index 55ffb4e..50da5db 100644
 @@ -41,16 +41,25 @@ type StandardRecord = {
    identifier: string;
  };
- 
+
 +type JournalRecord = {
 +  id: string;
 +  documentNumber: string;
@@ -5490,7 +5490,7 @@ index 55ffb4e..50da5db 100644
 +  nextDueDate?: string;
 +  journalCount: number;
  };
- 
+
  async function backend<T>(
    request: APIRequestContext,
    path: string,
@@ -5503,7 +5503,7 @@ index 55ffb4e..50da5db 100644
 @@ -75,6 +84,30 @@ async function backend<T>(
    return payload.data;
  }
- 
+
 +async function expectBackendFailure(
 +  request: APIRequestContext,
 +  path: string,
@@ -5534,7 +5534,7 @@ index 55ffb4e..50da5db 100644
 @@ -214,51 +247,51 @@ async function createEquipmentSeed(
    });
  }
- 
+
 -async function createStandardSeed(
 +async function createMeasuringInstrumentSeed(
    request: APIRequestContext,
@@ -5564,7 +5564,7 @@ index 55ffb4e..50da5db 100644
      },
    });
  }
- 
+
 -async function createMeasuringInstrumentSeed(
 +async function createDiagnosticStandardSeed(
    request: APIRequestContext,
@@ -5596,7 +5596,7 @@ index 55ffb4e..50da5db 100644
      },
    });
  }
- 
+
  async function createMIJournalSeed(request: APIRequestContext, token: string, measuringInstrumentId: string, seed: string) {
 -  return backend(request, `/api/v1/measuring-instruments/${measuringInstrumentId}/journals`, {
 +  return backend<JournalRecord>(request, `/api/v1/measuring-instruments/${measuringInstrumentId}/journals`, {
@@ -5629,13 +5629,13 @@ index 55ffb4e..50da5db 100644
  }
 @@ -295,12 +313,24 @@ async function confirmArchiveModal(page: Page) {
  }
- 
+
  async function selectFieldOption(page: Page, fieldLabel: string | RegExp, optionName: string | RegExp) {
 -  await page.getByLabel(fieldLabel).click();
 +  await page.getByRole("combobox", { name: fieldLabel, exact: typeof fieldLabel === "string" }).click();
    await page.getByRole("option", { name: optionName, exact: typeof optionName === "string" }).click();
  }
- 
+
 -test.describe("stage 03 metrology journals and archive contour", () => {
 -  test("customer admin uses one /equipment route for journals and archive while unit user stays read-only", async ({
 +const obsoleteStandaloneHeadings = [
@@ -5663,7 +5663,7 @@ index 55ffb4e..50da5db 100644
 +      label: `equipment-contractor-${seed}`,
 +      role: "contractor",
 +    });
- 
+
      const equipmentName = `Насос Питательный ${seed}`;
      const updatedEquipmentName = `Насос Питательный обновлен ${seed}`;
 -    const standardIdentifier = `STD-${seed}`;
@@ -5679,7 +5679,7 @@ index 55ffb4e..50da5db 100644
      const archiveStandardIdentifier = `STD-ARCHIVE-${seed}`;
 -    const archiveInstrumentName = `Термометр архив ${seed}`;
 +    const reuseStandardIdentifier = `STD-REUSE-${seed}`;
- 
+
      const archiveEquipment = await createEquipmentSeed(
        request,
 @@ -328,24 +363,97 @@ test.describe("stage 03 metrology journals and archive contour", () => {
@@ -5779,7 +5779,7 @@ index 55ffb4e..50da5db 100644
 +      { token: admin.sessionToken },
 +    );
 +    expect(archivedHistory.some((entry) => entry.documentNumber === `MI-ARCH-JOURNAL-${seed}`)).toBe(true);
- 
+
      await page.goto("/login?logout=1");
 +    await expect(page).toHaveURL(/\/login$/);
      await page.getByLabel("Корпоративная почта").fill(admin.email);
@@ -5788,7 +5788,7 @@ index 55ffb4e..50da5db 100644
 @@ -353,27 +461,30 @@ test.describe("stage 03 metrology journals and archive contour", () => {
      await expect(page).toHaveURL(/\/company$/);
      await page.goto("/equipment");
- 
+
 -    await expect(page.getByRole("heading", { level: 1, name: "Оборудование, средства измерения и эталоны" })).toBeVisible();
 -    await expect(page.getByRole("tablist", { name: "Реестры оборудования" })).toBeVisible();
 -    await expect(page.getByRole("tab", { name: /^Оборудование\s+1$/ })).toBeVisible();
@@ -5811,7 +5811,7 @@ index 55ffb4e..50da5db 100644
 +    await expect(page.getByRole("option", { name: "Техническое" })).toBeVisible();
 +    await expect(page.getByRole("option", { name: "Диагностическое" })).toBeVisible();
 +    await page.keyboard.press("Escape");
- 
+
      await page.getByLabel("Производитель").fill("Трансмаш");
      await page.getByLabel("Класс / тип").fill("Насос");
      await page.getByLabel("Модель").first().fill("НП-01");
@@ -5824,13 +5824,13 @@ index 55ffb4e..50da5db 100644
      await expect(page.getByText(equipmentName).first()).toBeVisible();
 -    await expect(page.getByText("СИ: 1").first()).toBeVisible();
 +    await expect(page.getByText("Техническое").first()).toBeVisible();
- 
+
      await page.setViewportSize({ height: 844, width: 390 });
      await page.getByRole("button", { name: `Редактировать оборудование ${equipmentName}` }).click();
 @@ -386,140 +497,79 @@ test.describe("stage 03 metrology journals and archive contour", () => {
      await expect(page.getByText(updatedEquipmentName).first()).toBeVisible();
      await page.setViewportSize({ height: 720, width: 1280 });
- 
+
 -    await page.goto("/equipment?tab=standards");
 -    await expect(page).toHaveURL(/\/equipment\?tab=standards$/);
 -    await expect(page.getByRole("heading", { level: 2, name: "Новый эталон" })).toBeVisible();
@@ -5951,7 +5951,7 @@ index 55ffb4e..50da5db 100644
 -    await expect(page.getByText("Отдельное").first()).toBeVisible();
 +    await expect(page.getByText(`EQ-DOC-${seed}`).first()).toBeVisible();
 +    await expect(page.getByText(/Текущий статус: Активно/).first()).toBeVisible();
- 
+
 -    await page.goto("/equipment");
 +    await page.goto("/equipment?tab=standards");
      await expect(page).toHaveURL(/\/equipment$/);
@@ -5974,7 +5974,7 @@ index 55ffb4e..50da5db 100644
 +    await expect(page.getByText(archiveStandardIdentifier).first()).toBeVisible();
 +    await expect(page.getByRole("button", { name: `Редактировать оборудование ${archiveEquipmentName}` })).toHaveCount(0);
 +    await expect(page.getByRole("button", { name: `Редактировать диагностическое оборудование ${archiveInstrumentName}` })).toHaveCount(0);
- 
+
 -    await page.goto("/equipment?tab=mi");
 -    await selectFieldOption(page, "Выбранное средство измерения", `${archiveInstrumentName} • MI-ARCH-${seed}`);
 -    await page.getByRole("button", { name: "Архивировать выбранное СИ" }).click();
@@ -6012,18 +6012,18 @@ index 55ffb4e..50da5db 100644
 -    await expect(page.getByText(archiveInstrumentName).first()).toBeVisible();
 -    await expect(page.getByRole("button", { name: `Редактировать средство измерения ${archiveInstrumentName}` })).toHaveCount(0);
 +    await expect(page.getByText(updatedDiagnosticName)).toHaveCount(0);
- 
+
      await page.goto("/login?logout=1");
 +    await expect(page).toHaveURL(/\/login$/);
      await page.getByLabel("Корпоративная почта").fill(employee.email);
      await page.getByLabel(/^Пароль$/).fill(employee.password);
      await page.getByRole("button", { name: "Войти" }).click();
 @@ -534,22 +584,18 @@ test.describe("stage 03 metrology journals and archive contour", () => {
- 
+
      await page.getByRole("button", { name: "Показать архив" }).click();
      await expect(page.getByText(archiveEquipmentName).first()).toBeVisible();
 +    await expect(page.getByText(archiveInstrumentName).first()).toBeVisible();
- 
+
 -    await page.goto("/equipment?tab=mi");
 -    await page.getByRole("button", { name: "Показать архив" }).click();
 -    await expect(page.getByRole("button", { name: "Создать средство измерения" })).toHaveCount(0);
@@ -6037,7 +6037,7 @@ index 55ffb4e..50da5db 100644
 +    await page.getByLabel("Корпоративная почта").fill(contractor.email);
 +    await page.getByLabel(/^Пароль$/).fill(contractor.password);
 +    await page.getByRole("button", { name: "Войти" }).click();
- 
+
 -    await page.goto("/equipment?tab=standards");
 -    await page.getByRole("button", { name: "Показать архив" }).click();
 -    await expect(page.getByRole("button", { name: "Создать эталон" })).toHaveCount(0);
@@ -6060,29 +6060,29 @@ index 42ec7c9..e4b2287 100644
 +++ b/.agent/stages/03-identity-master-data/sprint_contract.md
 @@ -1,118 +1,138 @@
  # Sprint Contract
- 
+
  - Stage ID: `03-identity-master-data`
 -- Slice ID: `slice-011-input-help-tooltip`
 +- Slice ID: `slice-014-equipment-domain-correction`
  - Status: `PENDING` until implementation evidence and one fresh verifier `PASS`
- 
+
  ## Objective
- 
+
 -Reduce visual clutter in Stage 03 forms by changing the shared `InputField` hint behavior: non-error `hint` copy must no longer render as always-visible helper text under the field. The same hint content must remain available as hover/focus-accessible auxiliary help in the field label/control area.
 +Replace the historical `/equipment` tabbed registry model with a single customer equipment workspace that matches the clarified domain:
- 
+
 -The motivating runtime example is the organization profile `КПП` field in `/company`, where `hint="9 цифр."` currently renders below the input. After this slice, that copy should be available through the field help affordance, while validation errors still render visibly under the field.
 +- ordinary production/repair equipment is `technical`;
 +- customer `СИ` is `diagnostic` equipment used to check repair quality or unit condition;
 +- standards/setup measures are owned children of one diagnostic equipment record;
 +- official metrology operations are recorded in one equipment journal, not in a separate standard journal;
 +- contractor-side metrology equipment stays out of MVP.
- 
+
 -Do not widen this slice into redesigning `/company`, changing validation rules, changing requisites persistence, or introducing a new form component family.
 +Do not widen this slice into Stage 04 request workflows, contractor execution, Аршин integration, accredited-organization equipment registries, or a separate metrology module.
- 
+
  ## Frozen Decisions
- 
+
 -- Keep the existing shared `InputField` and its public `hint?: string` prop; this is an `extend` slice, not a component replacement.
 -- `hint` means auxiliary field help, not persistent below-field helper copy.
 -- `error` remains a visible below-field message and keeps priority over hint in the visual error area.
@@ -6112,9 +6112,9 @@ index 42ec7c9..e4b2287 100644
 +  - customer admins with `manage_equipment` can create, edit, archive, add standards, and add journal entries inside visible scope;
 +  - read-only roles see only their allowed subtree;
 +  - contractor sessions do not receive the customer equipment registry.
- 
+
  ## Acceptance Criteria
- 
+
 -- Shared component behavior:
 -  - `apps/web/shared/ui/InputField.tsx` no longer renders non-error `hint` as an always-visible text row under the input.
 -  - When `hint` is present and `error` is absent, the visible form footprint remains the label/control row plus input; the hint is reachable by hover and keyboard focus in the label/control area.
@@ -6152,9 +6152,9 @@ index 42ec7c9..e4b2287 100644
 +  - `LongEquipmentList`.
 +- Targeted `/equipment` smoke/e2e proof is updated for the unified workspace and old tab params tolerance.
 +- Canonical docs and stage artifacts describe the implemented contract without leaving old reusable-standard or tabbed-registry copy as current behavior.
- 
+
  ## Proof Requirements
- 
+
 -- Harness:
 +- Harness / stage artifacts:
    - `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data`
@@ -6224,9 +6224,9 @@ index 42ec7c9..e4b2287 100644
 +  - run one fresh verifier after implementation;
 +  - verifier may write only verification artifacts and must not edit production code;
 +  - `feature_list.json` entry `stage03-equipment-diagnostic-equipment-correction` remains `passes: false` until verifier returns `PASS`.
- 
+
  ## File / Module Ownership
- 
+
 -- `apps/web/shared/ui/InputField.tsx`
 -- `apps/web/stories/primitives/InputField.stories.tsx`
 -- `/company` form consumers only for minimal integration fixes if the shared component extension requires usage adjustments:
@@ -6250,9 +6250,9 @@ index 42ec7c9..e4b2287 100644
 +- `docs/architecture/identity-master-data.md`
 +- `docs/architecture/frontend-architecture.md`
 +- `.agent/stages/03-identity-master-data/**`
- 
+
  ## Canonical Doc Targets If Slice Lands
- 
+
 -- `docs/design/storybook-component-backlog.md`
 -  - narrow update likely needed for `UI-03 InputField` if the implemented contract formalizes `hint` as hover/focus help instead of inline helper text;
 -  - no new component backlog family is expected because this should extend existing `InputField`.
@@ -6269,9 +6269,9 @@ index 42ec7c9..e4b2287 100644
 +- `docs/roadmap.md`
 +  - Stage 03 acceptance wording and handoff guardrails.
 +- Swagger/OpenAPI files if backend contract changes.
- 
+
  ## Non-Goals
- 
+
 -- Reworking organization profile layout, requisites validation, legal-form behavior, logo upload, division/unit forms, employees, contracts, equipment, or metrology registries;
 -- changing backend APIs, database schema, OpenAPI/Swagger, seeds, or runtime auth/session behavior;
 -- adding Stage 04 request flows or any post-MVP form-builder/help-center behavior;
@@ -6301,11 +6301,11 @@ index 0106be2..e37aa7f 100644
 +- historical bounded ownership-scope labels for standards remain implementation floor only; broader org-scoped dictionary/local-draft CRUD deferred;
  - archive baseline для ключевых master-data сущностей;
  - canonical doc sync для product, architecture и stage boundaries.
- 
+
 @@ -65,6 +64,22 @@ Historical Stage 03 evidence proves the older launch-wizard implementation. The
- 
+
  Treat this as a bounded follow-up Stage 03 correction before claiming product-complete org-structure management.
- 
+
 +## Product correction from 2026-05-11
 +
 +The customer meeting clarified the equipment/metrology domain and supersedes the older reusable-standards target:
@@ -6323,7 +6323,7 @@ index 0106be2..e37aa7f 100644
 +- keep `/equipment` as the single public customer route, but restructure its surface around technological equipment, diagnostic equipment and standards inside diagnostic equipment cards.
 +
  ## Frozen phasing inside Stage 03
- 
+
  ### Transition gate from Stage 02
 @@ -134,7 +149,11 @@ The diagram fixes the execution order after Stage 02 closure and after the later
  - direct login с несколькими eligible memberships/grants truthfully возвращает `409`, а не silently выбирает один workspace;
@@ -6343,18 +6343,18 @@ index 1e813a6..8d4ec0a 100644
 --- a/docs/PRD-MVP.md
 +++ b/docs/PRD-MVP.md
 @@ -2,7 +2,7 @@
- 
- Статус: Draft  
- Версия: 0.1  
+
+ Статус: Draft
+ Версия: 0.1
 -Дата: 2026-03-14
 +Дата: 2026-05-11
- 
+
  ## 1. Назначение документа
- 
+
 @@ -324,25 +324,30 @@ Routing eligibility в MVP считается только для `active` до
- 
+
  ### 10.6. Оборудование и метрологические данные
- 
+
 -- оборудование, СИ и эталоны являются отдельными сущностями;
 -- система не использует одну общую mega-form `оборудование + СИ + эталон`;
 -- customer-side web contour держит один публичный route `/equipment` с query-backed state:
@@ -6383,9 +6383,9 @@ index 1e813a6..8d4ec0a 100644
 -- текущий proven Stage 03 contract не включает отдельный CRUD для org-scoped dictionaries с local drafts: ownership scope для эталона фиксируется через organization/division/unit + `owner label`;
 -- СИ и эталоны могут существовать как часть встроенного master-data contour без превращения MVP в отдельную отраслевую метрологическую систему.
 +- диагностическое оборудование и его owned эталоны существуют как часть встроенного master-data contour без превращения MVP в отдельную отраслевую метрологическую систему.
- 
+
  ### 10.7. Архивирование
- 
+
  - организации, дивизионы, юниты, пользователи, договоры, оборудование, СИ и эталоны архивируются;
 -- archived equipment / СИ / эталоны скрываются из default active lists и relation pickers, но остаются доступны через explicit archive visibility state и read-only history;
 -- archived СИ и эталоны сохраняют journal history, но новые journal entries в них не добавляются;
@@ -6393,16 +6393,16 @@ index 1e813a6..8d4ec0a 100644
 +- owned эталоны archived диагностического оборудования остаются read-only внутри карточки родителя;
 +- archived equipment / диагностическое оборудование сохраняют journal history, но новые journal entries и новые эталоны в них не добавляются;
  - физическое удаление этих сущностей не является штатным пользовательским сценарием.
- 
+
  ## 11. Типы работ в MVP
 @@ -374,7 +379,7 @@ Routing eligibility в MVP считается только для `active` до
- 
+
  - поверка учитывается как операционный процесс внутри заявки;
  - поддерживаются результаты поверки, вложения и документы;
 -- встроенные реестры СИ и эталонов, а также журналы операций входят в первую версию как request-supporting master data;
 +- реестр диагностического оборудования / СИ заказчика, эталоны в комплектах этого диагностического оборудования и журналы официальных операций входят в первую версию как request-supporting master data;
  - отдельный самостоятельный отраслевой метрологический модуль не входит в первую версию.
- 
+
  ## 12. Функциональные требования
 diff --git a/docs/architecture/frontend-architecture.md b/docs/architecture/frontend-architecture.md
 index 56725af..3a5e6d7 100644
@@ -6410,17 +6410,17 @@ index 56725af..3a5e6d7 100644
 +++ b/docs/architecture/frontend-architecture.md
 @@ -1,7 +1,7 @@
  # Архитектура фронтенда и практики разработки
- 
- Статус: accepted baseline  
+
+ Статус: accepted baseline
 -Обновлено: 2026-04-29
 +Обновлено: 2026-05-11
- 
+
  ## Назначение
- 
+
 @@ -179,71 +179,69 @@ flowchart LR
- 
+
  ### 1.2.4. Реализованный Stage 03 runtime contour для slice-004
- 
+
 -После реализации `slice-004-equipment-mi-standard-registries` master-data contour на публичном route `/equipment` перестал быть shell-only surface и стал реальным Stage 03 registry boundary:
 -
 -- публичный web route остается `/equipment`, а три отдельных registry surfaces переключаются через query-backed tabs `equipment`, `mi`, `standards`;
@@ -6451,7 +6451,7 @@ index 56725af..3a5e6d7 100644
 +  - `Оборудование в учете`;
 +  - diagnostic equipment card with owned standards inside the card;
 +  - `Журнал операций по оборудованию`.
- 
+
  ```mermaid
  flowchart LR
 -    A["Browser /equipment?tab=*"] --> B["Next page + app/api/equipment*"]
@@ -6472,7 +6472,7 @@ index 56725af..3a5e6d7 100644
 +    C --> K["Журнал операций по оборудованию"]
 +    C --> L["archive visibility"]
  ```
- 
+
 -### 1.2.5. Реализованный Stage 03 runtime contour для slice-005
 -
 -После реализации `slice-005-metrology-journals-archiving-and-proof` и follow-up frontend edit slice тот же `/equipment` route получил journal/archive/edit state без widening в parallel public family:
@@ -6511,7 +6511,7 @@ index 56725af..3a5e6d7 100644
 +- edit/archive controls stay hidden for archived records and hidden from sessions without `manage_equipment`;
 +- data fetching keeps pagination `meta` and `includeArchived=true` only when archive visibility is explicit;
 +- active relationship controls must never surface archived records or reusable standards.
- 
+
  ```mermaid
  flowchart LR
 -    A["/equipment?tab=mi&archived=1"] --> B["page.tsx resolves tab + archived"]
@@ -6536,34 +6536,34 @@ index 56725af..3a5e6d7 100644
 +    H --> I["manage_equipment mutate"]
 +    H --> J["read-only subtree"]
  ```
- 
+
 -Диаграмма фиксирует текущую frontend boundary для slice-005 и edit follow-up: query state управляет тем, что видно на одном публичном route, archived visibility не расширяет mutate surface, а PATCH editor доступен только для активных записей у роли с `manage_equipment`.
 +Эта диаграмма фиксирует frontend/backend boundary during the correction: UI already follows the unified product model even if storage keeps legacy service boundaries as compatibility layer.
- 
+
  ### 1.3. Field scaffold boundary
- 
+
 diff --git a/docs/architecture/identity-master-data.md b/docs/architecture/identity-master-data.md
 index 243d2c3..0c0c052 100644
 --- a/docs/architecture/identity-master-data.md
 +++ b/docs/architecture/identity-master-data.md
 @@ -1,7 +1,7 @@
  # Identity, Access, and Master Data
- 
- Статус: accepted baseline  
+
+ Статус: accepted baseline
 -Обновлено: 2026-04-29
 +Обновлено: 2026-05-11
- 
+
  ## Назначение
- 
+
 @@ -11,7 +11,7 @@
  - иерархия `организация -> дивизион -> юнит`;
  - сотрудники, приглашения, membership и scoped access;
  - master-data контур для договоров, оборудования, СИ и эталонов;
 -- правила архивирования и bounded ownership labels.
 +- правила архивирования и target correction для диагностического оборудования / эталонов.
- 
+
  Это не замена `docs/roadmap.md`, а более узкий source of truth для решений, которые уже не помещаются в короткое stage summary.
- 
+
 @@ -140,9 +140,9 @@ flowchart TD
      A["Организация"] --> B["Дивизион (optional)"]
      A --> C["Юнит"]
@@ -6575,12 +6575,12 @@ index 243d2c3..0c0c052 100644
 +    C --> E["Диагностическое оборудование / СИ"]
 +    E --> F["0..N эталонов / установочных мер"]
  ```
- 
+
  ### 2.1. Организация
 @@ -422,11 +422,44 @@ flowchart LR
- 
+
  ## 5. Оборудование, СИ и эталоны
- 
+
 +### 5.0. Product correction 2026-05-11: диагностическое оборудование заказчика
 +
 +После встречи с заказчиком термин `средство измерения` в VRK нужно трактовать уже, чем прежняя обобщенная модель:
@@ -6604,10 +6604,10 @@ index 243d2c3..0c0c052 100644
 +Эта диаграмма фиксирует target contract после уточнения: у одного диагностического оборудования может быть несколько эталонов, а эталон в MVP принадлежит комплекту конкретного диагностического оборудования. Эталонный манометр, частотомер и другое оборудование, которое привозит внешний метролог для официальной поверки, не заводится как customer-side equipment в первой версии.
 +
  ### 5.1. Оборудование
- 
+
 -Оборудование создается отдельной карточкой, без принудительной mega-form с метрологией.
 +Оборудование создается из единой формы `Новое оборудование` с обязательным типом. В пользовательской модели нужно различать:
- 
+
 -Минимальные поля:
 +- технологическое оборудование — стенды, установки, оборудование цехов и другие объекты производственного/ремонтного процесса;
 +- диагностическое оборудование / СИ — оборудование заказчика для проверки качества ремонта или состояния узлов, включая простые инструменты и сложные приборы вроде Robocon, УКВР и приборов ЖТ.
@@ -6621,7 +6621,7 @@ index 243d2c3..0c0c052 100644
 +- комментарий.
 +
 +Для технологического оборудования:
- 
+
  - производитель;
  - классификация;
 @@ -434,17 +467,21 @@ flowchart LR
@@ -6642,17 +6642,17 @@ index 243d2c3..0c0c052 100644
 +- серийный номер;
 +- опциональная связь с технологическим оборудованием;
 +- `0..N` эталонов / установочных мер внутри той же формы.
- 
+
 -После создания карточки оборудование может жить без метрологии, если она не нужна.
 +После создания карточки технологическое оборудование может жить без метрологии, если она не нужна. Диагностическое оборудование должно иметь метрологический статус и журнал официальных операций, потому что его показания влияют на вывод `исправен / неисправен`.
- 
+
  ### 5.2. Средства измерения
- 
+
 -СИ являются отдельной сущностью, а не просто вложенным набором полей в оборудовании.
 +СИ являются диагностическим оборудованием заказчика. Текущий технический ресурс `measuring-instruments` допустим как implementation boundary, но пользовательский и продуктовый смысл — не "самостоятельный класс оборудования подрядчика", а customer-side diagnostic equipment внутри юнита.
- 
+
  Минимальные поля:
- 
+
 @@ -453,25 +490,31 @@ flowchart LR
  - заводской номер;
  - статус;
@@ -6660,9 +6660,9 @@ index 243d2c3..0c0c052 100644
 -- признак `встроенное в оборудование` или `самостоятельное`.
 +- связь с технологическим оборудованием, если диагностическое оборудование обслуживает конкретную карточку;
 +- метрологический статус, рассчитанный по журналу официальных операций.
- 
+
  ### 5.3. Эталоны
- 
+
 -Эталон является отдельным реестром.
 +Эталон / установочная мера — объект из комплекта диагностического оборудования, который используется для настройки или проверки прибора: эталонное кольцо, пробка, скоба и т.п.
 +
@@ -6671,9 +6671,9 @@ index 243d2c3..0c0c052 100644
 +- рабочая настройка прибора на своем эталоне не является официальной поверкой и обычно не требует ручной записи пользователем в VRK;
 +- официальная поверка аккредитованной организацией фиксируется через журнал операции, протокол и организацию-исполнителя;
 +- эталоны внешней аккредитованной организации не заводятся в MVP как customer-side реестр.
- 
+
  Минимальные поля:
- 
+
  - тип / модель;
  - идентификатор / серийный номер;
  - метрологические характеристики;
@@ -6682,33 +6682,33 @@ index 243d2c3..0c0c052 100644
 +- родительское диагностическое оборудование / СИ;
  - статус;
  - документы.
- 
+
  ### 5.4. Журналы операций
- 
+
 -Для СИ и эталонов источником правды является журнал метрологических операций, а не только пара дат в карточке.
 +Для оборудования источником правды по официальным операциям является единый журнал операций по оборудованию, а не только пара дат в карточке.
- 
+
  Запись журнала хранит:
- 
+
 @@ -483,28 +526,32 @@ flowchart LR
  - вложение;
  - комментарий.
- 
+
 -Правило расчета:
 +Правило расчета для диагностического оборудования:
- 
+
 -- текущий статус и ближайшая дата рассчитываются из последней действующей записи журнала;
 +- текущий статус и ближайшая дата рассчитываются из последней действующей записи журнала оборудования;
  - денормализованные поля на карточке допустимы как cache/view-model, но не как единственный источник правды.
- 
+
  ### 5.5. Связи между оборудованием, СИ и эталонами
- 
+
 -Stage 03 не использует жесткую связь `1:1` между СИ и эталоном.
 +Stage 03 больше не должен проектироваться вокруг reusable many-to-many связи между СИ и эталонами как целевой модели.
- 
+
 -Поддерживаемая модель:
 +Целевая модель после product correction:
- 
+
 -- у оборудования может быть `0..N` СИ;
 -- у СИ может быть `0..N` эталонов;
 -- один эталон может повторно использоваться в нескольких операциях или для нескольких СИ.
@@ -6717,20 +6717,20 @@ index 243d2c3..0c0c052 100644
 +- диагностическое оборудование может быть связано с технологическим оборудованием, если оно применяется для конкретного объекта контроля;
 +- у диагностического оборудования может быть `0..N` эталонов / установочных мер;
 +- эталон в MVP принадлежит одному диагностическому оборудованию и не переиспользуется как свободный общий справочник между несколькими СИ.
- 
+
  Связь допускается:
- 
+
 -- через таблицу назначений;
 -- через журнал операций.
 +- через parent foreign key `standard -> diagnostic equipment`;
 +- через журнал официальных метрологических операций для поверки/калибровки/приостановки/вывода.
- 
+
  ### 5.6. Реализованный slice-004 registry contract
- 
+
 +Исторический slice-004 доказывает прежний registry baseline. После product correction 2026-05-11 он остается важным implementation floor, но не является финальным target contract для следующей итерации оборудования.
 +
  В четвертом живом Stage 03 slice registry layer зафиксирован следующим контрактом:
- 
+
  - customer-side public contour остается на одном route `/equipment`;
 @@ -515,42 +562,42 @@ Stage 03 не использует жесткую связь `1:1` между С
  - анонимный пользователь видит truthful shell без live data;
@@ -6746,7 +6746,7 @@ index 243d2c3..0c0c052 100644
  - measuring instrument может быть `standalone` либо `built_in` к equipment;
 -- standard остается самостоятельным reusable record и может быть связан более чем с одним measuring instrument.
 +- historical standard остается самостоятельным reusable record и может быть связан более чем с одним measuring instrument, но это допущение должно быть заменено в следующем equipment-domain correction slice.
- 
+
  ```mermaid
  flowchart TD
 -    A["/equipment"] --> B["equipment registry"]
@@ -6763,11 +6763,11 @@ index 243d2c3..0c0c052 100644
 -    I --> J["reusable links to many MI"]
 +    I --> J["legacy reusable links to many MI"]
  ```
- 
+
  ### 5.7. Реализованный slice-005 journal + archive contract
- 
+
  Пятый живой Stage 03 slice не создает новый public route family, а расширяет тот же `/equipment` contour:
- 
+
 -- page state остается URL-backed:
 -  - `tab=equipment | mi | standards`;
 -  - `archived=1` включает explicit archive visibility на том же route;
@@ -6789,12 +6789,12 @@ index 243d2c3..0c0c052 100644
    - `operationType`;
    - `operationDate`;
 @@ -589,9 +636,46 @@ flowchart LR
- 
+
  Диаграмма фиксирует текущий slice-005 derivation contract: archived state хранится отдельно, а текущий metrology status и ближайшая дата вычисляются по latest applicable journal record.
- 
+
 -## 6. Ownership labels and lifecycle rules
 +### 5.8. Target correction: unified equipment workspace
- 
+
 -Текущий proven Stage 03 contract не вводит отдельный CRUD-модуль для organization-scoped dictionaries с local drafts.
 +Equipment-domain correction moves the user-facing contract from three tabbed registries to one workspace:
 +
@@ -6834,20 +6834,20 @@ index 243d2c3..0c0c052 100644
 +## 6. Исторические ownership labels и lifecycle rules
 +
 +Текущий proven Stage 03 contract не вводит отдельный CRUD-модуль для organization-scoped dictionaries с local drafts. Для historical slice-005 standards были реализованы через ownership labels:
- 
+
  Вместо этого реализовано более узкое и документированное решение:
- 
+
 @@ -600,7 +684,9 @@ flowchart LR
  - UI может явно переопределить label для читаемого представления владельца, но это не отдельная dictionary family;
  - справочники вроде производителей, классификаций и типов пока остаются текстовыми или seeded boundaries и не доказаны как самостоятельный Stage 03 CRUD contour.
- 
+
 -Это ограничение намеренное: slice-005 закрывает journal/archive truth и doc-sync, а не расширяет Stage 03 в parallel dictionary module.
 +Это ограничение было намеренным для slice-005: он закрывал journal/archive truth и doc-sync, а не расширял Stage 03 в parallel dictionary module.
 +
 +После product correction 2026-05-11 ownership labels больше не являются целевым способом владения эталоном. Equipment-domain correction заменяет их parent relation к диагностическому оборудованию, сохраняя archive/history правила.
- 
+
  ## 7. Архивирование и явные non-goals
- 
+
 diff --git a/docs/roadmap.md b/docs/roadmap.md
 index 3cf371a..4450980 100644
 --- a/docs/roadmap.md
@@ -6862,7 +6862,7 @@ index 3cf371a..4450980 100644
  - отдельный контур сметы для внеплановых работ
  - приемка результата внутри системы
 @@ -153,6 +153,7 @@
- 
+
  - юридически значимая ЭП / КЭП
  - самостоятельный отраслевой метрологический модуль вне встроенных реестров и журналов
 +- оборудование подрядчика и его метрологическое оборудование в customer-side master-data MVP
@@ -6891,9 +6891,9 @@ index 3cf371a..4450980 100644
    - contracts lists, cards and routing surfaces на публичном `/contracts` contour
 -  - equipment / measuring instrument / standard lists and cards на одном публичном `/equipment` contour с query-backed tabs и explicit archive visibility state
 +- one `/equipment` workspace with unified create form, type selector, equipment cards, owned standards inside diagnostic cards, unified equipment journal, compatibility-only old tab params, and explicit archive visibility state
- 
+
  ### Что обязательно доказать
- 
+
 @@ -409,10 +409,10 @@
  - direct login с несколькими eligible memberships/grants truthfully возвращает `409`, а не silently выбирает один workspace
  - `/platform/organization-shells` и Stage 03 `organizations` admin surface не доступны анонимно и не раскрывают deployment-scoped admin credential в browser
@@ -6909,7 +6909,7 @@ index 3cf371a..4450980 100644
  - archive применяется вместо physical delete для ключевых master-data сущностей, archived rows скрыты из default active lists и открываются только через explicit archive state
  - база ролей и организаций масштабируется под multi-org model
 @@ -435,7 +435,7 @@
- 
+
  - customer admin активируется по invite и управляет организацией, дивизионами и юнитами из постоянного `/company` UI, включая first-empty state и повторное добавление структурных узлов
  - сотрудники приглашаются по email и получают только scoped access своего уровня
 -- contracts + equipment + measuring instruments + standards CRUD, journal и archive flows работают end-to-end

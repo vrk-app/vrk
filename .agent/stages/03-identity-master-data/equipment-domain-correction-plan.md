@@ -1,6 +1,6 @@
 # Equipment Domain Correction Plan
 
-Дата: 2026-05-11  
+Дата: 2026-05-11
 Статус: frozen slice plan, production code pending
 
 ## Контекст

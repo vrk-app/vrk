@@ -11,7 +11,7 @@ vrk-object-storage-1   minio/minio:RELEASE.2025-09-07T16-13-09Z   "/usr/bin/dock
 vrk-web-1              vrk-web-dev                                "docker-entrypoint.s…"   web              5 hours ago      Up 5 hours (healthy)      0.0.0.0:3100->3000/tcp, [::]:3100->3000/tcp
 
 --- schema_migrations ---
- version | dirty 
+ version | dirty
 ---------+-------
       16 | f
 (1 row)

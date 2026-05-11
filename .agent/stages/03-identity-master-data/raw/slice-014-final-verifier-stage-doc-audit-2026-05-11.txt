@@ -30,21 +30,21 @@ Sprint contract corrected target lines:
 
 Evidence current slice summary/doc-fix lines:
     24	The 2026-04-30 input help tooltip slice extends the existing shared `InputField` instead of creating a new input family. Non-error `hint` text now appears through a compact help trigger near the label and opens on hover/focus; the hint no longer occupies a persistent helper row under the field. Field errors remain visible below the input and keep `aria-describedby` priority.
-    25	
+    25
     26	The 2026-05-11 equipment domain correction replaces the historical tabbed `/equipment` target with one customer equipment workspace. The page keeps the public `/equipment` route, removes the visible `Оборудование / СИ / Эталоны` tab model, provides one `Новое оборудование` form with `Техническое` / `Диагностическое` type selection, treats diagnostic equipment as the owner of `0..N` standards/setup measures, shows those standards only inside diagnostic equipment cards, removes the target standard journal route, and keeps one equipment operation journal. Canonical product and technical docs were synced because this changes the product/API/persistence contract.
-    27	
+    27
     28	Fresh verifier initially failed this slice for owned-standard migration/read-path gaps, remaining standalone standards registry exposure, stale current-slice UI evidence metadata, and two placeholder findings. The minimal fixer plus parent follow-up closed those gaps: migration 16 now makes current standards diagnostic-owned or archived, diagnostic cards ignore the old many-to-many table, standalone standards routes/proxies are removed, placeholders pass the UI gate, and current-slice metadata points to slice-014. The second fresh verifier reproduced the product/API/persistence/UI proof and failed only for a stale `stage_spec.md` verification-plan bullet; that doc-only drift is now fixed. A new fresh verifier must still own the final PASS.
-    29	
+    29
     30	## Commands Run
-    31	
+    31
 
 Progress current slice/doc-fix entries:
      1	# Progress
-     2	
+     2
      3	## Session log
-     4	
+     4
      5	### 2026-05-11T15:07:41Z
-     6	
+     6
      7	- Re-synced the equipment/metrology domain after the customer meeting.
      8	- Confirmed that canonical docs still contained the older Stage 03 assumption where standards were reusable records linked many-to-many with measuring instruments.
      9	- Recorded the new target correction:
@@ -60,9 +60,9 @@ Progress current slice/doc-fix entries:
     19	  - `docs/architecture/frontend-architecture.md`
     20	- Updated `stage_spec.md` and `feature_list.json` with a pending equipment-domain correction item. No production code was changed in this planning/doc-sync slice.
     21	- Added `.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md` as the detailed page/data/API/test plan for the next slice.
-    22	
+    22
     23	### 2026-05-11T16:36:31Z
-    24	
+    24
     25	- Completed the builder/evidence pass for `slice-014-equipment-domain-correction`.
     26	- Replaced the historical `/equipment` tabbed registry model with one customer equipment workspace:
     27	  - public route remains `/equipment`;
@@ -102,9 +102,9 @@ Progress current slice/doc-fix entries:
     61	  - Web Interface Guidelines review;
     62	  - `git diff --check`.
     63	- `feature_list.json` entry `stage03-equipment-diagnostic-equipment-correction` remains `passes: false` until a fresh verifier owns the PASS.
-    64	
+    64
     65	### 2026-05-11T17:45:00Z
-    66	
+    66
     67	- Fresh verifier returned `FAIL` for `slice-014-equipment-domain-correction`.
     68	- Minimal fixer and parent follow-up closed the reported gaps:
     69	  - migration `000016_equipment_domain_correction` now copies multi-linked legacy standards per diagnostic equipment parent, archives current orphan standards that cannot be assigned, and adds a current-row check constraint;
@@ -126,9 +126,9 @@ Progress current slice/doc-fix entries:
     85	  - precise source audits for obsolete UI tabs and standalone standards surfaces passed.
     86	- The first post-fix smoke attempt hit a login redirect race on the warmed dev server; immediate rerun passed and is the accepted equipment proof.
     87	- `feature_list.json` entry still remains `passes: false` until a new fresh verifier returns `PASS`.
-    88	
+    88
     89	### 2026-05-11T17:58:00Z
-    90	
+    90
     91	- Second fresh verifier reproduced the fixed product/API/persistence/UI proof and returned `FAIL` only for documentation drift in `stage_spec.md`.
     92	- Updated the Stage 03 verification-plan bullet so it now requires the unified `/equipment` workspace proof instead of historical separate equipment / measuring-instrument / standards registries.
     93	- No production code changed in this doc-only follow-up.

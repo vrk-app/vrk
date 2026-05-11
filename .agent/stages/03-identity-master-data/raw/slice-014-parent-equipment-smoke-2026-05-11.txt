@@ -8,7 +8,7 @@ Running 1 test using 1 worker
   ✘  1 tests/equipment-registries.smoke.spec.ts:333:7 › stage 03 unified equipment workspace › customer admin uses one /equipment surface with owned standards while scoped and contractor access stay bounded (9.2s)
 
 
-  1) tests/equipment-registries.smoke.spec.ts:333:7 › stage 03 unified equipment workspace › customer admin uses one /equipment surface with owned standards while scoped and contractor access stay bounded 
+  1) tests/equipment-registries.smoke.spec.ts:333:7 › stage 03 unified equipment workspace › customer admin uses one /equipment surface with owned standards while scoped and contractor access stay bounded
 
     Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
 
@@ -41,4 +41,4 @@ Running 1 test using 1 worker
     ────────────────────────────────────────────────────────────────────────────────────────────────
 
   1 failed
-    tests/equipment-registries.smoke.spec.ts:333:7 › stage 03 unified equipment workspace › customer admin uses one /equipment surface with owned standards while scoped and contractor access stay bounded 
+    tests/equipment-registries.smoke.spec.ts:333:7 › stage 03 unified equipment workspace › customer admin uses one /equipment surface with owned standards while scoped and contractor access stay bounded

@@ -17,4 +17,3 @@ PASS
 
 ## apps/web/shared/storybook/runtime-api-mock.tsx
 PASS
-

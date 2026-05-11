@@ -7,28 +7,28 @@ vrk-object-storage-1   minio/minio:RELEASE.2025-09-07T16-13-09Z   "/usr/bin/dock
 vrk-web-1              vrk-web-dev                                "docker-entrypoint.s…"   web              6 hours ago      Up 6 hours (healthy)      0.0.0.0:3100->3000/tcp, [::]:3100->3000/tcp
 
 ## schema migrations
- version | dirty 
+ version | dirty
 ---------+-------
       16 | f
 (1 row)
 
 
 ## registry standard ownership and reuse audit
- without_parent | active_without_parent | total 
+ without_parent | active_without_parent | total
 ----------------+-----------------------+-------
              81 |                     0 |   105
 (1 row)
 
 
 ## reusable standard rows from legacy link table
- reusable_standard_rows 
+ reusable_standard_rows
 ------------------------
                       0
 (1 row)
 
 
 ## current-row check constraint
-                     conname                     |                             pg_get_constraintdef                             
+                     conname                     |                             pg_get_constraintdef
 -------------------------------------------------+------------------------------------------------------------------------------
  chk_registry_standards_current_diagnostic_owner | CHECK (((archived_at IS NOT NULL) OR (diagnostic_equipment_id IS NOT NULL)))
 (1 row)

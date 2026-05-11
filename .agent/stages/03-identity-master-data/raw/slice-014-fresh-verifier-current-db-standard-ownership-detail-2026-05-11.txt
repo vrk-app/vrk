@@ -1,11 +1,11 @@
 COMMAND: docker compose -f compose.platform.yml exec -T db psql -U postgres -d db detailed standard ownership audit
 
- total_without_parent | active_without_parent | total_with_parent | total_standards 
+ total_without_parent | active_without_parent | total_with_parent | total_standards
 ----------------------+-----------------------+-------------------+-----------------
                    67 |                    45 |                32 |              99
 (1 row)
 
-                  id                  |        identifier         | archived | linked_mi_count 
+                  id                  |        identifier         | archived | linked_mi_count
 --------------------------------------+---------------------------+----------+-----------------
  21152e74-cb45-4c6b-9c7a-06bb45600985 | STD-ARCHIVE-1778516726754 | f        |               0
  8d84ccd8-cbe8-424e-bc2c-2e3618fda1d9 | STD-ARCHIVE-1778516709069 | f        |               0
