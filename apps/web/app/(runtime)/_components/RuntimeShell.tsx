@@ -48,7 +48,7 @@ export interface RuntimeShellProps {
     name: string;
     role: string;
   };
-  eyebrow?: string;
+  eyebrow?: string | null;
   workspaceTitle?: string;
 }
 

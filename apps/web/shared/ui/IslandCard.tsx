@@ -53,6 +53,7 @@ export function IslandCard({
   title,
 }: IslandCardProps) {
   const Heading = headingLevel === 2 ? "h2" : "h3";
+  const hasMetric = metric !== undefined && metric !== null && metric !== false && metric !== "";
 
   return (
     <Card className={cn("relative gap-5 overflow-visible pt-20", className)} padding="lg">
@@ -66,12 +67,17 @@ export function IslandCard({
           <span className="flex size-5 shrink-0 items-center justify-center text-accent-strong">
             {icon ?? <Building2 aria-hidden="true" className="size-4" />}
           </span>
-          <Heading className="min-w-0 truncate text-lg font-semibold leading-7">{title}</Heading>
-          {metric ? (
-            <span className="shrink-0 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-semibold tabular-nums text-accent-strong">
-              {metric}
-            </span>
-          ) : null}
+          <div className="flex min-w-0 items-baseline text-lg leading-7">
+            <Heading className="min-w-0 truncate font-semibold">{title}</Heading>
+            {hasMetric ? (
+              <span className="shrink-0 font-semibold tabular-nums text-muted-foreground">
+                <span aria-hidden="true" className="px-1 text-text-tertiary">
+                  ·
+                </span>
+                {metric}
+              </span>
+            ) : null}
+          </div>
         </div>
         {renderActionSlot(action)}
       </div>

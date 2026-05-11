@@ -864,6 +864,7 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
                   disabled={!canManageProfile}
                   error={profileErrors.inn}
                   hint={isIp ? "12 цифр для ИП." : "10 цифр для ООО, ПАО и НАО."}
+                  hintTitle="Формат ИНН"
                   label="ИНН"
                   name="organizationInn"
                   inputMode="numeric"
@@ -878,6 +879,7 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
                   disabled={!canManageProfile || isIp}
                   error={profileErrors.kpp}
                   hint={isIp ? "Для ИП КПП не применяется." : "9 цифр."}
+                  hintTitle="Формат КПП"
                   label="КПП"
                   name="organizationKpp"
                   inputMode="numeric"
@@ -890,6 +892,7 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
                   disabled={!canManageProfile}
                   error={profileErrors.ogrn}
                   hint={isIp ? "15 цифр." : "13 цифр."}
+                  hintTitle={isIp ? "Формат ОГРНИП" : "Формат ОГРН"}
                   inputMode="numeric"
                   label={isIp ? "ОГРНИП" : "ОГРН"}
                   name="organizationOgrn"

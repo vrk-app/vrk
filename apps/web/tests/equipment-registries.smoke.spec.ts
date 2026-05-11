@@ -534,8 +534,10 @@ test.describe("stage 03 unified equipment workspace", () => {
     await expect(page).toHaveURL(/\/company$/);
     await page.goto("/equipment");
 
-    await expect(page.getByRole("heading", { level: 1, name: "Оборудование" })).toBeVisible();
-    await expect(page.getByText("Управление реестром").first()).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Оборудование в учете" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Показать архив" })).toBeVisible();
+    await expect(page.getByText("Только активные")).toHaveCount(0);
+    await expect(page.getByText(/^Активных:/)).toHaveCount(0);
     await expect(page.getByRole("tablist", { name: "Разделы оборудования" })).toBeVisible();
     await expect(page.getByRole("tab", { name: "Оборудование" })).toHaveAttribute("aria-selected", "true");
     await expect(page.getByRole("tab", { name: "Журнал операций" })).toHaveAttribute("aria-selected", "false");
@@ -543,7 +545,6 @@ test.describe("stage 03 unified equipment workspace", () => {
     await expect(page.getByRole("tab", { name: "Эталоны" })).toHaveCount(0);
     await expect(page.getByRole("heading", { level: 2, name: "Новое оборудование" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Добавить оборудование" })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 2, name: "Оборудование в учете" })).toBeVisible();
     await expect(page.getByRole("heading", { level: 2, name: "Журнал операций по оборудованию" })).toHaveCount(0);
     await expectNoStandaloneMetrologySurfaces(page);
 
@@ -601,7 +602,7 @@ test.describe("stage 03 unified equipment workspace", () => {
     await expect(diagnosticCreateDialog).toHaveCount(0);
     await expect(page.getByText("Диагностическое оборудование создано с комплектом эталонов.", { exact: true })).toBeVisible();
     await expect(page.getByText(diagnosticName).first()).toBeVisible();
-    await expect(page.getByText("Эталоны: 2").first()).toBeVisible();
+    await expect(page.getByText(/Эталоны\s*·\s*2/).first()).toBeVisible();
     await expect(page.getByText(diagnosticStandardOne).first()).toBeVisible();
     await expect(page.getByText(diagnosticStandardTwo).first()).toBeVisible();
 
@@ -621,7 +622,7 @@ test.describe("stage 03 unified equipment workspace", () => {
     await diagnosticEditDialog.getByRole("button", { name: "Сохранить изменения" }).click();
     await expect(page.getByText("Диагностическое оборудование обновлено.", { exact: true })).toBeVisible();
     await expect(page.getByText(updatedDiagnosticName).first()).toBeVisible();
-    await expect(page.getByText("Эталоны: 2").first()).toBeVisible();
+    await expect(page.getByText(/Эталоны\s*·\s*2/).first()).toBeVisible();
     await expect(page.getByText(diagnosticStandardOne)).toHaveCount(0);
     await expect(page.getByText(diagnosticStandardTwo).first()).toBeVisible();
     await expect(page.getByText(diagnosticStandardThree).first()).toBeVisible();

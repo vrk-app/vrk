@@ -24,6 +24,7 @@ export { IslandCard, type IslandCardProps } from "./IslandCard";
 export { SelectField, type SelectFieldOption, type SelectFieldProps } from "./SelectField";
 export { Tabs, type TabItem, type TabsProps } from "./Tabs";
 export { TextareaField, type TextareaFieldProps } from "./TextareaField";
+export { Tooltip, type TooltipProps, type TooltipVariant } from "./Tooltip";
 export {
   Toast,
   ToastCenter,

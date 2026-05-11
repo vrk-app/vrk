@@ -1,13 +1,16 @@
 "use client";
 
-import { CircleHelp, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { forwardRef, useId, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { cn } from "@/shared/lib/cn";
+import { Tooltip, type TooltipVariant } from "./Tooltip";
 
 export interface InputFieldProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "size"> {
   label: string;
   hint?: string;
+  hintTitle?: ReactNode;
+  hintVariant?: TooltipVariant;
   error?: string;
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
@@ -24,6 +27,8 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
       error,
       hidePasswordLabel = "Скрыть пароль",
       hint,
+      hintTitle,
+      hintVariant = "dark",
       id,
       label,
       leftIcon,
@@ -38,7 +43,6 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
     const autoId = useId();
     const inputId = id ?? autoId;
     const messageId = `${inputId}-message`;
-    const hintDescriptionId = `${inputId}-hint-description`;
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const shouldShowPasswordToggle = type === "password" && showPasswordToggle;
     const resolvedType = shouldShowPasswordToggle && isPasswordVisible ? "text" : type;
@@ -54,23 +58,12 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
             {label}
           </label>
           {hint ? (
-            <button
-              aria-describedby={hintDescriptionId}
+            <Tooltip
               aria-label={`Справка: ${label}`}
-              className="group/help relative -my-3 -ml-1 flex size-11 shrink-0 touch-manipulation items-center justify-center rounded-[var(--radius-sm)] text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25"
-              type="button"
-            >
-              <CircleHelp aria-hidden="true" className="size-4" />
-              <span className="sr-only" id={hintDescriptionId}>
-                {hint}
-              </span>
-              <span
-                className="invisible absolute bottom-full left-1/2 z-30 mb-1.5 w-64 max-w-[min(16rem,calc(100vw-2rem))] -translate-x-1/2 whitespace-normal break-words rounded-[var(--radius-sm)] border border-border bg-card px-3 py-2 text-left text-xs font-medium leading-5 text-foreground opacity-0 shadow-lg transition-opacity duration-150 group-hover/help:visible group-hover/help:opacity-100 group-focus/help:visible group-focus/help:opacity-100"
-                role="tooltip"
-              >
-                {hint}
-              </span>
-            </button>
+              description={hint}
+              title={hintTitle}
+              variant={hintVariant}
+            />
           ) : null}
         </div>
         <span
