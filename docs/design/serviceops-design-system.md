@@ -381,7 +381,8 @@ Dialog и confirm modal используют единую геометрию в�
 
 - та же закрепленная верхняя геометрия, что была у исходного dark-варианта;
 - surface `surface-muted`, `border`, `shadow-xs`;
-- доменная иконка и metric используют interactive-blue акцент, но сама плашка остается светлой;
+- доменная иконка использует interactive-blue акцент, но сама плашка остается светлой;
+- metric списка отображается как типографический хвост рядом с заголовком: `Заголовок · 12`, без badge-фона, без подписи вроде “активных” и без смены semantic heading name;
 - action-slot справа повторяет muted action surface: `surface-muted` + `border` + `shadow-xs`.
 
 Правило: runtime-острова в формах и списках не используют dark header по умолчанию. Темная челка допустима только для явно акцентных overlay-сценариев через отдельный design-system decision.
@@ -580,6 +581,14 @@ Dialog и confirm modal используют единую геометрию в�
 - border: danger
 - help/error text под полем
 - не использовать только красный цвет без текстового сообщения
+
+### Tooltip / help-trigger
+- Help-trigger рядом с label/control использует borderless `Info` icon, без серой кнопочной капсулы и без отдельной обводки.
+- В покое иконка приглушена через opacity `45%`; на hover/focus становится `100%`.
+- Runtime default для справки формы — `dark` tooltip с optional `title` и `description`.
+- `light` и `info` tooltip variants доступны как явный выбор компонента для менее акцентных или мягко справочных поверхностей.
+- `title` и `description` опциональны: компонент показывает только переданные блоки.
+- Tooltip не заменяет field error: ошибка конкретного поля остается видимым текстом под control.
 
 ### InlineAlert vs Toast
 - `ToastCenter` использовать для краткой обратной связи по операции: сохранено, архивировано, экспорт готов, ошибка сервера или сбой загрузки.

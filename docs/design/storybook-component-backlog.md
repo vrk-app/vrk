@@ -164,6 +164,7 @@
 
 - Назначение: wrapper над `Card` для рабочих островов с верхней neutral-челкой, доменной иконкой, optional metric и правым action badge.
 - Обязательные props: `title`, `children`, `icon`, `metric`, `action`, `headingLevel`, `className`, `bodyClassName`.
+- Metric отображается как типографический хвост рядом с заголовком (`Заголовок · 12`), без badge-фона и без текстовой подписи.
 - Состояния: `form`, `form with action`, `with metric`, `long title`, `mobile`.
 - Реализация: `apps/web/shared/ui/IslandCard.tsx`, stories в `apps/web/stories/primitives/IslandCard.stories.tsx`.
 - Примечание: компонент не заменяет базовый `Card`; он фиксирует выбранный островной паттерн поверх существующей поверхности.
@@ -192,7 +193,18 @@
 - Состояния: `closed`, `open`, `with scroll`, `empty`.
 - Stories: `Basic`, `Scrollable`, `Empty`.
 
-### UI-13.1 Dialog [P0]
+### UI-13.1 Tooltip [P0]
+
+- Назначение: compact help-trigger рядом с label/control для кратких справок в формах и плотных operator surfaces.
+- Обязательные props: `variant`, `title`, `description`, `aria-label`, `triggerClassName`, `contentClassName`.
+- Variants: `dark` является runtime default; `light` и `info` доступны как явный выбор для менее акцентных или справочных поверхностей.
+- Контент: `title` и `description` опциональны; компонент рендерит только переданные блоки.
+- Trigger: borderless `Info` icon, opacity `45%` в покое и `100%` на hover/focus, без отдельной кнопочной капсулы.
+- Состояния: `default`, `hover`, `focus`, `light`, `info`, `description only`.
+- Stories: `Default`, `Hover`, `Focus`, `Light`, `Info`, `DescriptionOnly`.
+- Реализация: `apps/web/shared/ui/Tooltip.tsx`, stories в `apps/web/stories/primitives/Tooltip.stories.tsx`.
+
+### UI-13.2 Dialog [P0]
 
 - Назначение: базовое модальное окно для редактирования сущностей и вложенных operator actions.
 - Обязательные props: `open`, `onOpenChange`, `title`, `description`, `badge`, `children`, `footer`, `size`, `dismissible`, `showClose`, `headerVariant`, `headerIcon`.

@@ -97,6 +97,11 @@ export const TechnicalEquipmentList: Story = {
     await expect(canvas.queryByRole("tab", { name: "Средства измерения" })).toBeNull();
     await expect(canvas.queryByRole("tab", { name: "Эталоны" })).toBeNull();
     await expect(await canvas.findByRole("heading", { level: 2, name: "Оборудование в учете" })).toBeVisible();
+    await expect(canvas.getByRole("button", { name: "Показать архив" })).toBeVisible();
+    await expect(canvas.queryByText("Только активные")).toBeNull();
+    await expect(canvas.queryByText("Активные и архив")).toBeNull();
+    await expect(canvas.queryByText(/^Активных:/)).toBeNull();
+    await expect(canvas.getByText("Техническое")).toBeVisible();
     await expect(canvas.queryByRole("heading", { level: 2, name: "Журнал операций по оборудованию" })).toBeNull();
     await expect(canvas.queryByRole("heading", { level: 2, name: "Новое оборудование" })).toBeNull();
     await userEvent.click(await canvas.findByRole("button", { name: "Добавить оборудование" }));
@@ -115,6 +120,22 @@ export const DiagnosticEquipmentWithStandards: Story = {
       measuringInstruments: [measuringInstrumentRecords[0]],
     }),
   ],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(await canvas.findByRole("heading", { level: 2, name: "Оборудование в учете" })).toBeVisible();
+    await expect(canvas.getByText("Диагностическое")).toBeVisible();
+    await expect(canvas.getByText("Активно")).toBeVisible();
+    const standardsHeading = await canvas.findByText("Эталоны");
+    const standardsHeadingLine = standardsHeading.parentElement;
+    if (!standardsHeadingLine) {
+      throw new Error("Standards heading line was not rendered.");
+    }
+    await expect(standardsHeading).toBeVisible();
+    await expect(standardsHeadingLine).toHaveTextContent(/Эталоны\s*·\s*2/);
+    await expect(canvas.queryByText("Эталоны / установочные меры")).toBeNull();
+    await expect(canvas.queryByText(/^Эталоны:/)).toBeNull();
+  },
 };
 
 export const DiagnosticEquipmentWithoutStandards: Story = {

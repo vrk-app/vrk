@@ -14,7 +14,7 @@ export default async function RuntimeLayout({
 
   return (
     <RuntimeShell
-      eyebrow={session ? "Рабочая область организации" : "Обзор без входа"}
+      eyebrow={session ? null : "Обзор без входа"}
       workspaceTitle={session?.workspace.landingTitle}
       viewer={
         session

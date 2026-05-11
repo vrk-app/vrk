@@ -12,7 +12,6 @@ import {
   Pencil,
   Plus,
   Save,
-  ShieldCheck,
   Trash2,
   Wrench,
 } from "lucide-react";
@@ -145,8 +144,9 @@ type EditDialogState =
 
 type EquipmentPassportSection = {
   id: string;
-  title: string;
+  title: ReactNode;
   icon: ReactNode;
+  trailing?: ReactNode;
   children: ReactNode;
 };
 
@@ -507,11 +507,29 @@ function passportDetail(label: string, value: string | number | undefined | null
   );
 }
 
-function passportSectionHeading({ children, icon }: { children: ReactNode; icon: ReactNode }) {
+function passportSectionHeading({
+  children,
+  icon,
+  trailing,
+}: {
+  children: ReactNode;
+  icon: ReactNode;
+  trailing?: ReactNode;
+}) {
   return (
     <div className="flex min-w-0 items-center gap-2 text-sm font-semibold text-foreground">
       <span className="flex size-5 shrink-0 items-center justify-center text-muted-foreground">{icon}</span>
-      <span className="min-w-0 break-words">{children}</span>
+      <span className="flex min-w-0 items-baseline">
+        <span className="min-w-0 break-words">{children}</span>
+        {trailing !== undefined && trailing !== null ? (
+          <span className="shrink-0 tabular-nums text-muted-foreground">
+            <span aria-hidden="true" className="px-1 text-text-tertiary">
+              ·
+            </span>
+            {trailing}
+          </span>
+        ) : null}
+      </span>
     </div>
   );
 }
@@ -519,7 +537,7 @@ function passportSectionHeading({ children, icon }: { children: ReactNode; icon:
 function renderPassportSections(sections: EquipmentPassportSection[]) {
   return sections.map((section, index) => (
     <div className={cn("min-w-0 space-y-2", index > 0 && "border-t border-border pt-4")} key={section.id}>
-      {passportSectionHeading({ children: section.title, icon: section.icon })}
+      {passportSectionHeading({ children: section.title, icon: section.icon, trailing: section.trailing })}
       {section.children}
     </div>
   ));
@@ -538,7 +556,7 @@ function EquipmentPassportCard({
 }: {
   actions?: ReactNode;
   badges: ReactNode;
-  icon: ReactNode;
+  icon?: ReactNode;
   intrinsicClassName: string;
   label: string;
   primarySections: EquipmentPassportSection[];
@@ -552,16 +570,20 @@ function EquipmentPassportCard({
     <Card className={cn("equipment-passport-card gap-5 [content-visibility:auto]", intrinsicClassName)} padding="md" tone="muted">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 items-start gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-lg)] border border-border bg-muted/70 text-muted-foreground">
-            {icon}
-          </span>
+          {icon ? (
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-lg)] border border-border bg-muted/70 text-muted-foreground">
+              {icon}
+            </span>
+          ) : null}
           <div className="min-w-0 space-y-1">
-            <p className="text-sm font-medium text-muted-foreground">{label}</p>
             <h3 className="break-words text-xl font-semibold leading-7 text-foreground">{title}</h3>
             <p className="break-words text-sm leading-6 text-muted-foreground">{subtitle}</p>
           </div>
         </div>
-        <div className="flex min-w-0 flex-wrap gap-2">{badges}</div>
+        <div className="flex min-w-0 flex-wrap gap-2">
+          <Badge tone="neutral">{label}</Badge>
+          {badges}
+        </div>
       </div>
 
       <div className={cn("equipment-passport-layout", hasSecondarySections && "equipment-passport-layout--split")}>
@@ -1186,7 +1208,6 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
     measuringInstruments.find((item) => item.id === selectedMeasuringInstrumentId) ?? null;
   const isMutating = isPending || mutationInFlight;
   const unifiedEquipmentCount = equipmentRecords.length + measuringInstruments.length;
-  const activeEquipmentCount = equipmentRecords.filter((item) => !item.archivedAt).length + measuringInstruments.filter((item) => !item.archivedAt).length;
 
   const showSuccessToast = useCallback((title: string, dedupeKey: string) => {
     showToast({
@@ -1733,7 +1754,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
         />
         <div className="grid gap-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <span className="text-sm font-medium text-foreground">Эталоны / установочные меры</span>
+            <span className="text-sm font-medium text-foreground">Эталоны</span>
             <Button
               leftIcon={<Plus className="size-4" />}
               onClick={() => setDiagnosticStandardDrafts((current) => [...current, createDiagnosticStandardDraft()])}
@@ -2080,15 +2101,11 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
 
     secondarySections.push({
       id: "diagnostic-standards",
-      title: "Эталоны / установочные меры",
+      title: "Эталоны",
       icon: <Network aria-hidden="true" className="size-4" />,
+      trailing: item.standards.length,
       children: (
         <div className="min-w-0 space-y-3">
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            <Badge size="sm" tone={item.standards.length ? "interactive" : "neutral"}>
-              Эталоны: {item.standards.length}
-            </Badge>
-          </div>
           {item.standards.length ? (
             <div className="grid gap-2">
               {item.standards.map((standard) => (
@@ -2106,9 +2123,11 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
                       {standard.model} • {standard.scopeLabel}
                     </p>
                   </div>
-                  <Badge className="w-fit" size="sm" tone={statusToneMap[standard.status]}>
-                    {statusLabelMap[standard.status]}
-                  </Badge>
+                  {standard.status === "active" ? null : (
+                    <Badge className="w-fit" size="sm" tone={statusToneMap[standard.status]}>
+                      {statusLabelMap[standard.status]}
+                    </Badge>
+                  )}
                 </div>
               ))}
             </div>
@@ -2158,11 +2177,10 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
         badges={
           <>
             <Badge tone={statusToneMap[item.status]}>{statusLabelMap[item.status]}</Badge>
-            <Badge tone={item.standards.length ? "interactive" : "neutral"}>Эталоны: {item.standards.length}</Badge>
             {item.archivedAt ? <Badge tone="neutral">В архиве</Badge> : null}
           </>
         }
-        icon={<ShieldCheck aria-hidden="true" className="size-5" />}
+        icon={<Wrench aria-hidden="true" className="size-5" />}
         intrinsicClassName="[contain-intrinsic-size:1px_520px]"
         key={`diagnostic:${item.id}`}
         label="Диагностическое"
@@ -2221,11 +2239,6 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
         metric={unifiedEquipmentCount}
         title="Оборудование в учете"
       >
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge tone="info">{showArchived ? "Активные и архив" : "Только активные"}</Badge>
-          <Badge tone="neutral">Активных: {activeEquipmentCount}</Badge>
-        </div>
-
         {!unifiedEquipmentCount && !loading ? (
           <EmptyState
             action={
@@ -2494,10 +2507,18 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
           </div>
         ) : null}
 
-        <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-end">
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+          <Tabs<EquipmentWorkspaceTab>
+            activeKey={activeWorkspaceTab}
+            ariaLabel="Разделы оборудования"
+            getPanelId={getEquipmentWorkspacePanelId}
+            idPrefix="equipment-workspace-tabs"
+            items={equipmentWorkspaceTabs}
+            onChange={setActiveWorkspaceTab}
+          />
           <Button
             aria-pressed={showArchived}
-            className="w-[175px] self-start justify-center text-center lg:self-auto lg:shrink-0"
+            className="h-11 w-[175px] shrink-0 justify-center text-center"
             leftIcon={<Archive className="size-4" />}
             onClick={handleArchiveVisibilityChange}
             type="button"
@@ -2506,15 +2527,6 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
             {showArchived ? "Архив показан" : "Показать архив"}
           </Button>
         </div>
-
-        <Tabs<EquipmentWorkspaceTab>
-          activeKey={activeWorkspaceTab}
-          ariaLabel="Разделы оборудования"
-          getPanelId={getEquipmentWorkspacePanelId}
-          idPrefix="equipment-workspace-tabs"
-          items={equipmentWorkspaceTabs}
-          onChange={setActiveWorkspaceTab}
-        />
 
         {loading ? (
           <EmptyState

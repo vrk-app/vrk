@@ -18,7 +18,7 @@ export interface TopBarProps extends HTMLAttributes<HTMLElement> {
   breadcrumbs: readonly BreadcrumbItem[];
   contextTitle?: string;
   contextTitleAsHeading?: boolean;
-  eyebrow?: string;
+  eyebrow?: string | null;
   mobileMenuOpen?: boolean;
   mobileMenuId?: string;
   searchPlaceholder?: string;
@@ -118,12 +118,17 @@ export function TopBar({
           <div className="min-w-0 space-y-2">
             <Breadcrumbs items={breadcrumbs} />
             <div className="min-w-0">
-              <p className="text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                {eyebrow}
-              </p>
+              {eyebrow ? (
+                <p className="text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                  {eyebrow}
+                </p>
+              ) : null}
               {contextTitle ? (
                 <ContextTitleTag
-                  className="mt-1 block max-w-4xl truncate text-lg font-semibold leading-6 text-foreground md:text-xl md:leading-7"
+                  className={cn(
+                    "block max-w-4xl truncate text-lg font-semibold leading-6 text-foreground md:text-xl md:leading-7",
+                    eyebrow && "mt-1",
+                  )}
                   title={contextTitle}
                 >
                   {contextTitle}

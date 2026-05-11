@@ -99,6 +99,7 @@ export const SearchField: Story = {
 export const WithHint: Story = {
   args: {
     hint: "Используйте корпоративный логин без домена.",
+    hintTitle: "Формат логина",
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -106,15 +107,14 @@ export const WithHint: Story = {
     const helpTrigger = canvas.getByRole("button", { name: "Справка: Логин" });
 
     await expect(input).not.toHaveAttribute("aria-describedby");
-    await expect(helpTrigger).toHaveAccessibleDescription(
-      "Используйте корпоративный логин без домена.",
-    );
+    await expect(helpTrigger).toHaveAccessibleDescription(/Используйте корпоративный логин/);
 
     const tooltip = canvas.getByRole("tooltip", { hidden: true });
 
-    helpTrigger.focus();
+    await userEvent.tab();
     await expect(helpTrigger).toHaveFocus();
     await expect(tooltip).toBeVisible();
+    await expect(tooltip).toHaveTextContent("Формат логина");
   },
 };
 
@@ -144,6 +144,7 @@ export const WithHintAndError: Story = {
     defaultValue: "123",
     error: "КПП должен содержать 9 цифр.",
     hint: "9 цифр.",
+    hintTitle: "Формат КПП",
     label: "КПП",
     name: "kpp",
     placeholder: "770501001…",
@@ -156,7 +157,7 @@ export const WithHintAndError: Story = {
 
     await expect(error).toBeVisible();
     await expect(input).toHaveAccessibleDescription("КПП должен содержать 9 цифр.");
-    await expect(helpTrigger).toHaveAccessibleDescription("9 цифр.");
+    await expect(helpTrigger).toHaveAccessibleDescription(/9 цифр/);
   },
 };
 

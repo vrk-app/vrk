@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { SESSION_COOKIE_NAME, sessionHasCapability } from "@/shared/api";
+import { SESSION_COOKIE_NAME } from "@/shared/api";
 import { fetchSessionSummary } from "@/shared/api/session-server";
 import { Badge, buttonVariants, Card } from "@/shared/ui";
 import { EquipmentRegistryWorkspace } from "@/features/Stage03Equipment";
@@ -86,23 +86,10 @@ export default async function EquipmentPage({ searchParams }: EquipmentPageProps
     );
   }
 
-  const canManageRegistry = sessionHasCapability(session, "manage_equipment");
-
   return (
-    <>
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <h1 className="text-balance text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-          Оборудование
-        </h1>
-        <Badge tone={canManageRegistry ? "interactive" : "warning"}>
-          {canManageRegistry ? "Управление реестром" : "Только просмотр"}
-        </Badge>
-      </div>
-
-      <EquipmentRegistryWorkspace
-        initialShowArchived={initialShowArchived}
-        session={session}
-      />
-    </>
+    <EquipmentRegistryWorkspace
+      initialShowArchived={initialShowArchived}
+      session={session}
+    />
   );
 }
