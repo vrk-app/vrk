@@ -1,0 +1,1 @@
+PASS: production/story UI has no obsolete /equipment tabs, standalone standards list heading, or standard journal copy.

@@ -1,0 +1,193 @@
+Final verifier docs/stage artifact audit for slice-014-equipment-domain-correction
+
+Current stage_spec verification-plan lines:
+   188	- прогнать first-admin activation end-to-end;
+   189	- доказать first and repeat org/division/unit management через постоянный `/company` UI и scoped singular-session landing без multi-workspace picker;
+   190	- доказать invitation lifecycle и scoped access inheritance сценариями organization / division / unit;
+   191	- доказать truthful `409` при direct login, если у аккаунта несколько eligible access paths;
+   192	- доказать contracts registry и contractor restriction baseline;
+   193	- доказать единый `/equipment` workspace: без отдельных user-facing registries для `СИ` / эталонов, с diagnostic-owned standards внутри карточек и единым equipment journal;
+   194	- доказать journal-driven status calculation и archive behavior;
+   195	- зафиксировать updated canonical docs и diagram refs в evidence;
+   196	- завершать только после fresh verifier pass.
+
+Sprint contract corrected target lines:
+    21	- Public route stays `/equipment`.
+    22	- User-facing tabs/switchers `Оборудование / СИ / Эталоны` are removed.
+    23	- Old query params such as `tab=mi` and `tab=standards` must not break the page. They may normalize to `/equipment` or render the same unified workspace.
+    24	- The page has one working surface: `Оборудование в учете`.
+    25	- The create surface is one form titled `Новое оборудование`.
+    26	- The form has a required equipment type selector:
+    27	  - `Техническое`;
+    28	  - `Диагностическое`.
+    29	- Technical equipment uses ordinary equipment fields.
+    30	- Diagnostic equipment uses diagnostic/СИ fields and an inline dynamic list of `0..N` standards/setup measures.
+    31	- Standards are not reusable between equipment records in the target contract.
+    32	- A standard can be viewed only inside its parent diagnostic equipment card.
+    33	- There is no standalone standards list in the target UI.
+    34	- There is no standard operations journal in the target UI.
+    35	- The journal block is a unified `Журнал операций по оборудованию` and is selected by equipment record.
+
+Evidence current slice summary/doc-fix lines:
+    24	The 2026-04-30 input help tooltip slice extends the existing shared `InputField` instead of creating a new input family. Non-error `hint` text now appears through a compact help trigger near the label and opens on hover/focus; the hint no longer occupies a persistent helper row under the field. Field errors remain visible below the input and keep `aria-describedby` priority.
+    25	
+    26	The 2026-05-11 equipment domain correction replaces the historical tabbed `/equipment` target with one customer equipment workspace. The page keeps the public `/equipment` route, removes the visible `Оборудование / СИ / Эталоны` tab model, provides one `Новое оборудование` form with `Техническое` / `Диагностическое` type selection, treats diagnostic equipment as the owner of `0..N` standards/setup measures, shows those standards only inside diagnostic equipment cards, removes the target standard journal route, and keeps one equipment operation journal. Canonical product and technical docs were synced because this changes the product/API/persistence contract.
+    27	
+    28	Fresh verifier initially failed this slice for owned-standard migration/read-path gaps, remaining standalone standards registry exposure, stale current-slice UI evidence metadata, and two placeholder findings. The minimal fixer plus parent follow-up closed those gaps: migration 16 now makes current standards diagnostic-owned or archived, diagnostic cards ignore the old many-to-many table, standalone standards routes/proxies are removed, placeholders pass the UI gate, and current-slice metadata points to slice-014. The second fresh verifier reproduced the product/API/persistence/UI proof and failed only for a stale `stage_spec.md` verification-plan bullet; that doc-only drift is now fixed. A new fresh verifier must still own the final PASS.
+    29	
+    30	## Commands Run
+    31	
+
+Progress current slice/doc-fix entries:
+     1	# Progress
+     2	
+     3	## Session log
+     4	
+     5	### 2026-05-11T15:07:41Z
+     6	
+     7	- Re-synced the equipment/metrology domain after the customer meeting.
+     8	- Confirmed that canonical docs still contained the older Stage 03 assumption where standards were reusable records linked many-to-many with measuring instruments.
+     9	- Recorded the new target correction:
+    10	  - `СИ` means customer diagnostic equipment used to verify repair quality or unit condition;
+    11	  - technological equipment and diagnostic equipment are both customer-side equipment master data inside the unit contour;
+    12	  - contractor metrology equipment is out of MVP;
+    13	  - one diagnostic equipment record may have `0..N` standards/setup measures;
+    14	  - a standard belongs to the kit of one diagnostic equipment record in MVP, rather than being freely reusable between several measuring instruments.
+    15	- Synced canonical docs:
+    16	  - `docs/roadmap.md`
+    17	  - `docs/PRD-MVP.md`
+    18	  - `docs/architecture/identity-master-data.md`
+    19	  - `docs/architecture/frontend-architecture.md`
+    20	- Updated `stage_spec.md` and `feature_list.json` with a pending equipment-domain correction item. No production code was changed in this planning/doc-sync slice.
+    21	- Added `.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md` as the detailed page/data/API/test plan for the next slice.
+    22	
+    23	### 2026-05-11T16:36:31Z
+    24	
+    25	- Completed the builder/evidence pass for `slice-014-equipment-domain-correction`.
+    26	- Replaced the historical `/equipment` tabbed registry model with one customer equipment workspace:
+    27	  - public route remains `/equipment`;
+    28	  - old `tab=mi|standards` query params no longer expose old tabs and redirect to the unified route;
+    29	  - one form `Новое оборудование` creates `Техническое` or `Диагностическое` equipment;
+    30	  - diagnostic equipment owns `0..N` standards/setup measures entered in the same form;
+    31	  - standards are visible only inside diagnostic equipment cards;
+    32	  - target standard journal route/proxy is removed;
+    33	  - one `Журнал операций по оборудованию` remains.
+    34	- Backend/data implementation:
+    35	  - added migration `000016_equipment_domain_correction`;
+    36	  - standards now bind to one diagnostic equipment parent;
+    37	  - archived diagnostic equipment rejects new standard/journal mutations while retaining read-only history;
+    38	  - measuring-instrument standard validation rejects standards owned by another diagnostic equipment record;
+    39	  - Swagger/OpenAPI was refreshed after route/contract changes.
+    40	- UI workflow:
+    41	  - used `$vrk-web-ui-workflow`;
+    42	  - Storybook lookup matched existing `Equipment/EquipmentRegistryWorkspace`;
+    43	  - reuse decision is `extend`;
+    44	  - no new reusable component family or backlog slice was introduced.
+    45	- Updated Storybook stories and targeted `/equipment` smoke tests for the unified model.
+    46	- Synced canonical docs:
+    47	  - `docs/PRD-MVP.md`
+    48	  - `docs/roadmap.md`
+    49	  - `docs/architecture/identity-master-data.md`
+    50	  - `docs/architecture/frontend-architecture.md`
+    51	  - `.agent/stages/03-identity-master-data/stage_spec.md`
+    52	  - `.agent/stages/03-identity-master-data/sprint_contract.md`
+    53	  - `.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md`
+    54	- Proof passed before fresh verifier:
+    55	  - backend `go test ./...` and `go build -buildvcs=false ./...`;
+    56	  - backend `gofmt` and Swagger refresh;
+    57	  - compose migration to version `16`, clean dirty flag;
+    58	  - web lint, typecheck, production build, and Storybook build;
+    59	  - targeted `/equipment` Playwright smoke against compose-backed `localhost:3100` and backend `:18080`;
+    60	  - obsolete tab/list/journal source audits;
+    61	  - Web Interface Guidelines review;
+    62	  - `git diff --check`.
+    63	- `feature_list.json` entry `stage03-equipment-diagnostic-equipment-correction` remains `passes: false` until a fresh verifier owns the PASS.
+    64	
+    65	### 2026-05-11T17:45:00Z
+    66	
+    67	- Fresh verifier returned `FAIL` for `slice-014-equipment-domain-correction`.
+    68	- Minimal fixer and parent follow-up closed the reported gaps:
+    69	  - migration `000016_equipment_domain_correction` now copies multi-linked legacy standards per diagnostic equipment parent, archives current orphan standards that cannot be assigned, and adds a current-row check constraint;
+    70	  - diagnostic equipment cards now read standards from `registry_standards.diagnostic_equipment_id` only, not the old many-to-many link table;
+    71	  - standalone standards registry API/proxy/Swagger surfaces were removed from the current target contract;
+    72	  - standard creation moved under `POST /measuring-instruments/{id}/standards`;
+    73	  - Storybook fixtures now show standards as owned by diagnostic equipment;
+    74	  - two SelectField placeholders were changed to guideline-compliant ellipsis copy;
+    75	  - current-slice UI evidence metadata now points to slice-014 lookup, UI files, and review artifacts.
+    76	- Reapplied migration 16 against the compose DB and verified:
+    77	  - schema version `16`, dirty `false`;
+    78	  - current standards without diagnostic parent: `0`;
+    79	  - reusable standard rows across multiple diagnostic equipment records: `0`.
+    80	- Rebuilt the compose backend and confirmed `/readyz`.
+    81	- Proof after fix:
+    82	  - backend `go test ./...` and `go build -buildvcs=false ./...`;
+    83	  - web lint, typecheck, production build, and Storybook build;
+    84	  - targeted `/equipment` smoke rerun passed on compose-backed `localhost:3100` and backend `:18080`;
+    85	  - precise source audits for obsolete UI tabs and standalone standards surfaces passed.
+    86	- The first post-fix smoke attempt hit a login redirect race on the warmed dev server; immediate rerun passed and is the accepted equipment proof.
+    87	- `feature_list.json` entry still remains `passes: false` until a new fresh verifier returns `PASS`.
+    88	
+    89	### 2026-05-11T17:58:00Z
+    90	
+    91	- Second fresh verifier reproduced the fixed product/API/persistence/UI proof and returned `FAIL` only for documentation drift in `stage_spec.md`.
+    92	- Updated the Stage 03 verification-plan bullet so it now requires the unified `/equipment` workspace proof instead of historical separate equipment / measuring-instrument / standards registries.
+    93	- No production code changed in this doc-only follow-up.
+
+evidence.json corrected status/doc fix summary:
+"AWAITING_FRESH_VERIFIER_AFTER_DOC_FIX"
+"DOC_DRIFT_FIXED_AWAITING_FRESH_VERIFIER"
+"Second fresh verifier passed product/API/persistence/UI proof and failed only because stage_spec.md still asked for separate equipment / measuring-instrument / standards registries. The verification-plan bullet now requires the corrected unified /equipment workspace proof."
+"Replace tabbed equipment / СИ / standards registries with one /equipment workspace: technical or diagnostic equipment, diagnostic-owned standards 0..N, and one equipment operation journal."
+{
+  "skill": "$vrk-web-ui-workflow",
+  "design_context": ".impeccable.md",
+  "lookup": ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-014-equipment-domain-correction-2026-05-11.txt",
+  "fixer_lookup": ".agent/stages/03-identity-master-data/raw/slice-014-fixer-storybook-lookup-2026-05-11.txt",
+  "decision": "extend",
+  "matched": [
+    "Equipment/EquipmentRegistryWorkspace"
+  ],
+  "review": ".agent/stages/03-identity-master-data/raw/slice-014-fixer-ui-review-2026-05-11.txt"
+}
+
+Negative audit: stale separate-registry proof wording in active verification contract files
+PASS: no stale active separate-registry proof wording in stage_spec/sprint_contract/plan.
+
+Agreement audit: corrected current-contract language across stage_spec/sprint_contract/evidence and current progress entries
+.agent/stages/03-identity-master-data/evidence.json:502:    "summary": "Replace tabbed equipment / СИ / standards registries with one /equipment workspace: technical or diagnostic equipment, diagnostic-owned standards 0..N, and one equipment operation journal."
+.agent/stages/03-identity-master-data/evidence.json:1055:    "status": "DOC_DRIFT_FIXED_AWAITING_FRESH_VERIFIER",
+.agent/stages/03-identity-master-data/evidence.json:1058:    "summary": "Replaced the /equipment tabbed registry model with one equipment workspace: one create form with technical/diagnostic type, diagnostic owned standards inside the form/card, no standalone standards list or standard journal route, unified equipment operation journal, scoped access/archive behavior preserved, and backend standards now bind to one diagnostic equipment parent.",
+.agent/stages/03-identity-master-data/evidence.json:1167:      "summary": "Replace tabbed equipment / СИ / standards registries with one /equipment workspace: technical or diagnostic equipment, diagnostic-owned standards 0..N, and one equipment operation journal."
+.agent/stages/03-identity-master-data/evidence.json:1169:    "fixer_summary": "Fresh-verifier gaps were fixed: migration 000016 now converts legacy links into diagnostic-owned standards and archives orphan current rows; diagnostic cards read only standard.diagnostic_equipment_id; standalone standards API/proxy/Swagger surfaces are removed; current-slice UI evidence metadata is refreshed; placeholder findings pass.",
+.agent/stages/03-identity-master-data/sprint_contract.md:9:Replace the historical `/equipment` tabbed registry model with a single customer equipment workspace that matches the clarified domain:
+.agent/stages/03-identity-master-data/sprint_contract.md:30:- Diagnostic equipment uses diagnostic/СИ fields and an inline dynamic list of `0..N` standards/setup measures.
+.agent/stages/03-identity-master-data/sprint_contract.md:33:- There is no standalone standards list in the target UI.
+.agent/stages/03-identity-master-data/sprint_contract.md:35:- The journal block is a unified `Журнал операций по оборудованию` and is selected by equipment record.
+.agent/stages/03-identity-master-data/sprint_contract.md:52:- The journal area is titled `Журнал операций по оборудованию` and chooses from the unified equipment list.
+.agent/stages/03-identity-master-data/sprint_contract.md:94:  - source/browser audit that no standalone standards list or standard journal remains in `/equipment`.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:36:    C -->|"Диагностическое"| E["Поля СИ + 0..N эталонов"]
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:41:    A --> J["Журнал операций по оборудованию"]
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:75:- `0..N` эталонов / установочных мер в этой же форме.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:116:Блок называется `Журнал операций по оборудованию`.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:178:9. Replace MI/standard-specific journal panels with `Журнал операций по оборудованию`.
+.agent/stages/03-identity-master-data/stage_spec.md:25:- standards / setup measures as `0..N` children of one diagnostic equipment record;
+.agent/stages/03-identity-master-data/stage_spec.md:74:- standards / setup measures are kit objects for one diagnostic equipment record, with target cardinality `diagnostic equipment -> 0..N standards`;
+.agent/stages/03-identity-master-data/stage_spec.md:152:- `/equipment` is a single customer equipment workspace with one `Новое оборудование` form, required type `Техническое` / `Диагностическое`, and one `Оборудование в учете` list;
+.agent/stages/03-identity-master-data/stage_spec.md:154:- `СИ` is customer diagnostic equipment, and standards/setup measures are `0..N` children visible only inside their diagnostic equipment card;
+.agent/stages/03-identity-master-data/stage_spec.md:155:- standalone standards list and standards operation journal are removed from the target UI;
+.agent/stages/03-identity-master-data/stage_spec.md:156:- the journal is a unified `Журнал операций по оборудованию`;
+.agent/stages/03-identity-master-data/stage_spec.md:193:- доказать единый `/equipment` workspace: без отдельных user-facing registries для `СИ` / эталонов, с diagnostic-owned standards внутри карточек и единым equipment journal;
+.agent/stages/03-identity-master-data/evidence.md:26:The 2026-05-11 equipment domain correction replaces the historical tabbed `/equipment` target with one customer equipment workspace. The page keeps the public `/equipment` route, removes the visible `Оборудование / СИ / Эталоны` tab model, provides one `Новое оборудование` form with `Техническое` / `Диагностическое` type selection, treats diagnostic equipment as the owner of `0..N` standards/setup measures, shows those standards only inside diagnostic equipment cards, removes the target standard journal route, and keeps one equipment operation journal. Canonical product and technical docs were synced because this changes the product/API/persistence contract.
+.agent/stages/03-identity-master-data/evidence.md:40:    - diagnostic-only fields and dynamic `0..N` standards/setup measures;
+.agent/stages/03-identity-master-data/evidence.md:42:    - one `Журнал операций по оборудованию`.
+.agent/stages/03-identity-master-data/evidence.md:69:  - Doc-only follow-up: `.agent/stages/03-identity-master-data/stage_spec.md` now requires unified `/equipment` workspace proof instead of separate equipment / measuring-instrument / standards registries.
+13:  - one diagnostic equipment record may have `0..N` standards/setup measures;
+26:- Replaced the historical `/equipment` tabbed registry model with one customer equipment workspace:
+30:  - diagnostic equipment owns `0..N` standards/setup measures entered in the same form;
+33:  - one `Журнал операций по оборудованию` remains.
+91:- Second fresh verifier reproduced the fixed product/API/persistence/UI proof and returned `FAIL` only for documentation drift in `stage_spec.md`.
+92:- Updated the Stage 03 verification-plan bullet so it now requires the unified `/equipment` workspace proof instead of historical separate equipment / measuring-instrument / standards registries.
+93:- No production code changed in this doc-only follow-up.
+
+Historical-progress note: older progress entries below the 2026-05-11 current slice section remain chronological history, not active verification instructions; the current top entries supersede the old separate-registry wording.
+RESULT: PASS

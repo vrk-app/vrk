@@ -1,0 +1,125 @@
+COMMANDS:
+git status --short
+git diff --name-status
+git diff --stat
+
+ M .agent/stages/03-identity-master-data/evidence.json
+ M .agent/stages/03-identity-master-data/evidence.md
+ M .agent/stages/03-identity-master-data/feature_list.json
+ M .agent/stages/03-identity-master-data/progress.md
+ M .agent/stages/03-identity-master-data/sprint_contract.md
+ M .agent/stages/03-identity-master-data/stage_spec.md
+ M apps/backend/docs/swagger/docs.go
+ M apps/backend/docs/swagger/swagger.json
+ M apps/backend/docs/swagger/swagger.yaml
+ M apps/backend/internal/app/app.go
+ M apps/backend/internal/equipment/measuringinstrument/repository.go
+ M apps/backend/internal/equipment/measuringinstrument/service.go
+ M apps/backend/internal/equipment/standard/errors.go
+ M apps/backend/internal/equipment/standard/handler.go
+ M apps/backend/internal/equipment/standard/models.go
+ M apps/backend/internal/equipment/standard/repository.go
+ M apps/backend/internal/equipment/standard/service.go
+ M apps/web/app/(runtime)/equipment/page.tsx
+ D apps/web/app/api/equipment/standards/[standardId]/journals/route.ts
+ M apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+ M apps/web/shared/api/equipment.ts
+ M apps/web/shared/api/index.ts
+ M apps/web/shared/storybook/runtime-api-mock.tsx
+ M apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+ M apps/web/tests/equipment-registries.smoke.spec.ts
+ M docs/PRD-MVP.md
+ M docs/architecture/frontend-architecture.md
+ M docs/architecture/identity-master-data.md
+ M docs/roadmap.md
+?? .agent/stages/03-identity-master-data/equipment-domain-correction-plan.md
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-backend-build-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-backend-test-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-compose-migration-status-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-diff-check-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-diff-check-post-evidence-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-equipment-smoke-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-harness-post-evidence-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-json-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-standard-journal-route-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-storybook-build-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-ui-review-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-build-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-lint-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-source-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-typecheck-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-diff-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-diff-check-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-harness-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-json-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/storybook-lookup-equipment-domain-correction-ui-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/storybook-lookup-slice-014-equipment-domain-correction-2026-05-11.txt
+?? apps/backend/internal/equipment/measuringinstrument/service_test.go
+?? apps/backend/internal/equipment/standard/service_test.go
+?? apps/backend/migrations/000016_equipment_domain_correction.down.sql
+?? apps/backend/migrations/000016_equipment_domain_correction.up.sql
+
+--- name-status ---
+M	.agent/stages/03-identity-master-data/evidence.json
+M	.agent/stages/03-identity-master-data/evidence.md
+M	.agent/stages/03-identity-master-data/feature_list.json
+M	.agent/stages/03-identity-master-data/progress.md
+M	.agent/stages/03-identity-master-data/sprint_contract.md
+M	.agent/stages/03-identity-master-data/stage_spec.md
+M	apps/backend/docs/swagger/docs.go
+M	apps/backend/docs/swagger/swagger.json
+M	apps/backend/docs/swagger/swagger.yaml
+M	apps/backend/internal/app/app.go
+M	apps/backend/internal/equipment/measuringinstrument/repository.go
+M	apps/backend/internal/equipment/measuringinstrument/service.go
+M	apps/backend/internal/equipment/standard/errors.go
+M	apps/backend/internal/equipment/standard/handler.go
+M	apps/backend/internal/equipment/standard/models.go
+M	apps/backend/internal/equipment/standard/repository.go
+M	apps/backend/internal/equipment/standard/service.go
+M	apps/web/app/(runtime)/equipment/page.tsx
+D	apps/web/app/api/equipment/standards/[standardId]/journals/route.ts
+M	apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+M	apps/web/shared/api/equipment.ts
+M	apps/web/shared/api/index.ts
+M	apps/web/shared/storybook/runtime-api-mock.tsx
+M	apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+M	apps/web/tests/equipment-registries.smoke.spec.ts
+M	docs/PRD-MVP.md
+M	docs/architecture/frontend-architecture.md
+M	docs/architecture/identity-master-data.md
+M	docs/roadmap.md
+
+--- stat ---
+ .../stages/03-identity-master-data/evidence.json   |   92 +-
+ .agent/stages/03-identity-master-data/evidence.md  |   46 +-
+ .../03-identity-master-data/feature_list.json      |   36 +-
+ .agent/stages/03-identity-master-data/progress.md  |   60 +
+ .../03-identity-master-data/sprint_contract.md     |  192 +-
+ .../stages/03-identity-master-data/stage_spec.md   |   29 +-
+ apps/backend/docs/swagger/docs.go                  |  181 +-
+ apps/backend/docs/swagger/swagger.json             |  181 +-
+ apps/backend/docs/swagger/swagger.yaml             |  117 +-
+ apps/backend/internal/app/app.go                   |    2 -
+ .../equipment/measuringinstrument/repository.go    |   40 +-
+ .../equipment/measuringinstrument/service.go       |   12 +-
+ apps/backend/internal/equipment/standard/errors.go |   46 +-
+ .../backend/internal/equipment/standard/handler.go |   63 +-
+ apps/backend/internal/equipment/standard/models.go |   54 +-
+ .../internal/equipment/standard/repository.go      |   91 +-
+ .../backend/internal/equipment/standard/service.go |   89 +-
+ apps/web/app/(runtime)/equipment/page.tsx          |   18 +-
+ .../standards/[standardId]/journals/route.ts       |   16 -
+ .../ui/EquipmentRegistryWorkspace.tsx              | 2792 ++++++--------------
+ apps/web/shared/api/equipment.ts                   |   12 +-
+ apps/web/shared/api/index.ts                       |    1 -
+ apps/web/shared/storybook/runtime-api-mock.tsx     |   62 +-
+ .../EquipmentRegistryWorkspace.stories.tsx         |  107 +-
+ apps/web/tests/equipment-registries.smoke.spec.ts  |  422 +--
+ docs/PRD-MVP.md                                    |   35 +-
+ docs/architecture/frontend-architecture.md         |  110 +-
+ docs/architecture/identity-master-data.md          |  155 +-
+ docs/roadmap.md                                    |   22 +-
+ 29 files changed, 2088 insertions(+), 2995 deletions(-)
+
+EXIT_CODE=0

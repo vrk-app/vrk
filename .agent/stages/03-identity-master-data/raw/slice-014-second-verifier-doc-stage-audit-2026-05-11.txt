@@ -1,0 +1,364 @@
+## current target docs snippets
+.agent/stages/03-identity-master-data/sprint_contract.md:9:Replace the historical `/equipment` tabbed registry model with a single customer equipment workspace that matches the clarified domain:
+.agent/stages/03-identity-master-data/sprint_contract.md:12:- customer `СИ` is `diagnostic` equipment used to check repair quality or unit condition;
+.agent/stages/03-identity-master-data/sprint_contract.md:13:- standards/setup measures are owned children of one diagnostic equipment record;
+.agent/stages/03-identity-master-data/sprint_contract.md:14:- official metrology operations are recorded in one equipment journal, not in a separate standard journal;
+.agent/stages/03-identity-master-data/sprint_contract.md:21:- Public route stays `/equipment`.
+.agent/stages/03-identity-master-data/sprint_contract.md:23:- Old query params such as `tab=mi` and `tab=standards` must not break the page. They may normalize to `/equipment` or render the same unified workspace.
+.agent/stages/03-identity-master-data/sprint_contract.md:30:- Diagnostic equipment uses diagnostic/СИ fields and an inline dynamic list of `0..N` standards/setup measures.
+.agent/stages/03-identity-master-data/sprint_contract.md:32:- A standard can be viewed only inside its parent diagnostic equipment card.
+.agent/stages/03-identity-master-data/sprint_contract.md:33:- There is no standalone standards list in the target UI.
+.agent/stages/03-identity-master-data/sprint_contract.md:34:- There is no standard operations journal in the target UI.
+.agent/stages/03-identity-master-data/sprint_contract.md:35:- The journal block is a unified `Журнал операций по оборудованию` and is selected by equipment record.
+.agent/stages/03-identity-master-data/sprint_contract.md:38:  - customer admins with `manage_equipment` can create, edit, archive, add standards, and add journal entries inside visible scope;
+.agent/stages/03-identity-master-data/sprint_contract.md:44:- `/equipment` header is `Оборудование`.
+.agent/stages/03-identity-master-data/sprint_contract.md:50:- Diagnostic card content includes basic diagnostic fields, `ФИФ`, serial number, `Эталоны: N`, standards/setup measures inside the card, and latest journal status.
+.agent/stages/03-identity-master-data/sprint_contract.md:52:- The journal area is titled `Журнал операций по оборудованию` and chooses from the unified equipment list.
+.agent/stages/03-identity-master-data/sprint_contract.md:53:- Archived equipment rejects new journal/standard mutations but keeps read-only history.
+.agent/stages/03-identity-master-data/sprint_contract.md:54:- API/persistence either migrate to `equipment -> owned standards -> equipment journal` or conservatively hide old measuring-instrument storage behind the target response model.
+.agent/stages/03-identity-master-data/sprint_contract.md:65:- Targeted `/equipment` smoke/e2e proof is updated for the unified workspace and old tab params tolerance.
+.agent/stages/03-identity-master-data/sprint_contract.md:66:- Canonical docs and stage artifacts describe the implemented contract without leaving old reusable-standard or tabbed-registry copy as current behavior.
+.agent/stages/03-identity-master-data/sprint_contract.md:76:  - run `python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query "equipment registry diagnostic equipment standards journal"`;
+.agent/stages/03-identity-master-data/sprint_contract.md:90:  - create diagnostic equipment with two owned standards;
+.agent/stages/03-identity-master-data/sprint_contract.md:91:  - prove a standard is not reusable/linkable by another equipment record;
+.agent/stages/03-identity-master-data/sprint_contract.md:92:  - create equipment journal entry and verify derived status/nextDueDate;
+.agent/stages/03-identity-master-data/sprint_contract.md:93:  - archive parent and prove new journal/standard mutations are rejected while history remains readable;
+.agent/stages/03-identity-master-data/sprint_contract.md:94:  - source/browser audit that no standalone standards list or standard journal remains in `/equipment`.
+.agent/stages/03-identity-master-data/sprint_contract.md:98:  - `feature_list.json` entry `stage03-equipment-diagnostic-equipment-correction` remains `passes: false` until verifier returns `PASS`.
+.agent/stages/03-identity-master-data/sprint_contract.md:102:- `apps/backend/internal/equipment/**`
+.agent/stages/03-identity-master-data/sprint_contract.md:105:- `apps/web/app/(runtime)/equipment/page.tsx`
+.agent/stages/03-identity-master-data/sprint_contract.md:106:- `apps/web/app/api/equipment/**`
+.agent/stages/03-identity-master-data/sprint_contract.md:108:- `apps/web/shared/api/equipment.ts`
+.agent/stages/03-identity-master-data/sprint_contract.md:111:- `apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx`
+.agent/stages/03-identity-master-data/sprint_contract.md:112:- `apps/web/tests/equipment-registries.smoke.spec.ts`
+.agent/stages/03-identity-master-data/sprint_contract.md:122:  - equipment domain source of truth, data ownership, archive/journal behavior, diagrams.
+.agent/stages/03-identity-master-data/sprint_contract.md:124:  - `/equipment` frontend route/query compatibility and unified workspace boundary.
+.agent/stages/03-identity-master-data/sprint_contract.md:138:- Replacing the entire `/equipment` route with a new parallel page or reusable component family.
+docs/PRD-MVP.md:81:- реестры оборудования, средств измерения и эталонов;
+docs/PRD-MVP.md:328:- `диагностическое оборудование / СИ` — оборудование заказчика для проверки качества ремонта или состояния узлов вагона: колесных пар, буксовых узлов, тормозов, подшипников и т.д.;
+docs/PRD-MVP.md:330:- customer-side web contour держит один публичный route `/equipment` и один рабочий surface `Оборудование в учете`;
+docs/PRD-MVP.md:332:- старые query params прежних вкладок `tab=mi` и `tab=standards` являются compatibility-only и не должны возвращать отдельные пользовательские реестры;
+docs/PRD-MVP.md:335:- технологическое оборудование может существовать без диагностического оборудования;
+docs/PRD-MVP.md:336:- диагностическое оборудование / СИ может быть связано с технологическим оборудованием, если оно применяется для конкретного объекта контроля;
+docs/PRD-MVP.md:337:- у одного диагностического оборудования может быть `0..N` эталонов / установочных мер;
+docs/PRD-MVP.md:338:- эталон в MVP принадлежит комплекту конкретного диагностического оборудования, а не переиспользуется как свободный общий справочник между несколькими СИ;
+docs/PRD-MVP.md:339:- текущий метрологический статус и ближайшая дата диагностического оборудования определяются по последней применимой записи единого журнала операций по оборудованию, а archived state живет отдельно от derived status;
+docs/PRD-MVP.md:340:- рабочая настройка диагностического оборудования на своем эталоне обычно не фиксируется пользователем как официальная операция;
+docs/PRD-MVP.md:341:- официальный сценарий с метрологом аккредитованной организации фиксируется как journal/protocol evidence; эталоны, которые привозит метролог, остаются внешним post-MVP контуром, а не customer-side master data;
+docs/PRD-MVP.md:343:- диагностическое оборудование и его owned эталоны существуют как часть встроенного master-data contour без превращения MVP в отдельную отраслевую метрологическую систему.
+docs/PRD-MVP.md:347:- организации, дивизионы, юниты, пользователи, договоры, оборудование, СИ и эталоны архивируются;
+docs/PRD-MVP.md:348:- archived equipment / диагностическое оборудование скрываются из default active lists и relation pickers, но остаются доступны через explicit archive visibility state и read-only history;
+docs/PRD-MVP.md:349:- owned эталоны archived диагностического оборудования остаются read-only внутри карточки родителя;
+docs/PRD-MVP.md:350:- archived equipment / диагностическое оборудование сохраняют journal history, но новые journal entries и новые эталоны в них не добавляются;
+docs/PRD-MVP.md:382:- реестр диагностического оборудования / СИ заказчика, эталоны в комплектах этого диагностического оборудования и журналы официальных операций входят в первую версию как request-supporting master data;
+docs/PRD-MVP.md:680:- отдельные отраслевые контуры метрологии сверх встроенных реестров СИ, эталонов и журналов;
+docs/architecture/frontend-architecture.md:13:- product-shaped runtime shell из Stage 02 для `/login`, `/register`, `/company`, `/equipment`, `/contracts`, `/requests`.
+docs/architecture/frontend-architecture.md:82:- `Stage 02` поднял **product-shaped runtime shell** для `/login`, `/register`, `/company`, `/equipment`, `/contracts` и gated `/requests`;
+docs/architecture/frontend-architecture.md:84:- real auth/session/RBAC, invite-based activation, persisted `organization -> division -> unit` state, scoped access grants, contracts/equipment/MI/standards CRUD и invitation workflows остаются ответственностью `Stage 03`;
+docs/architecture/frontend-architecture.md:98:- редактирование дивизионов и юнитов открывается отдельным modal PATCH surface с focus trap, `Escape`/backdrop close и restore focus, аналогично registry edit dialogs в `/equipment`;
+docs/architecture/frontend-architecture.md:182:После реализации `slice-004` и `slice-005` master-data contour на публичном route `/equipment` перестал быть shell-only surface и стал реальным Stage 03 registry boundary. Исторический floor доказал отдельные backend resources для equipment, measuring instruments, standards, journal/archive и scoped access, но product correction от 2026-05-11 заменяет user-facing модель.
+docs/architecture/frontend-architecture.md:184:Target `/equipment` frontend contract:
+docs/architecture/frontend-architecture.md:186:- публичный web route остается `/equipment`;
+docs/architecture/frontend-architecture.md:188:- старые `tab=mi` и `tab=standards` остаются compatibility-only input и нормализуются к единому workspace, не открывая отдельные registry tabs;
+docs/architecture/frontend-architecture.md:189:- `app/api/equipment*` по-прежнему скрывает browser от internal backend host;
+docs/architecture/frontend-architecture.md:193:- customer admins с `manage_equipment` получают create/edit/archive/journal controls внутри visible scope/subtree;
+docs/architecture/frontend-architecture.md:195:- UI показывает один form/list/journal composition:
+docs/architecture/frontend-architecture.md:198:  - diagnostic equipment card with owned standards inside the card;
+docs/architecture/frontend-architecture.md:203:    A["Browser /equipment<br/>old tab params optional"] --> B["Next page"]
+docs/architecture/frontend-architecture.md:208:    E -->|"Диагностическое"| G["diagnostic payload<br/>owned standards 0..N"]
+docs/architecture/frontend-architecture.md:211:    H --> J["diagnostic cards<br/>standards inside"]
+docs/architecture/frontend-architecture.md:216:Диаграмма фиксирует текущий target boundary: route остается прежним, но tabs and standalone standards list are no longer part of the user-facing workspace.
+docs/architecture/frontend-architecture.md:222:- technical equipment can still map to `/api/equipment`;
+docs/architecture/frontend-architecture.md:223:- diagnostic equipment may still map to `/api/equipment/measuring-instruments` as implementation detail;
+docs/architecture/frontend-architecture.md:224:- standards are created/viewed only through diagnostic equipment context in the UI;
+docs/architecture/frontend-architecture.md:225:- standard journals are not exposed in the target UI;
+docs/architecture/frontend-architecture.md:226:- unified equipment journal uses the diagnostic/equipment journal endpoint selected by the chosen equipment record;
+docs/architecture/frontend-architecture.md:229:- active relationship controls must never surface archived records or reusable standards.
+docs/architecture/frontend-architecture.md:233:    A["EquipmentRegistryWorkspace"] --> B["/api/equipment* proxy"]
+docs/architecture/frontend-architecture.md:236:    C --> E["diagnostic equipment implementation boundary"]
+docs/architecture/frontend-architecture.md:237:    E --> F["owned standards"]
+docs/architecture/frontend-architecture.md:238:    E --> G["equipment journal history"]
+docs/roadmap.md:143:- реестры технологического оборудования, диагностического оборудования заказчика (`СИ`) и эталонов/установочных мер в комплекте диагностического оборудования как часть master-data contour
+docs/roadmap.md:347:Реализовать invite-based identity, scoped access и базовый контур master data, на котором стоит весь MVP: активация первого администратора, постоянный UI управления организацией/дивизионами/юнитами, сотрудники и приглашения, договоры, оборудование, СИ и эталоны.
+docs/roadmap.md:381:- equipment registry with a split between technological equipment and customer diagnostic equipment / measuring instruments
+docs/roadmap.md:382:- standards / setup measures attached to customer diagnostic equipment
+docs/roadmap.md:383:- unified equipment operation journal, URL/reference attachment baseline и derived status for diagnostic equipment
+docs/roadmap.md:384:- historical bounded ownership-scope labels for standards remain implementation floor only; target correction moves standards under diagnostic equipment while standalone org-scoped dictionary/local-draft CRUD остается вне proven Stage 03 contract
+docs/roadmap.md:385:- archive baseline для организаций, дивизионов, юнитов, пользователей, договоров, оборудования, СИ и эталонов
+docs/roadmap.md:393:- one `/equipment` workspace with unified create form, type selector, equipment cards, owned standards inside diagnostic cards, unified equipment journal, compatibility-only old tab params, and explicit archive visibility state
+docs/roadmap.md:412:- технологическое оборудование и диагностическое оборудование заказчика (`СИ`) создаются через единую форму с типом, а эталоны/установочные меры существуют только как owned children диагностического оборудования
+docs/roadmap.md:413:- `/equipment` остается canonical public contour для equipment/master-data surface, а narrower scopes видят только read-only разрешенный subtree
+docs/roadmap.md:414:- текущий метрологический статус и ближайшая дата диагностического оборудования рассчитываются из последней применимой записи единого журнала операций по оборудованию, а не только из denormalized полей карточки
+docs/roadmap.md:415:- у одного диагностического оборудования может быть `0..N` эталонов/установочных мер; эталон в MVP принадлежит комплекту конкретного диагностического оборудования, а не свободно переиспользуется между несколькими СИ
+docs/roadmap.md:438:- contracts + unified equipment workspace, diagnostic equipment with owned standards, journal и archive flows работают end-to-end
+docs/architecture/identity-master-data.md:13:- master-data контур для договоров, оборудования, СИ и эталонов;
+docs/architecture/identity-master-data.md:14:- правила архивирования и target correction для диагностического оборудования / эталонов.
+docs/architecture/identity-master-data.md:145:    E --> F["0..N эталонов / установочных мер"]
+docs/architecture/identity-master-data.md:237:- equipment, MI, standards, contracts и employee grants должны ссылаться только на visible active scopes при создании новых записей.
+docs/architecture/identity-master-data.md:360:- `Юнит` — основной operational workspace для оборудования, СИ, эталонов и связанных действий.
+docs/architecture/identity-master-data.md:366:- юнит: рабочее место со списком оборудования, СИ, эталонов и точками входа в CRUD.
+docs/architecture/identity-master-data.md:374:- `division_admin` получает mutate controls только для своего дивизиона, дочерних юнитов, access/employees/equipment/contracts внутри subtree и не может редактировать профиль организации;
+docs/architecture/identity-master-data.md:377:- `unit_admin` получает mutate controls только для своего юнита и access/employees/equipment/contracts внутри него;
+docs/architecture/identity-master-data.md:423:## 5. Оборудование, СИ и эталоны
+docs/architecture/identity-master-data.md:425:### 5.0. Product correction 2026-05-11: диагностическое оборудование заказчика
+docs/architecture/identity-master-data.md:429:- `СИ` в MVP — это диагностическое оборудование заказчика, которым на вагоноремонтном предприятии проверяют качество ремонта или состояние узлов вагона: колесных пар, буксовых узлов, тормозов, подшипников и т.д.;
+docs/architecture/identity-master-data.md:431:- технологическое оборудование и диагностическое оборудование являются customer-side equipment master data внутри юнита;
+docs/architecture/identity-master-data.md:432:- contractor-side метрологическое оборудование и эталоны аккредитованной организации остаются вне MVP и могут появиться отдельным контуром позже.
+docs/architecture/identity-master-data.md:442:    F["Аккредитованная организация"] -. "post-MVP external contour" .-> G["свои эталонные приборы"]
+docs/architecture/identity-master-data.md:445:Эта диаграмма фиксирует target contract после уточнения: у одного диагностического оборудования может быть несколько эталонов, а эталон в MVP принадлежит комплекту конкретного диагностического оборудования. Эталонный манометр, частотомер и другое оборудование, которое привозит внешний метролог для официальной поверки, не заводится как customer-side equipment в первой версии.
+docs/architecture/identity-master-data.md:452:- диагностическое оборудование / СИ — оборудование заказчика для проверки качества ремонта или состояния узлов, включая простые инструменты и сложные приборы вроде Robocon, УКВР и приборов ЖТ.
+docs/architecture/identity-master-data.md:472:Для диагностического оборудования:
+docs/architecture/identity-master-data.md:478:- `0..N` эталонов / установочных мер внутри той же формы.
+docs/architecture/identity-master-data.md:484:СИ являются диагностическим оборудованием заказчика. Текущий технический ресурс `measuring-instruments` допустим как implementation boundary, но пользовательский и продуктовый смысл — не "самостоятельный класс оборудования подрядчика", а customer-side diagnostic equipment внутри юнита.
+docs/architecture/identity-master-data.md:493:- связь с технологическим оборудованием, если диагностическое оборудование обслуживает конкретную карточку;
+docs/architecture/identity-master-data.md:498:Эталон / установочная мера — объект из комплекта диагностического оборудования, который используется для настройки или проверки прибора: эталонное кольцо, пробка, скоба и т.п.
+docs/architecture/identity-master-data.md:502:- рабочая настройка прибора на своем эталоне не является официальной поверкой и обычно не требует ручной записи пользователем в VRK;
+docs/architecture/identity-master-data.md:504:- эталоны внешней аккредитованной организации не заводятся в MVP как customer-side реестр.
+docs/architecture/identity-master-data.md:511:- родительское диагностическое оборудование / СИ;
+docs/architecture/identity-master-data.md:529:Правило расчета для диагностического оборудования:
+docs/architecture/identity-master-data.md:534:### 5.5. Связи между оборудованием, СИ и эталонами
+docs/architecture/identity-master-data.md:536:Stage 03 больше не должен проектироваться вокруг reusable many-to-many связи между СИ и эталонами как целевой модели.
+docs/architecture/identity-master-data.md:541:- у юнита может быть `0..N` единиц диагностического оборудования / СИ;
+docs/architecture/identity-master-data.md:542:- диагностическое оборудование может быть связано с технологическим оборудованием, если оно применяется для конкретного объекта контроля;
+docs/architecture/identity-master-data.md:543:- у диагностического оборудования может быть `0..N` эталонов / установочных мер;
+docs/architecture/identity-master-data.md:544:- эталон в MVP принадлежит одному диагностическому оборудованию и не переиспользуется как свободный общий справочник между несколькими СИ.
+docs/architecture/identity-master-data.md:548:- через parent foreign key `standard -> diagnostic equipment`;
+docs/architecture/identity-master-data.md:557:- customer-side public contour остается на одном route `/equipment`;
+docs/architecture/identity-master-data.md:561:  - standards;
+docs/architecture/identity-master-data.md:566:  - `GET/POST /equipment`
+docs/architecture/identity-master-data.md:567:  - `GET/POST /measuring-instruments`
+docs/architecture/identity-master-data.md:568:  - legacy standalone standards registry endpoints, retired from the current target contract;
+docs/architecture/identity-master-data.md:571:- historical standard остается самостоятельным reusable record и может быть связан более чем с одним measuring instrument, но это допущение должно быть заменено в следующем equipment-domain correction slice.
+docs/architecture/identity-master-data.md:575:    A["historical /equipment"] --> B["equipment registry"]
+docs/architecture/identity-master-data.md:576:    A --> C["historical /equipment?tab=mi"]
+docs/architecture/identity-master-data.md:577:    A --> D["historical /equipment?tab=standards"]
+docs/architecture/identity-master-data.md:582:    D --> I["organization / division / unit-owned standard"]
+docs/architecture/identity-master-data.md:586:### 5.7. Реализованный slice-005 journal + archive contract
+docs/architecture/identity-master-data.md:588:Пятый живой Stage 03 slice не создает новый public route family, а расширяет тот же `/equipment` contour:
+docs/architecture/identity-master-data.md:590:- historical page state used tab query values for equipment, measuring instruments and standards;
+docs/architecture/identity-master-data.md:592:- web route handlers остаются под `app/api/equipment*` и проксируют browser к backend journal/archive endpoints без раскрытия internal host;
+docs/architecture/identity-master-data.md:593:- paginated registry list responses сохраняют envelope `meta` на web boundary, чтобы `/equipment` contour мог truthfully видеть `total/limit/offset`, а не только текущий `data` slice;
+docs/architecture/identity-master-data.md:595:  - `GET/POST /measuring-instruments/{id}/journals`;
+docs/architecture/identity-master-data.md:596:  - `POST /equipment/{id}/archive`;
+docs/architecture/identity-master-data.md:597:  - `POST /measuring-instruments/{id}/archive`;
+docs/architecture/identity-master-data.md:599:  - standalone standard journal endpoints;
+docs/architecture/identity-master-data.md:600:  - standalone standard archive endpoint;
+docs/architecture/identity-master-data.md:601:- journal entry хранит:
+docs/architecture/identity-master-data.md:613:  - archived СИ и archived standards отклоняют новые journal mutations.
+docs/architecture/identity-master-data.md:617:- если journal history пустая, API возвращает fallback status из карточки;
+docs/architecture/identity-master-data.md:618:- иначе берется latest journal entry с ordering `operation_date DESC, created_at DESC`;
+docs/architecture/identity-master-data.md:637:Диаграмма фиксирует текущий slice-005 derivation contract: archived state хранится отдельно, а текущий metrology status и ближайшая дата вычисляются по latest applicable journal record.
+docs/architecture/identity-master-data.md:643:- public route remains `/equipment`;
+docs/architecture/identity-master-data.md:644:- old query params `tab=mi` and `tab=standards` are compatibility-only and must not expose separate active surfaces;
+docs/architecture/identity-master-data.md:649:- diagnostic cards show diagnostic fields, ФИФ/serial data, owned standards count and standards list inside the card;
+docs/architecture/identity-master-data.md:650:- standards are not created or viewed as a standalone reusable registry in the target UI;
+docs/architecture/identity-master-data.md:651:- current API no longer exposes a standalone `/standards` list/get/update/archive registry; creating an owned standard is nested under its diagnostic parent via `POST /measuring-instruments/{id}/standards`;
+docs/architecture/identity-master-data.md:652:- journal surface is `Журнал операций по оборудованию`;
+docs/architecture/identity-master-data.md:653:- no separate standard journal is exposed in the target UI.
+docs/architecture/identity-master-data.md:657:    A["/equipment"] --> B["Новое оборудование"]
+docs/architecture/identity-master-data.md:660:    C --> E["diagnostic equipment"]
+docs/architecture/identity-master-data.md:661:    E --> F["owned standards 0..N"]
+docs/architecture/identity-master-data.md:663:    G --> H["standards visible only in diagnostic card"]
+docs/architecture/identity-master-data.md:667:Эта диаграмма является target source of truth для Stage 03 correction: historical backend resources may remain as compatibility implementation detail, but product behavior is equipment -> owned standards -> equipment journal.
+docs/architecture/identity-master-data.md:671:- active standards with one legacy diagnostic-equipment link receive that diagnostic parent;
+docs/architecture/identity-master-data.md:672:- active standards linked to several diagnostic equipment records are copied per diagnostic parent, so no current child standard is reused across cards;
+docs/architecture/identity-master-data.md:673:- active standards without a derivable diagnostic parent are archived with a migration comment instead of staying visible as standalone current records;
+docs/architecture/identity-master-data.md:674:- unarchived standards are constrained to have `diagnostic_equipment_id`, while archived historical rows may remain as read-only compatibility data.
+docs/architecture/identity-master-data.md:678:Текущий proven Stage 03 contract не вводит отдельный CRUD-модуль для organization-scoped dictionaries с local drafts. Для historical slice-005 standards были реализованы через ownership labels:
+docs/architecture/identity-master-data.md:687:Это ограничение было намеренным для slice-005: он закрывал journal/archive truth и doc-sync, а не расширял Stage 03 в parallel dictionary module.
+docs/architecture/identity-master-data.md:689:После product correction 2026-05-11 ownership labels больше не являются целевым способом владения эталоном. Equipment-domain correction заменяет их parent relation к диагностическому оборудованию, сохраняя archive/history правила.
+docs/architecture/identity-master-data.md:702:- эталон.
+.agent/stages/03-identity-master-data/stage_spec.md:8:Активировать поверх Stage 02 runtime shell реальный контур identity, access и master data: first-admin invite activation, постоянный `organization -> division -> unit` management UI, сотрудники и приглашения, scoped access, договоры, оборудование, средства измерения и эталоны.
+.agent/stages/03-identity-master-data/stage_spec.md:24:- equipment registry with target semantics split between technological equipment and customer diagnostic equipment / СИ;
+.agent/stages/03-identity-master-data/stage_spec.md:25:- standards / setup measures as `0..N` children of one diagnostic equipment record;
+.agent/stages/03-identity-master-data/stage_spec.md:26:- metrology operation journals, URL/reference attachment baseline и status derivation from latest valid record;
+.agent/stages/03-identity-master-data/stage_spec.md:27:- historical bounded ownership-scope labels for standards remain implementation floor only; broader org-scoped dictionary/local-draft CRUD deferred;
+.agent/stages/03-identity-master-data/stage_spec.md:69:The customer meeting clarified the equipment/metrology domain and supersedes the older reusable-standards target:
+.agent/stages/03-identity-master-data/stage_spec.md:71:- `measuring instrument` / `СИ` in this MVP means customer diagnostic equipment used by wagon repair facilities to check repair quality or unit condition;
+.agent/stages/03-identity-master-data/stage_spec.md:74:- standards / setup measures are kit objects for one diagnostic equipment record, with target cardinality `diagnostic equipment -> 0..N standards`;
+.agent/stages/03-identity-master-data/stage_spec.md:75:- a working setup of a device against its own standard is not an official journal event; an official metrology journal event is the accredited-organization scenario with protocol/evidence.
+.agent/stages/03-identity-master-data/stage_spec.md:80:- stop planning standards as freely reusable records between multiple measuring instruments;
+.agent/stages/03-identity-master-data/stage_spec.md:81:- keep `/equipment` as the single public customer route, but restructure its surface around technological equipment, diagnostic equipment and standards inside diagnostic equipment cards.
+.agent/stages/03-identity-master-data/stage_spec.md:104:4. `slice-004-equipment-mi-standard-registries`
+.agent/stages/03-identity-master-data/stage_spec.md:105:5. `slice-005-metrology-journals-archiving-and-proof`
+.agent/stages/03-identity-master-data/stage_spec.md:117:    D --> E["Slice 004<br/>equipment + MI + standards registries"]
+.agent/stages/03-identity-master-data/stage_spec.md:118:    E --> F["Slice 005<br/>journals + archiving"]
+.agent/stages/03-identity-master-data/stage_spec.md:152:- `/equipment` is a single customer equipment workspace with one `Новое оборудование` form, required type `Техническое` / `Диагностическое`, and one `Оборудование в учете` list;
+.agent/stages/03-identity-master-data/stage_spec.md:153:- old `tab=mi` / `tab=standards` query params are compatibility-only and no longer expose separate user-facing registries;
+.agent/stages/03-identity-master-data/stage_spec.md:154:- `СИ` is customer diagnostic equipment, and standards/setup measures are `0..N` children visible only inside their diagnostic equipment card;
+.agent/stages/03-identity-master-data/stage_spec.md:155:- standalone standards list and standards operation journal are removed from the target UI;
+.agent/stages/03-identity-master-data/stage_spec.md:156:- the journal is a unified `Журнал операций по оборудованию`;
+.agent/stages/03-identity-master-data/stage_spec.md:178:- текущий legacy backend уже содержит ранние CRUD для организаций, оборудования, СИ и эталонов, но их модель не совпадает с новым Stage 03 contract;
+.agent/stages/03-identity-master-data/stage_spec.md:193:- доказать separate registries для equipment / measuring instruments / standards;
+.agent/stages/03-identity-master-data/stage_spec.md:194:- доказать journal-driven status calculation и archive behavior;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:10:- `СИ` в MVP означает диагностическое оборудование заказчика, а не отдельный самостоятельный реестр и не оборудование подрядчика;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:12:- диагностическое оборудование проверяет качество ремонта или состояние узлов вагона;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:13:- эталон / установочная мера находится в комплекте конкретного диагностического оборудования;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:14:- у одного диагностического оборудования может быть несколько эталонов;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:15:- эталон не переиспользуется между несколькими диагностическими устройствами;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:16:- рабочая настройка прибора на своем эталоне не является официальной операцией журнала;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:19:Текущие slice-004/slice-005 остаются historical floor: они доказали route `/equipment`, registry access, journal-driven status и archive behavior. Этот correction slice заменяет устаревшую UI/data language без расширения в Stage 04.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:21:## Целевой вид страницы `/equipment`
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:23:- Один public route: `/equipment`.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:28:- Query params старых tabs (`tab=mi`, `tab=standards`) не ломают страницу и нормализуются к единому surface.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:33:    A["/equipment"] --> B["Новое оборудование"]
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:36:    C -->|"Диагностическое"| E["Поля СИ + 0..N эталонов"]
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:37:    E --> F["Owned standards / setup measures"]
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:40:    G --> I["Диагностические карточки<br/>с эталонами внутри"]
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:45:Диаграмма фиксирует целевой composition: одна форма, единый список и единый journal block. Эталоны больше не являются отдельной точкой входа.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:75:- `0..N` эталонов / установочных мер в этой же форме.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:77:Поля эталона в диагностической форме:
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:87:- свободный many-to-many selector `Связанные эталоны`;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:88:- создание эталона без выбранного диагностического оборудования;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:89:- отдельный журнал операции по эталону.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:100:Карточка диагностического оборудования:
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:108:- компактный список эталонов внутри карточки;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:112:Эталоны просматриваются только внутри карточки диагностического оборудования. Отдельного списка эталонов больше нет.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:120:- Для диагностического оборудования журнал фиксирует официальные операции: поверка, калибровка, техобслуживание, приостановка, вывод.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:122:- Рабочая настройка прибора на собственном эталоне не является обязательной записью журнала.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:123:- Отдельного standard journal в target UI больше нет.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:131:- сохранить существующий backend table/API `registry_measuring_instruments` / `/measuring-instruments` как implementation detail;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:132:- на product/web boundary показывать его как diagnostic equipment;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:133:- добавить parent relation `standard -> diagnostic equipment`;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:134:- прекратить использовать many-to-many `registry_measuring_instrument_standards` как target relationship;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:141:  - `diagnostic`.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:143:- `registry_standards` gets a required parent diagnostic equipment id for target-owned standards.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:145:  - if a standard has exactly one measuring-instrument link, set parent to that diagnostic equipment;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:146:  - if a standard has multiple links, create per-parent copies or explicitly block/report in migration strategy;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:147:  - historical journal rows remain readable where present, but target UI stops exposing standard journal mutation.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:153:  - diagnostic equipment payload with inline standards.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:157:  - diagnostic fields and owned `standards` when `diagnostic`;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:158:  - journal summary from equipment/diagnostic journal.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:159:- Preferred nested standards behavior:
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:160:  - create standards through diagnostic equipment context;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:161:  - reject attaching an existing standard to another diagnostic equipment;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:162:  - archived diagnostic equipment rejects new standards.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:164:  - equipment journal entries are attached to equipment/diagnostic equipment;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:165:  - archived equipment rejects new journal entries;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:172:3. Keep route compatibility for `tab=mi` and `tab=standards` by rendering or redirecting to `/equipment`.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:175:6. For diagnostic type, render diagnostic fields plus dynamic standards list.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:177:8. Render standards only inside diagnostic cards.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:178:9. Replace MI/standard-specific journal panels with `Журнал операций по оборудованию`.
+
+## stale/forbidden target-language audit
+.agent/stages/03-identity-master-data/evidence.json:130:    "rg route audit for removed /standards/{id}/journals target API/proxy routes",
+.agent/stages/03-identity-master-data/evidence.json:283:    "slice-014 parent owned-standard DB audit after migration reapply: PASS; active_without_parent=0 and reusable_standard_rows=0",
+.agent/stages/03-identity-master-data/evidence.json:495:    "result": "Extended existing EquipmentRegistryWorkspace and story-backed equipment runtime fixtures; no new reusable UI family was introduced."
+.agent/stages/03-identity-master-data/evidence.json:511:    "apps/web/app/api/equipment/measuring-instruments/[measuringInstrumentId]/standards/route.ts",
+.agent/stages/03-identity-master-data/evidence.json:512:    "apps/web/app/api/equipment/standards/route.ts",
+.agent/stages/03-identity-master-data/evidence.json:513:    "apps/web/app/api/equipment/standards/[standardId]/route.ts",
+.agent/stages/03-identity-master-data/evidence.json:514:    "apps/web/app/api/equipment/standards/[standardId]/archive/route.ts",
+.agent/stages/03-identity-master-data/evidence.json:515:    "apps/web/app/api/equipment/standards/[standardId]/journals/route.ts"
+.agent/stages/03-identity-master-data/evidence.json:524:      "No new reusable component family was introduced; the existing equipment workspace was extended."
+.agent/stages/03-identity-master-data/evidence.json:798:      "reusable_component_decision": "not_applicable_existing_field_removal",
+.agent/stages/03-identity-master-data/evidence.json:1085:      "apps/web/app/api/equipment/standards/[standardId]/journals/route.ts",
+.agent/stages/03-identity-master-data/evidence.json:1092:      "apps/web/app/api/equipment/measuring-instruments/[measuringInstrumentId]/standards/route.ts",
+.agent/stages/03-identity-master-data/evidence.json:1093:      "apps/web/app/api/equipment/standards/route.ts",
+.agent/stages/03-identity-master-data/evidence.json:1094:      "apps/web/app/api/equipment/standards/[standardId]/route.ts",
+.agent/stages/03-identity-master-data/evidence.json:1095:      "apps/web/app/api/equipment/standards/[standardId]/archive/route.ts"
+.agent/stages/03-identity-master-data/evidence.md:26:The 2026-05-11 equipment domain correction replaces the historical tabbed `/equipment` target with one customer equipment workspace. The page keeps the public `/equipment` route, removes the visible `Оборудование / СИ / Эталоны` tab model, provides one `Новое оборудование` form with `Техническое` / `Диагностическое` type selection, treats diagnostic equipment as the owner of `0..N` standards/setup measures, shows those standards only inside diagnostic equipment cards, removes the target standard journal route, and keeps one equipment operation journal. Canonical product and technical docs were synced because this changes the product/API/persistence contract.
+.agent/stages/03-identity-master-data/evidence.md:28:Fresh verifier initially failed this slice for owned-standard migration/read-path gaps, remaining standalone standards registry exposure, stale current-slice UI evidence metadata, and two placeholder findings. The minimal fixer plus parent follow-up closed those gaps: migration 16 now makes current standards diagnostic-owned or archived, diagnostic cards ignore the old many-to-many table, standalone standards routes/proxies are removed, placeholders pass the UI gate, and current-slice metadata points to slice-014. A new fresh verifier must still own the final PASS.
+.agent/stages/03-identity-master-data/evidence.md:35:  - Changed `/equipment` so old `tab=mi|standards` query params redirect to the unified route while preserving `archived=1`.
+.agent/stages/03-identity-master-data/evidence.md:36:  - Extended `EquipmentRegistryWorkspace` instead of adding a parallel page or reusable family:
+.agent/stages/03-identity-master-data/evidence.md:56:    - updated migration/read paths so current standards are diagnostic-owned and old many-to-many links no longer feed cards;
+.agent/stages/03-identity-master-data/evidence.md:64:    - migration 16 reapplied cleanly and DB audit reports `active_without_parent=0`, `reusable_standard_rows=0`;
+.agent/stages/03-identity-master-data/evidence.md:504:  - no complete org-structure reusable family existed;
+.agent/stages/03-identity-master-data/evidence.md:506:  - no new reusable UI family was introduced, so no net-new stories/backlog entry are required for the company workspace.
+.agent/stages/03-identity-master-data/evidence.md:575:  - no new reusable UI family was created, so Storybook component lookup/backlog changes were not required for this removal;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:15:- эталон не переиспользуется между несколькими диагностическими устройствами;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:27:- Нет tabs/switcher `Оборудование / СИ / Эталоны`.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:28:- Query params старых tabs (`tab=mi`, `tab=standards`) не ломают страницу и нормализуются к единому surface.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:87:- свободный many-to-many selector `Связанные эталоны`;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:134:- прекратить использовать many-to-many `registry_measuring_instrument_standards` как target relationship;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:172:3. Keep route compatibility for `tab=mi` and `tab=standards` by rendering or redirecting to `/equipment`.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:197:- old `tab=mi` and `tab=standards` URLs do not break `/equipment`;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:217:- Old copy around `СИ` and `эталоны` can remain in source comments/tests as historical proof, but current UI/docs must not present standards as a reusable free registry.
+docs/PRD-MVP.md:332:- старые query params прежних вкладок `tab=mi` и `tab=standards` являются compatibility-only и не должны возвращать отдельные пользовательские реестры;
+docs/PRD-MVP.md:338:- эталон в MVP принадлежит комплекту конкретного диагностического оборудования, а не переиспользуется как свободный общий справочник между несколькими СИ;
+docs/roadmap.md:49:- Fresh verifier **никогда** не переиспользуется как previous verifier session.
+docs/roadmap.md:231:  - reusable story decorators / layout wrappers
+docs/roadmap.md:415:- у одного диагностического оборудования может быть `0..N` эталонов/установочных мер; эталон в MVP принадлежит комплекту конкретного диагностического оборудования, а не свободно переиспользуется между несколькими СИ
+.agent/stages/03-identity-master-data/progress.md:8:- Confirmed that canonical docs still contained the older Stage 03 assumption where standards were reusable records linked many-to-many with measuring instruments.
+.agent/stages/03-identity-master-data/progress.md:14:  - a standard belongs to the kit of one diagnostic equipment record in MVP, rather than being freely reusable between several measuring instruments.
+.agent/stages/03-identity-master-data/progress.md:28:  - old `tab=mi|standards` query params no longer expose old tabs and redirect to the unified route;
+.agent/stages/03-identity-master-data/progress.md:44:  - no new reusable component family or backlog slice was introduced.
+.agent/stages/03-identity-master-data/progress.md:70:  - diagnostic equipment cards now read standards from `registry_standards.diagnostic_equipment_id` only, not the old many-to-many link table;
+.agent/stages/03-identity-master-data/progress.md:71:  - standalone standards registry API/proxy/Swagger surfaces were removed from the current target contract;
+.agent/stages/03-identity-master-data/progress.md:72:  - standard creation moved under `POST /measuring-instruments/{id}/standards`;
+.agent/stages/03-identity-master-data/progress.md:79:  - reusable standard rows across multiple diagnostic equipment records: `0`.
+.agent/stages/03-identity-master-data/progress.md:282:  - no net-new reusable component family was introduced;
+.agent/stages/03-identity-master-data/progress.md:376:  - direct slice-004 proof runner passed with separate registries, relation proof, scope filtering, and `/agreements` baseline reachability;
+.agent/stages/03-identity-master-data/progress.md:411:  - separate registries without a mega-form regression;
+.agent/stages/03-identity-master-data/progress.md:412:  - relation baseline `equipment -> 0..N MI -> 0..N standards`, including standalone and built-in MI plus reusable standard proof;
+.agent/stages/03-identity-master-data/progress.md:1116:  - no new reusable component family, stories, backlog slice, API, or canonical product docs were needed.
+.agent/stages/03-identity-master-data/progress.md:1149:  - no new reusable component family, stories, backlog slice, API, or canonical product docs were needed.
+.agent/stages/03-identity-master-data/progress.md:1172:- Extended the existing story-backed `InputField` instead of creating a new reusable input family:
+.agent/stages/03-identity-master-data/sprint_contract.md:22:- User-facing tabs/switchers `Оборудование / СИ / Эталоны` are removed.
+.agent/stages/03-identity-master-data/sprint_contract.md:23:- Old query params such as `tab=mi` and `tab=standards` must not break the page. They may normalize to `/equipment` or render the same unified workspace.
+.agent/stages/03-identity-master-data/sprint_contract.md:31:- Standards are not reusable between equipment records in the target contract.
+.agent/stages/03-identity-master-data/sprint_contract.md:46:- There is no visible tab/switcher containing `Оборудование / Средства измерения / Эталоны`, `Оборудование / СИ / Эталоны`, or an equivalent three-registry navigation.
+.agent/stages/03-identity-master-data/sprint_contract.md:51:- Standards are not exposed as a free create/list surface and copy does not describe them as reusable registry records.
+.agent/stages/03-identity-master-data/sprint_contract.md:66:- Canonical docs and stage artifacts describe the implemented contract without leaving old reusable-standard or tabbed-registry copy as current behavior.
+.agent/stages/03-identity-master-data/sprint_contract.md:91:  - prove a standard is not reusable/linkable by another equipment record;
+.agent/stages/03-identity-master-data/sprint_contract.md:138:- Replacing the entire `/equipment` route with a new parallel page or reusable component family.
+.agent/stages/03-identity-master-data/stage_spec.md:69:The customer meeting clarified the equipment/metrology domain and supersedes the older reusable-standards target:
+.agent/stages/03-identity-master-data/stage_spec.md:80:- stop planning standards as freely reusable records between multiple measuring instruments;
+.agent/stages/03-identity-master-data/stage_spec.md:153:- old `tab=mi` / `tab=standards` query params are compatibility-only and no longer expose separate user-facing registries;
+.agent/stages/03-identity-master-data/stage_spec.md:193:- доказать separate registries для equipment / measuring instruments / standards;
+docs/architecture/frontend-architecture.md:56:- reusable base в `shared/*`: design tokens, story helpers и UI primitives;
+docs/architecture/frontend-architecture.md:74:Диаграмма фиксирует Stage 01 contract: design tokens и story helpers питают shared primitives, поверх которых уже собраны Wave 1 `widgets` и `entities`. Этот слой не исчезает после Stage 02, а продолжает быть reusable foundation для runtime shell.
+docs/architecture/frontend-architecture.md:84:- real auth/session/RBAC, invite-based activation, persisted `organization -> division -> unit` state, scoped access grants, contracts/equipment/MI/standards CRUD и invitation workflows остаются ответственностью `Stage 03`;
+docs/architecture/frontend-architecture.md:188:- старые `tab=mi` и `tab=standards` остаются compatibility-only input и нормализуются к единому workspace, не открывая отдельные registry tabs;
+docs/architecture/frontend-architecture.md:229:- active relationship controls must never surface archived records or reusable standards.
+docs/architecture/frontend-architecture.md:265:apps/web/shared     # reusable base: ui, lib, api, config, types
+docs/architecture/frontend-architecture.md:363:- reusable UI primitives
+docs/architecture/frontend-architecture.md:408:## 5. Storybook-first и reusable UI
+docs/architecture/frontend-architecture.md:410:Для VRK shared UI и reusable domain components должны разрабатываться через Storybook-first workflow из `Stage 01`.
+docs/architecture/frontend-architecture.md:415:- новые reusable primitives и domain UI-срезы поставляются вместе со stories
+docs/architecture/frontend-architecture.md:418:- если создается net-new reusable component, вместе с ним обновляются stories и backlog, когда появился новый reusable family или missing backlog slice
+docs/architecture/frontend-architecture.md:425:- дублирующий reusable component с пересекающейся ответственностью считается architecture drift и verifier proof gap
+docs/architecture/frontend-architecture.md:429:    A["Нужен reusable или domain UI component"] --> B["Прогнать Storybook component lookup"]
+docs/architecture/frontend-architecture.md:440:Диаграмма фиксирует обязательный decision path для reusable UI: сначала поиск по текущему Storybook inventory, затем строгое решение reuse/extend/create без параллельных компонентных семейств.
+docs/architecture/frontend-architecture.md:551:- reusable component принимает `className` и не навязывает внешние margins
+docs/architecture/frontend-architecture.md:559:Для каждой страницы, виджета и reusable UI-секции проверяем:
+docs/architecture/identity-master-data.md:434:Ключевая модель связи меняется с прежнего reusable many-to-many допущения на customer-side комплект:
+docs/architecture/identity-master-data.md:536:Stage 03 больше не должен проектироваться вокруг reusable many-to-many связи между СИ и эталонами как целевой модели.
+docs/architecture/identity-master-data.md:544:- эталон в MVP принадлежит одному диагностическому оборудованию и не переиспользуется как свободный общий справочник между несколькими СИ.
+docs/architecture/identity-master-data.md:568:  - legacy standalone standards registry endpoints, retired from the current target contract;
+docs/architecture/identity-master-data.md:571:- historical standard остается самостоятельным reusable record и может быть связан более чем с одним measuring instrument, но это допущение должно быть заменено в следующем equipment-domain correction slice.
+docs/architecture/identity-master-data.md:576:    A --> C["historical /equipment?tab=mi"]
+docs/architecture/identity-master-data.md:577:    A --> D["historical /equipment?tab=standards"]
+docs/architecture/identity-master-data.md:583:    I --> J["legacy reusable links to many MI"]
+docs/architecture/identity-master-data.md:644:- old query params `tab=mi` and `tab=standards` are compatibility-only and must not expose separate active surfaces;
+docs/architecture/identity-master-data.md:650:- standards are not created or viewed as a standalone reusable registry in the target UI;
+docs/architecture/identity-master-data.md:651:- current API no longer exposes a standalone `/standards` list/get/update/archive registry; creating an owned standard is nested under its diagnostic parent via `POST /measuring-instruments/{id}/standards`;
+
+## feature list correction entry
+{
+  "id": "stage03-equipment-diagnostic-equipment-correction",
+  "category": "functional",
+  "description": "Implemented correction pending fresh verification: /equipment treats measuring instruments as customer diagnostic equipment and standards as 0..N owned kit children of one diagnostic equipment record.",
+  "steps": [
+    "Split customer equipment semantics into technological equipment and diagnostic equipment / СИ",
+    "Keep contractor metrology equipment out of the customer-side MVP registry",
+    "Replace free reusable standard links with diagnostic equipment -> 0..N standards / setup measures",
+    "Keep journal-driven official metrology operations while excluding ordinary working setup from mandatory journal entry",
+    "Update /equipment UI copy, forms, cards, Storybook states, API contract, persistence, and migration proof"
+  ],
+  "passes": false,
+  "evidence_refs": [
+    "docs/roadmap.md",
+    "docs/PRD-MVP.md",
+    "docs/architecture/identity-master-data.md",
+    "docs/architecture/frontend-architecture.md",
+    ".agent/stages/03-identity-master-data/stage_spec.md",
+    ".agent/stages/03-identity-master-data/progress.md",
+    ".agent/stages/03-identity-master-data/equipment-domain-correction-plan.md",
+    ".agent/stages/03-identity-master-data/evidence.md",
+    ".agent/stages/03-identity-master-data/evidence.json",
+    ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-equipment-smoke-2026-05-11.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-backend-test-2026-05-11.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-source-audit-2026-05-11.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-standard-journal-route-audit-2026-05-11.txt"
+  ]
+}

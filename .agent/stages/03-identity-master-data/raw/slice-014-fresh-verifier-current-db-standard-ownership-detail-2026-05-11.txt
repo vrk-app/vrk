@@ -1,0 +1,33 @@
+COMMAND: docker compose -f compose.platform.yml exec -T db psql -U postgres -d db detailed standard ownership audit
+
+ total_without_parent | active_without_parent | total_with_parent | total_standards 
+----------------------+-----------------------+-------------------+-----------------
+                   67 |                    45 |                32 |              99
+(1 row)
+
+                  id                  |        identifier         | archived | linked_mi_count 
+--------------------------------------+---------------------------+----------+-----------------
+ 21152e74-cb45-4c6b-9c7a-06bb45600985 | STD-ARCHIVE-1778516726754 | f        |               0
+ 8d84ccd8-cbe8-424e-bc2c-2e3618fda1d9 | STD-ARCHIVE-1778516709069 | f        |               0
+ fe11f2e2-e1e5-4db5-826f-6433ed07b69f | STD-EDIT-1777575838394    | f        |               0
+ eb005f58-e7cd-4d74-bbbc-3e95285b27a7 | STD-ARCHIVE-1777575838394 | t        |               0
+ 60df35d4-767f-403b-a43d-38336f1564d8 | STD-EDIT-1777575742370    | f        |               0
+ 497706e2-0003-40d2-bed7-5bbb093af48b | STD-ARCHIVE-1777575742370 | t        |               0
+ 5f38cb7b-cc50-4dd6-a45f-6a3f2404b438 | STD-EDIT-1777575691711    | f        |               0
+ e1e54e1a-1809-4a9e-84b7-fae32b9b80e2 | STD-ARCHIVE-1777575691711 | t        |               0
+ 44671b19-e830-428a-bcdf-ac198bd087a0 | STD-EDIT-1777574773362    | f        |               0
+ 6aaf8395-fd12-447c-a224-db24e519751a | STD-ARCHIVE-1777574773362 | t        |               0
+ 783fb0cb-dba4-45bc-ba4f-2c98c843060c | STD-EDIT-1777574557569    | f        |               0
+ 04620f8b-e21d-40f9-b6d2-b1b477b2485a | STD-ARCHIVE-1777574557569 | t        |               0
+ 2df44d9c-be32-476f-acfd-9a0ac72eb8f4 | STD-1777574506489         | f        |               0
+ 9ae09012-ff3f-49fa-be6c-958ab7765d05 | STD-ARCHIVE-1777574506489 | f        |               0
+ 38b96687-5b65-47ae-8d8a-57731f7bafac | STD-EDIT-1777574442744    | f        |               0
+ cf05da86-0da0-4e78-bc57-a23b60eabd3f | STD-ARCHIVE-1777574442744 | f        |               0
+ 69a455d5-315f-4a06-9b48-d11da278a942 | STD-EDIT-1777574373134    | f        |               0
+ 06e97e30-c9ee-460d-96bf-a748a76c01ac | STD-ARCHIVE-1777574373134 | f        |               0
+ b69b0053-c695-4cba-9214-c2abf0b82454 | STD-EDIT-1777574254617    | f        |               0
+ b59f957d-56d7-4c67-9fb3-8047390c0dd2 | STD-ARCHIVE-1777574254617 | f        |               0
+(20 rows)
+
+
+EXIT_CODE=0

@@ -415,10 +415,6 @@ async function handleRuntimeFetch(
     return pagedResponse(state.measuringInstruments, url.searchParams.get("includeArchived") === "true");
   }
 
-  if (pathname === "/api/equipment/standards" && method === "GET") {
-    return pagedResponse(state.standards, url.searchParams.get("includeArchived") === "true");
-  }
-
   if (pathname === "/api/equipment" && method === "POST") {
     const unit = state.session.units.find((item) => item.id === stringValue(payload, "unitId", "")) ?? state.session.units[0];
     const equipment: EquipmentRecord = {
@@ -480,6 +476,9 @@ async function handleRuntimeFetch(
 
   if (pathname === "/api/equipment/measuring-instruments" && method === "POST") {
     const unit = state.session.units.find((item) => item.id === stringValue(payload, "unitId", "")) ?? state.session.units[0];
+    const standardIds = Array.isArray(payload.standardIds)
+      ? payload.standardIds.filter((id): id is string => typeof id === "string")
+      : [];
     const instrument: MeasuringInstrumentRecord = {
       id: `mi-${state.measuringInstruments.length + 1}`,
       organizationId: state.session.organization.id,
@@ -496,7 +495,17 @@ async function handleRuntimeFetch(
       serialNumber: stringValue(payload, "serialNumber", "SN-NEW"),
       status: "active",
       placementKind: stringValue(payload, "placementKind", "standalone") === "built_in" ? "built_in" : "standalone",
-      standards: [],
+      standards: state.standards
+        .filter((standard) => standardIds.includes(standard.id))
+        .map((standard) => ({
+          id: standard.id,
+          standardType: standard.standardType,
+          model: standard.model,
+          identifier: standard.identifier,
+          serialNumber: standard.serialNumber,
+          status: standard.status,
+          scopeLabel: standard.ownershipScope.label,
+        })),
       journalCount: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -556,13 +565,27 @@ async function handleRuntimeFetch(
     });
   }
 
-  if (pathname === "/api/equipment/standards" && method === "POST") {
+  const measuringInstrumentStandardMatch = pathname.match(/^\/api\/equipment\/measuring-instruments\/([^/]+)\/standards$/);
+  if (measuringInstrumentStandardMatch && method === "POST") {
+    const divisionId = stringValue(payload, "divisionId", "");
+    const unitId = stringValue(payload, "unitId", "");
+    const diagnosticEquipmentId = measuringInstrumentStandardMatch[1];
+    const diagnosticEquipment = state.measuringInstruments.find((item) => item.id === diagnosticEquipmentId);
+    const scopeType = unitId ? "unit" : divisionId ? "division" : "organization";
+    const scopeId = unitId || divisionId;
     const standard: StandardRecord = {
       id: `standard-${state.standards.length + 1}`,
       organizationId: state.session.organization.id,
+      diagnosticEquipment: diagnosticEquipment
+        ? {
+            id: diagnosticEquipment.id,
+            name: diagnosticEquipment.name,
+          }
+        : undefined,
       ownershipScope: {
-        scopeType: "organization",
-        label: state.session.organization.name,
+        scopeType,
+        ...(scopeId ? { scopeId } : {}),
+        label: stringValue(payload, "ownerLabel", resolveScopeLabel(state.session, scopeType, scopeId)),
       },
       standardType: stringValue(payload, "standardType", "Эталон"),
       model: stringValue(payload, "model", "Модель"),
@@ -570,46 +593,49 @@ async function handleRuntimeFetch(
       serialNumber: stringValue(payload, "serialNumber", ""),
       metrologicalCharacteristics: stringValue(payload, "metrologicalCharacteristics", ""),
       status: "active",
-      linkedMeasuringInstruments: 0,
-      journalCount: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
     state.standards = [standard, ...state.standards];
+    if (diagnosticEquipment) {
+      const linkedStandard = {
+        id: standard.id,
+        standardType: standard.standardType,
+        model: standard.model,
+        identifier: standard.identifier,
+        serialNumber: standard.serialNumber,
+        status: standard.status,
+        scopeLabel: standard.ownershipScope.label,
+      };
+      state.measuringInstruments = state.measuringInstruments.map((item) =>
+        item.id === diagnosticEquipment.id
+          ? {
+              ...item,
+              standards: [linkedStandard, ...item.standards],
+            }
+          : item,
+      );
+    }
     return jsonResponse({ success: true, data: standard });
   }
 
-  const standardMatch = pathname.match(/^\/api\/equipment\/standards\/([^/]+)$/);
-  if (standardMatch && method === "PATCH") {
-    const divisionId = stringValue(payload, "divisionId", "");
-    const unitId = stringValue(payload, "unitId", "");
-    const scopeType = unitId ? "unit" : divisionId ? "division" : "organization";
-    const scopeId = unitId || divisionId;
-    state.standards = state.standards.map((item) =>
-      item.id === standardMatch[1]
+  const measuringInstrumentStandardDeleteMatch = pathname.match(
+    /^\/api\/equipment\/measuring-instruments\/([^/]+)\/standards\/([^/]+)$/,
+  );
+  if (measuringInstrumentStandardDeleteMatch && method === "DELETE") {
+    const diagnosticEquipmentId = measuringInstrumentStandardDeleteMatch[1];
+    const standardId = measuringInstrumentStandardDeleteMatch[2];
+    state.standards = state.standards.filter((standard) => standard.id !== standardId);
+    state.measuringInstruments = state.measuringInstruments.map((item) =>
+      item.id === diagnosticEquipmentId
         ? {
             ...item,
-            ownershipScope: {
-              scopeType,
-              ...(scopeId ? { scopeId } : {}),
-              label: stringValue(payload, "ownerLabel", resolveScopeLabel(state.session, scopeType, scopeId)),
-            },
-            standardType: stringValue(payload, "standardType", item.standardType),
-            model: stringValue(payload, "model", item.model),
-            identifier: stringValue(payload, "identifier", item.identifier),
-            serialNumber: stringValue(payload, "serialNumber", item.serialNumber ?? ""),
-            metrologicalCharacteristics: stringValue(
-              payload,
-              "metrologicalCharacteristics",
-              item.metrologicalCharacteristics,
-            ),
-            comment: stringValue(payload, "comment", item.comment ?? ""),
-            documentUrl: stringValue(payload, "documentUrl", item.documentUrl ?? ""),
+            standards: item.standards.filter((standard) => standard.id !== standardId),
             updatedAt: new Date().toISOString(),
           }
         : item,
     );
-    return jsonResponse({ success: true, data: state.standards.find((item) => item.id === standardMatch[1]) });
+    return jsonResponse({ success: true, data: { id: standardId } });
   }
 
   const archiveEquipmentMatch = pathname.match(/^\/api\/equipment\/([^/]+)\/archive$/);
@@ -624,29 +650,12 @@ async function handleRuntimeFetch(
     return jsonResponse({ success: true, data: item });
   }
 
-  const archiveStandardMatch = pathname.match(/^\/api\/equipment\/standards\/([^/]+)\/archive$/);
-  if (archiveStandardMatch && method === "POST") {
-    const item = archiveById(state.standards, archiveStandardMatch[1]);
-    return jsonResponse({ success: true, data: item });
-  }
-
   const miJournalMatch = pathname.match(/^\/api\/equipment\/measuring-instruments\/([^/]+)\/journals$/);
   if (miJournalMatch && method === "GET") {
     return jsonResponse({ success: true, data: state.journals });
   }
 
   if (miJournalMatch && method === "POST") {
-    const journal = createJournal(payload);
-    state.journals = [journal, ...state.journals];
-    return jsonResponse({ success: true, data: journal });
-  }
-
-  const standardJournalMatch = pathname.match(/^\/api\/equipment\/standards\/([^/]+)\/journals$/);
-  if (standardJournalMatch && method === "GET") {
-    return jsonResponse({ success: true, data: state.journals });
-  }
-
-  if (standardJournalMatch && method === "POST") {
     const journal = createJournal(payload);
     state.journals = [journal, ...state.journals];
     return jsonResponse({ success: true, data: journal });

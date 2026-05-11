@@ -1,0 +1,4 @@
+COMMAND: jq empty .agent/stages/03-identity-master-data/evidence.json .agent/stages/03-identity-master-data/feature_list.json .agent/stages/03-identity-master-data/verdict.json
+
+
+EXIT_CODE=0

@@ -1,0 +1,17 @@
+COMMAND: python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query "equipment registry diagnostic equipment standards journal"
+
+Storybook registry entries: 37
+Query: "equipment registry diagnostic equipment standards journal"
+
+1. Equipment/EquipmentRegistryWorkspace [EquipmentRegistryWorkspace]
+   story: apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+   source: apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+   stories: TechnicalEquipmentList, DiagnosticEquipmentWithStandards, DiagnosticEquipmentWithoutStandards, UnifiedJournal, ScopedReadonly, ArchiveVisible, LoadError, LongEquipmentList
+   tags: autodocs
+2. Contracts/ContractsRegistry [ContractsRegistry]
+   story: apps/web/stories/contracts/ContractsRegistry.stories.tsx
+   source: apps/web/features/Stage03Contracts/ui/ContractsRegistry.tsx
+   stories: CustomerAdmin, CustomerEmpty, CustomerRestricted, DivisionAdminScoped, UnitAdminScoped, ContractorReadonly
+   tags: autodocs
+
+EXIT_CODE=0

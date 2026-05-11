@@ -1,0 +1,19 @@
+ version | dirty 
+---------+-------
+      16 | f
+(1 row)
+
+                     conname                     |                             pg_get_constraintdef                             
+-------------------------------------------------+------------------------------------------------------------------------------
+ chk_registry_standards_current_diagnostic_owner | CHECK (((archived_at IS NOT NULL) OR (diagnostic_equipment_id IS NOT NULL)))
+(1 row)
+
+ without_parent | active_without_parent | total 
+----------------+-----------------------+-------
+             81 |                     0 |    99
+(1 row)
+
+ standard_id | linked_mi_count 
+-------------+-----------------
+(0 rows)
+

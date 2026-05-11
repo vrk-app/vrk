@@ -1,0 +1,1 @@
+PASS: no obsolete /equipment tabbed UI or standalone standard journal labels found in active web equipment files.

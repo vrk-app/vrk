@@ -1,0 +1,4 @@
+COMMAND: stop compose backend before reapplying migration 16
+ Container vrk-backend-1  Stopping
+ Container vrk-backend-1  Stopped
+EXIT_CODE=0

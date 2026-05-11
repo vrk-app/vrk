@@ -1,0 +1,16 @@
+COMMANDS: route/OpenAPI audit for standard journal and standalone standard surfaces
+
+--- standard journal path grep ---
+
+--- remaining standalone standards route/list surfaces ---
+apps/web/shared/api/equipment.ts:138:export async function fetchStandardRegistry(sessionToken: string, includeArchived = false) {
+apps/web/shared/api/equipment.ts:140:  const result = await fetchBackend<StandardRecord[]>(`/api/v1/standards${search}`, {
+apps/backend/internal/equipment/standard/handler.go:31:// @Router       /standards [post]
+apps/backend/internal/equipment/standard/handler.go:63:// @Router       /standards [get]
+apps/backend/internal/app/app.go:214:		r.Route("/standards", func(r chi.Router) {
+apps/web/app/api/equipment/standards/route.ts:5:  return proxySessionBackend<StandardRecord[]>(withRequestSearch("/api/v1/standards", request));
+apps/web/app/api/equipment/standards/route.ts:9:  return proxySessionBackend<StandardRecord>("/api/v1/standards", {
+apps/web/app/api/equipment/standards/[standardId]/route.ts:6:  return proxySessionBackend<StandardRecord>(`/api/v1/standards/${standardId}`, {
+apps/web/app/api/equipment/standards/[standardId]/archive/route.ts:6:  return proxySessionBackend<StandardRecord>(`/api/v1/standards/${standardId}/archive`, {
+
+EXIT_CODE=0

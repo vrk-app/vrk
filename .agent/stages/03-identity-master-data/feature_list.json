@@ -111,11 +111,11 @@
   {
     "id": "stage03-equipment-mi-standard-registries",
     "category": "functional",
-    "description": "Equipment, measuring instruments, and standards exist as separate registries instead of a single mega-form.",
+    "description": "Historical Stage 03 registry floor proves separate equipment, measuring-instrument, and standard registries instead of a single mega-form.",
     "steps": [
       "Create equipment cards independently of metrology",
       "Create measuring instrument cards as their own entity",
-      "Create standards as a standalone registry with reusable references"
+      "Create historical standards as a standalone registry with reusable references"
     ],
     "passes": true,
     "evidence_refs": [
@@ -134,10 +134,10 @@
   {
     "id": "stage03-metrology-journals-and-status-derivation",
     "category": "functional",
-    "description": "Metrology operations are journal-driven, and current status derives from the latest valid record instead of only denormalized dates.",
+    "description": "Historical Stage 03 metrology operations are journal-driven, and current status derives from the latest valid record instead of only denormalized dates.",
     "steps": [
       "Store journals for measuring instruments and standards",
-      "Support many-to-many or reusable links between measuring instruments and standards",
+      "Support the historical many-to-many or reusable links between measuring instruments and standards",
       "Derive operational status and next due date from journal history"
     ],
     "passes": true,
@@ -152,6 +152,45 @@
       ".agent/stages/03-identity-master-data/raw/slice-005-direct-proof-summary-2026-04-19.json",
       ".agent/stages/03-identity-master-data/raw/slice-005-web-browser-smoke-2026-04-19.txt",
       ".agent/stages/03-identity-master-data/raw/slice-005-ui-review-2026-04-19.txt"
+    ]
+  },
+  {
+    "id": "stage03-equipment-diagnostic-equipment-correction",
+    "category": "functional",
+    "description": "Verified correction: /equipment treats measuring instruments as customer diagnostic equipment and standards as 0..N owned kit children of one diagnostic equipment record.",
+    "steps": [
+      "Split customer equipment semantics into technological equipment and diagnostic equipment / СИ",
+      "Keep contractor metrology equipment out of the customer-side MVP registry",
+      "Replace free reusable standard links with diagnostic equipment -> 0..N standards / setup measures",
+      "Keep journal-driven official metrology operations while excluding ordinary working setup from mandatory journal entry",
+      "Update /equipment UI copy, forms, cards, Storybook states, API contract, persistence, and migration proof"
+    ],
+    "passes": true,
+    "evidence_refs": [
+      "docs/roadmap.md",
+      "docs/PRD-MVP.md",
+      "docs/architecture/identity-master-data.md",
+      "docs/architecture/frontend-architecture.md",
+      ".agent/stages/03-identity-master-data/stage_spec.md",
+      ".agent/stages/03-identity-master-data/progress.md",
+      ".agent/stages/03-identity-master-data/equipment-domain-correction-plan.md",
+      ".agent/stages/03-identity-master-data/evidence.md",
+      ".agent/stages/03-identity-master-data/evidence.json",
+      ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-equipment-smoke-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-backend-test-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-source-audit-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-standard-journal-route-audit-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/verdict.json",
+      ".agent/stages/03-identity-master-data/problems.md",
+      ".agent/stages/03-identity-master-data/raw/slice-014-final-verifier-json-audit-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-final-verifier-harness-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-final-verifier-diff-check-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-final-verifier-stage-doc-audit-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-final-verifier-production-delta-audit-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-final-verifier-ui-review-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-equipment-smoke-rerun-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-owned-standard-db-audit-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-standards-surface-audit-precise-2026-05-11.txt"
     ]
   },
   {

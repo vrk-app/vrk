@@ -1,0 +1,21 @@
+Web Interface Guidelines Review: PASS
+
+Slice: slice-014-equipment-domain-correction
+Files reviewed:
+- apps/web/app/(runtime)/equipment/page.tsx
+- apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+- apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+- apps/web/shared/storybook/runtime-api-mock.tsx
+- apps/web/tests/equipment-registries.smoke.spec.ts
+
+Findings:
+- No duplicate reusable component family was introduced; existing EquipmentRegistryWorkspace was extended.
+- Page hierarchy is clear: h1 Оборудование, one create surface, one equipment list, one journal surface.
+- Old query-backed tabs are not visible; obsolete tab/list/journal labels are absent from active /equipment source.
+- Controls use existing shared primitives, labels are explicit, destructive actions keep ConfirmDialog.
+- Diagnostic standards are visually scoped inside diagnostic cards and creation form drafts, not shown as a reusable registry.
+- Read-only and archived states retain visible affordances and hide mutation controls.
+- Layout stays dense B2B/operator-oriented, without decorative redesign or nested card stacks beyond repeated record cards.
+
+Conscious exceptions:
+- The unified journal currently uses the diagnostic-equipment implementation boundary while technical equipment has no dedicated journal API. Canonical docs record this conservative runtime boundary.

@@ -1,0 +1,5 @@
+COMMAND: source audit for standalone standards route/API surfaces
+apps/backend/internal/equipment/standard/handler.go:31:// @Router       /measuring-instruments/{id}/standards [post]
+docs/architecture/identity-master-data.md:596:  - `GET/POST /standards/{id}/journals`;
+docs/architecture/identity-master-data.md:599:  - `POST /standards/{id}/archive`;
+EXIT_CODE=0

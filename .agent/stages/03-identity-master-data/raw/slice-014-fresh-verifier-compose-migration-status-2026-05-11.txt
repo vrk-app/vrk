@@ -1,0 +1,24 @@
+COMMANDS:
+docker compose -f compose.platform.yml ps
+docker compose -f compose.platform.yml exec -T db psql -U postgres -d db -c "SELECT version, dirty FROM schema_migrations;"
+curl -fsS http://127.0.0.1:18080/readyz
+
+NAME                   IMAGE                                      COMMAND                  SERVICE          CREATED          STATUS                    PORTS
+vrk-backend-1          vrk-backend                                "/app/api"               backend          20 minutes ago   Up 20 minutes (healthy)   0.0.0.0:18080->8080/tcp, [::]:18080->8080/tcp
+vrk-db-1               postgres:17-alpine                         "docker-entrypoint.s…"   db               11 days ago      Up 5 hours (healthy)      5432/tcp
+vrk-field-1            vrk-field                                  "docker-entrypoint.s…"   field            5 hours ago      Up 5 hours (healthy)      0.0.0.0:3102->3002/tcp, [::]:3102->3002/tcp
+vrk-object-storage-1   minio/minio:RELEASE.2025-09-07T16-13-09Z   "/usr/bin/docker-ent…"   object-storage   11 days ago      Up 5 hours (healthy)      0.0.0.0:19000->9000/tcp, [::]:19000->9000/tcp, 0.0.0.0:19001->9001/tcp, [::]:19001->9001/tcp
+vrk-web-1              vrk-web-dev                                "docker-entrypoint.s…"   web              5 hours ago      Up 5 hours (healthy)      0.0.0.0:3100->3000/tcp, [::]:3100->3000/tcp
+
+--- schema_migrations ---
+ version | dirty 
+---------+-------
+      16 | f
+(1 row)
+
+
+--- backend readyz ---
+{"checkedAt":"2026-05-11T16:50:23Z","environment":"development","service":"backend","status":"ready"}
+
+DB_EXIT_CODE=0
+CURL_EXIT_CODE=0

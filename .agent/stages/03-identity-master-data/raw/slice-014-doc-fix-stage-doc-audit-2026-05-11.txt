@@ -1,0 +1,19 @@
+docs/PRD-MVP.md:332:- старые query params прежних вкладок `tab=mi` и `tab=standards` являются compatibility-only и не должны возвращать отдельные пользовательские реестры;
+.agent/stages/03-identity-master-data/sprint_contract.md:22:- User-facing tabs/switchers `Оборудование / СИ / Эталоны` are removed.
+.agent/stages/03-identity-master-data/sprint_contract.md:23:- Old query params such as `tab=mi` and `tab=standards` must not break the page. They may normalize to `/equipment` or render the same unified workspace.
+.agent/stages/03-identity-master-data/sprint_contract.md:46:- There is no visible tab/switcher containing `Оборудование / Средства измерения / Эталоны`, `Оборудование / СИ / Эталоны`, or an equivalent three-registry navigation.
+docs/architecture/frontend-architecture.md:188:- старые `tab=mi` и `tab=standards` остаются compatibility-only input и нормализуются к единому workspace, не открывая отдельные registry tabs;
+.agent/stages/03-identity-master-data/stage_spec.md:153:- old `tab=mi` / `tab=standards` query params are compatibility-only and no longer expose separate user-facing registries;
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:27:- Нет tabs/switcher `Оборудование / СИ / Эталоны`.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:28:- Query params старых tabs (`tab=mi`, `tab=standards`) не ломают страницу и нормализуются к единому surface.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:172:3. Keep route compatibility for `tab=mi` and `tab=standards` by rendering or redirecting to `/equipment`.
+.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md:197:- old `tab=mi` and `tab=standards` URLs do not break `/equipment`;
+.agent/stages/03-identity-master-data/progress.md:28:  - old `tab=mi|standards` query params no longer expose old tabs and redirect to the unified route;
+.agent/stages/03-identity-master-data/progress.md:382:  - direct slice-004 proof runner passed with separate registries, relation proof, scope filtering, and `/agreements` baseline reachability;
+.agent/stages/03-identity-master-data/progress.md:417:  - separate registries without a mega-form regression;
+.agent/stages/03-identity-master-data/progress.md:470:  - archive-only lifecycle for equipment / measuring instruments / standards without hard delete regression;
+docs/architecture/identity-master-data.md:576:    A --> C["historical /equipment?tab=mi"]
+docs/architecture/identity-master-data.md:577:    A --> D["historical /equipment?tab=standards"]
+docs/architecture/identity-master-data.md:644:- old query params `tab=mi` and `tab=standards` are compatibility-only and must not expose separate active surfaces;
+.agent/stages/03-identity-master-data/evidence.md:26:The 2026-05-11 equipment domain correction replaces the historical tabbed `/equipment` target with one customer equipment workspace. The page keeps the public `/equipment` route, removes the visible `Оборудование / СИ / Эталоны` tab model, provides one `Новое оборудование` form with `Техническое` / `Диагностическое` type selection, treats diagnostic equipment as the owner of `0..N` standards/setup measures, shows those standards only inside diagnostic equipment cards, removes the target standard journal route, and keeps one equipment operation journal. Canonical product and technical docs were synced because this changes the product/API/persistence contract.
+.agent/stages/03-identity-master-data/evidence.md:35:  - Changed `/equipment` so old `tab=mi|standards` query params redirect to the unified route while preserving `archived=1`.

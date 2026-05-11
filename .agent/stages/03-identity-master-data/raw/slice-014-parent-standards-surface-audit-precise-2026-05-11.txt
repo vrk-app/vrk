@@ -1,0 +1,1 @@
+PASS: no standalone standards registry, standard journal route, or standard journal summary surface remains in target API/proxy/docs.

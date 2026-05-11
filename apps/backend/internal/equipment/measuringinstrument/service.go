@@ -353,7 +353,7 @@ func (s *measuringInstrumentService) buildCreateModel(
 	if err != nil {
 		return MeasuringInstrument{}, nil, err
 	}
-	standardIDs, err := s.validateStandardIDs(ctx, session, req.StandardIDs)
+	standardIDs, err := s.validateStandardIDs(ctx, session, "", req.StandardIDs)
 	if err != nil {
 		return MeasuringInstrument{}, nil, err
 	}
@@ -450,7 +450,7 @@ func (s *measuringInstrumentService) buildUpdatedModel(
 		updated.DocumentURL = normalizeOptional(req.DocumentURL)
 	}
 	if req.StandardIDs != nil {
-		standardIDs, err = s.validateStandardIDs(ctx, session, req.StandardIDs)
+		standardIDs, err = s.validateStandardIDs(ctx, session, current.ID, req.StandardIDs)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -514,6 +514,7 @@ func (s *measuringInstrumentService) validateEquipment(
 func (s *measuringInstrumentService) validateStandardIDs(
 	ctx context.Context,
 	session *bootstrap.SessionSummaryResponse,
+	measuringInstrumentID string,
 	standardIDs []string,
 ) ([]uuid.UUID, error) {
 	if len(standardIDs) == 0 {
@@ -538,6 +539,9 @@ func (s *measuringInstrumentService) validateStandardIDs(
 	}
 	for _, id := range parsed {
 		scope := scopes[id.String()]
+		if scope.DiagnosticEquipmentID != nil && *scope.DiagnosticEquipmentID != measuringInstrumentID {
+			return nil, ErrStandardInvalid
+		}
 		var divisionID *uuid.UUID
 		var unitID *uuid.UUID
 		if scope.DivisionID != nil {
@@ -591,8 +595,8 @@ func toResponse(item *MeasuringInstrument, derived metrologyjournal.DerivedState
 		ID:             item.ID,
 		OrganizationID: item.OrganizationID,
 		Unit: UnitSummary{
-			ID:              item.UnitID,
-			Name:            item.UnitName,
+			ID:           item.UnitID,
+			Name:         item.UnitName,
 			DivisionID:   item.DivisionID,
 			DivisionName: item.DivisionName,
 		},

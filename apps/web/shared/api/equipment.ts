@@ -85,6 +85,10 @@ export type MeasuringInstrumentRecord = {
 export type StandardRecord = {
   id: string;
   organizationId: string;
+  diagnosticEquipment?: {
+    id: string;
+    name: string;
+  };
   ownershipScope: {
     scopeType: "organization" | "division" | "unit";
     scopeId?: string;
@@ -98,10 +102,6 @@ export type StandardRecord = {
   status: RegistryStatus;
   comment?: string;
   documentUrl?: string;
-  linkedMeasuringInstruments: number;
-  journalCount: number;
-  nextDueDate?: string;
-  latestJournal?: JournalRecord;
   archivedAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -131,25 +131,8 @@ export async function fetchMeasuringInstrumentRegistry(sessionToken: string, inc
   return result.data;
 }
 
-export async function fetchStandardRegistry(sessionToken: string, includeArchived = false) {
-  const search = includeArchived ? "?includeArchived=true" : "";
-  const result = await fetchBackend<StandardRecord[]>(`/api/v1/standards${search}`, {
-    headers: sessionHeaders(sessionToken),
-  });
-
-  return result.data;
-}
-
 export async function fetchMeasuringInstrumentJournals(sessionToken: string, measuringInstrumentId: string) {
   const result = await fetchBackend<JournalRecord[]>(`/api/v1/measuring-instruments/${measuringInstrumentId}/journals`, {
-    headers: sessionHeaders(sessionToken),
-  });
-
-  return result.data;
-}
-
-export async function fetchStandardJournals(sessionToken: string, standardId: string) {
-  const result = await fetchBackend<JournalRecord[]>(`/api/v1/standards/${standardId}/journals`, {
     headers: sessionHeaders(sessionToken),
   });
 

@@ -1,0 +1,346 @@
+COMMANDS: current slice evidence/frontend workflow metadata audit
+
+--- equipment_domain_correction object ---
+{
+  "status": "SELF_VERIFIED_AWAITING_FRESH_VERIFIER",
+  "slice_id": "slice-014-equipment-domain-correction",
+  "checked_at": "2026-05-11T16:36:31Z",
+  "summary": "Replaced the /equipment tabbed registry model with one equipment workspace: one create form with technical/diagnostic type, diagnostic owned standards inside the form/card, no standalone standards list or standard journal route, unified equipment operation journal, scoped access/archive behavior preserved, and backend standards now bind to one diagnostic equipment parent.",
+  "docs_synced": [
+    "docs/PRD-MVP.md",
+    "docs/roadmap.md",
+    "docs/architecture/identity-master-data.md",
+    "docs/architecture/frontend-architecture.md",
+    ".agent/stages/03-identity-master-data/stage_spec.md",
+    ".agent/stages/03-identity-master-data/sprint_contract.md",
+    ".agent/stages/03-identity-master-data/equipment-domain-correction-plan.md"
+  ],
+  "ui_workflow": {
+    "skill": "$vrk-web-ui-workflow",
+    "design_context": ".impeccable.md",
+    "lookup": ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-014-equipment-domain-correction-2026-05-11.txt",
+    "decision": "extend",
+    "matched": [
+      "Equipment/EquipmentRegistryWorkspace"
+    ],
+    "review": ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-ui-review-2026-05-11.txt"
+  },
+  "changed_files": [
+    "apps/web/app/(runtime)/equipment/page.tsx",
+    "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx",
+    "apps/web/shared/api/equipment.ts",
+    "apps/web/shared/api/index.ts",
+    "apps/web/shared/storybook/runtime-api-mock.tsx",
+    "apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx",
+    "apps/web/tests/equipment-registries.smoke.spec.ts",
+    "apps/web/app/api/equipment/standards/[standardId]/journals/route.ts",
+    "apps/backend/internal/app/app.go",
+    "apps/backend/internal/equipment/standard/*",
+    "apps/backend/internal/equipment/measuringinstrument/*",
+    "apps/backend/migrations/000016_equipment_domain_correction.*.sql",
+    "apps/backend/docs/swagger/*"
+  ],
+  "artifacts": [
+    ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-backend-test-2026-05-11.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-backend-build-2026-05-11.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-lint-2026-05-11.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-typecheck-2026-05-11.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-build-2026-05-11.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-storybook-build-2026-05-11.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-equipment-smoke-2026-05-11.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-source-audit-2026-05-11.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-standard-journal-route-audit-2026-05-11.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-compose-migration-status-2026-05-11.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-ui-review-2026-05-11.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-diff-check-2026-05-11.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-json-audit-2026-05-11.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-harness-post-evidence-2026-05-11.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-diff-check-post-evidence-2026-05-11.txt"
+  ]
+}
+
+--- top-level frontend metadata keys that still point at earlier slices ---
+{
+  "design_brief_source": {
+    "artifact": ".agent/stages/03-identity-master-data/sprint_contract.md",
+    "summary": "Replace historical /company/setup launch-wizard targeting with persistent /company organization profile and structure management, scoped read-only projections, archive lifecycle, and employee invite target validation."
+  },
+  "ui_lookup": {
+    "queries": [
+      "slice-010 organization profile structure management company divisions units archive employee invite controls",
+      "Button Card InputField SelectField TextareaField InlineAlert Tabs company structure management"
+    ],
+    "artifacts": [
+      ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-010-org-structure-primary-2026-04-29.txt",
+      ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-010-org-structure-primitives-2026-04-29.txt"
+    ],
+    "decision": "reuse",
+    "result": "No complete org-structure reusable family was present; the implementation reuses existing primitives and feature-local composition, with no new reusable family/stories required."
+  },
+  "changed_ui_files": [
+    "apps/web/app/(runtime)/company/page.tsx",
+    "apps/web/app/(runtime)/company/setup/page.tsx",
+    "apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx",
+    "apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx",
+    "apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx",
+    "apps/web/app/register/[token]/page.tsx",
+    "apps/web/shared/ui/InputField.tsx",
+    "apps/web/shared/ui/SelectField.tsx",
+    "apps/web/shared/ui/TextareaField.tsx",
+    "apps/web/shared/ui/Tabs.tsx",
+    "apps/web/shared/ui/InlineAlert.tsx",
+    "apps/web/features/Stage03Access/ui/EmployeeAccessWorkspace.tsx",
+    "apps/web/stories/access/EmployeeAccessWorkspace.stories.tsx",
+    "apps/web/stories/access/EmployeeInviteManager.stories.tsx",
+    "apps/web/shared/storybook/runtime-api-mock.tsx"
+  ],
+  "ui_review": {
+    "gate": "$web-design-guidelines",
+    "status": "PASS",
+    "artifact": ".agent/stages/03-identity-master-data/raw/slice-010-ui-review-2026-04-29.txt",
+    "source": ".agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-29.md",
+    "notes": [
+      "Added stable names/autocomplete hints to new company form controls.",
+      "Marked decorative icon as aria-hidden.",
+      "Added confirmation before archive/revoke mutations.",
+      "Tab state remains local as a conscious exception because the slice does not require deep-linked tabs."
+    ]
+  }
+}
+
+--- evidence.md slice-014 excerpt ---
+.agent/stages/03-identity-master-data/sprint_contract.md:66:- Canonical docs and stage artifacts describe the implemented contract without leaving old reusable-standard or tabbed-registry copy as current behavior.
+.agent/stages/03-identity-master-data/sprint_contract.md:75:  - read `.impeccable.md`, `docs/design/ui-workflow.md`, `docs/design/serviceops-design-system.md`, `docs/architecture/frontend-architecture.md`, and relevant equipment files before UI edits;
+.agent/stages/03-identity-master-data/sprint_contract.md:77:  - record lookup result, `reuse` / `extend` / `create` decision, changed UI files, and `$web-design-guidelines` result.
+.agent/stages/03-identity-master-data/sprint_contract.md:82:  - Swagger/OpenAPI refresh if annotations or schema changed.
+.agent/stages/03-identity-master-data/sprint_contract.md:104:- `apps/backend/docs/swagger/**`
+.agent/stages/03-identity-master-data/sprint_contract.md:113:- `docs/roadmap.md`
+.agent/stages/03-identity-master-data/sprint_contract.md:114:- `docs/PRD-MVP.md`
+.agent/stages/03-identity-master-data/sprint_contract.md:115:- `docs/architecture/identity-master-data.md`
+.agent/stages/03-identity-master-data/sprint_contract.md:116:- `docs/architecture/frontend-architecture.md`
+.agent/stages/03-identity-master-data/sprint_contract.md:121:- `docs/architecture/identity-master-data.md`
+.agent/stages/03-identity-master-data/sprint_contract.md:123:- `docs/architecture/frontend-architecture.md`
+.agent/stages/03-identity-master-data/sprint_contract.md:125:- `docs/PRD-MVP.md`
+.agent/stages/03-identity-master-data/sprint_contract.md:127:- `docs/roadmap.md`
+.agent/stages/03-identity-master-data/evidence.md:18:The 2026-04-30 equipment archive action parity slice is a bounded UI-only correction for `/equipment`. It keeps the existing `ConfirmDialog` confirmation and archive APIs, but aligns equipment, measuring-instrument, and standard archive trigger buttons to the compact division/unit pattern: `Archive` icon, visible `Архивировать`, `size="sm"`, and `variant="ghost"`. Canonical docs were not changed because no product behavior, API contract, schema, or workflow decision changed.
+.agent/stages/03-identity-master-data/evidence.md:20:The 2026-04-30 equipment registry declutter slice is a bounded UI-only correction for the logged-in customer `/equipment` page. It replaces the large PageHeader card with a compact `h1` + capability badge row, removes duplicated onboarding/manageability copy and the access-area summary card, keeps the three registry KPI cards, and moves archive visibility into the tab row as a compact `Button` with `aria-pressed`. Canonical docs were not changed because the documented `/equipment` route, query-backed tabs, archive query contract, APIs, and product behavior did not change.
+.agent/stages/03-identity-master-data/evidence.md:22:The 2026-04-30 access confirmation dialogs slice is a bounded UI-only correction for destructive access actions. It reuses the shared story-backed `ConfirmDialog` used by equipment archiving for employee deactivation and invite revocation, removes native `window.confirm` from the access flows and the remaining company structure archive action, and removes the obsolete Storybook runtime confirmation shim. Canonical docs were not changed because backend routes, API contracts, persistence, access lifecycle rules, and product semantics did not change.
+.agent/stages/03-identity-master-data/evidence.md:26:The 2026-05-11 equipment domain correction replaces the historical tabbed `/equipment` target with one customer equipment workspace. The page keeps the public `/equipment` route, removes the visible `Оборудование / СИ / Эталоны` tab model, provides one `Новое оборудование` form with `Техническое` / `Диагностическое` type selection, treats diagnostic equipment as the owner of `0..N` standards/setup measures, shows those standards only inside diagnostic equipment cards, removes the target standard journal route, and keeps one equipment operation journal. Canonical product and technical docs were synced because this changes the product/API/persistence contract.
+.agent/stages/03-identity-master-data/evidence.md:31:  - Used `$vrk-web-ui-workflow`, read `.impeccable.md`, `docs/design/ui-workflow.md`, `docs/design/serviceops-design-system.md`, `docs/architecture/frontend-architecture.md`, `docs/architecture/documentation-workflow.md`, `docs/roadmap.md`, `docs/PRD-MVP.md`, `docs/architecture/identity-master-data.md`, and the active Stage 03 artifacts before implementation.
+.agent/stages/03-identity-master-data/evidence.md:32:  - Ran Storybook lookup for `equipment registry diagnostic equipment standards journal`; reuse decision: `extend`, matched existing `Equipment/EquipmentRegistryWorkspace`.
+.agent/stages/03-identity-master-data/evidence.md:43:  - Synced canonical docs:
+.agent/stages/03-identity-master-data/evidence.md:44:    - `docs/PRD-MVP.md`
+.agent/stages/03-identity-master-data/evidence.md:45:    - `docs/roadmap.md`
+.agent/stages/03-identity-master-data/evidence.md:46:    - `docs/architecture/identity-master-data.md`
+.agent/stages/03-identity-master-data/evidence.md:47:    - `docs/architecture/frontend-architecture.md`
+.agent/stages/03-identity-master-data/evidence.md:69:  - Used `$vrk-web-ui-workflow` and read `.impeccable.md`, `docs/design/ui-workflow.md`, `docs/design/serviceops-design-system.md`, `docs/architecture/frontend-architecture.md`, `docs/design/storybook-component-backlog.md`, and the active Stage 03 `sprint_contract.md`.
+.agent/stages/03-identity-master-data/evidence.md:70:  - Ran Storybook lookup for `InputField hint helper help tooltip`.
+.agent/stages/03-identity-master-data/evidence.md:75:  - Synced `docs/design/storybook-component-backlog.md` for the new `hint` contract and story coverage.
+.agent/stages/03-identity-master-data/evidence.md:76:  - Web Interface Guidelines review: `PASS`.
+.agent/stages/03-identity-master-data/evidence.md:94:  - Read `.impeccable.md`, `docs/design/ui-workflow.md`, current Stage 03 `sprint_contract.md`, and current Stage 03 evidence before implementation.
+.agent/stages/03-identity-master-data/evidence.md:95:  - Ran Storybook lookup for `archive action button equipment registry confirm dialog destructive`.
+.agent/stages/03-identity-master-data/evidence.md:99:  - Web Interface Guidelines review: `PASS`.
+.agent/stages/03-identity-master-data/evidence.md:101:  - Canonical docs: not changed; visual parity only.
+.agent/stages/03-identity-master-data/evidence.md:118:  - Read `.impeccable.md`, `docs/design/ui-workflow.md`, `docs/design/serviceops-design-system.md`, `docs/architecture/frontend-architecture.md`, `docs/architecture/documentation-workflow.md`, and the Stage 03 roadmap/evidence context before implementation.
+.agent/stages/03-identity-master-data/evidence.md:119:  - Ran Storybook lookup for `equipment registry archive toggle compact tabs toolbar`.
+.agent/stages/03-identity-master-data/evidence.md:126:  - Web Interface Guidelines review: `PASS`.
+.agent/stages/03-identity-master-data/evidence.md:128:  - Canonical docs: not changed; visual decluttering only.
+.agent/stages/03-identity-master-data/evidence.md:146:  - Used `$vrk-web-ui-workflow` and the shared UI source-of-truth docs for a bounded Stage 03 UI correction.
+.agent/stages/03-identity-master-data/evidence.md:147:  - Ran Storybook lookup for `access employee invite confirmation dialog destructive`.
+.agent/stages/03-identity-master-data/evidence.md:153:  - Web Interface Guidelines review: `PASS`.
+.agent/stages/03-identity-master-data/evidence.md:155:  - Canonical docs: not changed; confirmation surface only, APIs and lifecycle rules unchanged.
+.agent/stages/03-identity-master-data/evidence.md:178:  - Updated `docs/design/diagrams/customer-admin-bootstrap-flow.drawio` visible measuring-instrument label to `ФИФ`.
+.agent/stages/03-identity-master-data/evidence.md:179:  - Web Interface Guidelines review: `PASS`.
+.agent/stages/03-identity-master-data/evidence.md:205:  - Synced canonical docs:
+.agent/stages/03-identity-master-data/evidence.md:207:    - `docs/onboarding.md`
+.agent/stages/03-identity-master-data/evidence.md:208:    - `docs/architecture/platform-runtime-baseline.md`
+.agent/stages/03-identity-master-data/evidence.md:226:  - Realigned `proof_slice010_org_structure.py`, canonical docs, and stage artifacts to the implemented `/company/divisions`, `divisionId`, scope `division`, and role templates `division_head` / `division_operator`.
+.agent/stages/03-identity-master-data/evidence.md:232:  - focused stale `subdivision` terminology audit over current docs/stage/proof artifacts
+.agent/stages/03-identity-master-data/evidence.md:233:  - focused division contract audit over docs, proof, backend role/service code, web API types, and Swagger
+.agent/stages/03-identity-master-data/evidence.md:248:  - Storybook component lookup reruns and Web Interface Guidelines review
+.agent/stages/03-identity-master-data/evidence.md:267:  - Active terminology audit over `apps/backend/internal`, backend Swagger, `apps/web`, canonical docs, and `scripts` found no legacy public contract terms for the old subdivision/observer model.
+.agent/stages/03-identity-master-data/evidence.md:268:  - Updated canonical docs and stage contract:
+.agent/stages/03-identity-master-data/evidence.md:269:    - `docs/architecture/identity-master-data.md`
+.agent/stages/03-identity-master-data/evidence.md:270:    - `docs/roadmap.md`
+.agent/stages/03-identity-master-data/evidence.md:271:    - `docs/PRD-MVP.md`
+.agent/stages/03-identity-master-data/evidence.md:290:  - Updated `docs/roadmap.md` and `docs/design/customer-admin-bootstrap-flow.md` so their legacy legal-form compatibility sentences include `LLC -> ООО`.
+.agent/stages/03-identity-master-data/evidence.md:291:  - Updated `docs/design/diagrams/customer-admin-bootstrap-flow.drawio` so the visible legal-form examples are `ООО, ПАО, НАО, ИП`.
+.agent/stages/03-identity-master-data/evidence.md:292:  - `rg -n "LLC -> ООО" docs/roadmap.md docs/design/customer-admin-bootstrap-flow.md`
+.agent/stages/03-identity-master-data/evidence.md:293:  - `rg -n "Организационно-правовая.*ООО, ПАО, НАО, ИП" docs/design/diagrams/customer-admin-bootstrap-flow.drawio`
+.agent/stages/03-identity-master-data/evidence.md:295:  - `xmllint --noout docs/design/diagrams/customer-admin-bootstrap-flow.drawio`
+.agent/stages/03-identity-master-data/evidence.md:306:  - `docker run --rm -v /Users/yura-posledov/cursor/vrk/apps/backend:/src -w /src -e GOCACHE=/tmp/go-cache -e GOMODCACHE=/tmp/go-mod-cache golang:1.26.1 sh -c 'go install github.com/swaggo/swag/cmd/swag@v1.16.6 && /go/bin/swag init -g cmd/api/main.go -o docs/swagger'`
+.agent/stages/03-identity-master-data/evidence.md:331:  - The doc-only fixer added explicit `LLC -> ООО` alongside `АО -> НАО`, `ОАО -> ПАО`, and `ЗАО -> НАО` in the roadmap and customer-admin bootstrap flow docs, and updated the Draw.io source to show visible legal-form options `ООО, ПАО, НАО, ИП`.
+.agent/stages/03-identity-master-data/evidence.md:332:  - Follow-up parent cleanup restored `division` terminology in `docs/roadmap.md` and kept all three alias mappings explicit.
+.agent/stages/03-identity-master-data/evidence.md:346:  - `rg -n "ВРД|ВРЗ|ВУ|ВРП|registeredAddress|address|leaderFullName|managerName|leaderPosition|contractPhone|contractEmail|actingBasis|active.*select|Archived|archive|alias|compatibility" docs/architecture/identity-master-data.md .agent/stages/03-identity-master-data/sprint_contract.md .agent/stages/03-identity-master-data/problems.md`
+.agent/stages/03-identity-master-data/evidence.md:347:  - Status: `PASS`; canonical hits are now present in `docs/architecture/identity-master-data.md`.
+.agent/stages/03-identity-master-data/evidence.md:352:  - Storybook component lookup reruns and Web Interface Guidelines review
+.agent/stages/03-identity-master-data/evidence.md:399:  - Web Interface Guidelines source fetched from `https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md`
+.agent/stages/03-identity-master-data/evidence.md:439:  - `docs/architecture/identity-master-data.md` now records differentiated type semantics: organization `propertyType`/`type` alias is ОПФ `ООО`/`ПАО`/`НАО`/`ИП`, division/branch has no selectable type and uses hidden storage default `division`, and unit `type` is `ВРД`/`ВРЗ`/`ВУ`/`ВРП`;
+.agent/stages/03-identity-master-data/evidence.md:467:  - `docs/design/ui-workflow.md`
+.agent/stages/03-identity-master-data/evidence.md:468:  - `docs/design/serviceops-design-system.md`
+.agent/stages/03-identity-master-data/evidence.md:469:  - `docs/architecture/frontend-architecture.md`
+.agent/stages/03-identity-master-data/evidence.md:470:  - `docs/design/storybook-component-backlog.md`
+.agent/stages/03-identity-master-data/evidence.md:471:- Storybook lookup raw:
+.agent/stages/03-identity-master-data/evidence.md:494:- `docs/roadmap.md`
+.agent/stages/03-identity-master-data/evidence.md:495:- `docs/PRD-MVP.md`
+.agent/stages/03-identity-master-data/evidence.md:496:- `docs/architecture/identity-master-data.md`
+.agent/stages/03-identity-master-data/evidence.md:497:- `docs/design/customer-admin-bootstrap-flow.md`
+.agent/stages/03-identity-master-data/evidence.md:498:- `docs/design/diagrams/customer-admin-bootstrap-flow.drawio`
+.agent/stages/03-identity-master-data/evidence.md:499:- `docs/architecture/frontend-architecture.md`
+.agent/stages/03-identity-master-data/evidence.md:501:  - `apps/backend/docs/swagger/docs.go`
+.agent/stages/03-identity-master-data/evidence.md:502:  - `apps/backend/docs/swagger/swagger.json`
+.agent/stages/03-identity-master-data/evidence.md:503:  - `apps/backend/docs/swagger/swagger.yaml`
+.agent/stages/03-identity-master-data/evidence.md:505:Fixer doc-sync update: `docs/architecture/identity-master-data.md` section `1.2.1` now records the concrete `/company` business-field alias/type contract required by `sprint_contract.md`. No production code or generated OpenAPI was changed in the fixer pass.
+.agent/stages/03-identity-master-data/evidence.md:507:Newton doc-drift fixer update: `docs/roadmap.md`, `docs/design/customer-admin-bootstrap-flow.md`, and `docs/design/diagrams/customer-admin-bootstrap-flow.drawio` now align with the compatibility mappings and the visible selector set `ООО`, `ПАО`, `НАО`, `ИП`.
+.agent/stages/03-identity-master-data/evidence.md:527:- Canonical docs synced:
+.agent/stages/03-identity-master-data/evidence.md:528:  - `docs/architecture/platform-runtime-baseline.md`;
+.agent/stages/03-identity-master-data/evidence.md:529:  - `docs/architecture/yandex-cloud-incubator-deployment.md`.
+.agent/stages/03-identity-master-data/evidence.md:538:- User correction on 2026-04-29: the division/unit short identifier field is not a product requirement and should be removed from application, docs, and harness.
+.agent/stages/03-identity-master-data/evidence.md:543:  - canonical docs and Stage 03 artifacts now list only the remaining structure fields.
+.agent/stages/03-identity-master-data/evidence.md:547:  - Web Interface Guidelines review of the changed company UI found no new blocking issue because the change only removes one optional input and keeps existing labels, controls, and dialog behavior.
+.agent/stages/03-identity-master-data/progress.md:8:- Confirmed that canonical docs still contained the older Stage 03 assumption where standards were reusable records linked many-to-many with measuring instruments.
+.agent/stages/03-identity-master-data/progress.md:15:- Synced canonical docs:
+.agent/stages/03-identity-master-data/progress.md:16:  - `docs/roadmap.md`
+.agent/stages/03-identity-master-data/progress.md:17:  - `docs/PRD-MVP.md`
+.agent/stages/03-identity-master-data/progress.md:18:  - `docs/architecture/identity-master-data.md`
+.agent/stages/03-identity-master-data/progress.md:19:  - `docs/architecture/frontend-architecture.md`
+.agent/stages/03-identity-master-data/progress.md:20:- Updated `stage_spec.md` and `feature_list.json` with a pending equipment-domain correction item. No production code was changed in this planning/doc-sync slice.
+.agent/stages/03-identity-master-data/progress.md:42:  - Storybook lookup matched existing `Equipment/EquipmentRegistryWorkspace`;
+.agent/stages/03-identity-master-data/progress.md:43:  - reuse decision is `extend`;
+.agent/stages/03-identity-master-data/progress.md:46:- Synced canonical docs:
+.agent/stages/03-identity-master-data/progress.md:47:  - `docs/PRD-MVP.md`
+.agent/stages/03-identity-master-data/progress.md:48:  - `docs/roadmap.md`
+.agent/stages/03-identity-master-data/progress.md:49:  - `docs/architecture/identity-master-data.md`
+.agent/stages/03-identity-master-data/progress.md:50:  - `docs/architecture/frontend-architecture.md`
+.agent/stages/03-identity-master-data/progress.md:61:  - Web Interface Guidelines review;
+.agent/stages/03-identity-master-data/progress.md:72:- Re-synced `AGENTS.md`, `docs/architecture/documentation-workflow.md`, `docs/roadmap.md`, `docs/PRD-MVP.md`, current Stage 02 artifacts, and current repo state before changing the Stage 03 boundary.
+.agent/stages/03-identity-master-data/progress.md:84:- Synced canonical docs for the new boundary:
+.agent/stages/03-identity-master-data/progress.md:85:  - `docs/roadmap.md`
+.agent/stages/03-identity-master-data/progress.md:86:  - `docs/PRD-MVP.md`
+.agent/stages/03-identity-master-data/progress.md:87:  - `docs/design/customer-admin-bootstrap-flow.md`
+.agent/stages/03-identity-master-data/progress.md:88:  - `docs/architecture/frontend-architecture.md`
+.agent/stages/03-identity-master-data/progress.md:89:  - `docs/architecture/identity-master-data.md`
+.agent/stages/03-identity-master-data/progress.md:165:  - reuse decision via existing shared primitives;
+.agent/stages/03-identity-master-data/progress.md:167:- Synced canonical docs:
+.agent/stages/03-identity-master-data/progress.md:168:  - `docs/roadmap.md`
+.agent/stages/03-identity-master-data/progress.md:169:  - `docs/PRD-MVP.md`
+.agent/stages/03-identity-master-data/progress.md:170:  - `docs/architecture/identity-master-data.md`
+.agent/stages/03-identity-master-data/progress.md:171:  - `docs/architecture/frontend-architecture.md`
+.agent/stages/03-identity-master-data/progress.md:172:  - `docs/design/customer-admin-bootstrap-flow.md`
+.agent/stages/03-identity-master-data/progress.md:187:  - synced canonical docs, OpenAPI, and truthful UI workflow evidence.
+.agent/stages/03-identity-master-data/progress.md:209:- Closed the mandatory UI workflow gate for the changed slice-002 UI scope:
+.agent/stages/03-identity-master-data/progress.md:213:- Synced canonical docs for the implemented behavior:
+.agent/stages/03-identity-master-data/progress.md:214:  - `docs/architecture/identity-master-data.md`
+.agent/stages/03-identity-master-data/progress.md:215:  - `docs/architecture/frontend-architecture.md`
+.agent/stages/03-identity-master-data/progress.md:216:  - `docs/design/customer-admin-bootstrap-flow.md`
+.agent/stages/03-identity-master-data/progress.md:256:- Closed the mandatory UI workflow gate for the changed contracts scope:
+.agent/stages/03-identity-master-data/progress.md:260:- Synced canonical docs for the implemented behavior:
+.agent/stages/03-identity-master-data/progress.md:261:  - `docs/roadmap.md`
+.agent/stages/03-identity-master-data/progress.md:262:  - `docs/PRD-MVP.md`
+.agent/stages/03-identity-master-data/progress.md:263:  - `docs/architecture/identity-master-data.md`
+.agent/stages/03-identity-master-data/progress.md:264:  - `docs/architecture/frontend-architecture.md`
+.agent/stages/03-identity-master-data/progress.md:265:  - `docs/design/customer-admin-bootstrap-flow.md`
+.agent/stages/03-identity-master-data/progress.md:297:- Synced narrow canonical docs for the clarified frontend boundary contract:
+.agent/stages/03-identity-master-data/progress.md:298:  - `docs/architecture/frontend-architecture.md`
+.agent/stages/03-identity-master-data/progress.md:299:  - `docs/architecture/identity-master-data.md`
+.agent/stages/03-identity-master-data/progress.md:308:  - `apps/backend/docs/swagger/**` via `swag init`
+.agent/stages/03-identity-master-data/progress.md:335:  - fresh UI gate review against the current Web Interface Guidelines.
+.agent/stages/03-identity-master-data/progress.md:342:  - synced canonical docs and truthful proof artifacts on the current repo state.
+.agent/stages/03-identity-master-data/progress.md:359:- Synced canonical docs for the implemented slice:
+.agent/stages/03-identity-master-data/progress.md:360:  - `docs/roadmap.md`
+.agent/stages/03-identity-master-data/progress.md:361:  - `docs/PRD-MVP.md`
+.agent/stages/03-identity-master-data/progress.md:362:  - `docs/architecture/identity-master-data.md`
+.agent/stages/03-identity-master-data/progress.md:363:  - `docs/architecture/frontend-architecture.md`
+.agent/stages/03-identity-master-data/progress.md:364:  - `docs/design/customer-admin-bootstrap-flow.md`
+.agent/stages/03-identity-master-data/progress.md:384:  - fresh UI review against the current Web Interface Guidelines.
+.agent/stages/03-identity-master-data/progress.md:407:- Synced canonical docs for the implemented slice:
+.agent/stages/03-identity-master-data/progress.md:408:  - `docs/roadmap.md`
+.agent/stages/03-identity-master-data/progress.md:409:  - `docs/PRD-MVP.md`
+.agent/stages/03-identity-master-data/progress.md:410:  - `docs/architecture/identity-master-data.md`
+.agent/stages/03-identity-master-data/progress.md:411:  - `docs/architecture/frontend-architecture.md`
+.agent/stages/03-identity-master-data/progress.md:412:  - `docs/design/customer-admin-bootstrap-flow.md`
+.agent/stages/03-identity-master-data/progress.md:436:  - fresh manual UI review of the `/equipment` slice against the current Web Interface Guidelines.
+.agent/stages/03-identity-master-data/progress.md:454:  - re-read `AGENTS.md`, `docs/architecture/documentation-workflow.md`, `docs/roadmap.md`, and current Stage 03 artifacts;
+.agent/stages/03-identity-master-data/progress.md:481:  - synced `docs/roadmap.md`, `docs/architecture/identity-master-data.md`, `docs/architecture/frontend-architecture.md`, and `docs/onboarding.md`;
+.agent/stages/03-identity-master-data/progress.md:497:  - no production code was changed by those failed leaf agents;
+.agent/stages/03-identity-master-data/progress.md:510:  - `docs/onboarding.md` no longer suggests that anonymous `GET /api/v1/organizations/` smoke should return `200`;
+.agent/stages/03-identity-master-data/progress.md:537:  - slice-007/008 code, docs, generated artifacts, and stage artifacts are aligned on the current dirty worktree after the onboarding fix;
+.agent/stages/03-identity-master-data/progress.md:568:    - stale evidence, stale blocker references, and inaccurate `changed_ui_files` are the remaining gap before a final verifier rerun.
+.agent/stages/03-identity-master-data/progress.md:590:  - current local UI review against the latest Web Interface Guidelines `PASS` on `.agent/stages/03-identity-master-data/raw/slice-007-008-ui-review-2026-04-21-orchestrator-rerun2.txt`.
+.agent/stages/03-identity-master-data/progress.md:596:  - no reproduced slice-007/008 code, docs, generated-artifact, or stage-artifact drift remains on the current dirty worktree;
+.agent/stages/03-identity-master-data/progress.md:625:- Reconfirmed the narrow contract in code and canonical docs:
+.agent/stages/03-identity-master-data/progress.md:630:  - no workspace-picker widening is present in runtime or docs.
+.agent/stages/03-identity-master-data/progress.md:697:  - `docs/architecture/documentation-workflow.md`
+.agent/stages/03-identity-master-data/progress.md:698:  - `docs/roadmap.md` Stage 03
+.agent/stages/03-identity-master-data/progress.md:699:  - `docs/architecture/identity-master-data.md`
+.agent/stages/03-identity-master-data/progress.md:700:  - `docs/design/customer-admin-bootstrap-flow.md`
+.agent/stages/03-identity-master-data/progress.md:701:  - `docs/architecture/frontend-architecture.md`
+.agent/stages/03-identity-master-data/progress.md:730:- No production code or canonical docs were edited in this spec-freezer pass.
+.agent/stages/03-identity-master-data/progress.md:774:  - added `docs/architecture/identity-master-data.md` section `1.2.1`;
+.agent/stages/03-identity-master-data/progress.md:788:  - focused `rg` alias/type audit `PASS`, with canonical hits now present in `docs/architecture/identity-master-data.md`.
+.agent/stages/03-identity-master-data/progress.md:797:  - `docs/architecture/identity-master-data.md` section `1.2.1` now records frozen `type` values, alias semantics, preserved fields, and active-only/archive constraints.
+.agent/stages/03-identity-master-data/progress.md:818:- Updated canonical docs and stage artifacts:
+.agent/stages/03-identity-master-data/progress.md:819:  - `docs/architecture/identity-master-data.md`;
+.agent/stages/03-identity-master-data/progress.md:820:  - `docs/design/customer-admin-bootstrap-flow.md`;
+.agent/stages/03-identity-master-data/progress.md:821:  - `docs/architecture/frontend-architecture.md`;
+.agent/stages/03-identity-master-data/progress.md:822:  - `docs/roadmap.md`;
+.agent/stages/03-identity-master-data/progress.md:823:  - `docs/PRD-MVP.md`;
+.agent/stages/03-identity-master-data/progress.md:842:  - `docs/roadmap.md` and `docs/design/customer-admin-bootstrap-flow.md` omitted `LLC -> ООО` in legacy alias wording;
+.agent/stages/03-identity-master-data/progress.md:843:  - `docs/design/diagrams/customer-admin-bootstrap-flow.drawio` still showed stale visible examples.
+.agent/stages/03-identity-master-data/progress.md:845:- Fixer changed only docs/stage evidence:
+.agent/stages/03-identity-master-data/progress.md:849:- Parent cleanup restored `subdivision` terminology in `docs/roadmap.md` and made all compatibility mappings explicit.
+.agent/stages/03-identity-master-data/progress.md:858:- Updated canonical docs/diagram requested by the verifier:
+.agent/stages/03-identity-master-data/progress.md:859:  - `docs/roadmap.md` now includes `LLC -> ООО` in the legacy compatibility mapping sentence;
+.agent/stages/03-identity-master-data/progress.md:860:  - `docs/design/customer-admin-bootstrap-flow.md` now includes `LLC -> ООО` in the legacy compatibility mapping sentence;
+.agent/stages/03-identity-master-data/progress.md:861:  - `docs/design/diagrams/customer-admin-bootstrap-flow.drawio` now shows visible legal-form options `ООО, ПАО, НАО, ИП` and does not add legacy aliases as visible options.
+.agent/stages/03-identity-master-data/progress.md:863:  - `rg -n "LLC -> ООО" docs/roadmap.md docs/design/customer-admin-bootstrap-flow.md` `PASS`;
+.agent/stages/03-identity-master-data/progress.md:866:  - `xmllint --noout docs/design/diagrams/customer-admin-bootstrap-flow.drawio` `PASS`.
+.agent/stages/03-identity-master-data/progress.md:874:- Realigned current proof/docs/stage artifacts to the implemented contract:
+.agent/stages/03-identity-master-data/progress.md:921:- Confirmed the canonical role catalog in code, UI, DB constraints, and docs:
+.agent/stages/03-identity-master-data/progress.md:933:- Synced canonical docs and stage contract:
+.agent/stages/03-identity-master-data/progress.md:934:  - `docs/architecture/identity-master-data.md`;
+.agent/stages/03-identity-master-data/progress.md:935:  - `docs/roadmap.md`;
+.agent/stages/03-identity-master-data/progress.md:936:  - `docs/PRD-MVP.md`;
+.agent/stages/03-identity-master-data/progress.md:941:  - active terminology audit over `apps/backend/internal`, backend Swagger, `apps/web`, docs, and scripts;
+.agent/stages/03-identity-master-data/progress.md:972:- Synced canonical developer/runtime docs:
+.agent/stages/03-identity-master-data/progress.md:974:  - `docs/onboarding.md`;
+.agent/stages/03-identity-master-data/progress.md:975:  - `docs/architecture/platform-runtime-baseline.md`.
+.agent/stages/03-identity-master-data/progress.md:995:- Synced runtime/deployment docs:
+.agent/stages/03-identity-master-data/progress.md:996:  - `docs/architecture/platform-runtime-baseline.md`;
+.agent/stages/03-identity-master-data/progress.md:997:  - `docs/architecture/yandex-cloud-incubator-deployment.md`.
+.agent/stages/03-identity-master-data/progress.md:1009:- Synced canonical docs and stage artifacts:
+.agent/stages/03-identity-master-data/progress.md:1010:  - `docs/architecture/identity-master-data.md`;
+.agent/stages/03-identity-master-data/progress.md:1041:  - recorded Web Interface Guidelines review for the changed contracts/UI files.
+.agent/stages/03-identity-master-data/progress.md:1060:  - `docs/architecture/documentation-workflow.md`;
+.agent/stages/03-identity-master-data/progress.md:1061:  - `docs/roadmap.md` Stage 03 section;
+.agent/stages/03-identity-master-data/progress.md:1065:  - `docs/design/ui-workflow.md`;
+.agent/stages/03-identity-master-data/progress.md:1066:  - `docs/design/serviceops-design-system.md`;
+.agent/stages/03-identity-master-data/progress.md:1067:  - `docs/architecture/frontend-architecture.md`;
+.agent/stages/03-identity-master-data/progress.md:1068:  - `docs/design/storybook-component-backlog.md`;
+.agent/stages/03-identity-master-data/progress.md:1071:- `docs/design/storybook-component-backlog.md` already has `UI-03 InputField` with `hint` and stories including `WithHint`, so the builder should update that existing component/stories rather than introduce a new component family.
+.agent/stages/03-identity-master-data/progress.md:1073:  - narrow `docs/design/storybook-component-backlog.md` update is likely needed if implementation formalizes `hint` as hover/focus help instead of inline helper text;
+.agent/stages/03-identity-master-data/progress.md:1074:  - no broad architecture docs are expected unless implementation introduces a broader tooltip primitive, dependency policy, or UI behavior decision.
+.agent/stages/03-identity-master-data/progress.md:1079:- No production code or canonical docs were edited by this spec-freezer leaf.
+.agent/stages/03-identity-master-data/progress.md:1091:  - Storybook lookup matched `Equipment/EquipmentRegistryWorkspace`, `Primitives/ConfirmDialog`, and `Primitives/Dialog`;
+.agent/stages/03-identity-master-data/progress.md:1092:  - no new reusable component family, stories, backlog slice, API, or canonical product docs were needed.
+.agent/stages/03-identity-master-data/progress.md:1097:  - existing shared `ConfirmDialog`, archive API calls, loading state, toasts, and archive visibility routing remain unchanged.
+.agent/stages/03-identity-master-data/progress.md:1109:  - Web Interface Guidelines review;
+.agent/stages/03-identity-master-data/progress.md:1119:  - anonymous and contractor explanatory states were left unchanged;
+.agent/stages/03-identity-master-data/progress.md:1124:  - Storybook lookup matched `Equipment/EquipmentRegistryWorkspace`, `Primitives/Tabs`, and `Contracts/ContractsRegistry`;
+.agent/stages/03-identity-master-data/progress.md:1125:  - no new reusable component family, stories, backlog slice, API, or canonical product docs were needed.
+.agent/stages/03-identity-master-data/progress.md:1126:- URL/API behavior stayed unchanged:
+.agent/stages/03-identity-master-data/progress.md:1141:  - Web Interface Guidelines review;
+.agent/stages/03-identity-master-data/progress.md:1156:- Synced `docs/design/storybook-component-backlog.md` for the formal `InputField` hint contract and story coverage.
+.agent/stages/03-identity-master-data/progress.md:1158:  - Storybook lookup matched existing `Primitives/InputField`;
+.agent/stages/03-identity-master-data/progress.md:1159:  - reuse decision is `extend`;
+.agent/stages/03-identity-master-data/progress.md:1160:  - Web Interface Guidelines review passed.
+.agent/stages/03-identity-master-data/progress.md:1175:  - fresh Web Interface Guidelines review after the `autoComplete="off"` / example placeholder fix;
+.agent/stages/03-identity-master-data/progress.md:1187:- Ran as the single minimal fixer for the fresh-verifier `slice-011-input-help-tooltip` story-level Web Interface Guidelines findings only.
+.agent/stages/03-identity-master-data/progress.md:1191:- No canonical docs changed; this closes story metadata only, with no product behavior, API, schema, or workflow contract change.
+.agent/stages/03-identity-master-data/progress.md:1197:- `feature_list.json` and verifier verdict remain unchanged; a fresh verifier still owns the final PASS decision.
+.agent/stages/03-identity-master-data/progress.md:1209:  - Storybook lookup matched `Primitives/ConfirmDialog`, `Access/EmployeeAccessWorkspace`, and `Access/EmployeeInviteManager`;
+.agent/stages/03-identity-master-data/progress.md:1210:  - reuse decision is `reuse`;
+.agent/stages/03-identity-master-data/progress.md:1211:  - Web Interface Guidelines review passed.
+.agent/stages/03-identity-master-data/progress.md:1215:  - canonical docs were not changed because this changes only the confirmation surface, not APIs, persistence, or lifecycle rules.
+
+EXIT_CODE=0

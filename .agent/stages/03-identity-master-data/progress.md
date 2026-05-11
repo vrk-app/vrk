@@ -2,6 +2,138 @@
 
 ## Session log
 
+### 2026-05-11T15:07:41Z
+
+- Re-synced the equipment/metrology domain after the customer meeting.
+- Confirmed that canonical docs still contained the older Stage 03 assumption where standards were reusable records linked many-to-many with measuring instruments.
+- Recorded the new target correction:
+  - `СИ` means customer diagnostic equipment used to verify repair quality or unit condition;
+  - technological equipment and diagnostic equipment are both customer-side equipment master data inside the unit contour;
+  - contractor metrology equipment is out of MVP;
+  - one diagnostic equipment record may have `0..N` standards/setup measures;
+  - a standard belongs to the kit of one diagnostic equipment record in MVP, rather than being freely reusable between several measuring instruments.
+- Synced canonical docs:
+  - `docs/roadmap.md`
+  - `docs/PRD-MVP.md`
+  - `docs/architecture/identity-master-data.md`
+  - `docs/architecture/frontend-architecture.md`
+- Updated `stage_spec.md` and `feature_list.json` with a pending equipment-domain correction item. No production code was changed in this planning/doc-sync slice.
+- Added `.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md` as the detailed page/data/API/test plan for the next slice.
+
+### 2026-05-11T16:36:31Z
+
+- Completed the builder/evidence pass for `slice-014-equipment-domain-correction`.
+- Replaced the historical `/equipment` tabbed registry model with one customer equipment workspace:
+  - public route remains `/equipment`;
+  - old `tab=mi|standards` query params no longer expose old tabs and redirect to the unified route;
+  - one form `Новое оборудование` creates `Техническое` or `Диагностическое` equipment;
+  - diagnostic equipment owns `0..N` standards/setup measures entered in the same form;
+  - standards are visible only inside diagnostic equipment cards;
+  - target standard journal route/proxy is removed;
+  - one `Журнал операций по оборудованию` remains.
+- Backend/data implementation:
+  - added migration `000016_equipment_domain_correction`;
+  - standards now bind to one diagnostic equipment parent;
+  - archived diagnostic equipment rejects new standard/journal mutations while retaining read-only history;
+  - measuring-instrument standard validation rejects standards owned by another diagnostic equipment record;
+  - Swagger/OpenAPI was refreshed after route/contract changes.
+- UI workflow:
+  - used `$vrk-web-ui-workflow`;
+  - Storybook lookup matched existing `Equipment/EquipmentRegistryWorkspace`;
+  - reuse decision is `extend`;
+  - no new reusable component family or backlog slice was introduced.
+- Updated Storybook stories and targeted `/equipment` smoke tests for the unified model.
+- Synced canonical docs:
+  - `docs/PRD-MVP.md`
+  - `docs/roadmap.md`
+  - `docs/architecture/identity-master-data.md`
+  - `docs/architecture/frontend-architecture.md`
+  - `.agent/stages/03-identity-master-data/stage_spec.md`
+  - `.agent/stages/03-identity-master-data/sprint_contract.md`
+  - `.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md`
+- Proof passed before fresh verifier:
+  - backend `go test ./...` and `go build -buildvcs=false ./...`;
+  - backend `gofmt` and Swagger refresh;
+  - compose migration to version `16`, clean dirty flag;
+  - web lint, typecheck, production build, and Storybook build;
+  - targeted `/equipment` Playwright smoke against compose-backed `localhost:3100` and backend `:18080`;
+  - obsolete tab/list/journal source audits;
+  - Web Interface Guidelines review;
+  - `git diff --check`.
+- `feature_list.json` entry `stage03-equipment-diagnostic-equipment-correction` remains `passes: false` until a fresh verifier owns the PASS.
+
+### 2026-05-11T17:45:00Z
+
+- Fresh verifier returned `FAIL` for `slice-014-equipment-domain-correction`.
+- Minimal fixer and parent follow-up closed the reported gaps:
+  - migration `000016_equipment_domain_correction` now copies multi-linked legacy standards per diagnostic equipment parent, archives current orphan standards that cannot be assigned, and adds a current-row check constraint;
+  - diagnostic equipment cards now read standards from `registry_standards.diagnostic_equipment_id` only, not the old many-to-many link table;
+  - standalone standards registry API/proxy/Swagger surfaces were removed from the current target contract;
+  - standard creation moved under `POST /measuring-instruments/{id}/standards`;
+  - Storybook fixtures now show standards as owned by diagnostic equipment;
+  - two SelectField placeholders were changed to guideline-compliant ellipsis copy;
+  - current-slice UI evidence metadata now points to slice-014 lookup, UI files, and review artifacts.
+- Reapplied migration 16 against the compose DB and verified:
+  - schema version `16`, dirty `false`;
+  - current standards without diagnostic parent: `0`;
+  - reusable standard rows across multiple diagnostic equipment records: `0`.
+- Rebuilt the compose backend and confirmed `/readyz`.
+- Proof after fix:
+  - backend `go test ./...` and `go build -buildvcs=false ./...`;
+  - web lint, typecheck, production build, and Storybook build;
+  - targeted `/equipment` smoke rerun passed on compose-backed `localhost:3100` and backend `:18080`;
+  - precise source audits for obsolete UI tabs and standalone standards surfaces passed.
+- The first post-fix smoke attempt hit a login redirect race on the warmed dev server; immediate rerun passed and is the accepted equipment proof.
+- `feature_list.json` entry still remains `passes: false` until a new fresh verifier returns `PASS`.
+
+### 2026-05-11T17:58:00Z
+
+- Second fresh verifier reproduced the fixed product/API/persistence/UI proof and returned `FAIL` only for documentation drift in `stage_spec.md`.
+- Updated the Stage 03 verification-plan bullet so it now requires the unified `/equipment` workspace proof instead of historical separate equipment / measuring-instrument / standards registries.
+- No production code changed in this doc-only follow-up.
+
+### 2026-05-11T18:05:00Z
+
+- Final fresh verifier returned `PASS` for `slice-014-equipment-domain-correction`.
+- Failed criteria: none.
+- Proof gaps: none.
+- Parent orchestrator marked `stage03-equipment-diagnostic-equipment-correction` as passed in `feature_list.json`.
+- Final verifier confirmed:
+  - second verifier's product/API/persistence/UI PASS remains valid;
+  - `stage_spec.md` now requires unified `/equipment` proof;
+  - sprint contract, stage spec, evidence, and progress agree on the corrected equipment-domain contract;
+  - no backend/web production file changed after the second verifier completion marker.
+
+### 2026-05-11T18:46:27Z
+
+- Implemented the owned-standards edit-modal follow-up inside the existing `slice-014-equipment-domain-correction` surface.
+- Backend/API:
+  - added `DELETE /api/v1/measuring-instruments/{id}/standards/{standardId}`;
+  - added the matching Next proxy route under `/api/equipment/measuring-instruments/{measuringInstrumentId}/standards/{standardId}`;
+  - service checks require authenticated customer manager access, scoped visible diagnostic parent, same customer organization, non-archived parent, and owned standard membership;
+  - repository hard-deletes legacy standard journal rows before deleting `registry_standards`; legacy link cleanup remains covered by cascade.
+- Web/UI:
+  - extended existing `EquipmentRegistryWorkspace`;
+  - diagnostic edit modal now shows `Комплект эталонов`;
+  - existing standards can be marked for deletion and restored before save;
+  - new standard drafts can be added with the same required fields as diagnostic create;
+  - save is blocked while diagnostic fields or new standard drafts are incomplete;
+  - save applies diagnostic PATCH, new standard POSTs, pending standard DELETEs, registry reload, selection restore, and the existing success toast.
+- Storybook/runtime/smoke/docs:
+  - runtime mock handles the nested DELETE route;
+  - Storybook includes the diagnostic edit-modal standard-management proof;
+  - targeted `/equipment` smoke covers add-on-save plus hard-delete-on-save;
+  - canonical docs and stage plan record the hard-delete exception for owned diagnostic standards.
+- UI workflow:
+  - `$vrk-web-ui-workflow` used;
+  - Storybook lookup matched existing `Equipment/EquipmentRegistryWorkspace`;
+  - reuse decision remains `extend`;
+  - Web Interface Guidelines review passed for the changed UI surface.
+- Fresh verifier readback:
+  - first bounded verifier returned source-contract `PASS` and metadata-only `FAIL`;
+  - evidence metadata was corrected with prompt source, changed UI files, completed proof refs, and refreshed top-level UI file metadata;
+  - final bounded fresh verifier returned `PASS`, with no proof gaps.
+
 ### 2026-04-11T13:36:42Z
 
 - Initialized stage artifacts.

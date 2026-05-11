@@ -1,0 +1,11 @@
+## apps/web/app/(runtime)/equipment/page.tsx
+
+✓ pass
+
+## apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+
+✓ pass
+
+## apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+
+✓ pass

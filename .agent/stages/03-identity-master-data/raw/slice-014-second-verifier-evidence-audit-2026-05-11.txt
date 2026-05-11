@@ -1,0 +1,155 @@
+{
+  "sprint_contract_id": "slice-014-equipment-domain-correction",
+  "verifier_state": "AWAITING_FRESH_VERIFIER_AFTER_FIX",
+  "top_level": {
+    "design_brief_source": {
+      "artifact": ".agent/stages/03-identity-master-data/equipment-domain-correction-plan.md",
+      "prompt": "User-provided Stage 03 equipment-domain correction prompt, 2026-05-11",
+      "summary": "Replace tabbed equipment / СИ / standards registries with one /equipment workspace: technical or diagnostic equipment, diagnostic-owned standards 0..N, and one equipment operation journal."
+    },
+    "ui_lookup": {
+      "queries": [
+        "equipment registry diagnostic equipment standards journal"
+      ],
+      "artifacts": [
+        ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-014-equipment-domain-correction-2026-05-11.txt",
+        ".agent/stages/03-identity-master-data/raw/slice-014-fixer-storybook-lookup-2026-05-11.txt"
+      ],
+      "decision": "extend",
+      "result": "Extended existing EquipmentRegistryWorkspace and story-backed equipment runtime fixtures; no new reusable UI family was introduced."
+    },
+    "ui_reuse_decision": null,
+    "changed_ui_files": [
+      "apps/web/app/(runtime)/equipment/page.tsx",
+      "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx",
+      "apps/web/shared/api/equipment.ts",
+      "apps/web/shared/api/index.ts",
+      "apps/web/shared/storybook/runtime-api-mock.tsx",
+      "apps/web/shared/storybook/runtime-fixtures.ts",
+      "apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx",
+      "apps/web/tests/equipment-registries.smoke.spec.ts",
+      "apps/web/app/api/equipment/measuring-instruments/[measuringInstrumentId]/standards/route.ts",
+      "apps/web/app/api/equipment/standards/route.ts",
+      "apps/web/app/api/equipment/standards/[standardId]/route.ts",
+      "apps/web/app/api/equipment/standards/[standardId]/archive/route.ts",
+      "apps/web/app/api/equipment/standards/[standardId]/journals/route.ts"
+    ],
+    "ui_review": {
+      "gate": "$web-design-guidelines",
+      "status": "PASS_AFTER_FIX",
+      "artifact": ".agent/stages/03-identity-master-data/raw/slice-014-fixer-ui-review-2026-05-11.txt",
+      "source": ".agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-05-11-slice-014-fixer.md",
+      "notes": [
+        "Closed placeholder findings by changing SelectField placeholders to `Без связи…` and `Выберите запись…`.",
+        "No new reusable component family was introduced; the existing equipment workspace was extended."
+      ]
+    }
+  },
+  "equipment_domain_correction": {
+    "status": "FIXED_AWAITING_FRESH_VERIFIER",
+    "slice_id": "slice-014-equipment-domain-correction",
+    "checked_at": "2026-05-11T17:45:00Z",
+    "summary": "Replaced the /equipment tabbed registry model with one equipment workspace: one create form with technical/diagnostic type, diagnostic owned standards inside the form/card, no standalone standards list or standard journal route, unified equipment operation journal, scoped access/archive behavior preserved, and backend standards now bind to one diagnostic equipment parent.",
+    "docs_synced": [
+      "docs/PRD-MVP.md",
+      "docs/roadmap.md",
+      "docs/architecture/identity-master-data.md",
+      "docs/architecture/frontend-architecture.md",
+      ".agent/stages/03-identity-master-data/stage_spec.md",
+      ".agent/stages/03-identity-master-data/sprint_contract.md",
+      ".agent/stages/03-identity-master-data/equipment-domain-correction-plan.md"
+    ],
+    "ui_workflow": {
+      "skill": "$vrk-web-ui-workflow",
+      "design_context": ".impeccable.md",
+      "lookup": ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-014-equipment-domain-correction-2026-05-11.txt",
+      "fixer_lookup": ".agent/stages/03-identity-master-data/raw/slice-014-fixer-storybook-lookup-2026-05-11.txt",
+      "decision": "extend",
+      "matched": [
+        "Equipment/EquipmentRegistryWorkspace"
+      ],
+      "review": ".agent/stages/03-identity-master-data/raw/slice-014-fixer-ui-review-2026-05-11.txt"
+    },
+    "changed_files": [
+      "apps/web/app/(runtime)/equipment/page.tsx",
+      "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx",
+      "apps/web/shared/api/equipment.ts",
+      "apps/web/shared/api/index.ts",
+      "apps/web/shared/storybook/runtime-api-mock.tsx",
+      "apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx",
+      "apps/web/tests/equipment-registries.smoke.spec.ts",
+      "apps/web/app/api/equipment/standards/[standardId]/journals/route.ts",
+      "apps/backend/internal/app/app.go",
+      "apps/backend/internal/equipment/standard/*",
+      "apps/backend/internal/equipment/measuringinstrument/*",
+      "apps/backend/migrations/000016_equipment_domain_correction.*.sql",
+      "apps/backend/docs/swagger/*",
+      "apps/web/shared/storybook/runtime-fixtures.ts",
+      "apps/web/app/api/equipment/measuring-instruments/[measuringInstrumentId]/standards/route.ts",
+      "apps/web/app/api/equipment/standards/route.ts",
+      "apps/web/app/api/equipment/standards/[standardId]/route.ts",
+      "apps/web/app/api/equipment/standards/[standardId]/archive/route.ts"
+    ],
+    "artifacts": [
+      ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-backend-test-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-backend-build-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-lint-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-typecheck-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-build-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-storybook-build-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-equipment-smoke-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-source-audit-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-standard-journal-route-audit-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-compose-migration-status-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-ui-review-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-diff-check-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-json-audit-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-harness-post-evidence-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-diff-check-post-evidence-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-fixer-gofmt-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-fixer-swagger-refresh-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-fixer-backend-test-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-fixer-backend-build-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-fixer-web-lint-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-fixer-web-typecheck-rerun-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-fixer-web-build-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-fixer-storybook-build-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-fixer-persistence-source-audit-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-fixer-standards-surface-audit-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-fixer-standard-journal-route-audit-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-fixer-ui-placeholder-audit-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-fixer-ui-review-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-migration-down-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-migration-up-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-migration-status-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-backend-rebuild-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-backend-readyz-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-compose-ps-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-standards-surface-audit-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-obsolete-ui-audit-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-backend-test-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-backend-build-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-web-lint-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-web-typecheck-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-web-build-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-storybook-build-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-equipment-smoke-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-equipment-smoke-rerun-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-standards-surface-audit-precise-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-obsolete-ui-audit-precise-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-owned-standard-db-audit-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-json-audit-before-verifier-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-json-audit-after-fix-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-harness-after-fix-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-diff-check-after-fix-2026-05-11.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-014-parent-git-status-after-fix-2026-05-11.txt"
+    ],
+    "prompt_source": {
+      "artifact": ".agent/stages/03-identity-master-data/equipment-domain-correction-plan.md",
+      "prompt": "User-provided Stage 03 equipment-domain correction prompt, 2026-05-11",
+      "summary": "Replace tabbed equipment / СИ / standards registries with one /equipment workspace: technical or diagnostic equipment, diagnostic-owned standards 0..N, and one equipment operation journal."
+    },
+    "fixer_summary": "Fresh-verifier gaps were fixed: migration 000016 now converts legacy links into diagnostic-owned standards and archives orphan current rows; diagnostic cards read only standard.diagnostic_equipment_id; standalone standards API/proxy/Swagger surfaces are removed; current-slice UI evidence metadata is refreshed; placeholder findings pass.",
+    "runtime_note": "The first post-fix smoke hit a login redirect race on the warmed dev server; immediate rerun passed. Equipment-specific assertions passed in the successful run."
+  }
+}

@@ -1,0 +1,16 @@
+Fresh Web Interface Guidelines source: https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md
+Review scope: bounded source review only, no browser/runtime/build.
+
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+PASS - Diagnostic edit-modal standard controls are real labeled form controls and buttons; existing standard removal is a reversible pending state in the modal, not an immediate persisted destructive action; the physical delete call is only reached from the modal save handler after pressing "Сохранить изменения".
+
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+PASS - Storybook covers opening the diagnostic edit dialog and visible add/delete controls for the standard kit.
+
+apps/web/shared/storybook/runtime-api-mock.tsx
+PASS - Runtime mock supports nested standard POST/DELETE for Storybook interaction proof; no user-facing UI findings.
+
+apps/web/app/api/equipment/measuring-instruments/[measuringInstrumentId]/standards/[standardId]/route.ts
+PASS - Next proxy route; UI guidelines are not directly applicable.
+
+Open findings: none in the changed UI slice.

@@ -1,118 +1,138 @@
 # Sprint Contract
 
 - Stage ID: `03-identity-master-data`
-- Slice ID: `slice-011-input-help-tooltip`
+- Slice ID: `slice-014-equipment-domain-correction`
 - Status: `PENDING` until implementation evidence and one fresh verifier `PASS`
 
 ## Objective
 
-Reduce visual clutter in Stage 03 forms by changing the shared `InputField` hint behavior: non-error `hint` copy must no longer render as always-visible helper text under the field. The same hint content must remain available as hover/focus-accessible auxiliary help in the field label/control area.
+Replace the historical `/equipment` tabbed registry model with a single customer equipment workspace that matches the clarified domain:
 
-The motivating runtime example is the organization profile `КПП` field in `/company`, where `hint="9 цифр."` currently renders below the input. After this slice, that copy should be available through the field help affordance, while validation errors still render visibly under the field.
+- ordinary production/repair equipment is `technical`;
+- customer `СИ` is `diagnostic` equipment used to check repair quality or unit condition;
+- standards/setup measures are owned children of one diagnostic equipment record;
+- official metrology operations are recorded in one equipment journal, not in a separate standard journal;
+- contractor-side metrology equipment stays out of MVP.
 
-Do not widen this slice into redesigning `/company`, changing validation rules, changing requisites persistence, or introducing a new form component family.
+Do not widen this slice into Stage 04 request workflows, contractor execution, Аршин integration, accredited-organization equipment registries, or a separate metrology module.
 
 ## Frozen Decisions
 
-- Keep the existing shared `InputField` and its public `hint?: string` prop; this is an `extend` slice, not a component replacement.
-- `hint` means auxiliary field help, not persistent below-field helper copy.
-- `error` remains a visible below-field message and keeps priority over hint in the visual error area.
-- The field remains accessible:
-  - pointer hover and keyboard focus expose the hint through a compact help affordance in the label/control area;
-  - the hint content remains programmatically associated with the field or the help trigger;
-  - `aria-invalid` and error announcement behavior are preserved.
-- The help affordance should use the existing UI stack and design tokens. Prefer a small extension inside `InputField`; create a net-new reusable tooltip/help component only if lookup proves no safe extension path and then follow the full Storybook/backlog rules.
-- No backend, API, database, or business validation contract changes are in scope.
+- Public route stays `/equipment`.
+- User-facing tabs/switchers `Оборудование / СИ / Эталоны` are removed.
+- Old query params such as `tab=mi` and `tab=standards` must not break the page. They may normalize to `/equipment` or render the same unified workspace.
+- The page has one working surface: `Оборудование в учете`.
+- The create surface is one form titled `Новое оборудование`.
+- The form has a required equipment type selector:
+  - `Техническое`;
+  - `Диагностическое`.
+- Technical equipment uses ordinary equipment fields.
+- Diagnostic equipment uses diagnostic/СИ fields and an inline dynamic list of `0..N` standards/setup measures.
+- Standards are not reusable between equipment records in the target contract.
+- A standard can be viewed only inside its parent diagnostic equipment card.
+- There is no standalone standards list in the target UI.
+- There is no standard operations journal in the target UI.
+- The journal block is a unified `Журнал операций по оборудованию` and is selected by equipment record.
+- Explicit archive visibility remains.
+- Existing access behavior remains:
+  - customer admins with `manage_equipment` can create, edit, archive, add standards, and add journal entries inside visible scope;
+  - read-only roles see only their allowed subtree;
+  - contractor sessions do not receive the customer equipment registry.
 
 ## Acceptance Criteria
 
-- Shared component behavior:
-  - `apps/web/shared/ui/InputField.tsx` no longer renders non-error `hint` as an always-visible text row under the input.
-  - When `hint` is present and `error` is absent, the visible form footprint remains the label/control row plus input; the hint is reachable by hover and keyboard focus in the label/control area.
-  - When `error` is present, the error remains visible below the field, uses the existing destructive styling, and is announced as before.
-  - If both `hint` and `error` are provided, the error remains visible and the hint remains available as auxiliary help without replacing the error.
-  - Disabled fields and password fields keep their existing disabled/password-toggle behavior.
-- Runtime example:
-  - In `/company` organization profile, requisites hints such as `КПП` `9 цифр.` and INN/OGRN hints no longer appear as persistent helper rows under each field.
-  - Invalid requisite values still show field-level validation errors below the relevant input.
-  - No `/company` data payload, validation length, legal-form, logo, division, unit, access, contract, or equipment behavior changes.
-- Storybook:
-  - Update `apps/web/stories/primitives/InputField.stories.tsx` so `WithHint` proves the hover/focus help behavior.
-  - Keep or add story coverage for error behavior so a verifier can distinguish hint help from visible errors.
-  - Do not create a parallel `HelpInput`, `TooltipInput`, or similar component family.
+- `/equipment` header is `Оборудование`.
+- Capability badge is `Управление реестром` or `Только просмотр`.
+- There is no visible tab/switcher containing `Оборудование / Средства измерения / Эталоны`, `Оборудование / СИ / Эталоны`, or an equivalent three-registry navigation.
+- A single create form `Новое оборудование` is present for manageable customer sessions.
+- The equipment type control exposes `Техническое` and `Диагностическое`.
+- Technical card content includes ordinary equipment fields, status, edit/archive actions when allowed, and respects archived visibility.
+- Diagnostic card content includes basic diagnostic fields, `ФИФ`, serial number, `Эталоны: N`, standards/setup measures inside the card, and latest journal status.
+- Standards are not exposed as a free create/list surface and copy does not describe them as reusable registry records.
+- The journal area is titled `Журнал операций по оборудованию` and chooses from the unified equipment list.
+- Archived equipment rejects new journal/standard mutations but keeps read-only history.
+- API/persistence either migrate to `equipment -> owned standards -> equipment journal` or conservatively hide old measuring-instrument storage behind the target response model.
+- If persistence/API changes, migrations, backend services/repositories, tests, and Swagger/OpenAPI are refreshed.
+- Storybook `EquipmentRegistryWorkspace` stories are updated for:
+  - `TechnicalEquipmentList`;
+  - `DiagnosticEquipmentWithStandards`;
+  - `DiagnosticEquipmentWithoutStandards`;
+  - `UnifiedJournal`;
+  - `ScopedReadonly`;
+  - `ArchiveVisible`;
+  - `LoadError`;
+  - `LongEquipmentList`.
+- Targeted `/equipment` smoke/e2e proof is updated for the unified workspace and old tab params tolerance.
+- Canonical docs and stage artifacts describe the implemented contract without leaving old reusable-standard or tabbed-registry copy as current behavior.
 
 ## Proof Requirements
 
-- Harness:
+- Harness / stage artifacts:
   - `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data`
-- Component lookup and UI workflow:
-  - run `python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query "InputField hint helper help tooltip"`;
-  - record the matched `Primitives/InputField` story/source and the `extend` decision in evidence;
+  - `jq empty .agent/stages/03-identity-master-data/evidence.json .agent/stages/03-identity-master-data/feature_list.json .agent/stages/03-identity-master-data/verdict.json`
+- UI workflow:
   - use `$vrk-web-ui-workflow`;
-  - run `$web-design-guidelines` on touched UI files and close or explicitly document findings.
+  - read `.impeccable.md`, `docs/design/ui-workflow.md`, `docs/design/serviceops-design-system.md`, `docs/architecture/frontend-architecture.md`, and relevant equipment files before UI edits;
+  - run `python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query "equipment registry diagnostic equipment standards journal"`;
+  - record lookup result, `reuse` / `extend` / `create` decision, changed UI files, and `$web-design-guidelines` result.
+- Backend checks if backend/API/persistence changes:
+  - gofmt on touched Go files;
+  - backend tests;
+  - backend build;
+  - Swagger/OpenAPI refresh if annotations or schema changed.
 - Web checks:
-  - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run lint`;
-  - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run typecheck`;
-  - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run build`;
-  - `cd apps/web && env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH pnpm run build-storybook`.
-- Focused proof:
-  - DOM or browser proof that `WithHint` does not expose the hint as persistent below-field text, but does expose it on hover/focus;
-  - focused `/company` proof against the existing runtime stack if available at `http://localhost:3100`, or a documented skip if the stack is unavailable and the user did not ask to start a dev server;
-  - proof that an invalid `КПП` still renders a visible field error below the input.
+  - `pnpm run web:typecheck` or repo-equivalent command;
+  - `pnpm run web:lint` or repo-equivalent command;
+  - `pnpm run web:build` or repo-equivalent command;
+  - Storybook build command used in this repo.
+- Targeted proof:
+  - create technical equipment;
+  - create diagnostic equipment with two owned standards;
+  - prove a standard is not reusable/linkable by another equipment record;
+  - create equipment journal entry and verify derived status/nextDueDate;
+  - archive parent and prove new journal/standard mutations are rejected while history remains readable;
+  - source/browser audit that no standalone standards list or standard journal remains in `/equipment`.
 - Verifier:
-  - one fresh verifier must independently reproduce the slice-011 acceptance;
-  - verifier must not edit production code;
-  - `feature_list.json` entry for this slice remains `passes: false` until that verifier returns `PASS`.
-
-## Mandatory UI Workflow
-
-This slice touches `apps/web/shared/ui`, so the reuse-first VRK UI workflow is mandatory.
-
-- Design context to read before implementation:
-  - `.impeccable.md`
-  - `docs/design/ui-workflow.md`
-  - `docs/design/serviceops-design-system.md`
-  - `docs/architecture/frontend-architecture.md`
-  - `docs/design/storybook-component-backlog.md`
-- Component lookup target:
-  - `InputField hint helper help tooltip`
-- Expected lookup result:
-  - `Primitives/InputField [InputField]`
-  - story: `apps/web/stories/primitives/InputField.stories.tsx`
-  - source: `apps/web/shared/ui/InputField.tsx`
-  - relevant stories already include `WithHint` and `WithError`.
-- Expected reuse strategy:
-  - `extend` the existing `InputField`;
-  - update the existing InputField stories;
-  - use the existing label/input/error API shape;
-  - do not create a new reusable input family;
-  - create a separate reusable tooltip/help primitive only if implementation proves the local extension is unsafe, and then add stories plus the required backlog update.
+  - run one fresh verifier after implementation;
+  - verifier may write only verification artifacts and must not edit production code;
+  - `feature_list.json` entry `stage03-equipment-diagnostic-equipment-correction` remains `passes: false` until verifier returns `PASS`.
 
 ## File / Module Ownership
 
-- `apps/web/shared/ui/InputField.tsx`
-- `apps/web/stories/primitives/InputField.stories.tsx`
-- `/company` form consumers only for minimal integration fixes if the shared component extension requires usage adjustments:
-  - `apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx`
-- `apps/web/shared/ui/index.ts` only if a justified reusable help/tooltip export is introduced
-- `apps/web/package.json` and `pnpm-lock.yaml` only if a justified existing-stack tooltip dependency is added
-- `.agent/stages/03-identity-master-data/**` for evidence, verifier outputs, and proof notes
+- `apps/backend/internal/equipment/**`
+- `apps/backend/migrations/**`
+- `apps/backend/docs/swagger/**`
+- `apps/web/app/(runtime)/equipment/page.tsx`
+- `apps/web/app/api/equipment/**`
+- `apps/web/features/Stage03Equipment/**`
+- `apps/web/shared/api/equipment.ts`
+- `apps/web/shared/storybook/runtime-fixtures.ts`
+- `apps/web/shared/storybook/runtime-api-mock.*`
+- `apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx`
+- `apps/web/tests/equipment-registries.smoke.spec.ts`
+- `docs/roadmap.md`
+- `docs/PRD-MVP.md`
+- `docs/architecture/identity-master-data.md`
+- `docs/architecture/frontend-architecture.md`
+- `.agent/stages/03-identity-master-data/**`
 
 ## Canonical Doc Targets If Slice Lands
 
-- `docs/design/storybook-component-backlog.md`
-  - narrow update likely needed for `UI-03 InputField` if the implemented contract formalizes `hint` as hover/focus help instead of inline helper text;
-  - no new component backlog family is expected because this should extend existing `InputField`.
-- `docs/design/serviceops-design-system.md`
-  - update only if implementation changes the general field/help/error rules beyond this `InputField` contract.
+- `docs/architecture/identity-master-data.md`
+  - equipment domain source of truth, data ownership, archive/journal behavior, diagrams.
 - `docs/architecture/frontend-architecture.md`
-  - no update expected unless implementation introduces a new reusable tooltip primitive, dependency policy, or broader UI architecture decision.
-- No `docs/roadmap.md`, API, Swagger, or backend docs update is expected for this UI-only clutter/accessibility slice.
+  - `/equipment` frontend route/query compatibility and unified workspace boundary.
+- `docs/PRD-MVP.md`
+  - product-facing scope and exclusions.
+- `docs/roadmap.md`
+  - Stage 03 acceptance wording and handoff guardrails.
+- Swagger/OpenAPI files if backend contract changes.
 
 ## Non-Goals
 
-- Reworking organization profile layout, requisites validation, legal-form behavior, logo upload, division/unit forms, employees, contracts, equipment, or metrology registries;
-- changing backend APIs, database schema, OpenAPI/Swagger, seeds, or runtime auth/session behavior;
-- adding Stage 04 request flows or any post-MVP form-builder/help-center behavior;
-- replacing `SelectField` or `TextareaField` hint contracts in this slice unless a direct regression is introduced by shared helpers;
-- starting an ad-hoc dev server without an explicit user request.
+- Stage 04 request creation/detail workflow.
+- Contractor execution or contractor-side equipment registries.
+- Аршин integration.
+- Accredited-organization equipment master data.
+- A standalone industry metrology module.
+- Replacing the entire `/equipment` route with a new parallel page or reusable component family.

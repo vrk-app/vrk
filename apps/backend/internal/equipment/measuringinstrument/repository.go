@@ -9,9 +9,10 @@ import (
 )
 
 type StandardScope struct {
-	DivisionID *string
-	UnitID        *string
-	OwnerLabel    *string
+	DivisionID            *string
+	UnitID                *string
+	OwnerLabel            *string
+	DiagnosticEquipmentID *string
 }
 
 type MeasuringInstrumentRepository interface {
@@ -261,34 +262,13 @@ func (r *measuringInstrumentRepository) Archive(ctx context.Context, id uuid.UUI
 }
 
 func (r *measuringInstrumentRepository) ReplaceStandardLinks(ctx context.Context, measuringInstrumentID uuid.UUID, standardIDs []uuid.UUID) error {
-	tx, err := r.db.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback(ctx)
-
-	if _, err := tx.Exec(ctx, `DELETE FROM registry_measuring_instrument_standards WHERE measuring_instrument_id = $1`, measuringInstrumentID); err != nil {
-		return err
-	}
-
-	for _, standardID := range standardIDs {
-		if _, err := tx.Exec(
-			ctx,
-			`INSERT INTO registry_measuring_instrument_standards (measuring_instrument_id, standard_id) VALUES ($1, $2)`,
-			measuringInstrumentID,
-			standardID,
-		); err != nil {
-			return err
-		}
-	}
-
-	return tx.Commit(ctx)
+	return nil
 }
 
 func (r *measuringInstrumentRepository) ListStandardLinksByOrganization(ctx context.Context, organizationID uuid.UUID) (map[string][]LinkedStandard, error) {
 	rows, err := r.db.Query(ctx, `
         SELECT
-            link.measuring_instrument_id,
+            standard.diagnostic_equipment_id,
             standard.id,
             standard.standard_type,
             standard.model,
@@ -296,13 +276,13 @@ func (r *measuringInstrumentRepository) ListStandardLinksByOrganization(ctx cont
             standard.serial_number,
             standard.status,
             COALESCE(standard.owner_label, org.shell_name) AS scope_label
-        FROM registry_measuring_instrument_standards link
-        JOIN registry_measuring_instruments mi ON mi.id = link.measuring_instrument_id
-        JOIN registry_standards standard ON standard.id = link.standard_id
+        FROM registry_standards standard
+        JOIN registry_measuring_instruments mi ON mi.id = standard.diagnostic_equipment_id
         JOIN auth_bootstrap_organizations org ON org.id = standard.organization_id
         WHERE mi.organization_id = $1
-          AND mi.archived_at IS NULL
+          AND standard.organization_id = $1
           AND standard.archived_at IS NULL
+          AND standard.diagnostic_equipment_id IS NOT NULL
         ORDER BY standard.created_at DESC
     `, organizationID)
 	if err != nil {
@@ -341,7 +321,7 @@ func (r *measuringInstrumentRepository) GetStandardScopes(ctx context.Context, o
 	}
 
 	rows, err := r.db.Query(ctx, `
-        SELECT id, division_id, unit_id, owner_label
+		SELECT id, division_id, unit_id, owner_label, diagnostic_equipment_id
         FROM registry_standards
         WHERE organization_id = $1 AND id = ANY($2) AND archived_at IS NULL
     `, organizationID, standardIDs)
@@ -356,7 +336,8 @@ func (r *measuringInstrumentRepository) GetStandardScopes(ctx context.Context, o
 		var divisionID *uuid.UUID
 		var unitID *uuid.UUID
 		var ownerLabel *string
-		if err := rows.Scan(&id, &divisionID, &unitID, &ownerLabel); err != nil {
+		var diagnosticEquipmentID *uuid.UUID
+		if err := rows.Scan(&id, &divisionID, &unitID, &ownerLabel, &diagnosticEquipmentID); err != nil {
 			return nil, err
 		}
 
@@ -368,6 +349,10 @@ func (r *measuringInstrumentRepository) GetStandardScopes(ctx context.Context, o
 		if unitID != nil {
 			value := unitID.String()
 			scope.UnitID = &value
+		}
+		if diagnosticEquipmentID != nil {
+			value := diagnosticEquipmentID.String()
+			scope.DiagnosticEquipmentID = &value
 		}
 		result[id.String()] = scope
 	}

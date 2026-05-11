@@ -1,0 +1,15 @@
+## apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+
+✓ pass
+
+## apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+
+✓ pass
+
+## apps/web/shared/storybook/runtime-api-mock.tsx
+
+✓ pass
+
+## apps/web/app/api/equipment/measuring-instruments/[measuringInstrumentId]/standards/[standardId]/route.ts
+
+✓ pass - proxy route, no user-facing UI

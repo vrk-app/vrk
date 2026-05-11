@@ -1,0 +1,16 @@
+Storybook registry entries: 37
+Query: "equipment registry diagnostic equipment standards journal"
+
+1. Equipment/EquipmentRegistryWorkspace [EquipmentRegistryWorkspace]
+   story: apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+   source: apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+   stories: EquipmentTab, MeasuringInstrumentsTab, StandardsTab, WithArchiveVisible, ScopedReadonly, LoadError, LongEquipmentList, LongMeasuringInstrumentList, LongStandardsList
+   tags: autodocs
+2. Contracts/ContractsRegistry [ContractsRegistry]
+   story: apps/web/stories/contracts/ContractsRegistry.stories.tsx
+   source: apps/web/features/Stage03Contracts/ui/ContractsRegistry.tsx
+   stories: CustomerAdmin, CustomerEmpty, CustomerRestricted, DivisionAdminScoped, UnitAdminScoped, ContractorReadonly
+   tags: autodocs
+
+Reuse decision: extend existing EquipmentRegistryWorkspace and its existing Storybook story file.
+Rationale: lookup found a direct story-backed equipment registry workspace covering the target domain surface, so no net-new reusable/domain component family is needed.

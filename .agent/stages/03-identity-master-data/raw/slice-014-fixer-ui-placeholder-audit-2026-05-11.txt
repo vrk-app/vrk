@@ -1,0 +1,4 @@
+COMMAND: UI placeholder audit
+1350:            placeholder="Без связи…"
+1904:              placeholder="Выберите запись…"
+EXIT_CODE=0

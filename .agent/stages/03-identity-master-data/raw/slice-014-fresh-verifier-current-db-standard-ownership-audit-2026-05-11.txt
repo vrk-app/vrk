@@ -1,0 +1,13 @@
+COMMAND: docker compose -f compose.platform.yml exec -T db psql -U postgres -d db standard ownership/m2m audit
+
+ standards_without_parent 
+--------------------------
+                       67
+(1 row)
+
+ standard_id | linked_mi_count 
+-------------+-----------------
+(0 rows)
+
+
+EXIT_CODE=0

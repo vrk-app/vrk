@@ -1,0 +1,198 @@
+Final verifier audit of second fresh-verifier result before final verdict overwrite
+
+Current pre-final verdict status/failed criteria/proof gaps:
+{
+  "status": "FAIL",
+  "sprint_contract_id": "slice-014-equipment-domain-correction",
+  "failed_criteria": [
+    "Documentation/stage artifact alignment for the changed equipment-domain slice"
+  ],
+  "proof_gaps": [
+    {
+      "id": "stage-spec-verification-plan-still-requires-separate-registries",
+      "severity": "medium",
+      "details": "The corrected contract removes standalone standards registry behavior and requires one /equipment workspace. However .agent/stages/03-identity-master-data/stage_spec.md still says the verification plan must prove separate registries for equipment / measuring instruments / standards. Because stage artifacts are a handoff source for future verification, this is material documentation drift on the changed slice.",
+      "evidence": [
+        ".agent/stages/03-identity-master-data/stage_spec.md:193",
+        ".agent/stages/03-identity-master-data/sprint_contract.md:21",
+        ".agent/stages/03-identity-master-data/sprint_contract.md:33",
+        ".agent/stages/03-identity-master-data/raw/slice-014-second-verifier-doc-stage-audit-2026-05-11.txt"
+      ]
+    }
+  ],
+  "reproduced_checks": [
+    "harness self-check: PASS",
+    "stage JSON audit: PASS",
+    "git diff --check: PASS",
+    "git diff audit: completed for backend, web, docs, and stage artifacts",
+    "backend go test ./... via Docker: PASS",
+    "backend go build -buildvcs=false ./... via Docker: PASS",
+    "web lint: PASS",
+    "web typecheck: PASS",
+    "web production build: PASS",
+    "Storybook build: PASS with existing Vite/use-client/eval/chunk warnings",
+    "Storybook component lookup: matched existing Equipment/EquipmentRegistryWorkspace; reuse decision extend, no net-new reusable UI family",
+    "current-slice UI evidence metadata audit: PASS",
+    "source grep audit for obsolete equipment tabs/list labels: PASS; only negative smoke assertions reference tablist",
+    "source grep audit for standalone standards registry and standard journal target surface: PASS; no /api/v1/standards route/proxy/Swagger list surface remains; only nested POST /measuring-instruments/{id}/standards remains",
+    "persistence source audit: PASS for diagnostic_equipment_id ownership, current-row check constraint, migration copy/archive strategy, and diagnostic card read path",
+    "compose DB/API audit: PASS; schema version 16 dirty false, backend readyz PASS, localhost:3100 /equipment HEAD 200, /api/v1/standards probe 404",
+    "live DB ownership audit before smoke: PASS; active_without_parent=0 and reusable_standard_rows=0",
+    "targeted /equipment Playwright smoke on localhost:3100 and backend :18080: PASS",
+    "live DB ownership audit after smoke: PASS; active_without_parent=0 and reusable_standard_rows=0",
+    "Web Interface Guidelines gate for changed equipment UI files: PASS",
+    "docs/stage artifact audit: FAIL for stale stage_spec verification-plan bullet"
+  ]
+}
+
+Current pre-final problems summary:
+# Problems
+
+Current second fresh-verifier verdict for `slice-014-equipment-domain-correction`: `FAIL`.
+
+## Failed Criteria
+
+- Documentation/stage artifact alignment for the changed equipment-domain slice.
+
+## Proof Gap
+
+1. Stage spec verification plan still requires the old separated registry proof.
+   - `.agent/stages/03-identity-master-data/stage_spec.md:193` says to prove separate registries for `equipment / measuring instruments / standards`.
+   - That contradicts the current slice contract in `.agent/stages/03-identity-master-data/sprint_contract.md:21` through `.agent/stages/03-identity-master-data/sprint_contract.md:33`: one `/equipment` workspace, no `Оборудование / СИ / Эталоны` tabs, and no standalone standards list.
+   - Raw audit: `.agent/stages/03-identity-master-data/raw/slice-014-second-verifier-doc-stage-audit-2026-05-11.txt`.
+
+## Reproduced Proof
+
+- Harness self-check: `PASS`.
+- Stage JSON audit: `PASS`.
+- `git diff --check`: `PASS`.
+- Backend `go test ./...` via Docker: `PASS`.
+- Backend `go build -buildvcs=false ./...` via Docker: `PASS`.
+- Web lint/typecheck/build: `PASS`.
+- Storybook build: `PASS` with existing Vite/use-client/eval/chunk warnings.
+- Storybook lookup: matched `Equipment/EquipmentRegistryWorkspace`; reuse decision is `extend`; no net-new reusable UI family.
+- Current-slice UI workflow evidence metadata: `PASS`.
+- Source audit: obsolete `/equipment` tabs, standalone standards list headings, and standard journal copy are not present in production UI; only negative smoke assertions mention `tablist`.
+- Source/API audit: no standalone `/api/v1/standards` route/proxy/Swagger list surface remains; only nested `POST /measuring-instruments/{id}/standards` remains.
+- Persistence source audit: migration/read path now uses `registry_standards.diagnostic_equipment_id`; legacy many-to-many table no longer feeds diagnostic cards.
+- Compose DB/API audit: migration version `16`, dirty `false`; backend `/readyz` ready; `/equipment` HEAD 200; removed `/api/v1/standards` probe returns 404.
+- Live DB audit before and after smoke: `active_without_parent=0`, `reusable_standard_rows=0`.
+- Targeted `/equipment` Playwright smoke on existing compose-backed `localhost:3100` and backend `:18080`: `PASS`.
+- Web Interface Guidelines gate for changed equipment UI files: `PASS`.
+- Docs/stage artifact audit: `FAIL` for the stale `stage_spec.md` verification-plan bullet.
+
+## Exact Reproduction
+
+All commands were run from `/Users/yura-posledov/cursor/vrk`.
+
+```bash
+python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data
+jq empty .agent/stages/03-identity-master-data/evidence.json .agent/stages/03-identity-master-data/feature_list.json .agent/stages/03-identity-master-data/verdict.json
+git diff --check
+git status --short
+git diff --name-status
+git diff --stat
+git diff -- apps/backend/internal/app/app.go
+git diff -- apps/backend/internal/equipment apps/backend/migrations apps/backend/docs/swagger/swagger.yaml
+git diff -- 'apps/web/app/(runtime)/equipment/page.tsx' apps/web/app/api/equipment apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx apps/web/shared/api/equipment.ts apps/web/shared/api/index.ts apps/web/shared/storybook apps/web/stories/equipment apps/web/tests/equipment-registries.smoke.spec.ts
+git diff -- docs/PRD-MVP.md docs/architecture/frontend-architecture.md docs/architecture/identity-master-data.md docs/roadmap.md .agent/stages/03-identity-master-data/sprint_contract.md .agent/stages/03-identity-master-data/stage_spec.md .agent/stages/03-identity-master-data/equipment-domain-correction-plan.md
+docker run --rm -v "$PWD/apps/backend":/app -w /app -e GOCACHE=/tmp/go-cache -e GOMODCACHE=/tmp/go-mod-cache golang:1.26-alpine sh -lc 'export PATH=/usr/local/go/bin:$PATH; go test ./...'
+docker run --rm -v "$PWD/apps/backend":/app -w /app -e GOCACHE=/tmp/go-cache -e GOMODCACHE=/tmp/go-mod-cache golang:1.26-alpine sh -lc 'export PATH=/usr/local/go/bin:$PATH; go build -buildvcs=false ./...'
+env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run lint
+env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run typecheck
+env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run build
+env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run build-storybook
+python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query "equipment registry diagnostic equipment standards journal"
+jq '{sprint_contract_id, verifier_state, top_level: {design_brief_source, ui_lookup, ui_reuse_decision, changed_ui_files, ui_review}, equipment_domain_correction: .equipment_domain_correction}' .agent/stages/03-identity-master-data/evidence.json
+rg -n "Оборудование /|Средства измерения в учете|Эталоны в учете|Журнал операций по эталонам|Связанные эталоны|tablist|getByRole\\(\"tab\"|Tabs" 'apps/web/app/(runtime)/equipment/page.tsx' apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx apps/web/tests/equipment-registries.smoke.spec.ts
+rg -n "api/equipment/standards|fetchStandardRegistry|/api/v1/standards|StandardRecord|latestJournal|journalCount|List standards registry|/standards/\\{.*\\}/journals|standards/.*/journals|standards/\\[standardId\\]/journals|Route\\(\"/standards\"|/standards \\[get\\]|/standards \\[post\\]" apps/web/app/api/equipment apps/web/shared/api apps/backend/internal/app/app.go apps/backend/internal/equipment/standard apps/backend/docs/swagger/swagger.yaml
+find apps/web/app/api/equipment -path '*standards*' -type f -print | sort
+nl -ba apps/backend/migrations/000016_equipment_domain_correction.up.sql
+nl -ba apps/backend/migrations/000016_equipment_domain_correction.down.sql
+rg -n "diagnostic_equipment_id|registry_measuring_instrument_standards|UNION|ReplaceStandardLinks|GetStandardScopes|ErrDiagnosticEquipmentRequired|ListStandardLinksByOrganization|CreateOwnedStandard|Archived" apps/backend/internal/equipment/standard apps/backend/internal/equipment/measuringinstrument apps/backend/migrations/000016_equipment_domain_correction.up.sql
+docker compose -f compose.platform.yml ps
+docker compose -f compose.platform.yml exec -T db psql -U postgres -d db -c "SELECT version, dirty FROM schema_migrations;"
+docker compose -f compose.platform.yml exec -T db psql -U postgres -d db -c "SELECT COUNT(*) FILTER (WHERE diagnostic_equipment_id IS NULL) AS without_parent, COUNT(*) FILTER (WHERE archived_at IS NULL AND diagnostic_equipment_id IS NULL) AS active_without_parent, COUNT(*) AS total FROM registry_standards;"
+docker compose -f compose.platform.yml exec -T db psql -U postgres -d db -c "WITH reusable AS (SELECT standard_id FROM registry_measuring_instrument_standards GROUP BY standard_id HAVING COUNT(DISTINCT measuring_instrument_id) > 1) SELECT COUNT(*) AS reusable_standard_rows FROM reusable;"
+docker compose -f compose.platform.yml exec -T db psql -U postgres -d db -c "SELECT conname, pg_get_constraintdef(oid) FROM pg_constraint WHERE conname = 'chk_registry_standards_current_diagnostic_owner';"
+curl -fsS http://127.0.0.1:18080/readyz
+curl -fsS -I --max-time 5 http://localhost:3100/equipment
+curl -sS -o /tmp/vrk-standards-status-body.txt -w 'HTTP %{http_code}\n' http://127.0.0.1:18080/api/v1/standards
+env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false WEB_SMOKE_PORT=3100 WEB_SMOKE_BACKEND_URL=http://127.0.0.1:18080 pnpm --dir apps/web exec playwright test tests/equipment-registries.smoke.spec.ts --config playwright.config.ts
+curl -fsSL https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md -o .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-05-11-slice-014-second-verifier.md
+rg -n "placeholder=|outline-none|transition-all|onPaste|autoFocus|<img|<Image|<div[^\\n]*onClick|<span[^\\n]*onClick|<button|type=\\\"button\\\"|aria-label|autocomplete|autoComplete|inputMode|\\.map\\(" 'apps/web/app/(runtime)/equipment/page.tsx' apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+rg -n "Эталоны в учете|Средства измерения в учете|Журнал операций по эталонам|Связанные эталоны|many-to-many|переиспольз|reusable|/api/v1/standards|/standards|standard registry|standards registry|tab=mi|tab=standards|Оборудование / СИ / Эталоны|separate registries" docs/PRD-MVP.md docs/roadmap.md docs/architecture/identity-master-data.md docs/architecture/frontend-architecture.md .agent/stages/03-identity-master-data/sprint_contract.md .agent/stages/03-identity-master-data/stage_spec.md .agent/stages/03-identity-master-data/equipment-domain-correction-plan.md .agent/stages/03-identity-master-data/evidence.md .agent/stages/03-identity-master-data/evidence.json .agent/stages/03-identity-master-data/progress.md
+jq '.[] | select(.id=="stage03-equipment-diagnostic-equipment-correction")' .agent/stages/03-identity-master-data/feature_list.json
+```
+
+## Smallest Safe Fix Direction
+
+Update `.agent/stages/03-identity-master-data/stage_spec.md` only: replace the stale verification-plan bullet with the corrected proof target, e.g. prove one `/equipment` workspace, no standalone standards registry, diagnostic-owned standards inside cards, and one equipment operation journal. Then rerun harness, JSON audit, and the docs/stage artifact audit.
+
+Second verifier product/API/persistence/UI proof PASS evidence snippets:
+.agent/stages/03-identity-master-data/problems.md:24:- Storybook build: `PASS` with existing Vite/use-client/eval/chunk warnings.
+.agent/stages/03-identity-master-data/problems.md:33:- Web Interface Guidelines gate for changed equipment UI files: `PASS`.
+.agent/stages/03-identity-master-data/evidence.md:28:Fresh verifier initially failed this slice for owned-standard migration/read-path gaps, remaining standalone standards registry exposure, stale current-slice UI evidence metadata, and two placeholder findings. The minimal fixer plus parent follow-up closed those gaps: migration 16 now makes current standards diagnostic-owned or archived, diagnostic cards ignore the old many-to-many table, standalone standards routes/proxies are removed, placeholders pass the UI gate, and current-slice metadata points to slice-014. The second fresh verifier reproduced the product/API/persistence/UI proof and failed only for a stale `stage_spec.md` verification-plan bullet; that doc-only drift is now fixed. A new fresh verifier must still own the final PASS.
+.agent/stages/03-identity-master-data/evidence.md:53:  - Verification status before fresh verifier: `SELF_VERIFIED_AWAITING_FRESH_VERIFIER`; backend tests/build, migration, Swagger refresh, web lint/typecheck/build, Storybook build, targeted smoke, source audits, UI review, and `git diff --check` passed.
+.agent/stages/03-identity-master-data/evidence.md:63:    - web lint/typecheck/build and Storybook build passed;
+.agent/stages/03-identity-master-data/evidence.md:108:  - Web Interface Guidelines review: `PASS`.
+.agent/stages/03-identity-master-data/evidence.md:111:  - Verification status before fresh verifier: `SELF_VERIFIED_AWAITING_FRESH_VERIFIER`; harness, lint, typecheck, web build, Storybook build, DOM proof, UI review, and `git diff --check` passed.
+.agent/stages/03-identity-master-data/evidence.md:131:  - Web Interface Guidelines review: `PASS`.
+.agent/stages/03-identity-master-data/evidence.md:134:  - Verification status before fresh verifier: `PASS` for harness, web typecheck, web lint, web build, Storybook build, source audit, UI review, and diff check.
+.agent/stages/03-identity-master-data/evidence.md:158:  - Web Interface Guidelines review: `PASS`.
+.agent/stages/03-identity-master-data/evidence.md:161:  - Verification status before fresh verifier: `SELF_VERIFIED_AWAITING_FRESH_VERIFIER`; harness, lint, typecheck, web build, Storybook build, source audit, UI review, JSON audit, post-evidence harness, and `git diff --check` passed.
+.agent/stages/03-identity-master-data/evidence.md:185:  - Web Interface Guidelines review: `PASS`.
+.agent/stages/03-identity-master-data/evidence.md:188:  - Verification status before fresh verifier: `SELF_VERIFIED_AWAITING_FRESH_VERIFIER`; harness, lint, typecheck, web build, Storybook build, source audit, UI review, runtime HEAD check, JSON audit, and `git diff --check` passed.
+.agent/stages/03-identity-master-data/evidence.md:211:  - Web Interface Guidelines review: `PASS`.
+.agent/stages/03-identity-master-data/evidence.md:280:  - Storybook component lookup reruns and Web Interface Guidelines review
+.agent/stages/03-identity-master-data/evidence.md:344:  - Status: `PASS` for compile, sqlc Docker fallback, backend test/build, Swagger refresh, web typecheck/lint/build, targeted proof, doc audit, UI review, and harness.
+.agent/stages/03-identity-master-data/evidence.md:384:  - Storybook component lookup reruns and Web Interface Guidelines review
+.agent/stages/03-identity-master-data/evidence.md:431:  - Web Interface Guidelines source fetched from `https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md`
+.agent/stages/03-identity-master-data/evidence.md:579:  - Web Interface Guidelines review of the changed company UI found no new blocking issue because the change only removes one optional input and keeps existing labels, controls, and dialog behavior.
+.agent/stages/03-identity-master-data/progress.md:58:  - web lint, typecheck, production build, and Storybook build;
+.agent/stages/03-identity-master-data/progress.md:61:  - Web Interface Guidelines review;
+.agent/stages/03-identity-master-data/progress.md:83:  - web lint, typecheck, production build, and Storybook build;
+.agent/stages/03-identity-master-data/progress.md:235:  - backend go test/build;
+.agent/stages/03-identity-master-data/progress.md:237:  - web typecheck/lint/build/browser smoke;
+.agent/stages/03-identity-master-data/progress.md:365:  - fresh UI gate review against the current Web Interface Guidelines.
+.agent/stages/03-identity-master-data/progress.md:414:  - fresh UI review against the current Web Interface Guidelines.
+.agent/stages/03-identity-master-data/progress.md:466:  - fresh manual UI review of the `/equipment` slice against the current Web Interface Guidelines.
+.agent/stages/03-identity-master-data/progress.md:620:  - current local UI review against the latest Web Interface Guidelines `PASS` on `.agent/stages/03-identity-master-data/raw/slice-007-008-ui-review-2026-04-21-orchestrator-rerun2.txt`.
+.agent/stages/03-identity-master-data/progress.md:802:- Continued as the single minimal fixer for `slice-010-stage03-org-structure-management` after the fresh verifier failed only on documentation sync.
+.agent/stages/03-identity-master-data/progress.md:1051:  - web lint, typecheck, build, and Storybook build with bundled Node;
+.agent/stages/03-identity-master-data/progress.md:1071:  - recorded Web Interface Guidelines review for the changed contracts/UI files.
+.agent/stages/03-identity-master-data/progress.md:1134:  - web typecheck;
+.agent/stages/03-identity-master-data/progress.md:1135:  - web lint;
+.agent/stages/03-identity-master-data/progress.md:1136:  - web production build;
+.agent/stages/03-identity-master-data/progress.md:1137:  - Storybook build, with existing Vite `use client`/chunk warnings only;
+.agent/stages/03-identity-master-data/progress.md:1139:  - Web Interface Guidelines review;
+.agent/stages/03-identity-master-data/progress.md:1166:  - web lint;
+.agent/stages/03-identity-master-data/progress.md:1167:  - web typecheck;
+.agent/stages/03-identity-master-data/progress.md:1168:  - web production build;
+.agent/stages/03-identity-master-data/progress.md:1169:  - Storybook build, with existing chunk-size warning only;
+.agent/stages/03-identity-master-data/progress.md:1171:  - Web Interface Guidelines review;
+.agent/stages/03-identity-master-data/progress.md:1190:  - Web Interface Guidelines review passed.
+.agent/stages/03-identity-master-data/progress.md:1192:  - web lint, typecheck, production build, and Storybook build passed with bundled Node;
+.agent/stages/03-identity-master-data/progress.md:1205:  - fresh Web Interface Guidelines review after the `autoComplete="off"` / example placeholder fix;
+.agent/stages/03-identity-master-data/progress.md:1206:  - web lint, typecheck, production build, and Storybook build;
+.agent/stages/03-identity-master-data/progress.md:1217:- Ran as the single minimal fixer for the fresh-verifier `slice-011-input-help-tooltip` story-level Web Interface Guidelines findings only.
+.agent/stages/03-identity-master-data/progress.md:1223:  - web lint: `raw/slice-011-input-help-tooltip-fixer-web-lint-2026-04-30.txt`;
+.agent/stages/03-identity-master-data/progress.md:1224:  - web typecheck: `raw/slice-011-input-help-tooltip-fixer-web-typecheck-2026-04-30.txt`;
+.agent/stages/03-identity-master-data/progress.md:1241:  - Web Interface Guidelines review passed.
+.agent/stages/03-identity-master-data/progress.md:1246:- Proof bundle recorded for harness, web lint/typecheck/build, Storybook build, source audit, UI review, JSON audit, and `git diff --check`; a fresh verifier still owns any final Stage 03 PASS decision.
+.agent/stages/03-identity-master-data/verdict.json:5:  "summary": "Second fresh verification reproduced the product/API/persistence/UI proof after the fixer: backend and web checks pass, Storybook builds, live compose DB reports active_without_parent=0 and reusable_standard_rows=0, the removed /api/v1/standards surface returns 404, and the targeted /equipment smoke proves the unified workspace, owned standards, scoped read-only/contractor bounds, and archived mutation rejection/history. The slice still cannot pass because a current stage artifact remains materially stale: stage_spec.md still instructs future verification to prove separate equipment / measuring-instrument / standards registries, contradicting the corrected one-workspace contract.",
+.agent/stages/03-identity-master-data/verdict.json:28:    "backend go test ./... via Docker: PASS",
+.agent/stages/03-identity-master-data/verdict.json:29:    "backend go build -buildvcs=false ./... via Docker: PASS",
+.agent/stages/03-identity-master-data/verdict.json:30:    "web lint: PASS",
+.agent/stages/03-identity-master-data/verdict.json:31:    "web typecheck: PASS",
+.agent/stages/03-identity-master-data/verdict.json:32:    "web production build: PASS",
+.agent/stages/03-identity-master-data/verdict.json:33:    "Storybook build: PASS with existing Vite/use-client/eval/chunk warnings",
+.agent/stages/03-identity-master-data/verdict.json:36:    "source grep audit for obsolete equipment tabs/list labels: PASS; only negative smoke assertions reference tablist",
+.agent/stages/03-identity-master-data/verdict.json:37:    "source grep audit for standalone standards registry and standard journal target surface: PASS; no /api/v1/standards route/proxy/Swagger list surface remains; only nested POST /measuring-instruments/{id}/standards remains",
+.agent/stages/03-identity-master-data/verdict.json:38:    "persistence source audit: PASS for diagnostic_equipment_id ownership, current-row check constraint, migration copy/archive strategy, and diagnostic card read path",
+.agent/stages/03-identity-master-data/verdict.json:39:    "compose DB/API audit: PASS; schema version 16 dirty false, backend readyz PASS, localhost:3100 /equipment HEAD 200, /api/v1/standards probe 404",
+.agent/stages/03-identity-master-data/verdict.json:41:    "targeted /equipment Playwright smoke on localhost:3100 and backend :18080: PASS",
+.agent/stages/03-identity-master-data/verdict.json:43:    "Web Interface Guidelines gate for changed equipment UI files: PASS",
+.agent/stages/03-identity-master-data/verdict.json:44:    "docs/stage artifact audit: FAIL for stale stage_spec verification-plan bullet"
+
+RESULT: PASS - the only pre-final failed criterion is Documentation/stage artifact alignment; product/API/persistence/UI checks are recorded as PASS by the second fresh verifier.

@@ -1,0 +1,19 @@
+Source: .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-05-11-slice-014-fresh-verifier.md
+Reviewed files:
+- apps/web/app/(runtime)/equipment/page.tsx
+- apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+- apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+- apps/web/shared/storybook/runtime-api-mock.tsx
+
+## apps/web/app/(runtime)/equipment/page.tsx
+✓ pass
+
+## apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1350 - placeholder "Без связи" does not end with "…" or show an example pattern
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1904 - placeholder "Выберите запись" does not end with "…" or show an example pattern
+
+## apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+✓ pass
+
+## apps/web/shared/storybook/runtime-api-mock.tsx
+✓ pass

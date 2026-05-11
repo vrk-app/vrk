@@ -1,0 +1,15 @@
+COMMAND: web typecheck
+
+> @vrk/web@0.1.0 typecheck /Users/yura-posledov/cursor/vrk/apps/web
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Route types generated successfully
+.next/types/app/api/equipment/standards/[standardId]/archive/route.ts(2,24): error TS2307: Cannot find module '../../../../../../../../app/api/equipment/standards/[standardId]/archive/route.js' or its corresponding type declarations.
+.next/types/app/api/equipment/standards/[standardId]/archive/route.ts(5,29): error TS2307: Cannot find module '../../../../../../../../app/api/equipment/standards/[standardId]/archive/route.js' or its corresponding type declarations.
+.next/types/app/api/equipment/standards/[standardId]/route.ts(2,24): error TS2307: Cannot find module '../../../../../../../app/api/equipment/standards/[standardId]/route.js' or its corresponding type declarations.
+.next/types/app/api/equipment/standards/[standardId]/route.ts(5,29): error TS2307: Cannot find module '../../../../../../../app/api/equipment/standards/[standardId]/route.js' or its corresponding type declarations.
+.next/types/app/api/equipment/standards/route.ts(2,24): error TS2307: Cannot find module '../../../../../../app/api/equipment/standards/route.js' or its corresponding type declarations.
+.next/types/app/api/equipment/standards/route.ts(5,29): error TS2307: Cannot find module '../../../../../../app/api/equipment/standards/route.js' or its corresponding type declarations.
+ ELIFECYCLE  Command failed with exit code 2.
+EXIT_CODE=2

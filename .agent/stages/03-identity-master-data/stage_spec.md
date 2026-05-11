@@ -21,11 +21,10 @@
 - user accounts, organization memberships и scoped grants как отдельные сущности;
 - canonical role templates `organization_admin`, `organization_head`, `division_head`, `division_operator`, `unit_head`, `unit_operator`, `auditor`, role/scope compatibility и invitation lifecycle для сотрудников;
 - contractor/customer relation layer и contracts registry как request-routing prerequisite;
-- equipment registry;
-- measuring instruments registry;
-- standards registry;
+- equipment registry with target semantics split between technological equipment and customer diagnostic equipment / СИ;
+- standards / setup measures as `0..N` children of one diagnostic equipment record;
 - metrology operation journals, URL/reference attachment baseline и status derivation from latest valid record;
-- bounded ownership-scope labels for standards; broader org-scoped dictionary/local-draft CRUD deferred;
+- historical bounded ownership-scope labels for standards remain implementation floor only; broader org-scoped dictionary/local-draft CRUD deferred;
 - archive baseline для ключевых master-data сущностей;
 - canonical doc sync для product, architecture и stage boundaries.
 
@@ -64,6 +63,22 @@ Historical Stage 03 evidence proves the older launch-wizard implementation. The 
 - employee invite creation must not depend on a completed wizard, but division/unit-scoped invites still require an existing visible active target scope.
 
 Treat this as a bounded follow-up Stage 03 correction before claiming product-complete org-structure management.
+
+## Product correction from 2026-05-11
+
+The customer meeting clarified the equipment/metrology domain and supersedes the older reusable-standards target:
+
+- `measuring instrument` / `СИ` in this MVP means customer diagnostic equipment used by wagon repair facilities to check repair quality or unit condition;
+- technological equipment remains ordinary production/repair equipment such as stands, shop equipment and installations;
+- contractor equipment and contractor metrology equipment are out of MVP and must not be pulled into the customer-side equipment registry;
+- standards / setup measures are kit objects for one diagnostic equipment record, with target cardinality `diagnostic equipment -> 0..N standards`;
+- a working setup of a device against its own standard is not an official journal event; an official metrology journal event is the accredited-organization scenario with protocol/evidence.
+
+The already-proven slice-004/slice-005 registry implementation remains historical proof, but the next equipment-domain correction must replace the target UI/data language:
+
+- avoid presenting `СИ` as contractor-side or unrelated standalone equipment;
+- stop planning standards as freely reusable records between multiple measuring instruments;
+- keep `/equipment` as the single public customer route, but restructure its surface around technological equipment, diagnostic equipment and standards inside diagnostic equipment cards.
 
 ## Frozen phasing inside Stage 03
 
@@ -134,9 +149,14 @@ The diagram fixes the execution order after Stage 02 closure and after the later
 - direct login с несколькими eligible memberships/grants truthfully возвращает `409`, а не silently выбирает один workspace;
 - `/platform/organization-shells` и Stage 03 `organizations` admin surface не доступны анонимно и не раскрывают deployment-scoped admin credential в browser;
 - contracts registry ограничивает допустимого подрядчика для следующего request stage;
-- equipment, measuring instruments и standards существуют как отдельные реестры, без общей mega-form;
+- `/equipment` is a single customer equipment workspace with one `Новое оборудование` form, required type `Техническое` / `Диагностическое`, and one `Оборудование в учете` list;
+- old `tab=mi` / `tab=standards` query params are compatibility-only and no longer expose separate user-facing registries;
+- `СИ` is customer diagnostic equipment, and standards/setup measures are `0..N` children visible only inside their diagnostic equipment card;
+- customer admins can add standards and physically delete existing standards from the diagnostic equipment edit modal; these standard deletions are not archive visibility events;
+- standalone standards list and standards operation journal are removed from the target UI;
+- the journal is a unified `Журнал операций по оборудованию`;
 - текущий метрологический статус вычисляется из последней действующей записи журнала;
-- archive используется вместо hard delete, а archived rows открываются только через explicit archive visibility;
+- archive используется вместо hard delete для equipment / diagnostic equipment rows, а archived rows открываются только через explicit archive visibility;
 - канонические docs и stage artifacts синхронизированы и пригодны для Stage 04 handoff.
 
 ## Technical ownership / paths
@@ -171,7 +191,7 @@ The diagram fixes the execution order after Stage 02 closure and after the later
 - доказать invitation lifecycle и scoped access inheritance сценариями organization / division / unit;
 - доказать truthful `409` при direct login, если у аккаунта несколько eligible access paths;
 - доказать contracts registry и contractor restriction baseline;
-- доказать separate registries для equipment / measuring instruments / standards;
+- доказать единый `/equipment` workspace: без отдельных user-facing registries для `СИ` / эталонов, с diagnostic-owned standards внутри карточек и единым equipment journal;
 - доказать journal-driven status calculation и archive behavior;
 - зафиксировать updated canonical docs и diagram refs в evidence;
 - завершать только после fresh verifier pass.

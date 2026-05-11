@@ -41,16 +41,29 @@ type StandardRecord = {
   identifier: string;
 };
 
+type JournalRecord = {
+  id: string;
+  documentNumber: string;
+};
+
 type MeasuringInstrumentRecord = {
   id: string;
   name: string;
+  registrationNumber: string;
+  status: "active" | "inactive" | "retired";
+  standards: Array<{
+    id: string;
+    identifier: string;
+  }>;
+  nextDueDate?: string;
+  journalCount: number;
 };
 
 async function backend<T>(
   request: APIRequestContext,
   path: string,
   options: {
-    method?: "GET" | "POST";
+    method?: "GET" | "POST" | "PATCH" | "DELETE";
     token?: string;
     body?: unknown;
     platformAdmin?: boolean;
@@ -73,6 +86,30 @@ async function backend<T>(
   }
 
   return payload.data;
+}
+
+async function expectBackendFailure(
+  request: APIRequestContext,
+  path: string,
+  options: {
+    method?: "GET" | "POST" | "PATCH" | "DELETE";
+    token?: string;
+    body?: unknown;
+  },
+) {
+  const response = await request.fetch(`${backendBaseUrl}${path}`, {
+    method: options.method ?? "GET",
+    headers: {
+      Accept: "application/json",
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
+    },
+    data: options.body,
+  });
+  const payload = (await response.json()) as ApiEnvelope<unknown>;
+
+  expect(response.ok(), `${options.method ?? "GET"} ${path} should fail`).toBe(false);
+  expect(payload.success).toBe(false);
 }
 
 async function bootstrapOrg(
@@ -214,26 +251,6 @@ async function createEquipmentSeed(
   });
 }
 
-async function createStandardSeed(
-  request: APIRequestContext,
-  token: string,
-  unitId: string,
-  seed: string,
-  identifier: string,
-) {
-  return backend<StandardRecord>(request, "/api/v1/standards", {
-    method: "POST",
-    token,
-    body: {
-      unitId,
-      standardType: "Эталон напряжения",
-      model: "STD-ARCHIVE",
-      identifier,
-      metrologicalCharacteristics: `0.2 В, ${seed}`,
-    },
-  });
-}
-
 async function createMeasuringInstrumentSeed(
   request: APIRequestContext,
   token: string,
@@ -241,6 +258,8 @@ async function createMeasuringInstrumentSeed(
   seed: string,
   name: string,
 ) {
+  const nameCode = Array.from(name).reduce((sum, char) => sum + char.charCodeAt(0), 0);
+
   return backend<MeasuringInstrumentRecord>(request, "/api/v1/measuring-instruments", {
     method: "POST",
     token,
@@ -248,17 +267,37 @@ async function createMeasuringInstrumentSeed(
       unitId,
       placementKind: "standalone",
       name,
-      instrumentType: "Термометр",
-      model: "MI-ARCHIVE",
-      registrationNumber: `MI-ARCH-${seed}`,
-      serialNumber: `SER-ARCH-${seed}`,
+      instrumentType: "Диагностическое",
+      model: "DIAG-ARCHIVE",
+      registrationNumber: `DIAG-${seed}-${nameCode}`,
+      serialNumber: `SER-${seed}-${nameCode}`,
       standardIds: [],
     },
   });
 }
 
+async function createDiagnosticStandardSeed(
+  request: APIRequestContext,
+  token: string,
+  diagnosticEquipmentId: string,
+  seed: string,
+  identifier: string,
+) {
+  return backend<StandardRecord>(request, `/api/v1/measuring-instruments/${diagnosticEquipmentId}/standards`, {
+    method: "POST",
+    token,
+    body: {
+      standardType: "Установочная мера",
+      model: "STD-OWNED",
+      identifier,
+      serialNumber: `STD-SER-${seed}`,
+      metrologicalCharacteristics: `0.2 В, ${seed}`,
+    },
+  });
+}
+
 async function createMIJournalSeed(request: APIRequestContext, token: string, measuringInstrumentId: string, seed: string) {
-  return backend(request, `/api/v1/measuring-instruments/${measuringInstrumentId}/journals`, {
+  return backend<JournalRecord>(request, `/api/v1/measuring-instruments/${measuringInstrumentId}/journals`, {
     method: "POST",
     token,
     body: {
@@ -267,22 +306,7 @@ async function createMIJournalSeed(request: APIRequestContext, token: string, me
       documentNumber: `MI-ARCH-JOURNAL-${seed}`,
       validUntil: "2026-11-30",
       executorOrganization: "ФБУ Ростест-Москва",
-      comment: "Архивная история СИ",
-    },
-  });
-}
-
-async function createStandardJournalSeed(request: APIRequestContext, token: string, standardId: string, seed: string) {
-  return backend(request, `/api/v1/standards/${standardId}/journals`, {
-    method: "POST",
-    token,
-    body: {
-      operationType: "verification",
-      operationDate: "2026-03-05",
-      documentNumber: `STD-ARCH-JOURNAL-${seed}`,
-      validUntil: "2026-12-15",
-      executorOrganization: "ФБУ Ростест-Москва",
-      comment: "Архивная история эталона",
+      comment: "Архивная история диагностического оборудования",
     },
   });
 }
@@ -295,12 +319,24 @@ async function confirmArchiveModal(page: Page) {
 }
 
 async function selectFieldOption(page: Page, fieldLabel: string | RegExp, optionName: string | RegExp) {
-  await page.getByLabel(fieldLabel).click();
+  await page.getByRole("combobox", { name: fieldLabel, exact: typeof fieldLabel === "string" }).click();
   await page.getByRole("option", { name: optionName, exact: typeof optionName === "string" }).click();
 }
 
-test.describe("stage 03 metrology journals and archive contour", () => {
-  test("customer admin uses one /equipment route for journals and archive while unit user stays read-only", async ({
+const obsoleteStandaloneHeadings = [
+  ["Эталоны", "в учете"].join(" "),
+  ["Средства", "измерения", "в учете"].join(" "),
+  ["Журнал", "операций", "по эталонам"].join(" "),
+];
+
+async function expectNoStandaloneMetrologySurfaces(page: Page) {
+  for (const heading of obsoleteStandaloneHeadings) {
+    await expect(page.getByRole("heading", { level: 2, name: heading })).toHaveCount(0);
+  }
+}
+
+test.describe("stage 03 unified equipment workspace", () => {
+  test("customer admin uses one /equipment surface with owned standards while scoped and contractor access stay bounded", async ({
     page,
     request,
   }) => {
@@ -310,16 +346,24 @@ test.describe("stage 03 metrology journals and archive contour", () => {
       role: "customer",
     });
     const employee = await createScopedEmployee(request, admin, seed);
+    const contractor = await bootstrapOrg(request, {
+      label: `equipment-contractor-${seed}`,
+      role: "contractor",
+    });
 
     const equipmentName = `Насос Питательный ${seed}`;
     const updatedEquipmentName = `Насос Питательный обновлен ${seed}`;
-    const standardIdentifier = `STD-${seed}`;
-    const updatedStandardIdentifier = `STD-EDIT-${seed}`;
-    const instrumentName = `Манометр ${seed}`;
-    const updatedInstrumentName = `Манометр обновлен ${seed}`;
+    const diagnosticName = `Манометр диагностический ${seed}`;
+    const updatedDiagnosticName = `Манометр диагностический обновлен ${seed}`;
+    const diagnosticStandardOne = `STD-OWNED-A-${seed}`;
+    const diagnosticStandardTwo = `STD-OWNED-B-${seed}`;
+    const diagnosticStandardThree = `STD-OWNED-C-${seed}`;
     const archiveEquipmentName = `Оборудование в архив ${seed}`;
+    const archiveInstrumentName = `Диагностическое в архив ${seed}`;
     const archiveStandardIdentifier = `STD-ARCHIVE-${seed}`;
-    const archiveInstrumentName = `Термометр архив ${seed}`;
+    const reuseStandardIdentifier = `STD-REUSE-${seed}`;
+    const deleteStandardKeepIdentifier = `STD-DELETE-KEEP-${seed}`;
+    const deleteStandardRemoveIdentifier = `STD-DELETE-REMOVE-${seed}`;
 
     const archiveEquipment = await createEquipmentSeed(
       request,
@@ -328,13 +372,6 @@ test.describe("stage 03 metrology journals and archive contour", () => {
       seed,
       archiveEquipmentName,
     );
-    const archiveStandard = await createStandardSeed(
-      request,
-      admin.sessionToken,
-      admin.unit.id,
-      seed,
-      archiveStandardIdentifier,
-    );
     const archiveInstrument = await createMeasuringInstrumentSeed(
       request,
       admin.sessionToken,
@@ -342,10 +379,154 @@ test.describe("stage 03 metrology journals and archive contour", () => {
       seed,
       archiveInstrumentName,
     );
+    const archivedInstrumentStandard = await createDiagnosticStandardSeed(
+      request,
+      admin.sessionToken,
+      archiveInstrument.id,
+      seed,
+      archiveStandardIdentifier,
+    );
     await createMIJournalSeed(request, admin.sessionToken, archiveInstrument.id, seed);
-    await createStandardJournalSeed(request, admin.sessionToken, archiveStandard.id, seed);
+    const journaledInstrument = await backend<MeasuringInstrumentRecord>(
+      request,
+      `/api/v1/measuring-instruments/${archiveInstrument.id}`,
+      { token: admin.sessionToken },
+    );
+    expect(journaledInstrument.status).toBe("active");
+    expect(journaledInstrument.nextDueDate).toBe("2026-11-30");
+    expect(journaledInstrument.journalCount).toBeGreaterThan(0);
+
+    const reuseSource = await createMeasuringInstrumentSeed(
+      request,
+      admin.sessionToken,
+      admin.unit.id,
+      seed,
+      `Диагностическое источник ${seed}`,
+    );
+    const ownedStandard = await createDiagnosticStandardSeed(
+      request,
+      admin.sessionToken,
+      reuseSource.id,
+      seed,
+      reuseStandardIdentifier,
+    );
+    const reuseTarget = await createMeasuringInstrumentSeed(
+      request,
+      admin.sessionToken,
+      admin.unit.id,
+      seed,
+      `Диагностическое цель ${seed}`,
+    );
+    await expectBackendFailure(request, `/api/v1/measuring-instruments/${reuseTarget.id}`, {
+      method: "PATCH",
+      token: admin.sessionToken,
+      body: {
+        standardIds: [ownedStandard.id],
+      },
+    });
+    await expectBackendFailure(request, `/api/v1/measuring-instruments/${reuseTarget.id}/standards/${ownedStandard.id}`, {
+      method: "DELETE",
+      token: admin.sessionToken,
+    });
+
+    const deleteSource = await createMeasuringInstrumentSeed(
+      request,
+      admin.sessionToken,
+      admin.unit.id,
+      seed,
+      `Диагностическое удаление ${seed}`,
+    );
+    const deleteKeepStandard = await createDiagnosticStandardSeed(
+      request,
+      admin.sessionToken,
+      deleteSource.id,
+      seed,
+      deleteStandardKeepIdentifier,
+    );
+    const deleteRemoveStandard = await createDiagnosticStandardSeed(
+      request,
+      admin.sessionToken,
+      deleteSource.id,
+      seed,
+      deleteStandardRemoveIdentifier,
+    );
+    const readonlySession = await backend<SessionSummaryResponse>(request, "/api/v1/sessions", {
+      method: "POST",
+      body: {
+        email: employee.email,
+        password: employee.password,
+      },
+    });
+    await expectBackendFailure(request, `/api/v1/measuring-instruments/${deleteSource.id}/standards/${deleteRemoveStandard.id}`, {
+      method: "DELETE",
+      token: readonlySession.sessionToken,
+    });
+    await expectBackendFailure(request, `/api/v1/measuring-instruments/${deleteSource.id}/standards/${deleteRemoveStandard.id}`, {
+      method: "DELETE",
+      token: contractor.sessionToken,
+    });
+    await backend<{ id: string }>(
+      request,
+      `/api/v1/measuring-instruments/${deleteSource.id}/standards/${deleteRemoveStandard.id}`,
+      {
+        method: "DELETE",
+        token: admin.sessionToken,
+      },
+    );
+    const afterStandardDelete = await backend<MeasuringInstrumentRecord>(
+      request,
+      `/api/v1/measuring-instruments/${deleteSource.id}`,
+      { token: admin.sessionToken },
+    );
+    expect(afterStandardDelete.standards.some((standard) => standard.id === deleteRemoveStandard.id)).toBe(false);
+    expect(afterStandardDelete.standards.some((standard) => standard.id === deleteKeepStandard.id)).toBe(true);
+
+    await backend(request, `/api/v1/equipment/${archiveEquipment.id}/archive`, {
+      method: "POST",
+      token: admin.sessionToken,
+    });
+    await backend(request, `/api/v1/measuring-instruments/${archiveInstrument.id}/archive`, {
+      method: "POST",
+      token: admin.sessionToken,
+    });
+    await expectBackendFailure(request, `/api/v1/measuring-instruments/${archiveInstrument.id}/standards`, {
+      method: "POST",
+      token: admin.sessionToken,
+      body: {
+        standardType: "Установочная мера",
+        model: "STD-ARCHIVE-BLOCKED",
+        identifier: `STD-BLOCKED-${seed}`,
+        metrologicalCharacteristics: "0.1 мм",
+      },
+    });
+    await expectBackendFailure(
+      request,
+      `/api/v1/measuring-instruments/${archiveInstrument.id}/standards/${archivedInstrumentStandard.id}`,
+      {
+        method: "DELETE",
+        token: admin.sessionToken,
+      },
+    );
+    await expectBackendFailure(request, `/api/v1/measuring-instruments/${archiveInstrument.id}/journals`, {
+      method: "POST",
+      token: admin.sessionToken,
+      body: {
+        operationType: "verification",
+        operationDate: "2026-04-01",
+        documentNumber: `MI-ARCH-BLOCKED-${seed}`,
+        validUntil: "2026-12-01",
+        executorOrganization: "ФБУ Ростест-Москва",
+      },
+    });
+    const archivedHistory = await backend<JournalRecord[]>(
+      request,
+      `/api/v1/measuring-instruments/${archiveInstrument.id}/journals`,
+      { token: admin.sessionToken },
+    );
+    expect(archivedHistory.some((entry) => entry.documentNumber === `MI-ARCH-JOURNAL-${seed}`)).toBe(true);
 
     await page.goto("/login?logout=1");
+    await expect(page).toHaveURL(/\/login$/);
     await page.getByLabel("Корпоративная почта").fill(admin.email);
     await page.getByLabel(/^Пароль$/).fill(admin.password);
     await page.getByRole("button", { name: "Войти" }).click();
@@ -353,27 +534,30 @@ test.describe("stage 03 metrology journals and archive contour", () => {
     await expect(page).toHaveURL(/\/company$/);
     await page.goto("/equipment");
 
-    await expect(page.getByRole("heading", { level: 1, name: "Оборудование, средства измерения и эталоны" })).toBeVisible();
-    await expect(page.getByRole("tablist", { name: "Реестры оборудования" })).toBeVisible();
-    await expect(page.getByRole("tab", { name: /^Оборудование\s+1$/ })).toBeVisible();
-    await expect(page.getByRole("tab", { name: /^Средства измерения\s+1$/ })).toBeVisible();
-    await expect(page.getByRole("tab", { name: /^Эталоны\s+1$/ })).toBeVisible();
-    await expect(page.getByText("Карточки оборудования в текущей области.", { exact: true })).toHaveCount(0);
-    await expect(page.getByText("Статус рассчитывается по журналам операций.", { exact: true })).toHaveCount(0);
-    await expect(page.getByText("Эталоны и связи со средствами измерения.", { exact: true })).toHaveCount(0);
+    await expect(page.getByRole("heading", { level: 1, name: "Оборудование" })).toBeVisible();
+    await expect(page.getByText("Управление реестром").first()).toBeVisible();
+    await expect(page.getByRole("tablist")).toHaveCount(0);
+    await expect(page.getByRole("tab")).toHaveCount(0);
     await expect(page.getByRole("heading", { level: 2, name: "Новое оборудование" })).toBeVisible();
     await expect(page.getByRole("heading", { level: 2, name: "Оборудование в учете" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Журнал операций по оборудованию" })).toBeVisible();
+    await expectNoStandaloneMetrologySurfaces(page);
+
+    await expect(page.getByLabel("Тип оборудования")).toBeVisible();
+    await page.getByLabel("Тип оборудования").click();
+    await expect(page.getByRole("option", { name: "Техническое" })).toBeVisible();
+    await expect(page.getByRole("option", { name: "Диагностическое" })).toBeVisible();
+    await page.keyboard.press("Escape");
 
     await page.getByLabel("Производитель").fill("Трансмаш");
     await page.getByLabel("Класс / тип").fill("Насос");
     await page.getByLabel("Модель").first().fill("НП-01");
     await page.getByLabel("Полное наименование").fill(equipmentName);
     await page.getByLabel("Заводской номер").fill(`FAC-${seed}`);
-    await page.getByLabel(new RegExp(archiveInstrumentName)).check();
     await page.getByRole("button", { name: "Создать оборудование" }).click();
-    await expect(page.getByText("Оборудование создано. Связанные СИ добавлены в карточку.", { exact: true })).toBeVisible();
+    await expect(page.getByText("Техническое оборудование создано и появилось в учете.", { exact: true })).toBeVisible();
     await expect(page.getByText(equipmentName).first()).toBeVisible();
-    await expect(page.getByText("СИ: 1").first()).toBeVisible();
+    await expect(page.getByText("Техническое").first()).toBeVisible();
 
     await page.setViewportSize({ height: 844, width: 390 });
     await page.getByRole("button", { name: `Редактировать оборудование ${equipmentName}` }).click();
@@ -386,170 +570,124 @@ test.describe("stage 03 metrology journals and archive contour", () => {
     await expect(page.getByText(updatedEquipmentName).first()).toBeVisible();
     await page.setViewportSize({ height: 720, width: 1280 });
 
-    await page.goto("/equipment?tab=standards");
-    await expect(page).toHaveURL(/\/equipment\?tab=standards$/);
-    await expect(page.getByRole("heading", { level: 2, name: "Новый эталон" })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 2, name: "Эталоны в учете" })).toBeVisible();
-    await selectFieldOption(page, "Уровень владения", "Юнит");
-    await page.getByLabel("Тип эталона").fill("Эталон давления");
-    await page.getByLabel("Модель").first().fill("ED-77");
-    await page.getByLabel("Идентификатор").fill(standardIdentifier);
-    await page.getByLabel("Метрологические характеристики").fill("0.2 кПа, класс точности 0.1");
-    await page.getByRole("button", { name: "Создать эталон" }).click();
-    await expect(
-      page.getByText("Эталон создан. Действующий статус и срок поверки станут производными после записи в журнал.", {
-        exact: true,
-      }),
-    ).toBeVisible();
-    await expect(page.getByText(standardIdentifier).first()).toBeVisible();
-
-    await selectFieldOption(page, "Выбранный эталон", `Эталон давления • ${standardIdentifier}`);
-    await selectFieldOption(page, "Тип операции", "Поверка");
-    await page.getByLabel("Дата операции").fill("2026-03-10");
-    await page.getByLabel("Документ", { exact: true }).fill(`STD-DOC-${seed}`);
-    await page.getByLabel("Действует до").fill("2026-12-20");
-    await page.getByLabel("Организация-исполнитель").fill("ФБУ Ростест-Москва");
-    await page.getByRole("button", { name: "Добавить запись журнала" }).click();
-    await expect(
-      page.getByText("Запись журнала эталона сохранена. Производный статус и срок действия пересчитаны.", {
-        exact: true,
-      }),
-    ).toBeVisible();
-    await expect(page.getByText(`STD-DOC-${seed}`).first()).toBeVisible();
-    await expect(page.getByText("Текущий статус: Активно")).toBeVisible();
-
-    await page.getByRole("button", { name: `Редактировать эталон ${standardIdentifier}` }).click();
-    const standardEditDialog = page.getByRole("dialog", { name: "Редактировать эталон" });
-    await expect(standardEditDialog).toBeVisible();
-    await standardEditDialog.getByLabel("Уровень владения").click();
-    await page.getByRole("option", { name: "Организация", exact: true }).click();
-    await standardEditDialog.getByLabel("Тип эталона").fill("Эталон поверочный");
-    await standardEditDialog.getByLabel("Идентификатор").fill(updatedStandardIdentifier);
-    await standardEditDialog.getByRole("button", { name: "Сохранить изменения" }).click();
-    await expect(page.getByText("Эталон обновлен.", { exact: true })).toBeVisible();
-    await expect(page.getByText(updatedStandardIdentifier).first()).toBeVisible();
-    await expect(page.getByText("Организация").first()).toBeVisible();
-
-    await page.goto("/equipment?tab=mi");
-    await expect(page).toHaveURL(/\/equipment\?tab=mi$/);
-    await expect(page.getByRole("heading", { level: 2, name: "Новое средство измерения" })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 2, name: "Средства измерения в учете" })).toBeVisible();
-    await page.getByLabel("Наименование").fill(instrumentName);
+    await selectFieldOption(page, "Тип оборудования", "Диагностическое");
+    await page.getByLabel("Наименование").fill(diagnosticName);
     await page.getByLabel("Тип / класс").fill("Манометр");
     await page.getByLabel("Модель").first().fill("MN-12");
-    await page.getByLabel("ФИФ").fill(`MI-${seed}`);
+    await page.getByLabel("ФИФ").fill(`DIAG-${seed}`);
     await page.getByLabel("Серийный номер").fill(`SER-${seed}`);
-    await page.getByLabel(updatedStandardIdentifier).check();
-    await page.getByRole("button", { name: "Создать средство измерения" }).click();
-    await expect(
-      page.getByText("Средство измерения создано. Метрологический статус рассчитывается по журналу.", {
-        exact: true,
-      }),
-    ).toBeVisible();
-    await expect(page.getByText(instrumentName).first()).toBeVisible();
-    await expect(page.getByText(updatedStandardIdentifier).first()).toBeVisible();
+    await page.getByRole("button", { name: "Добавить меру" }).click();
+    await page.getByRole("button", { name: "Добавить меру" }).click();
+    await page.locator('input[name^="diagnostic-standard-type-"]').nth(0).fill("Кольцо установочное");
+    await page.locator('input[name^="diagnostic-standard-model-"]').nth(0).fill("КУ-25");
+    await page.locator('input[name^="diagnostic-standard-identifier-"]').nth(0).fill(diagnosticStandardOne);
+    await page.locator('textarea[name^="diagnostic-standard-characteristics-"]').nth(0).fill("25 мм, класс 0.01");
+    await page.locator('input[name^="diagnostic-standard-type-"]').nth(1).fill("Скоба контрольная");
+    await page.locator('input[name^="diagnostic-standard-model-"]').nth(1).fill("СК-40");
+    await page.locator('input[name^="diagnostic-standard-identifier-"]').nth(1).fill(diagnosticStandardTwo);
+    await page.locator('textarea[name^="diagnostic-standard-characteristics-"]').nth(1).fill("40 мм, класс 0.01");
+    await page.getByRole("button", { name: "Создать оборудование" }).click();
+    await expect(page.getByText("Диагностическое оборудование создано с комплектом эталонов.", { exact: true })).toBeVisible();
+    await expect(page.getByText(diagnosticName).first()).toBeVisible();
+    await expect(page.getByText("Эталоны: 2").first()).toBeVisible();
+    await expect(page.getByText(diagnosticStandardOne).first()).toBeVisible();
+    await expect(page.getByText(diagnosticStandardTwo).first()).toBeVisible();
 
-    await selectFieldOption(page, "Выбранное средство измерения", `${instrumentName} • MI-${seed}`);
+    await page.getByRole("button", { name: `Редактировать диагностическое оборудование ${diagnosticName}` }).click();
+    const diagnosticEditDialog = page.getByRole("dialog", { name: "Редактировать диагностическое оборудование" });
+    await expect(diagnosticEditDialog).toBeVisible();
+    await diagnosticEditDialog.getByLabel("Наименование").fill(updatedDiagnosticName);
+    await diagnosticEditDialog.getByRole("button", { name: "Добавить меру" }).click();
+    await diagnosticEditDialog.locator('input[name^="edit-diagnostic-standard-type-"]').fill("Шаблон контрольный");
+    await diagnosticEditDialog.locator('input[name^="edit-diagnostic-standard-model-"]').fill("ШК-60");
+    await diagnosticEditDialog.locator('input[name^="edit-diagnostic-standard-identifier-"]').fill(diagnosticStandardThree);
+    await diagnosticEditDialog
+      .locator('textarea[name^="edit-diagnostic-standard-characteristics-"]')
+      .fill("60 мм, класс 0.02");
+    await diagnosticEditDialog.getByRole("button", { name: `Удалить эталон ${diagnosticStandardOne}` }).click();
+    await expect(diagnosticEditDialog.getByText("К удалению отмечено: 1.")).toBeVisible();
+    await diagnosticEditDialog.getByRole("button", { name: "Сохранить изменения" }).click();
+    await expect(page.getByText("Диагностическое оборудование обновлено.", { exact: true })).toBeVisible();
+    await expect(page.getByText(updatedDiagnosticName).first()).toBeVisible();
+    await expect(page.getByText("Эталоны: 2").first()).toBeVisible();
+    await expect(page.getByText(diagnosticStandardOne)).toHaveCount(0);
+    await expect(page.getByText(diagnosticStandardTwo).first()).toBeVisible();
+    await expect(page.getByText(diagnosticStandardThree).first()).toBeVisible();
+
+    await selectFieldOption(page, "Оборудование", `${updatedDiagnosticName} • DIAG-${seed}`);
     await selectFieldOption(page, "Тип операции", "Поверка");
     await page.getByLabel("Дата операции").fill("2026-03-12");
-    await page.getByLabel("Документ", { exact: true }).fill(`MI-DOC-${seed}`);
+    await page.getByLabel("Документ", { exact: true }).fill(`EQ-DOC-${seed}`);
     await page.getByLabel("Действует до").fill("2026-12-31");
     await page.getByLabel("Организация-исполнитель").fill("ФБУ Ростест-Москва");
     await page.getByRole("button", { name: "Добавить запись журнала" }).click();
     await expect(
-      page.getByText("Запись журнала СИ сохранена. Производный статус и ближайшая дата пересчитаны.", {
+      page.getByText("Запись журнала сохранена. Производный статус и ближайшая дата пересчитаны.", {
         exact: true,
       }),
     ).toBeVisible();
-    await expect(page.getByText(`MI-DOC-${seed}`).first()).toBeVisible();
-    await expect(page.getByText("Текущий статус: Активно")).toBeVisible();
-
-    await page.getByRole("button", { name: `Редактировать средство измерения ${instrumentName}` }).click();
-    const measuringInstrumentEditDialog = page.getByRole("dialog", { name: "Редактировать средство измерения" });
-    await expect(measuringInstrumentEditDialog).toBeVisible();
-    await measuringInstrumentEditDialog.getByLabel("Наименование").fill(updatedInstrumentName);
-    await measuringInstrumentEditDialog.getByLabel(new RegExp(updatedStandardIdentifier)).uncheck();
-    await measuringInstrumentEditDialog.getByRole("button", { name: "Сохранить изменения" }).click();
-    await expect(page.getByText("Средство измерения обновлено.", { exact: true })).toBeVisible({ timeout: 15000 });
-    await expect(page.getByText(updatedInstrumentName).first()).toBeVisible();
-    await expect(page.getByText("Отдельное").first()).toBeVisible();
-
-    await page.goto("/equipment");
-    await expect(page).toHaveURL(/\/equipment$/);
-    await expect(page.getByText("СИ: 1").first()).toBeVisible();
-    await expect(page.getByText(archiveEquipmentName).first()).toBeVisible();
-    await expect(page.getByRole("button", { name: "Архивировать оборудование" }).first()).toBeVisible();
-    await backend(request, `/api/v1/equipment/${archiveEquipment.id}/archive`, {
-      method: "POST",
-      token: admin.sessionToken,
-    });
-    await page.goto("/equipment");
-    await expect(page.getByText(archiveEquipmentName)).toHaveCount(0);
-
-    await page.goto("/equipment?tab=mi");
-    await selectFieldOption(page, "Выбранное средство измерения", `${archiveInstrumentName} • MI-ARCH-${seed}`);
-    await page.getByRole("button", { name: "Архивировать выбранное СИ" }).click();
-    await confirmArchiveModal(page);
-    await expect(
-      page.getByText("Средство измерения переведено в архив и убрано из активных списков выбора.", {
-        exact: true,
-      }),
-    ).toBeVisible();
-    await expect(page.getByText(archiveInstrumentName)).toHaveCount(0);
+    await expect(page.getByText(`EQ-DOC-${seed}`).first()).toBeVisible();
+    await expect(page.getByText(/Текущий статус: Активно/).first()).toBeVisible();
 
     await page.goto("/equipment?tab=standards");
-    await selectFieldOption(page, "Выбранный эталон", `Эталон напряжения • ${archiveStandardIdentifier}`);
-    await page.getByRole("button", { name: "Архивировать выбранный эталон" }).click();
-    await confirmArchiveModal(page);
-    await expect(page.getByText("Эталон переведен в архив и исключен из активных связей.", { exact: true })).toBeVisible();
-    await expect(page.getByText(archiveStandardIdentifier)).toHaveCount(0);
+    await expect(page).toHaveURL(/\/equipment$/);
+    await expect(page.getByRole("tablist")).toHaveCount(0);
+    await expectNoStandaloneMetrologySurfaces(page);
 
-    await page.getByRole("button", { name: "Показать архив" }).click();
+    await page.goto("/equipment?tab=mi&archived=1");
+    await expect(page).toHaveURL(/\/equipment\?archived=1$/);
     await expect(page.getByRole("button", { name: "Архив показан" })).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByText(archiveEquipmentName).first()).toBeVisible();
+    await expect(page.getByText(archiveInstrumentName).first()).toBeVisible();
     await expect(page.getByText(archiveStandardIdentifier).first()).toBeVisible();
-    await expect(page.getByRole("tab", { name: /^Эталоны\s+2$/ })).toBeVisible();
-    await expect(page.getByText("В архиве").first()).toBeVisible();
+    await expect(page.getByRole("button", { name: `Редактировать оборудование ${archiveEquipmentName}` })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: `Редактировать диагностическое оборудование ${archiveInstrumentName}` })).toHaveCount(0);
 
     await page.goto("/equipment");
-    await page.getByRole("button", { name: "Показать архив" }).click();
-    await expect(page.getByText(archiveEquipmentName).first()).toBeVisible();
-    await expect(page.getByRole("button", { name: `Редактировать оборудование ${archiveEquipmentName}` })).toHaveCount(0);
-    await page.goto("/equipment?tab=mi");
-    await page.getByRole("button", { name: "Показать архив" }).click();
-    await expect(page.getByText(archiveInstrumentName).first()).toBeVisible();
-    await expect(page.getByRole("button", { name: `Редактировать средство измерения ${archiveInstrumentName}` })).toHaveCount(0);
+    await selectFieldOption(page, "Оборудование", `${updatedDiagnosticName} • DIAG-${seed}`);
+    await page.getByRole("button", { name: "Архивировать выбранное оборудование" }).click();
+    await confirmArchiveModal(page);
+    await expect(
+      page.getByText("Диагностическое оборудование переведено в архив и убрано из активного списка.", {
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(page.getByText(updatedDiagnosticName)).toHaveCount(0);
 
     await page.goto("/login?logout=1");
+    await expect(page).toHaveURL(/\/login$/);
     await page.getByLabel("Корпоративная почта").fill(employee.email);
     await page.getByLabel(/^Пароль$/).fill(employee.password);
     await page.getByRole("button", { name: "Войти" }).click();
 
     await expect(page).toHaveURL(/\/company$/);
     await page.goto("/equipment");
-    await expect(page.getByText("Только просмотр").first()).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Новое оборудование" })).toHaveCount(0);
+    await expect(page.getByRole("heading", { level: 2, name: "Оборудование в учете" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Журнал операций по оборудованию" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 3, name: "Хронология операций" })).toBeVisible();
+    await expect(page.getByText("Редактирование скрыто")).toHaveCount(0);
+    await expect(page.getByLabel("Тип оборудования")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Создать оборудование" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /^Редактировать/ })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /^Архивировать/ })).toHaveCount(0);
     await expect(page.getByText(updatedEquipmentName).first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Показать архив" })).toBeVisible();
 
     await page.getByRole("button", { name: "Показать архив" }).click();
     await expect(page.getByText(archiveEquipmentName).first()).toBeVisible();
+    await expect(page.getByText(archiveInstrumentName).first()).toBeVisible();
 
-    await page.goto("/equipment?tab=mi");
-    await page.getByRole("button", { name: "Показать архив" }).click();
-    await expect(page.getByRole("button", { name: "Создать средство измерения" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /^Редактировать/ })).toHaveCount(0);
-    await expect(page.getByText(updatedInstrumentName).first()).toBeVisible();
-    await selectFieldOption(page, "Выбранное средство измерения", `${archiveInstrumentName} • MI-ARCH-${seed}`);
-    await expect(page.getByText("Редактирование скрыто", { exact: true })).toBeVisible();
-    await expect(page.getByText("Архивированное СИ остается доступным для истории, но новые операции в него не добавляются.")).toBeVisible();
+    await page.goto("/login?logout=1");
+    await expect(page).toHaveURL(/\/login$/);
+    await page.getByLabel("Корпоративная почта").fill(contractor.email);
+    await page.getByLabel(/^Пароль$/).fill(contractor.password);
+    await page.getByRole("button", { name: "Войти" }).click();
 
-    await page.goto("/equipment?tab=standards");
-    await page.getByRole("button", { name: "Показать архив" }).click();
-    await expect(page.getByRole("button", { name: "Создать эталон" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /^Редактировать/ })).toHaveCount(0);
-    await expect(page.getByText(updatedStandardIdentifier)).toHaveCount(0);
-    await expect(page.getByText(archiveStandardIdentifier).first()).toBeVisible();
-    await expect(page.getByRole("button", { name: `Редактировать эталон ${archiveStandardIdentifier}` })).toHaveCount(0);
+    await expect(page).toHaveURL(/\/contracts$/);
+    await page.goto("/equipment");
+    await expect(page.getByRole("heading", { level: 1, name: "Оборудование недоступно в текущей области" })).toBeVisible();
+    await expect(page.getByText("Раздел закрыт для подрядчика")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 2, name: "Оборудование в учете" })).toHaveCount(0);
   });
 });

@@ -3,6 +3,7 @@ package standard
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -14,6 +15,8 @@ type StandardRepository interface {
 	ListByOrganization(ctx context.Context, organizationID uuid.UUID, includeArchived bool) ([]Standard, error)
 	Update(ctx context.Context, item Standard) (*Standard, error)
 	Archive(ctx context.Context, id uuid.UUID) (*Standard, error)
+	Delete(ctx context.Context, id uuid.UUID) error
+	GetDiagnosticEquipmentScope(ctx context.Context, id uuid.UUID) (*DiagnosticEquipmentScope, error)
 }
 
 type standardRepository struct {
@@ -22,6 +25,15 @@ type standardRepository struct {
 
 func NewRepository(db *pgxpool.Pool) StandardRepository {
 	return &standardRepository{db: db}
+}
+
+type DiagnosticEquipmentScope struct {
+	ID             string
+	Name           string
+	OrganizationID string
+	UnitID         string
+	UnitName       string
+	Archived       bool
 }
 
 const standardSelectColumns = `
@@ -33,6 +45,8 @@ const standardSelectColumns = `
     standard.unit_id,
     unit.name,
     standard.owner_label,
+    standard.diagnostic_equipment_id,
+    diagnostic.name,
     standard.standard_type,
     standard.model,
     standard.identifier,
@@ -41,12 +55,6 @@ const standardSelectColumns = `
     standard.status,
     standard.comment,
     standard.document_url,
-    (
-        SELECT COUNT(*)
-        FROM registry_measuring_instrument_standards link
-        JOIN registry_measuring_instruments mi ON mi.id = link.measuring_instrument_id
-        WHERE link.standard_id = standard.id AND mi.archived_at IS NULL
-    ) AS linked_measuring_instruments,
     standard.archived_at,
     standard.created_at,
     standard.updated_at
@@ -59,6 +67,7 @@ func scanStandard(scanner interface {
 	var organizationID uuid.UUID
 	var divisionID *uuid.UUID
 	var unitID *uuid.UUID
+	var diagnosticEquipmentID *uuid.UUID
 
 	if err := scanner.Scan(
 		&item.ID,
@@ -69,6 +78,8 @@ func scanStandard(scanner interface {
 		&unitID,
 		&item.UnitName,
 		&item.OwnerLabel,
+		&diagnosticEquipmentID,
+		&item.DiagnosticEquipmentName,
 		&item.StandardType,
 		&item.Model,
 		&item.Identifier,
@@ -77,7 +88,6 @@ func scanStandard(scanner interface {
 		&item.Status,
 		&item.Comment,
 		&item.DocumentURL,
-		&item.LinkedMeasuringInstruments,
 		&item.ArchivedAt,
 		&item.CreatedAt,
 		&item.UpdatedAt,
@@ -94,6 +104,10 @@ func scanStandard(scanner interface {
 		value := unitID.String()
 		item.UnitID = &value
 	}
+	if diagnosticEquipmentID != nil {
+		value := diagnosticEquipmentID.String()
+		item.DiagnosticEquipmentID = &value
+	}
 
 	return &item, nil
 }
@@ -105,6 +119,7 @@ func (r *standardRepository) Create(ctx context.Context, item Standard) (*Standa
             division_id,
             unit_id,
             owner_label,
+            diagnostic_equipment_id,
             standard_type,
             model,
             identifier,
@@ -114,7 +129,7 @@ func (r *standardRepository) Create(ctx context.Context, item Standard) (*Standa
             comment,
             document_url
         ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
         )
         RETURNING id
     `
@@ -127,6 +142,7 @@ func (r *standardRepository) Create(ctx context.Context, item Standard) (*Standa
 		nullableUUID(item.DivisionID),
 		nullableUUID(item.UnitID),
 		item.OwnerLabel,
+		nullableUUID(item.DiagnosticEquipmentID),
 		item.StandardType,
 		item.Model,
 		item.Identifier,
@@ -149,6 +165,7 @@ func (r *standardRepository) GetByID(ctx context.Context, id uuid.UUID) (*Standa
         JOIN auth_bootstrap_organizations org ON org.id = standard.organization_id
         LEFT JOIN auth_divisions division ON division.id = standard.division_id
         LEFT JOIN auth_units unit ON unit.id = standard.unit_id
+        LEFT JOIN registry_measuring_instruments diagnostic ON diagnostic.id = standard.diagnostic_equipment_id
         WHERE standard.id = $1
     `, standardSelectColumns)
 
@@ -167,6 +184,7 @@ func (r *standardRepository) ListByOrganization(ctx context.Context, organizatio
         JOIN auth_bootstrap_organizations org ON org.id = standard.organization_id
         LEFT JOIN auth_divisions division ON division.id = standard.division_id
         LEFT JOIN auth_units unit ON unit.id = standard.unit_id
+        LEFT JOIN registry_measuring_instruments diagnostic ON diagnostic.id = standard.diagnostic_equipment_id
         WHERE standard.organization_id = $1
           AND ($2::boolean OR standard.archived_at IS NULL)
         ORDER BY standard.created_at DESC
@@ -201,14 +219,15 @@ func (r *standardRepository) Update(ctx context.Context, item Standard) (*Standa
             division_id = $2,
             unit_id = $3,
             owner_label = $4,
-            standard_type = $5,
-            model = $6,
-            identifier = $7,
-            serial_number = $8,
-            metrological_characteristics = $9,
-            status = $10,
-            comment = $11,
-            document_url = $12,
+            diagnostic_equipment_id = $5,
+            standard_type = $6,
+            model = $7,
+            identifier = $8,
+            serial_number = $9,
+            metrological_characteristics = $10,
+            status = $11,
+            comment = $12,
+            document_url = $13,
             updated_at = NOW()
         WHERE id = $1
         RETURNING id
@@ -222,6 +241,7 @@ func (r *standardRepository) Update(ctx context.Context, item Standard) (*Standa
 		nullableUUID(item.DivisionID),
 		nullableUUID(item.UnitID),
 		item.OwnerLabel,
+		nullableUUID(item.DiagnosticEquipmentID),
 		item.StandardType,
 		item.Model,
 		item.Identifier,
@@ -235,6 +255,42 @@ func (r *standardRepository) Update(ctx context.Context, item Standard) (*Standa
 	}
 
 	return r.GetByID(ctx, id)
+}
+
+func (r *standardRepository) GetDiagnosticEquipmentScope(ctx context.Context, id uuid.UUID) (*DiagnosticEquipmentScope, error) {
+	var item DiagnosticEquipmentScope
+	var diagnosticEquipmentID uuid.UUID
+	var organizationID uuid.UUID
+	var unitID uuid.UUID
+	var archivedAt *time.Time
+
+	if err := r.db.QueryRow(ctx, `
+        SELECT
+            mi.id,
+            mi.name,
+            mi.organization_id,
+            mi.unit_id,
+            unit.name,
+            mi.archived_at
+        FROM registry_measuring_instruments mi
+        JOIN auth_units unit ON unit.id = mi.unit_id
+        WHERE mi.id = $1
+    `, id).Scan(
+		&diagnosticEquipmentID,
+		&item.Name,
+		&organizationID,
+		&unitID,
+		&item.UnitName,
+		&archivedAt,
+	); err != nil {
+		return nil, ErrDiagnosticEquipmentInvalid
+	}
+
+	item.ID = diagnosticEquipmentID.String()
+	item.OrganizationID = organizationID.String()
+	item.UnitID = unitID.String()
+	item.Archived = archivedAt != nil
+	return &item, nil
 }
 
 func (r *standardRepository) Archive(ctx context.Context, id uuid.UUID) (*Standard, error) {
@@ -251,6 +307,38 @@ func (r *standardRepository) Archive(ctx context.Context, id uuid.UUID) (*Standa
 	}
 
 	return r.GetByID(ctx, archivedID)
+}
+
+func (r *standardRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("%w: %v", ErrDeleteFailed, err)
+	}
+	defer tx.Rollback(ctx)
+
+	if _, err := tx.Exec(ctx, `
+        DELETE FROM registry_metrology_journal_entries
+        WHERE subject_type = 'standard' AND subject_id = $1
+    `, id); err != nil {
+		return fmt.Errorf("%w: %v", ErrDeleteFailed, err)
+	}
+
+	commandTag, err := tx.Exec(ctx, `
+        DELETE FROM registry_standards
+        WHERE id = $1
+    `, id)
+	if err != nil {
+		return fmt.Errorf("%w: %v", ErrDeleteFailed, err)
+	}
+	if commandTag.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("%w: %v", ErrDeleteFailed, err)
+	}
+
+	return nil
 }
 
 func nullableUUID(value *string) interface{} {

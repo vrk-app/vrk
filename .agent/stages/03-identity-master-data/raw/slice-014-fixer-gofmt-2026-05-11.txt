@@ -1,0 +1,3 @@
+COMMAND: gofmt on touched backend Go files
+zsh:1: command not found: gofmt
+EXIT_CODE=127

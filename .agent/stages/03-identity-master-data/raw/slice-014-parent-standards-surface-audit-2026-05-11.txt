@@ -1,0 +1,9 @@
+apps/web/shared/api/equipment.ts:77:  journalCount: number;
+apps/web/shared/api/equipment.ts:79:  latestJournal?: JournalRecord;
+apps/backend/docs/swagger/swagger.json:4518:                "journalCount": {
+apps/backend/docs/swagger/swagger.json:4521:                "latestJournal": {
+apps/backend/docs/swagger/docs.go:4527:                "journalCount": {
+apps/backend/docs/swagger/docs.go:4530:                "latestJournal": {
+apps/backend/docs/swagger/swagger.yaml:886:      journalCount:
+apps/backend/docs/swagger/swagger.yaml:888:      latestJournal:
+apps/backend/internal/equipment/standard/handler.go:31:// @Router       /measuring-instruments/{id}/standards [post]
