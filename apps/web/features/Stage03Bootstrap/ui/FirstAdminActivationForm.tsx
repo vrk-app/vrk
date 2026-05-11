@@ -21,9 +21,6 @@ function validatePasswordPolicy(value: string) {
   if (value.length < 8) {
     return "Пароль должен быть не короче 8 символов.";
   }
-  if (!/[A-Za-zА-Яа-яЁё]/.test(value) || !/\d/.test(value) || !/[^\sA-Za-zА-Яа-яЁё\d]/.test(value)) {
-    return "Добавьте букву, цифру и символ без пробела, например _.";
-  }
   return null;
 }
 
@@ -106,8 +103,8 @@ export function FirstAdminActivationForm({ invite, inviteToken }: Props) {
             leftIcon={<LockKeyhole className="size-4" />}
             name="password"
             onChange={(event) => setPassword(event.target.value)}
-            hint="Минимум 8 символов: буква, цифра и символ без пробела."
-            placeholder="Например, Vrk_2026"
+            hint="Минимум 8 символов."
+            placeholder="Например, password…"
             type="password"
             value={password}
           />

@@ -1,0 +1,11 @@
+COMMAND: source audit for standard journal routes
+docs/architecture/identity-master-data.md:596:  - `GET/POST /standards/{id}/journals`;
+apps/backend/internal/equipment/standard/service.go:75:		metrologyjournal.SubjectTypeStandard,
+apps/backend/internal/equipment/standard/service.go:144:		metrologyjournal.SubjectTypeStandard,
+apps/backend/internal/equipment/standard/service.go:189:		metrologyjournal.SubjectTypeStandard,
+apps/backend/internal/equipment/standard/service.go:221:		metrologyjournal.SubjectTypeStandard,
+apps/backend/internal/equipment/standard/service.go:245:		metrologyjournal.SubjectTypeStandard,
+apps/backend/internal/equipment/standard/service.go:287:		metrologyjournal.SubjectTypeStandard,
+apps/backend/internal/equipment/standard/service.go:653:		SubjectType:          metrologyjournal.SubjectTypeStandard,
+apps/backend/internal/equipment/metrologyjournal/models.go:9:	SubjectTypeStandard            SubjectType = "standard"
+EXIT_CODE=0

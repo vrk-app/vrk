@@ -15,6 +15,7 @@ export {
   FormListScrollArea,
   FormListSplitLayout,
   type FormListScrollAreaProps,
+  type FormListScrollMode,
   type FormListSplitLayoutProps,
 } from "./FormListSplitLayout";
 export { InlineAlert, type InlineAlertProps } from "./InlineAlert";

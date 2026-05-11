@@ -1,0 +1,34 @@
+COMMAND: source audit for legacy many-to-many display reads
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:4:    ADD COLUMN diagnostic_equipment_id UUID REFERENCES registry_measuring_instruments(id) ON DELETE CASCADE;
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:6:CREATE INDEX idx_registry_standards_diagnostic_equipment_id
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:7:    ON registry_standards (diagnostic_equipment_id);
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:32:    FROM registry_measuring_instrument_standards link
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:60:    FROM registry_measuring_instrument_standards link
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:82:    diagnostic_equipment_id,
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:133:    diagnostic_equipment_id = parent.measuring_instrument_id,
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:143:UPDATE registry_measuring_instrument_standards link
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:161:  AND standard.diagnostic_equipment_id IS NULL;
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:165:    CHECK (archived_at IS NOT NULL OR diagnostic_equipment_id IS NOT NULL);
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:169:    FROM registry_measuring_instrument_standards
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:173:DELETE FROM registry_measuring_instrument_standards link
+apps/backend/internal/equipment/standard/repository.go:47:    standard.diagnostic_equipment_id,
+apps/backend/internal/equipment/standard/repository.go:121:            diagnostic_equipment_id,
+apps/backend/internal/equipment/standard/repository.go:167:        LEFT JOIN registry_measuring_instruments diagnostic ON diagnostic.id = standard.diagnostic_equipment_id
+apps/backend/internal/equipment/standard/repository.go:186:        LEFT JOIN registry_measuring_instruments diagnostic ON diagnostic.id = standard.diagnostic_equipment_id
+apps/backend/internal/equipment/standard/repository.go:221:            diagnostic_equipment_id = $5,
+apps/backend/internal/equipment/measuringinstrument/repository.go:24:	ReplaceStandardLinks(ctx context.Context, measuringInstrumentID uuid.UUID, standardIDs []uuid.UUID) error
+apps/backend/internal/equipment/measuringinstrument/repository.go:25:	ListStandardLinksByOrganization(ctx context.Context, organizationID uuid.UUID) (map[string][]LinkedStandard, error)
+apps/backend/internal/equipment/measuringinstrument/repository.go:264:func (r *measuringInstrumentRepository) ReplaceStandardLinks(ctx context.Context, measuringInstrumentID uuid.UUID, standardIDs []uuid.UUID) error {
+apps/backend/internal/equipment/measuringinstrument/repository.go:268:func (r *measuringInstrumentRepository) ListStandardLinksByOrganization(ctx context.Context, organizationID uuid.UUID) (map[string][]LinkedStandard, error) {
+apps/backend/internal/equipment/measuringinstrument/repository.go:271:            standard.diagnostic_equipment_id,
+apps/backend/internal/equipment/measuringinstrument/repository.go:280:        JOIN registry_measuring_instruments mi ON mi.id = standard.diagnostic_equipment_id
+apps/backend/internal/equipment/measuringinstrument/repository.go:285:          AND standard.diagnostic_equipment_id IS NOT NULL
+apps/backend/internal/equipment/measuringinstrument/repository.go:324:		SELECT id, division_id, unit_id, owner_label, diagnostic_equipment_id
+apps/backend/internal/equipment/measuringinstrument/service_test.go:37:func (r *standardScopeRepository) ReplaceStandardLinks(context.Context, uuid.UUID, []uuid.UUID) error {
+apps/backend/internal/equipment/measuringinstrument/service_test.go:41:func (r *standardScopeRepository) ListStandardLinksByOrganization(context.Context, uuid.UUID) (map[string][]LinkedStandard, error) {
+apps/backend/internal/equipment/measuringinstrument/service.go:63:	if err := s.repository.ReplaceStandardLinks(ctx, uuid.MustParse(created.ID), standardIDs); err != nil {
+apps/backend/internal/equipment/measuringinstrument/service.go:80:	standardsByInstrument, err := s.repository.ListStandardLinksByOrganization(ctx, uuid.MustParse(session.Organization.ID))
+apps/backend/internal/equipment/measuringinstrument/service.go:135:	standardsByInstrument, err := s.repository.ListStandardLinksByOrganization(ctx, uuid.MustParse(session.Organization.ID))
+apps/backend/internal/equipment/measuringinstrument/service.go:184:	if err := s.repository.ReplaceStandardLinks(ctx, measuringInstrumentID, standardIDs); err != nil {
+apps/backend/internal/equipment/measuringinstrument/service.go:564:	links, err := s.repository.ListStandardLinksByOrganization(ctx, uuid.MustParse(organizationID))
+EXIT_CODE=0

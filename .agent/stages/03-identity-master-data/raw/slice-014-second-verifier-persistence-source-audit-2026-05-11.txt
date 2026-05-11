@@ -1,0 +1,295 @@
+## persistence source audit
+     1	BEGIN;
+     2
+     3	ALTER TABLE registry_standards
+     4	    ADD COLUMN diagnostic_equipment_id UUID REFERENCES registry_measuring_instruments(id) ON DELETE CASCADE;
+     5
+     6	CREATE INDEX idx_registry_standards_diagnostic_equipment_id
+     7	    ON registry_standards (diagnostic_equipment_id);
+     8
+     9	CREATE TEMP TABLE tmp_registry_standard_parent_map (
+    10	    legacy_standard_id UUID NOT NULL,
+    11	    measuring_instrument_id UUID NOT NULL,
+    12	    standard_id UUID NOT NULL,
+    13	    keep_original BOOLEAN NOT NULL,
+    14	    PRIMARY KEY (legacy_standard_id, measuring_instrument_id)
+    15	) ON COMMIT DROP;
+    16
+    17	CREATE TEMP TABLE tmp_registry_standard_copy_map (
+    18	    legacy_standard_id UUID NOT NULL,
+    19	    measuring_instrument_id UUID NOT NULL,
+    20	    standard_id UUID NOT NULL DEFAULT gen_random_uuid(),
+    21	    PRIMARY KEY (legacy_standard_id, measuring_instrument_id)
+    22	) ON COMMIT DROP;
+    23
+    24	WITH ranked_links AS (
+    25	    SELECT
+    26	        link.standard_id AS legacy_standard_id,
+    27	        link.measuring_instrument_id,
+    28	        ROW_NUMBER() OVER (
+    29	            PARTITION BY link.standard_id
+    30	            ORDER BY link.created_at, link.measuring_instrument_id
+    31	        ) AS link_rank
+    32	    FROM registry_measuring_instrument_standards link
+    33	    JOIN registry_standards standard ON standard.id = link.standard_id
+    34	    JOIN registry_measuring_instruments diagnostic ON diagnostic.id = link.measuring_instrument_id
+    35	    WHERE standard.archived_at IS NULL
+    36	      AND standard.organization_id = diagnostic.organization_id
+    37	)
+    38	INSERT INTO tmp_registry_standard_parent_map (
+    39	    legacy_standard_id,
+    40	    measuring_instrument_id,
+    41	    standard_id,
+    42	    keep_original
+    43	)
+    44	SELECT
+    45	    legacy_standard_id,
+    46	    measuring_instrument_id,
+    47	    legacy_standard_id,
+    48	    TRUE
+    49	FROM ranked_links
+    50	WHERE link_rank = 1;
+    51
+    52	WITH ranked_links AS (
+    53	    SELECT
+    54	        link.standard_id AS legacy_standard_id,
+    55	        link.measuring_instrument_id,
+    56	        ROW_NUMBER() OVER (
+    57	            PARTITION BY link.standard_id
+    58	            ORDER BY link.created_at, link.measuring_instrument_id
+    59	        ) AS link_rank
+    60	    FROM registry_measuring_instrument_standards link
+    61	    JOIN registry_standards standard ON standard.id = link.standard_id
+    62	    JOIN registry_measuring_instruments diagnostic ON diagnostic.id = link.measuring_instrument_id
+    63	    WHERE standard.archived_at IS NULL
+    64	      AND standard.organization_id = diagnostic.organization_id
+    65	)
+    66	INSERT INTO tmp_registry_standard_copy_map (
+    67	    legacy_standard_id,
+    68	    measuring_instrument_id
+    69	)
+    70	SELECT
+    71	    legacy_standard_id,
+    72	    measuring_instrument_id
+    73	FROM ranked_links
+    74	WHERE link_rank > 1;
+    75
+    76	INSERT INTO registry_standards (
+    77	    id,
+    78	    organization_id,
+    79	    division_id,
+    80	    unit_id,
+    81	    owner_label,
+    82	    diagnostic_equipment_id,
+    83	    standard_type,
+    84	    model,
+    85	    identifier,
+    86	    serial_number,
+    87	    metrological_characteristics,
+    88	    status,
+    89	    comment,
+    90	    document_url,
+    91	    archived_at,
+    92	    created_at,
+    93	    updated_at
+    94	)
+    95	SELECT
+    96	    copy.standard_id,
+    97	    standard.organization_id,
+    98	    NULL,
+    99	    diagnostic.unit_id,
+   100	    unit.name,
+   101	    copy.measuring_instrument_id,
+   102	    standard.standard_type,
+   103	    standard.model,
+   104	    standard.identifier,
+   105	    standard.serial_number,
+   106	    standard.metrological_characteristics,
+   107	    standard.status,
+   108	    standard.comment,
+   109	    standard.document_url,
+   110	    standard.archived_at,
+   111	    standard.created_at,
+   112	    NOW()
+   113	FROM tmp_registry_standard_copy_map copy
+   114	JOIN registry_standards standard ON standard.id = copy.legacy_standard_id
+   115	JOIN registry_measuring_instruments diagnostic ON diagnostic.id = copy.measuring_instrument_id
+   116	JOIN auth_units unit ON unit.id = diagnostic.unit_id;
+   117
+   118	INSERT INTO tmp_registry_standard_parent_map (
+   119	    legacy_standard_id,
+   120	    measuring_instrument_id,
+   121	    standard_id,
+   122	    keep_original
+   123	)
+   124	SELECT
+   125	    legacy_standard_id,
+   126	    measuring_instrument_id,
+   127	    standard_id,
+   128	    FALSE
+   129	FROM tmp_registry_standard_copy_map;
+   130
+   131	UPDATE registry_standards standard
+   132	SET
+   133	    diagnostic_equipment_id = parent.measuring_instrument_id,
+   134	    division_id = NULL,
+   135	    unit_id = diagnostic.unit_id,
+   136	    owner_label = unit.name,
+   137	    updated_at = NOW()
+   138	FROM tmp_registry_standard_parent_map parent
+   139	JOIN registry_measuring_instruments diagnostic ON diagnostic.id = parent.measuring_instrument_id
+   140	JOIN auth_units unit ON unit.id = diagnostic.unit_id
+   141	WHERE standard.id = parent.standard_id;
+   142
+   143	UPDATE registry_measuring_instrument_standards link
+   144	SET standard_id = parent.standard_id
+   145	FROM tmp_registry_standard_parent_map parent
+   146	WHERE link.standard_id = parent.legacy_standard_id
+   147	  AND link.measuring_instrument_id = parent.measuring_instrument_id
+   148	  AND link.standard_id <> parent.standard_id;
+   149
+   150	UPDATE registry_standards standard
+   151	SET
+   152	    archived_at = NOW(),
+   153	    updated_at = NOW(),
+   154	    comment = CASE
+   155	        WHEN NULLIF(BTRIM(standard.comment), '') IS NULL THEN
+   156	            'Archived by migration 000016: no diagnostic equipment parent could be derived from legacy links.'
+   157	        ELSE
+   158	            standard.comment || E'\nArchived by migration 000016: no diagnostic equipment parent could be derived from legacy links.'
+   159	    END
+   160	WHERE standard.archived_at IS NULL
+   161	  AND standard.diagnostic_equipment_id IS NULL;
+   162
+   163	ALTER TABLE registry_standards
+   164	    ADD CONSTRAINT chk_registry_standards_current_diagnostic_owner
+   165	    CHECK (archived_at IS NOT NULL OR diagnostic_equipment_id IS NOT NULL);
+   166
+   167	WITH duplicate_legacy_links AS (
+   168	    SELECT standard_id
+   169	    FROM registry_measuring_instrument_standards
+   170	    GROUP BY standard_id
+   171	    HAVING COUNT(DISTINCT measuring_instrument_id) > 1
+   172	)
+   173	DELETE FROM registry_measuring_instrument_standards link
+   174	USING duplicate_legacy_links duplicate
+   175	WHERE link.standard_id = duplicate.standard_id;
+   176
+   177	COMMIT;
+
+## down migration
+     1	BEGIN;
+     2
+     3	ALTER TABLE registry_standards
+     4	    DROP CONSTRAINT IF EXISTS chk_registry_standards_current_diagnostic_owner;
+     5
+     6	DROP INDEX IF EXISTS idx_registry_standards_diagnostic_equipment_id;
+     7
+     8	ALTER TABLE registry_standards
+     9	    DROP COLUMN IF EXISTS diagnostic_equipment_id;
+    10
+    11	COMMIT;
+
+## source markers
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:4:    ADD COLUMN diagnostic_equipment_id UUID REFERENCES registry_measuring_instruments(id) ON DELETE CASCADE;
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:6:CREATE INDEX idx_registry_standards_diagnostic_equipment_id
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:7:    ON registry_standards (diagnostic_equipment_id);
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:32:    FROM registry_measuring_instrument_standards link
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:60:    FROM registry_measuring_instrument_standards link
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:82:    diagnostic_equipment_id,
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:133:    diagnostic_equipment_id = parent.measuring_instrument_id,
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:143:UPDATE registry_measuring_instrument_standards link
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:156:            'Archived by migration 000016: no diagnostic equipment parent could be derived from legacy links.'
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:158:            standard.comment || E'\nArchived by migration 000016: no diagnostic equipment parent could be derived from legacy links.'
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:161:  AND standard.diagnostic_equipment_id IS NULL;
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:165:    CHECK (archived_at IS NOT NULL OR diagnostic_equipment_id IS NOT NULL);
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:169:    FROM registry_measuring_instrument_standards
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:173:DELETE FROM registry_measuring_instrument_standards link
+apps/backend/internal/equipment/standard/errors.go:14:	ErrDiagnosticEquipmentRequired = errors.New("diagnostic equipment is required")
+apps/backend/internal/equipment/standard/errors.go:24:	ErrArchivedTarget              = errors.New("archived standards cannot be changed")
+apps/backend/internal/equipment/standard/errors.go:25:	ErrAlreadyArchived             = errors.New("standard is already archived")
+apps/backend/internal/equipment/measuringinstrument/errors.go:28:	ErrArchivedTarget             = errors.New("archived measuring instruments cannot be changed")
+apps/backend/internal/equipment/measuringinstrument/errors.go:29:	ErrAlreadyArchived            = errors.New("measuring instrument is already archived")
+apps/backend/internal/equipment/standard/repository.go:15:	ListByOrganization(ctx context.Context, organizationID uuid.UUID, includeArchived bool) ([]Standard, error)
+apps/backend/internal/equipment/standard/repository.go:35:	Archived       bool
+apps/backend/internal/equipment/standard/repository.go:47:    standard.diagnostic_equipment_id,
+apps/backend/internal/equipment/standard/repository.go:90:		&item.ArchivedAt,
+apps/backend/internal/equipment/standard/repository.go:121:            diagnostic_equipment_id,
+apps/backend/internal/equipment/standard/repository.go:167:        LEFT JOIN registry_measuring_instruments diagnostic ON diagnostic.id = standard.diagnostic_equipment_id
+apps/backend/internal/equipment/standard/repository.go:179:func (r *standardRepository) ListByOrganization(ctx context.Context, organizationID uuid.UUID, includeArchived bool) ([]Standard, error) {
+apps/backend/internal/equipment/standard/repository.go:186:        LEFT JOIN registry_measuring_instruments diagnostic ON diagnostic.id = standard.diagnostic_equipment_id
+apps/backend/internal/equipment/standard/repository.go:192:	rows, err := r.db.Query(ctx, query, organizationID, includeArchived)
+apps/backend/internal/equipment/standard/repository.go:221:            diagnostic_equipment_id = $5,
+apps/backend/internal/equipment/standard/repository.go:291:	item.Archived = archivedAt != nil
+apps/backend/internal/equipment/measuringinstrument/repository.go:21:	ListByOrganization(ctx context.Context, organizationID uuid.UUID, includeArchived bool) ([]MeasuringInstrument, error)
+apps/backend/internal/equipment/measuringinstrument/repository.go:24:	ReplaceStandardLinks(ctx context.Context, measuringInstrumentID uuid.UUID, standardIDs []uuid.UUID) error
+apps/backend/internal/equipment/measuringinstrument/repository.go:25:	ListStandardLinksByOrganization(ctx context.Context, organizationID uuid.UUID) (map[string][]LinkedStandard, error)
+apps/backend/internal/equipment/measuringinstrument/repository.go:26:	GetStandardScopes(ctx context.Context, organizationID uuid.UUID, standardIDs []uuid.UUID) (map[string]StandardScope, error)
+apps/backend/internal/equipment/measuringinstrument/repository.go:88:		&item.ArchivedAt,
+apps/backend/internal/equipment/measuringinstrument/repository.go:171:func (r *measuringInstrumentRepository) ListByOrganization(ctx context.Context, organizationID uuid.UUID, includeArchived bool) ([]MeasuringInstrument, error) {
+apps/backend/internal/equipment/measuringinstrument/repository.go:183:	rows, err := r.db.Query(ctx, query, organizationID, includeArchived)
+apps/backend/internal/equipment/measuringinstrument/repository.go:264:func (r *measuringInstrumentRepository) ReplaceStandardLinks(ctx context.Context, measuringInstrumentID uuid.UUID, standardIDs []uuid.UUID) error {
+apps/backend/internal/equipment/measuringinstrument/repository.go:268:func (r *measuringInstrumentRepository) ListStandardLinksByOrganization(ctx context.Context, organizationID uuid.UUID) (map[string][]LinkedStandard, error) {
+apps/backend/internal/equipment/measuringinstrument/repository.go:271:            standard.diagnostic_equipment_id,
+apps/backend/internal/equipment/measuringinstrument/repository.go:280:        JOIN registry_measuring_instruments mi ON mi.id = standard.diagnostic_equipment_id
+apps/backend/internal/equipment/measuringinstrument/repository.go:285:          AND standard.diagnostic_equipment_id IS NOT NULL
+apps/backend/internal/equipment/measuringinstrument/repository.go:318:func (r *measuringInstrumentRepository) GetStandardScopes(ctx context.Context, organizationID uuid.UUID, standardIDs []uuid.UUID) (map[string]StandardScope, error) {
+apps/backend/internal/equipment/measuringinstrument/repository.go:324:		SELECT id, division_id, unit_id, owner_label, diagnostic_equipment_id
+apps/backend/internal/equipment/standard/service_test.go:75:	if !errors.Is(err, ErrDiagnosticEquipmentRequired) {
+apps/backend/internal/equipment/standard/service_test.go:76:		t.Fatalf("expected ErrDiagnosticEquipmentRequired, got %v", err)
+apps/backend/internal/equipment/standard/service_test.go:117:func TestResolveDiagnosticEquipmentRejectsArchivedParent(t *testing.T) {
+apps/backend/internal/equipment/standard/service_test.go:129:				Archived:       true,
+apps/backend/internal/equipment/standard/service_test.go:139:	if !errors.Is(err, ErrArchivedTarget) {
+apps/backend/internal/equipment/standard/service_test.go:140:		t.Fatalf("expected ErrArchivedTarget, got %v", err)
+apps/backend/internal/equipment/measuringinstrument/service_test.go:37:func (r *standardScopeRepository) ReplaceStandardLinks(context.Context, uuid.UUID, []uuid.UUID) error {
+apps/backend/internal/equipment/measuringinstrument/service_test.go:41:func (r *standardScopeRepository) ListStandardLinksByOrganization(context.Context, uuid.UUID) (map[string][]LinkedStandard, error) {
+apps/backend/internal/equipment/measuringinstrument/service_test.go:45:func (r *standardScopeRepository) GetStandardScopes(
+apps/backend/internal/equipment/standard/service.go:17:	List(ctx context.Context, token string, includeArchived bool, limit, offset int32) ([]*StandardResponse, int64, error)
+apps/backend/internal/equipment/standard/service.go:62:func (s *standardService) List(ctx context.Context, token string, includeArchived bool, limit, offset int32) ([]*StandardResponse, int64, error) {
+apps/backend/internal/equipment/standard/service.go:68:	items, err := s.repository.ListByOrganization(ctx, uuid.MustParse(session.Organization.ID), includeArchived)
+apps/backend/internal/equipment/standard/service.go:172:	if current.ArchivedAt != nil {
+apps/backend/internal/equipment/standard/service.go:173:		return nil, ErrArchivedTarget
+apps/backend/internal/equipment/standard/service.go:209:	if current.ArchivedAt != nil {
+apps/backend/internal/equipment/standard/service.go:210:		return nil, ErrAlreadyArchived
+apps/backend/internal/equipment/standard/service.go:270:	if current.ArchivedAt != nil {
+apps/backend/internal/equipment/standard/service.go:271:		return nil, ErrArchivedTarget
+apps/backend/internal/equipment/standard/service.go:331:		return Standard{}, ErrDiagnosticEquipmentRequired
+apps/backend/internal/equipment/standard/service.go:365:	if current.ArchivedAt != nil {
+apps/backend/internal/equipment/standard/service.go:366:		return nil, ErrArchivedTarget
+apps/backend/internal/equipment/standard/service.go:467:	if scope.Archived {
+apps/backend/internal/equipment/standard/service.go:468:		return nil, ErrArchivedTarget
+apps/backend/internal/equipment/standard/service.go:501:	if item.ArchivedAt != nil {
+apps/backend/internal/equipment/standard/service.go:502:		value := item.ArchivedAt.Format(time.RFC3339)
+apps/backend/internal/equipment/standard/service.go:523:		ArchivedAt: archivedAt,
+apps/backend/internal/equipment/standard/handler.go:47:		sendError(w, http.StatusBadRequest, ErrDiagnosticEquipmentRequired.Error())
+apps/backend/internal/equipment/standard/handler.go:93:		errors.Is(err, ErrDiagnosticEquipmentRequired),
+apps/backend/internal/equipment/standard/handler.go:103:		errors.Is(err, ErrArchivedTarget),
+apps/backend/internal/equipment/standard/handler.go:104:		errors.Is(err, ErrAlreadyArchived):
+apps/backend/internal/equipment/measuringinstrument/service.go:17:	List(ctx context.Context, token string, includeArchived bool, limit, offset int32) ([]*MeasuringInstrumentResponse, int64, error)
+apps/backend/internal/equipment/measuringinstrument/service.go:63:	if err := s.repository.ReplaceStandardLinks(ctx, uuid.MustParse(created.ID), standardIDs); err != nil {
+apps/backend/internal/equipment/measuringinstrument/service.go:70:func (s *measuringInstrumentService) List(ctx context.Context, token string, includeArchived bool, limit, offset int32) ([]*MeasuringInstrumentResponse, int64, error) {
+apps/backend/internal/equipment/measuringinstrument/service.go:76:	items, err := s.repository.ListByOrganization(ctx, uuid.MustParse(session.Organization.ID), includeArchived)
+apps/backend/internal/equipment/measuringinstrument/service.go:80:	standardsByInstrument, err := s.repository.ListStandardLinksByOrganization(ctx, uuid.MustParse(session.Organization.ID))
+apps/backend/internal/equipment/measuringinstrument/service.go:135:	standardsByInstrument, err := s.repository.ListStandardLinksByOrganization(ctx, uuid.MustParse(session.Organization.ID))
+apps/backend/internal/equipment/measuringinstrument/service.go:171:	if current.ArchivedAt != nil {
+apps/backend/internal/equipment/measuringinstrument/service.go:172:		return nil, ErrArchivedTarget
+apps/backend/internal/equipment/measuringinstrument/service.go:184:	if err := s.repository.ReplaceStandardLinks(ctx, measuringInstrumentID, standardIDs); err != nil {
+apps/backend/internal/equipment/measuringinstrument/service.go:209:	if current.ArchivedAt != nil {
+apps/backend/internal/equipment/measuringinstrument/service.go:210:		return nil, ErrAlreadyArchived
+apps/backend/internal/equipment/measuringinstrument/service.go:274:	if current.ArchivedAt != nil {
+apps/backend/internal/equipment/measuringinstrument/service.go:275:		return nil, ErrArchivedTarget
+apps/backend/internal/equipment/measuringinstrument/service.go:386:	if current.ArchivedAt != nil {
+apps/backend/internal/equipment/measuringinstrument/service.go:387:		return nil, nil, ErrArchivedTarget
+apps/backend/internal/equipment/measuringinstrument/service.go:533:	scopes, err := s.repository.GetStandardScopes(ctx, uuid.MustParse(session.Organization.ID), parsed)
+apps/backend/internal/equipment/measuringinstrument/service.go:564:	links, err := s.repository.ListStandardLinksByOrganization(ctx, uuid.MustParse(organizationID))
+apps/backend/internal/equipment/measuringinstrument/service.go:589:	if item.ArchivedAt != nil {
+apps/backend/internal/equipment/measuringinstrument/service.go:590:		value := item.ArchivedAt.Format(time.RFC3339)
+apps/backend/internal/equipment/measuringinstrument/service.go:622:		ArchivedAt: archivedAt,
+apps/backend/internal/equipment/standard/models.go:24:	ArchivedAt                  *time.Time
+apps/backend/internal/equipment/standard/models.go:103:	ArchivedAt                  *string                     `json:"archivedAt,omitempty"`
+apps/backend/internal/equipment/measuringinstrument/handler.go:73:	includeArchived := r.URL.Query().Get("includeArchived") == "true" || r.URL.Query().Get("includeArchived") == "1"
+apps/backend/internal/equipment/measuringinstrument/handler.go:74:	items, total, err := h.service.List(r.Context(), token, includeArchived, int32(limit), int32(offset))
+apps/backend/internal/equipment/measuringinstrument/handler.go:290:		errors.Is(err, ErrArchivedTarget),
+apps/backend/internal/equipment/measuringinstrument/handler.go:291:		errors.Is(err, ErrAlreadyArchived):
+apps/backend/internal/equipment/measuringinstrument/models.go:34:	ArchivedAt         *time.Time
+apps/backend/internal/equipment/measuringinstrument/models.go:119:	ArchivedAt         *string           `json:"archivedAt,omitempty"`

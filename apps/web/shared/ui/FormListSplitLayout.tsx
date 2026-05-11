@@ -106,12 +106,20 @@ export function FormListSplitLayout({
   );
 }
 
-export type FormListScrollAreaProps = HTMLAttributes<HTMLDivElement>;
+export type FormListScrollMode = "page" | "contained";
 
-export function FormListScrollArea({ className, ...props }: FormListScrollAreaProps) {
+export interface FormListScrollAreaProps extends HTMLAttributes<HTMLDivElement> {
+  scrollMode?: FormListScrollMode;
+}
+
+export function FormListScrollArea({ className, scrollMode = "page", ...props }: FormListScrollAreaProps) {
   return (
     <div
-      className={cn("min-h-0 flex-1 overflow-y-visible pr-0 xl:overflow-y-auto xl:overscroll-contain xl:pr-1", className)}
+      className={cn(
+        "min-h-0 flex-1 overflow-y-visible pr-0 xl:pr-1",
+        scrollMode === "contained" && "xl:overflow-y-auto xl:overscroll-auto",
+        className,
+      )}
       {...props}
     />
   );

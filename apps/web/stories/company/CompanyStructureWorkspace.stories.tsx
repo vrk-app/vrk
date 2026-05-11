@@ -64,6 +64,20 @@ type Story = StoryObj<typeof meta>;
 
 export const OrganizationAdmin: Story = {
   decorators: [withRuntimeApi({ session: runtimeSession })],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(document.body);
+
+    await userEvent.click(await canvas.findByRole("tab", { name: "Дивизионы" }));
+    await expect(await canvas.findByRole("heading", { level: 2, name: "Активные дивизионы" })).toBeVisible();
+    await expect(canvas.queryByRole("heading", { level: 2, name: "Новый дивизион" })).toBeNull();
+
+    await userEvent.click(await canvas.findByRole("button", { name: "Создать дивизион" }));
+    const dialog = await body.findByRole("dialog", { name: "Новый дивизион" });
+    await expect(dialog).toBeVisible();
+    await expect(within(dialog).getByLabelText("Наименование")).toBeVisible();
+    await userEvent.click(within(dialog).getByRole("button", { name: "Отмена" }));
+  },
 };
 
 export const EmptyStructure: Story = {
@@ -78,6 +92,16 @@ export const ScopedReadonly: Story = {
     initialSession: divisionScopeSession,
   },
   decorators: [withRuntimeApi({ session: divisionScopeSession })],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await userEvent.click(await canvas.findByRole("tab", { name: "Дивизионы" }));
+    await expect(await canvas.findByRole("heading", { level: 2, name: "Активные дивизионы" })).toBeVisible();
+    await expect(canvas.queryByRole("button", { name: "Создать дивизион" })).toBeNull();
+    await userEvent.click(await canvas.findByRole("tab", { name: "Юниты" }));
+    await expect(await canvas.findByRole("heading", { level: 2, name: "Активные юниты" })).toBeVisible();
+    await expect(canvas.queryByRole("button", { name: "Создать юнит" })).toBeNull();
+  },
 };
 
 export const OrganizationHeadEmployees: Story = {

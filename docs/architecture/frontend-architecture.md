@@ -1,7 +1,7 @@
 # Архитектура фронтенда и практики разработки
 
 Статус: accepted baseline  
-Обновлено: 2026-04-29
+Обновлено: 2026-05-11
 
 ## Назначение
 
@@ -91,10 +91,10 @@ flowchart LR
 - анонимный пользователь все еще видит Stage 02 shell на `/company`, пока у него нет сессии;
 - платформенный админ выпускает invite через `/register`;
 - historical slice-001 implementation проводит приглашенного администратора по пути `/register/[token] -> /company/setup -> /company`;
-- target correction от 2026-04-29 заменяет этот одноразовый wizard на путь `/register/[token] -> /company`, где первый и последующие дивизионы и юниты создаются через постоянный organization management UI;
+- target correction от 2026-04-29 заменяет этот одноразовый wizard на путь `/register/[token] -> /company`, где первый и последующие дивизионы и юниты создаются через organization management UI;
 - `/company` разделяет semantics поля `Тип`: профиль организации показывает legal-form selector `ООО` / `ПАО` / `НАО` / `ИП`, дивизион не показывает type selector, а юнит сохраняет operational type selector `ВРД` / `ВРЗ` / `ВУ` / `ВРП`;
 - `/company` показывает optional requisites и логотип; логотип загружается через `app/api/company/logo`, а browser получает только authenticated proxy URL, не S3 object key;
-- `/company` держит формы создания дивизионов и юнитов постоянными create-surfaces: edit actions не подставляют значения в эти формы;
+- `/company` держит вкладки `Дивизионы` и `Юниты` как list-first поверхности: реестр занимает полную ширину, create action живет в header/empty state списка и открывает отдельный Dialog; edit actions не подставляют значения в create forms;
 - редактирование дивизионов и юнитов открывается отдельным modal PATCH surface с focus trap, `Escape`/backdrop close и restore focus, аналогично registry edit dialogs в `/equipment`;
 - server-side runtime layout читает текущую session и не пускает активированного администратора в пустой shell;
 - browser не ходит напрямую в container-only backend host: Next route handlers в `app/api/*` проксируют invite/session/bootstrap requests к `apps/backend`;
@@ -109,7 +109,7 @@ flowchart LR
     D --> C
     C --> E["HttpOnly vrk_session cookie"]
     E --> B
-    B --> F["/company<br/>persistent org management"]
+    B --> F["/company<br/>org management<br/>create dialogs"]
 ```
 
 ### 1.2.2. Реализованный Stage 03 runtime contour для slice-002
@@ -122,6 +122,7 @@ flowchart LR
   - organization-scope пользователь видит весь org graph; вкладка `Сотрудники` появляется при `workspace.canViewEmployees`, а invite/edit/deactivate controls только при admin-флагах;
   - division-scope пользователь видит только свой дивизион и его child units; `division_admin` получает scoped invite/edit/deactivate controls, а `division_head` и scoped `auditor` получают read-only employees registry;
   - unit-scope пользователь видит только один юнит и не видит broader org graph; `unit_admin` получает scoped invite/edit/deactivate controls, а `unit_head` и scoped `auditor` получают read-only employees registry;
+- employee invites стали list-first: `EmployeeInviteManager` показывает `Статусы приглашений` full-width, а `Пригласить сотрудника` открывает create Dialog из header списка или empty state;
 - `/login` после employee acceptance больше не возвращает пользователя в generic shell, а сразу восстанавливает его сохраненный scoped contour;
 - ссылка `политикой доступа` в login consent ведет на `/access-policy`, где временно живет non-legal draft/stub политики до замены юридически оформленной редакцией;
 - checkbox `Запомнить вход` на `/login` управляет только web-session UX: checked ставит HttpOnly `vrk_session` cookie с 24h `maxAge` и сохраняет localStorage-подсказку последнего workspace по hash нормализованного email; unchecked ставит session cookie без `maxAge` и чистит подсказку для текущего email;
@@ -179,71 +180,74 @@ flowchart LR
 
 ### 1.2.4. Реализованный Stage 03 runtime contour для slice-004
 
-После реализации `slice-004-equipment-mi-standard-registries` master-data contour на публичном route `/equipment` перестал быть shell-only surface и стал реальным Stage 03 registry boundary:
+После реализации `slice-004` и `slice-005` master-data contour на публичном route `/equipment` перестал быть shell-only surface и стал реальным Stage 03 registry boundary. Исторический floor доказал отдельные backend resources для equipment, measuring instruments, standards, journal/archive и scoped access, но product correction от 2026-05-11 заменяет user-facing модель.
 
-- публичный web route остается `/equipment`, а три отдельных registry surfaces переключаются через query-backed tabs `equipment`, `mi`, `standards`;
-- `app/api/equipment*` скрывает browser от internal backend host и держит один public web boundary для equipment, measuring instruments и standards;
-- анонимный пользователь по-прежнему видит truthful shell без live scoped records;
-- customer `organization_admin` на organization scope получает live create/list surface для всех трех registries на одном route;
-- division-scope и unit-scope пользователи попадают на тот же `/equipment`; scoped admins получают mutate surface только внутри visible scope/subtree, read-only роли получают scope-filtered contour без broader record leak;
-- contractor session не получает parallel registry family и остается вне customer master-data contour;
-- relation baseline теперь реальна в runtime и proof bundle:
-  - equipment может существовать без СИ;
-  - СИ может быть `standalone` или `built_in`;
-  - standard остается reusable registry record и не схлопывается в `1:1`.
+Target `/equipment` frontend contract:
 
-```mermaid
-flowchart LR
-    A["Browser /equipment?tab=*"] --> B["Next page + app/api/equipment*"]
-    B --> C["backend registries<br/>equipment / measuring-instruments / standards"]
-    C --> D["session-based scope filter"]
-    D --> E["organization scope<br/>create + list on all tabs"]
-    D --> F["division / unit scope<br/>read-only filtered lists"]
-    C --> G["relation layer<br/>equipment -> 0..N MI -> 0..N standards"]
-```
-
-### 1.2.5. Реализованный Stage 03 runtime contour для slice-005
-
-После реализации `slice-005-metrology-journals-archiving-and-proof` и follow-up frontend edit slice тот же `/equipment` route получил journal/archive/edit state без widening в parallel public family:
-
-- server page читает `searchParams.tab` и `searchParams.archived`, нормализует их и передает в `EquipmentRegistryWorkspace`;
-- route state остается URL-backed:
-  - `tab=equipment | mi | standards`;
-  - `archived=1` включает explicit archive visibility внутри того же route;
-- `EquipmentRegistryWorkspace` держит тот же route через `router.replace(...)`, а data fetching на web boundary прокидывает `includeArchived=true` только когда archive visibility явно включена;
-- shared backend/proxy helpers больше не разворачивают только `data`: для paginated Stage 03 registries они сохраняют backend envelope `meta`, чтобы web boundary не теряла `total/limit/offset` при росте реестров;
-- journal detail panels для measuring instruments и standards живут в том же workspace и используют `app/api/equipment/.../journals`;
-- archive actions идут через `app/api/equipment/.../archive`;
-- edit actions для equipment, СИ и эталонов живут в record cards и используют компактный editor dialog, а browser ходит только в Next proxy routes:
-  - `PATCH app/api/equipment/[equipmentId] -> /api/v1/equipment/{id}`;
-  - `PATCH app/api/equipment/measuring-instruments/[measuringInstrumentId] -> /api/v1/measuring-instruments/{id}`;
-  - `PATCH app/api/equipment/standards/[standardId] -> /api/v1/standards/{id}`;
-- edit surface открывается только для `sessionHasCapability(session, "manage_equipment")` и не показывается на archived records;
-- derived метрологический статус СИ и эталонов остается read-only в edit UI и продолжает пересчитываться через journal endpoints;
-- active pickers остаются отфильтрованными даже когда archive visibility включена:
-  - equipment create picker использует только активные standalone-СИ выбранного юнита;
-  - standard link picker использует только `activeStandards`;
-- create surface больше не показывает в форме СИ поля `Размещение` и `Привязка к оборудованию`: новое СИ создается standalone, а связь с оборудованием задается через селектор `Связанные средства измерения` в форме `Новое оборудование`;
-- mutate surface остается только у customer `organization_admin` на `organization` scope;
-- division/unit users читают только свой scope-filtered active/archive contour и journal history без broader leak.
+- публичный web route остается `/equipment`;
+- server page сохраняет `archived=1` как explicit archive visibility state;
+- старые `tab=mi` и `tab=standards` остаются compatibility-only input и нормализуются к единому workspace, не открывая отдельные registry tabs;
+- `app/api/equipment*` по-прежнему скрывает browser от internal backend host;
+- анонимный пользователь видит truthful shell без live scoped records;
+- contractor session не получает customer equipment registry;
+- customer users попадают в один `EquipmentRegistryWorkspace`;
+- customer admins с `manage_equipment` получают create/edit/archive/journal controls внутри visible scope/subtree;
+- read-only роли видят single-column scope-filtered registry и journal history без create/edit/archive placeholders;
+- mutation surfaces (`Добавить оборудование` create Dialog, edit/archive actions, journal entry form) рендерятся только при `manage_equipment`;
+- manage UI показывает две верхнеуровневые client-side вкладки на том же route:
+  - `Оборудование` как default tab с surface `Оборудование в учете`;
+  - create action `Добавить оборудование`, который открывает Dialog `Новое оборудование` с типом `Техническое` / `Диагностическое`;
+  - diagnostic equipment card with owned standards inside the card;
+  - diagnostic edit modal with add-on-save and hard-delete-on-save controls for owned standards;
+  - `Журнал операций` как separate tab с surface `Журнал операций по оборудованию`.
 
 ```mermaid
 flowchart LR
-    A["/equipment?tab=mi&archived=1"] --> B["page.tsx resolves tab + archived"]
+    A["Browser /equipment<br/>old tab params optional"] --> B["Next page"]
     B --> C["EquipmentRegistryWorkspace"]
-    C --> D["/api/equipment*?includeArchived=true"]
-    C --> E["/api/equipment/.../journals"]
-    C --> F["/api/equipment/.../archive"]
-    C --> L["/api/equipment/[id] PATCH<br/>/api/equipment/measuring-instruments/[id] PATCH<br/>/api/equipment/standards/[id] PATCH"]
-    D --> G["backend scoped registries"]
-    E --> H["backend journal endpoints"]
-    F --> I["backend archive endpoints"]
-    L --> M["backend PATCH endpoints"]
-    G --> J["active lists + archived rows"]
-    C --> K["active standalone MI / activeStandards pickers only"]
+    C --> T{"UI tab"}
+    T -->|"Оборудование"| H["Оборудование в учете"]
+    T -->|"Журнал операций"| K["Журнал операций по оборудованию"]
+    H --> D["Add equipment action<br/>create Dialog"]
+    D --> E{"Тип оборудования"}
+    E -->|"Техническое"| F["technical payload"]
+    E -->|"Диагностическое"| G["diagnostic payload<br/>owned standards 0..N"]
+    H --> I["technical cards"]
+    H --> J["diagnostic cards<br/>standards inside"]
+    J --> M["edit modal<br/>add / hard-delete standards on save"]
+    C --> L["archive visibility<br/>shared control"]
 ```
 
-Диаграмма фиксирует текущую frontend boundary для slice-005 и edit follow-up: query state управляет тем, что видно на одном публичном route, archived visibility не расширяет mutate surface, а PATCH editor доступен только для активных записей у роли с `manage_equipment`.
+Диаграмма фиксирует текущий target boundary: route остается прежним, но old registry tabs (`mi`, `standards`) and standalone standards list are no longer part of the user-facing workspace.
+
+### 1.2.5. Runtime contour for equipment correction
+
+The frontend may continue using existing Next proxy routes while the backend migrates conservatively:
+
+- technical equipment can still map to `/api/equipment`;
+- diagnostic equipment may still map to `/api/equipment/measuring-instruments` as implementation detail;
+- standards are created/viewed only through diagnostic equipment context in the UI;
+- customer admins can add new owned standards and physically delete existing owned standards from the diagnostic equipment edit modal; these changes are queued locally until `Сохранить изменения`;
+- standard journals are not exposed in the target UI;
+- unified equipment journal uses the diagnostic/equipment journal endpoint selected by the chosen equipment record;
+- edit/archive controls and journal mutation forms stay hidden for archived records and hidden from sessions without `manage_equipment`;
+- data fetching keeps pagination `meta` and `includeArchived=true` only when archive visibility is explicit;
+- active relationship controls must never surface archived records or reusable standards.
+
+```mermaid
+flowchart LR
+    A["EquipmentRegistryWorkspace"] --> B["/api/equipment* proxy"]
+    B --> C["backend scoped registry services"]
+    C --> D["technical equipment"]
+    C --> E["diagnostic equipment implementation boundary"]
+    E --> F["owned standards"]
+    E --> G["equipment journal history"]
+    A --> H["session capability gate"]
+    H --> I["manage_equipment mutate"]
+    H --> J["read-only subtree"]
+```
+
+Эта диаграмма фиксирует frontend/backend boundary during the correction: UI already follows the unified product model even if storage keeps legacy service boundaries as compatibility layer.
 
 ### 1.3. Field scaffold boundary
 

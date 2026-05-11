@@ -1,0 +1,8 @@
+COMMAND: compose platform status
+NAME                   IMAGE                                      COMMAND                  SERVICE          CREATED          STATUS                    PORTS
+vrk-backend-1          vrk-backend                                "/app/api"               backend          52 minutes ago   Up 52 minutes (healthy)   0.0.0.0:18080->8080/tcp, [::]:18080->8080/tcp
+vrk-db-1               postgres:17-alpine                         "docker-entrypoint.s…"   db               11 days ago      Up 6 hours (healthy)      5432/tcp
+vrk-field-1            vrk-field                                  "docker-entrypoint.s…"   field            6 hours ago      Up 6 hours (healthy)      0.0.0.0:3102->3002/tcp, [::]:3102->3002/tcp
+vrk-object-storage-1   minio/minio:RELEASE.2025-09-07T16-13-09Z   "/usr/bin/docker-ent…"   object-storage   11 days ago      Up 6 hours (healthy)      0.0.0.0:19000->9000/tcp, [::]:19000->9000/tcp, 0.0.0.0:19001->9001/tcp, [::]:19001->9001/tcp
+vrk-web-1              vrk-web-dev                                "docker-entrypoint.s…"   web              6 hours ago      Up 6 hours (healthy)      0.0.0.0:3100->3000/tcp, [::]:3100->3000/tcp
+EXIT_CODE=0

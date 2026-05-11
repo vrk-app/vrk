@@ -1087,26 +1087,11 @@ definitions:
       shortName:
         type: string
     type: object
-  standard.CreateJournalRequest:
-    properties:
-      attachmentUrl:
-        type: string
-      comment:
-        type: string
-      documentNumber:
-        type: string
-      executorOrganization:
-        type: string
-      operationDate:
-        type: string
-      operationType:
-        type: string
-      validUntil:
-        type: string
-    type: object
   standard.CreateRequest:
     properties:
       comment:
+        type: string
+      diagnosticEquipmentId:
         type: string
       divisionId:
         type: string
@@ -1127,25 +1112,16 @@ definitions:
       unitId:
         type: string
     type: object
-  standard.JournalResponse:
+  standard.DeleteResponse:
     properties:
-      attachmentUrl:
-        type: string
-      comment:
-        type: string
-      createdAt:
-        type: string
-      documentNumber:
-        type: string
-      executorOrganization:
-        type: string
       id:
         type: string
-      operationDate:
+    type: object
+  standard.DiagnosticEquipmentSummary:
+    properties:
+      id:
         type: string
-      operationType:
-        type: string
-      validUntil:
+      name:
         type: string
     type: object
   standard.Meta:
@@ -1184,23 +1160,17 @@ definitions:
         type: string
       createdAt:
         type: string
+      diagnosticEquipment:
+        $ref: '#/definitions/standard.DiagnosticEquipmentSummary'
       documentUrl:
         type: string
       id:
         type: string
       identifier:
         type: string
-      journalCount:
-        type: integer
-      latestJournal:
-        $ref: '#/definitions/standard.JournalResponse'
-      linkedMeasuringInstruments:
-        type: integer
       metrologicalCharacteristics:
         type: string
       model:
-        type: string
-      nextDueDate:
         type: string
       organizationId:
         type: string
@@ -1213,29 +1183,6 @@ definitions:
       status:
         type: string
       updatedAt:
-        type: string
-    type: object
-  standard.UpdateRequest:
-    properties:
-      comment:
-        type: string
-      divisionId:
-        type: string
-      documentUrl:
-        type: string
-      identifier:
-        type: string
-      metrologicalCharacteristics:
-        type: string
-      model:
-        type: string
-      ownerLabel:
-        type: string
-      serialNumber:
-        type: string
-      standardType:
-        type: string
-      unitId:
         type: string
     type: object
 info:
@@ -2842,6 +2789,97 @@ paths:
       summary: Create measuring instrument journal entry
       tags:
       - equipment
+  /measuring-instruments/{id}/standards:
+    post:
+      consumes:
+      - application/json
+      description: Creates one standard/setup measure owned by the diagnostic equipment
+        record.
+      parameters:
+      - description: Diagnostic equipment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Standard payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/standard.CreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/standard.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/standard.StandardResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/standard.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/standard.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/standard.Response'
+      summary: Create diagnostic equipment standard
+      tags:
+      - equipment
+  /measuring-instruments/{id}/standards/{standardId}:
+    delete:
+      description: Permanently deletes one standard/setup measure owned by the diagnostic
+        equipment record.
+      parameters:
+      - description: Diagnostic equipment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Standard ID
+        in: path
+        name: standardId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/standard.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/standard.DeleteResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/standard.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/standard.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/standard.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/standard.Response'
+      summary: Delete diagnostic equipment standard
+      tags:
+      - equipment
   /organizations:
     get:
       description: Возвращает список организаций с пагинацией
@@ -3191,296 +3229,4 @@ paths:
       summary: Get current session
       tags:
       - auth
-  /standards:
-    get:
-      description: Returns standard records visible inside the authenticated customer
-        session scope.
-      parameters:
-      - default: 20
-        description: Page size
-        in: query
-        maximum: 100
-        minimum: 1
-        name: limit
-        type: integer
-      - default: 0
-        description: Offset
-        in: query
-        minimum: 0
-        name: offset
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/standard.Response'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/standard.StandardResponse'
-                  type: array
-                meta:
-                  $ref: '#/definitions/standard.Meta'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/standard.Response'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/standard.Response'
-      summary: List standards registry
-      tags:
-      - equipment
-    post:
-      consumes:
-      - application/json
-      description: Creates one standard registry record inside the authenticated customer
-        organization.
-      parameters:
-      - description: Standard payload
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/standard.CreateRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/standard.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/standard.StandardResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/standard.Response'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/standard.Response'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/standard.Response'
-      summary: Create standard registry record
-      tags:
-      - equipment
-  /standards/{id}:
-    get:
-      description: Returns one standard record visible inside the authenticated customer
-        session scope.
-      parameters:
-      - description: Standard ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/standard.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/standard.StandardResponse'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/standard.Response'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/standard.Response'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/standard.Response'
-      summary: Get standard registry record
-      tags:
-      - equipment
-    patch:
-      consumes:
-      - application/json
-      description: Updates one standard record inside the authenticated customer organization.
-      parameters:
-      - description: Standard ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Standard patch payload
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/standard.UpdateRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/standard.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/standard.StandardResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/standard.Response'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/standard.Response'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/standard.Response'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/standard.Response'
-      summary: Update standard registry record
-      tags:
-      - equipment
-  /standards/{id}/archive:
-    post:
-      description: Archives one standard record inside the authenticated customer
-        organization/session scope.
-      parameters:
-      - description: Standard ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/standard.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/standard.StandardResponse'
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/standard.Response'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/standard.Response'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/standard.Response'
-      summary: Archive standard registry record
-      tags:
-      - equipment
-  /standards/{id}/journals:
-    get:
-      description: Returns metrology journal entries for one standard visible inside
-        the authenticated customer session scope.
-      parameters:
-      - description: Standard ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/standard.Response'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/standard.JournalResponse'
-                  type: array
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/standard.Response'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/standard.Response'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/standard.Response'
-      summary: List standard journal
-      tags:
-      - equipment
-    post:
-      consumes:
-      - application/json
-      description: Appends one metrology journal entry to the standard visible inside
-        the authenticated customer organization.
-      parameters:
-      - description: Standard ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Journal payload
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/standard.CreateJournalRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/standard.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/standard.JournalResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/standard.Response'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/standard.Response'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/standard.Response'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/standard.Response'
-      summary: Create standard journal entry
-      tags:
-      - equipment
 swagger: "2.0"

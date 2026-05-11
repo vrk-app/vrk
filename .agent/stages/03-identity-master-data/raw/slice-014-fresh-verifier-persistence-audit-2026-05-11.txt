@@ -1,0 +1,71 @@
+COMMANDS: source audit for standard ownership migration and legacy reusable link paths
+
+--- migration ownership column and backfill ---
+     1	BEGIN;
+     2
+     3	ALTER TABLE registry_standards
+     4	    ADD COLUMN diagnostic_equipment_id UUID REFERENCES registry_measuring_instruments(id) ON DELETE CASCADE;
+     5
+     6	CREATE INDEX idx_registry_standards_diagnostic_equipment_id
+     7	    ON registry_standards (diagnostic_equipment_id);
+     8
+     9	WITH single_parent AS (
+    10	    SELECT
+    11	        standard_id,
+    12	        (ARRAY_AGG(measuring_instrument_id))[1] AS diagnostic_equipment_id
+    13	    FROM registry_measuring_instrument_standards
+    14	    GROUP BY standard_id
+    15	    HAVING COUNT(DISTINCT measuring_instrument_id) = 1
+    16	)
+    17	UPDATE registry_standards standard
+    18	SET diagnostic_equipment_id = single_parent.diagnostic_equipment_id
+    19	FROM single_parent
+    20	WHERE standard.id = single_parent.standard_id;
+    21
+    22	COMMIT;
+
+--- repository/service paths that still union legacy m2m links or allow nullable diagnostic parent at repository layer ---
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:4:    ADD COLUMN diagnostic_equipment_id UUID REFERENCES registry_measuring_instruments(id) ON DELETE CASCADE;
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:6:CREATE INDEX idx_registry_standards_diagnostic_equipment_id
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:7:    ON registry_standards (diagnostic_equipment_id);
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:12:        (ARRAY_AGG(measuring_instrument_id))[1] AS diagnostic_equipment_id
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:13:    FROM registry_measuring_instrument_standards
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:18:SET diagnostic_equipment_id = single_parent.diagnostic_equipment_id
+apps/backend/internal/equipment/standard/errors.go:14:	ErrDiagnosticEquipmentRequired = errors.New("diagnostic equipment is required")
+apps/backend/internal/equipment/measuringinstrument/repository.go:24:	ReplaceStandardLinks(ctx context.Context, measuringInstrumentID uuid.UUID, standardIDs []uuid.UUID) error
+apps/backend/internal/equipment/measuringinstrument/repository.go:25:	ListStandardLinksByOrganization(ctx context.Context, organizationID uuid.UUID) (map[string][]LinkedStandard, error)
+apps/backend/internal/equipment/measuringinstrument/repository.go:26:	GetStandardScopes(ctx context.Context, organizationID uuid.UUID, standardIDs []uuid.UUID) (map[string]StandardScope, error)
+apps/backend/internal/equipment/measuringinstrument/repository.go:264:func (r *measuringInstrumentRepository) ReplaceStandardLinks(ctx context.Context, measuringInstrumentID uuid.UUID, standardIDs []uuid.UUID) error {
+apps/backend/internal/equipment/measuringinstrument/repository.go:271:	if _, err := tx.Exec(ctx, `DELETE FROM registry_measuring_instrument_standards WHERE measuring_instrument_id = $1`, measuringInstrumentID); err != nil {
+apps/backend/internal/equipment/measuringinstrument/repository.go:278:			`INSERT INTO registry_measuring_instrument_standards (measuring_instrument_id, standard_id) VALUES ($1, $2)`,
+apps/backend/internal/equipment/measuringinstrument/repository.go:289:func (r *measuringInstrumentRepository) ListStandardLinksByOrganization(ctx context.Context, organizationID uuid.UUID) (map[string][]LinkedStandard, error) {
+apps/backend/internal/equipment/measuringinstrument/repository.go:293:                standard.diagnostic_equipment_id AS measuring_instrument_id,
+apps/backend/internal/equipment/measuringinstrument/repository.go:297:              AND standard.diagnostic_equipment_id IS NOT NULL
+apps/backend/internal/equipment/measuringinstrument/repository.go:298:            UNION
+apps/backend/internal/equipment/measuringinstrument/repository.go:302:            FROM registry_measuring_instrument_standards link
+apps/backend/internal/equipment/measuringinstrument/repository.go:353:func (r *measuringInstrumentRepository) GetStandardScopes(ctx context.Context, organizationID uuid.UUID, standardIDs []uuid.UUID) (map[string]StandardScope, error) {
+apps/backend/internal/equipment/measuringinstrument/repository.go:359:		SELECT id, division_id, unit_id, owner_label, diagnostic_equipment_id
+apps/backend/internal/equipment/standard/repository.go:47:    standard.diagnostic_equipment_id,
+apps/backend/internal/equipment/standard/repository.go:61:            FROM registry_measuring_instrument_standards link
+apps/backend/internal/equipment/standard/repository.go:63:            UNION
+apps/backend/internal/equipment/standard/repository.go:64:            SELECT standard.diagnostic_equipment_id
+apps/backend/internal/equipment/standard/repository.go:65:            WHERE standard.diagnostic_equipment_id IS NOT NULL
+apps/backend/internal/equipment/standard/repository.go:135:            diagnostic_equipment_id,
+apps/backend/internal/equipment/standard/repository.go:181:        LEFT JOIN registry_measuring_instruments diagnostic ON diagnostic.id = standard.diagnostic_equipment_id
+apps/backend/internal/equipment/standard/repository.go:200:        LEFT JOIN registry_measuring_instruments diagnostic ON diagnostic.id = standard.diagnostic_equipment_id
+apps/backend/internal/equipment/standard/repository.go:235:            diagnostic_equipment_id = $5,
+apps/backend/internal/equipment/measuringinstrument/service_test.go:37:func (r *standardScopeRepository) ReplaceStandardLinks(context.Context, uuid.UUID, []uuid.UUID) error {
+apps/backend/internal/equipment/measuringinstrument/service_test.go:41:func (r *standardScopeRepository) ListStandardLinksByOrganization(context.Context, uuid.UUID) (map[string][]LinkedStandard, error) {
+apps/backend/internal/equipment/measuringinstrument/service_test.go:45:func (r *standardScopeRepository) GetStandardScopes(
+apps/backend/internal/equipment/standard/service_test.go:75:	if !errors.Is(err, ErrDiagnosticEquipmentRequired) {
+apps/backend/internal/equipment/standard/service_test.go:76:		t.Fatalf("expected ErrDiagnosticEquipmentRequired, got %v", err)
+apps/backend/internal/equipment/standard/service.go:331:		return Standard{}, ErrDiagnosticEquipmentRequired
+apps/backend/internal/equipment/measuringinstrument/service.go:63:	if err := s.repository.ReplaceStandardLinks(ctx, uuid.MustParse(created.ID), standardIDs); err != nil {
+apps/backend/internal/equipment/measuringinstrument/service.go:80:	standardsByInstrument, err := s.repository.ListStandardLinksByOrganization(ctx, uuid.MustParse(session.Organization.ID))
+apps/backend/internal/equipment/measuringinstrument/service.go:135:	standardsByInstrument, err := s.repository.ListStandardLinksByOrganization(ctx, uuid.MustParse(session.Organization.ID))
+apps/backend/internal/equipment/measuringinstrument/service.go:184:	if err := s.repository.ReplaceStandardLinks(ctx, measuringInstrumentID, standardIDs); err != nil {
+apps/backend/internal/equipment/measuringinstrument/service.go:533:	scopes, err := s.repository.GetStandardScopes(ctx, uuid.MustParse(session.Organization.ID), parsed)
+apps/backend/internal/equipment/measuringinstrument/service.go:564:	links, err := s.repository.ListStandardLinksByOrganization(ctx, uuid.MustParse(organizationID))
+apps/backend/internal/equipment/standard/handler.go:215:		errors.Is(err, ErrDiagnosticEquipmentRequired),
+
+EXIT_CODE=0

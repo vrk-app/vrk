@@ -1,0 +1,1 @@
+PASS: no target standard journal routes remain in backend Swagger/internal routes or web API proxies.

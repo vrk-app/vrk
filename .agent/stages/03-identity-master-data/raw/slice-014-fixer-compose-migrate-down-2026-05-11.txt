@@ -1,0 +1,3 @@
+COMMAND: compose migrate down 1 for corrected migration 16
+zsh:1: no matches found: -database=postgres://postgres:postgres@db:5432/db?sslmode=disable
+EXIT_CODE=1

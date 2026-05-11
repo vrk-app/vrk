@@ -210,23 +210,14 @@ func (a *App) registerRoutes(
 			r.Post("/{id}/archive", eqHandler.Archive)
 		})
 
-		// Standards
-		r.Route("/standards", func(r chi.Router) {
-			r.Get("/", stdHandler.List)
-			r.Post("/", stdHandler.Create)
-			r.Get("/{id}", stdHandler.GetByID)
-			r.Patch("/{id}", stdHandler.Update)
-			r.Get("/{id}/journals", stdHandler.ListJournals)
-			r.Post("/{id}/journals", stdHandler.CreateJournal)
-			r.Post("/{id}/archive", stdHandler.Archive)
-		})
-
 		// Measuring Instruments
 		r.Route("/measuring-instruments", func(r chi.Router) {
 			r.Get("/", miHandler.List)
 			r.Post("/", miHandler.Create)
 			r.Get("/{id}", miHandler.GetByID)
 			r.Patch("/{id}", miHandler.Update)
+			r.Post("/{id}/standards", stdHandler.CreateForDiagnostic)
+			r.Delete("/{id}/standards/{standardId}", stdHandler.DeleteFromDiagnostic)
 			r.Get("/{id}/journals", miHandler.ListJournals)
 			r.Post("/{id}/journals", miHandler.CreateJournal)
 			r.Post("/{id}/archive", miHandler.Archive)

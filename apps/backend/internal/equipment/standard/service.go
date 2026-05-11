@@ -18,6 +18,7 @@ type StandardService interface {
 	GetByID(ctx context.Context, token string, id string) (*StandardResponse, error)
 	Update(ctx context.Context, token string, id string, req UpdateRequest) (*StandardResponse, error)
 	Archive(ctx context.Context, token string, id string) (*StandardResponse, error)
+	DeleteFromDiagnostic(ctx context.Context, token string, diagnosticEquipmentID string, standardID string) (*DeleteResponse, error)
 	ListJournals(ctx context.Context, token string, id string) ([]*JournalResponse, error)
 	CreateJournal(ctx context.Context, token string, id string, req CreateJournalRequest) (*JournalResponse, error)
 }
@@ -46,7 +47,7 @@ func (s *standardService) Create(ctx context.Context, token string, req CreateRe
 		return nil, mapAccessError(err)
 	}
 
-	item, err := s.buildCreateModel(session, req)
+	item, err := s.buildCreateModel(ctx, session, req)
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +174,7 @@ func (s *standardService) Update(ctx context.Context, token string, id string, r
 		return nil, ErrArchivedTarget
 	}
 
-	updated, err := s.buildUpdatedModel(session, current, req)
+	updated, err := s.buildUpdatedModel(ctx, session, current, req)
 	if err != nil {
 		return nil, err
 	}
@@ -226,6 +227,40 @@ func (s *standardService) Archive(ctx context.Context, token string, id string) 
 	}
 
 	return toResponse(session, item, metrologyjournal.DeriveState(journals, item.Status)), nil
+}
+
+func (s *standardService) DeleteFromDiagnostic(
+	ctx context.Context,
+	token string,
+	diagnosticEquipmentID string,
+	standardID string,
+) (*DeleteResponse, error) {
+	session, err := registryaccess.RequireRegistryManager(ctx, s.authService, token)
+	if err != nil {
+		return nil, mapAccessError(err)
+	}
+
+	diagnosticScope, err := s.resolveDiagnosticEquipment(ctx, session, diagnosticEquipmentID)
+	if err != nil {
+		return nil, err
+	}
+
+	parsedStandardID, current, err := s.visibleStandard(ctx, session, standardID)
+	if err != nil {
+		return nil, err
+	}
+	if current.ArchivedAt != nil {
+		return nil, ErrArchivedTarget
+	}
+	if current.DiagnosticEquipmentID == nil || *current.DiagnosticEquipmentID != diagnosticScope.ID {
+		return nil, ErrNotFound
+	}
+
+	if err := s.repository.Delete(ctx, parsedStandardID); err != nil {
+		return nil, err
+	}
+
+	return &DeleteResponse{ID: parsedStandardID.String()}, nil
 }
 
 func (s *standardService) ListJournals(ctx context.Context, token string, id string) ([]*JournalResponse, error) {
@@ -300,10 +335,15 @@ func (s *standardService) CreateJournal(ctx context.Context, token string, id st
 	return toJournalResponse(*created), nil
 }
 
-func (s *standardService) buildCreateModel(session *bootstrap.SessionSummaryResponse, req CreateRequest) (Standard, error) {
+func (s *standardService) buildCreateModel(
+	ctx context.Context,
+	session *bootstrap.SessionSummaryResponse,
+	req CreateRequest,
+) (Standard, error) {
 	req.StandardType = strings.TrimSpace(req.StandardType)
 	req.Model = strings.TrimSpace(req.Model)
 	req.Identifier = strings.TrimSpace(req.Identifier)
+	req.DiagnosticEquipmentID = normalizeOptional(req.DiagnosticEquipmentID)
 	req.SerialNumber = normalizeOptional(req.SerialNumber)
 	req.MetrologicalCharacteristics = strings.TrimSpace(req.MetrologicalCharacteristics)
 	req.Comment = normalizeOptional(req.Comment)
@@ -322,15 +362,21 @@ func (s *standardService) buildCreateModel(session *bootstrap.SessionSummaryResp
 	if req.MetrologicalCharacteristics == "" {
 		return Standard{}, ErrMetrologicalCharRequired
 	}
+	if req.DiagnosticEquipmentID == nil {
+		return Standard{}, ErrDiagnosticEquipmentRequired
+	}
 
-	divisionID, unitID, ownerLabel, err := registryaccess.ValidateStandardScope(session, req.DivisionID, req.UnitID, req.OwnerLabel)
+	diagnosticScope, err := s.resolveDiagnosticEquipment(ctx, session, *req.DiagnosticEquipmentID)
 	if err != nil {
-		return Standard{}, mapScopeError(err)
+		return Standard{}, err
 	}
 
 	item := Standard{
 		OrganizationID:              session.Organization.ID,
-		OwnerLabel:                  ownerLabel,
+		UnitID:                      &diagnosticScope.UnitID,
+		OwnerLabel:                  &diagnosticScope.UnitName,
+		DiagnosticEquipmentID:       &diagnosticScope.ID,
+		DiagnosticEquipmentName:     &diagnosticScope.Name,
 		StandardType:                req.StandardType,
 		Model:                       req.Model,
 		Identifier:                  req.Identifier,
@@ -340,19 +386,16 @@ func (s *standardService) buildCreateModel(session *bootstrap.SessionSummaryResp
 		Comment:                     req.Comment,
 		DocumentURL:                 req.DocumentURL,
 	}
-	if divisionID != nil {
-		value := divisionID.String()
-		item.DivisionID = &value
-	}
-	if unitID != nil {
-		value := unitID.String()
-		item.UnitID = &value
-	}
 
 	return item, nil
 }
 
-func (s *standardService) buildUpdatedModel(session *bootstrap.SessionSummaryResponse, current *Standard, req UpdateRequest) (*Standard, error) {
+func (s *standardService) buildUpdatedModel(
+	ctx context.Context,
+	session *bootstrap.SessionSummaryResponse,
+	current *Standard,
+	req UpdateRequest,
+) (*Standard, error) {
 	updated := *current
 	if current.ArchivedAt != nil {
 		return nil, ErrArchivedTarget
@@ -396,6 +439,22 @@ func (s *standardService) buildUpdatedModel(session *bootstrap.SessionSummaryRes
 		updated.DocumentURL = normalizeOptional(req.DocumentURL)
 	}
 
+	if req.DiagnosticEquipmentID != nil {
+		updated.DiagnosticEquipmentID = normalizeOptional(req.DiagnosticEquipmentID)
+	}
+	if updated.DiagnosticEquipmentID != nil {
+		diagnosticScope, err := s.resolveDiagnosticEquipment(ctx, session, *updated.DiagnosticEquipmentID)
+		if err != nil {
+			return nil, err
+		}
+		updated.DivisionID = nil
+		updated.UnitID = &diagnosticScope.UnitID
+		updated.OwnerLabel = &diagnosticScope.UnitName
+		updated.DiagnosticEquipmentID = &diagnosticScope.ID
+		updated.DiagnosticEquipmentName = &diagnosticScope.Name
+		return &updated, nil
+	}
+
 	divisionValue := req.DivisionID
 	unitValue := req.UnitID
 	ownerLabel := req.OwnerLabel
@@ -423,6 +482,33 @@ func (s *standardService) buildUpdatedModel(session *bootstrap.SessionSummaryRes
 	return &updated, nil
 }
 
+func (s *standardService) resolveDiagnosticEquipment(
+	ctx context.Context,
+	session *bootstrap.SessionSummaryResponse,
+	value string,
+) (*DiagnosticEquipmentScope, error) {
+	diagnosticEquipmentID, err := uuid.Parse(strings.TrimSpace(value))
+	if err != nil {
+		return nil, ErrDiagnosticEquipmentInvalid
+	}
+
+	scope, err := s.repository.GetDiagnosticEquipmentScope(ctx, diagnosticEquipmentID)
+	if err != nil {
+		return nil, ErrDiagnosticEquipmentInvalid
+	}
+	if scope.OrganizationID != session.Organization.ID {
+		return nil, ErrDiagnosticEquipmentInvalid
+	}
+	if scope.Archived {
+		return nil, ErrArchivedTarget
+	}
+	if _, visible := registryaccess.VisibleUnitMap(session)[scope.UnitID]; !visible {
+		return nil, ErrDiagnosticEquipmentInvalid
+	}
+
+	return scope, nil
+}
+
 func toResponse(
 	session *bootstrap.SessionSummaryResponse,
 	item *Standard,
@@ -439,6 +525,13 @@ func toResponse(
 		scopeType = "unit"
 		scopeID = item.UnitID
 	}
+	var diagnosticEquipment *DiagnosticEquipmentSummary
+	if item.DiagnosticEquipmentID != nil && item.DiagnosticEquipmentName != nil {
+		diagnosticEquipment = &DiagnosticEquipmentSummary{
+			ID:   *item.DiagnosticEquipmentID,
+			Name: *item.DiagnosticEquipmentName,
+		}
+	}
 	var archivedAt *string
 	if item.ArchivedAt != nil {
 		value := item.ArchivedAt.Format(time.RFC3339)
@@ -453,6 +546,7 @@ func toResponse(
 			ScopeID:   scopeID,
 			Label:     scopeLabel,
 		},
+		DiagnosticEquipment:         diagnosticEquipment,
 		StandardType:                item.StandardType,
 		Model:                       item.Model,
 		Identifier:                  item.Identifier,
@@ -461,18 +555,9 @@ func toResponse(
 		Status:                      derived.Status,
 		Comment:                     item.Comment,
 		DocumentURL:                 item.DocumentURL,
-		LinkedMeasuringInstruments:  item.LinkedMeasuringInstruments,
-		JournalCount:                derived.JournalCount,
-		NextDueDate:                 derived.NextDueDate,
-		LatestJournal: func() *JournalResponse {
-			if derived.LatestJournal == nil {
-				return nil
-			}
-			return toJournalResponse(*derived.LatestJournal)
-		}(),
-		ArchivedAt: archivedAt,
-		CreatedAt:  item.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:  item.UpdatedAt.Format(time.RFC3339),
+		ArchivedAt:                  archivedAt,
+		CreatedAt:                   item.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:                   item.UpdatedAt.Format(time.RFC3339),
 	}
 }
 

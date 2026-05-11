@@ -1,0 +1,46 @@
+## obsolete UI labels/tabs in changed UI/test/story files
+apps/web/tests/equipment-registries.smoke.spec.ts:466:    await expect(page.getByRole("tablist")).toHaveCount(0);
+apps/web/tests/equipment-registries.smoke.spec.ts:467:    await expect(page.getByRole("tab")).toHaveCount(0);
+apps/web/tests/equipment-registries.smoke.spec.ts:548:    await expect(page.getByRole("tablist")).toHaveCount(0);
+
+## required current labels in changed UI/test/story files
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx:53:    name: `Диагностическое оборудование ${String(index + 1).padStart(2, "0")}`,
+apps/web/tests/equipment-registries.smoke.spec.ts:264:      instrumentType: "Диагностическое",
+apps/web/tests/equipment-registries.smoke.spec.ts:321:  ["Эталоны", "в учете"].join(" "),
+apps/web/tests/equipment-registries.smoke.spec.ts:355:    const archiveInstrumentName = `Диагностическое в архив ${seed}`;
+apps/web/tests/equipment-registries.smoke.spec.ts:395:      `Диагностическое источник ${seed}`,
+apps/web/tests/equipment-registries.smoke.spec.ts:409:      `Диагностическое цель ${seed}`,
+apps/web/tests/equipment-registries.smoke.spec.ts:468:    await expect(page.getByRole("heading", { level: 2, name: "Новое оборудование" })).toBeVisible();
+apps/web/tests/equipment-registries.smoke.spec.ts:469:    await expect(page.getByRole("heading", { level: 2, name: "Оборудование в учете" })).toBeVisible();
+apps/web/tests/equipment-registries.smoke.spec.ts:470:    await expect(page.getByRole("heading", { level: 2, name: "Журнал операций по оборудованию" })).toBeVisible();
+apps/web/tests/equipment-registries.smoke.spec.ts:475:    await expect(page.getByRole("option", { name: "Техническое" })).toBeVisible();
+apps/web/tests/equipment-registries.smoke.spec.ts:476:    await expect(page.getByRole("option", { name: "Диагностическое" })).toBeVisible();
+apps/web/tests/equipment-registries.smoke.spec.ts:485:    await expect(page.getByText("Техническое оборудование создано и появилось в учете.", { exact: true })).toBeVisible();
+apps/web/tests/equipment-registries.smoke.spec.ts:487:    await expect(page.getByText("Техническое").first()).toBeVisible();
+apps/web/tests/equipment-registries.smoke.spec.ts:500:    await selectFieldOption(page, "Тип оборудования", "Диагностическое");
+apps/web/tests/equipment-registries.smoke.spec.ts:517:    await expect(page.getByText("Диагностическое оборудование создано с комплектом эталонов.", { exact: true })).toBeVisible();
+apps/web/tests/equipment-registries.smoke.spec.ts:519:    await expect(page.getByText("Эталоны: 2").first()).toBeVisible();
+apps/web/tests/equipment-registries.smoke.spec.ts:528:    await expect(page.getByText("Диагностическое оборудование обновлено.", { exact: true })).toBeVisible();
+apps/web/tests/equipment-registries.smoke.spec.ts:565:      page.getByText("Диагностическое оборудование переведено в архив и убрано из активного списка.", {
+apps/web/tests/equipment-registries.smoke.spec.ts:599:    await expect(page.getByRole("heading", { level: 2, name: "Оборудование в учете" })).toHaveCount(0);
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:135:  { value: "technical", label: "Техническое" },
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:136:  { value: "diagnostic", label: "Диагностическое" },
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:711:        detail="Эталоны закреплены за этой диагностической карточкой и показываются внутри нее. Переиспользуемые связи здесь не редактируются."
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:975:    showSuccessToast("Техническое оборудование создано и появилось в учете.", "equipment-create-success");
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1015:        ? "Диагностическое оборудование создано с комплектом эталонов."
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1016:        : "Диагностическое оборудование создано без эталонов.",
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1070:      showSuccessToast("Диагностическое оборудование обновлено.", "equipment-mi-update-success");
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1098:      "Диагностическое оборудование переведено в архив и убрано из активного списка.",
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1362:            <span className="text-sm font-medium text-foreground">Эталоны / установочные меры</span>
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1454:            <EmptyState detail="Комплект можно оставить пустым." title="Эталоны и меры не добавлены" />
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1468:      <IslandCard headingLevel={2} icon={<Wrench aria-hidden="true" className="size-4" />} title="Новое оборудование">
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1513:              <Badge tone="neutral">Техническое</Badge>
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1579:              <Badge tone="interactive">Диагностическое</Badge>
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1581:              <Badge tone={item.standards.length ? "interactive" : "neutral"}>Эталоны: {item.standards.length}</Badge>
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1594:          {fieldDetail("Техническое оборудование", item.equipment?.fullName)}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1615:          <div className="text-sm font-semibold text-foreground">Эталоны / установочные меры</div>
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1637:            <EmptyState detail="Комплект эталонов для этой карточки не задан." title="Эталоны не привязаны" />
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1684:        title="Оборудование в учете"
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1693:            detail="Техническое и диагностическое оборудование еще не зарегистрировано."
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1724:          detail="Диагностическое оборудование пока не зарегистрировано в текущей области доступа."
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1893:      <IslandCard headingLevel={2} icon={<Cable aria-hidden="true" className="size-4" />} title="Журнал операций по оборудованию">

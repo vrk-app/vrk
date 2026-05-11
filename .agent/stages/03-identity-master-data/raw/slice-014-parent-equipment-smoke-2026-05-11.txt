@@ -1,0 +1,44 @@
+
+Running 1 test using 1 worker
+
+(node:64048) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:64048) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 tests/equipment-registries.smoke.spec.ts:333:7 › stage 03 unified equipment workspace › customer admin uses one /equipment surface with owned standards while scoped and contractor access stay bounded (9.2s)
+
+
+  1) tests/equipment-registries.smoke.spec.ts:333:7 › stage 03 unified equipment workspace › customer admin uses one /equipment surface with owned standards while scoped and contractor access stay bounded
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/\/company$/[39m
+    Received string:  [31m"http://127.0.0.1:3100/login"[39m
+    Timeout: 5000ms
+
+    Call log:
+    [2m  - Expect "toHaveURL" with timeout 5000ms[22m
+    [2m    9 × unexpected value "http://127.0.0.1:3100/login"[22m
+
+
+      459 |     await page.getByRole("button", { name: "Войти" }).click();
+      460 |
+    > 461 |     await expect(page).toHaveURL(/\/company$/);
+          |                        ^
+      462 |     await page.goto("/equipment");
+      463 |
+      464 |     await expect(page.getByRole("heading", { level: 1, name: "Оборудование" })).toBeVisible();
+        at /Users/yura-posledov/cursor/vrk/apps/web/tests/equipment-registries.smoke.spec.ts:461:24
+
+    Error Context: test-results/equipment-registries.smoke-a49b6-tractor-access-stay-bounded/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/equipment-registries.smoke-a49b6-tractor-access-stay-bounded/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/equipment-registries.smoke-a49b6-tractor-access-stay-bounded/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests/equipment-registries.smoke.spec.ts:333:7 › stage 03 unified equipment workspace › customer admin uses one /equipment surface with owned standards while scoped and contractor access stay bounded

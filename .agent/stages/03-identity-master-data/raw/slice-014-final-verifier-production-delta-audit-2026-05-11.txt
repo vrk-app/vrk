@@ -1,0 +1,310 @@
+Final verifier production-delta audit relative to second verifier proof
+
+Second verifier completion marker: .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-post-verdict-harness-2026-05-11.txt
+marker_mtime=May 11 20:51:09 2026 path=.agent/stages/03-identity-master-data/raw/slice-014-second-verifier-post-verdict-harness-2026-05-11.txt
+
+Current git status --short (full, includes final verifier raw artifacts):
+ M .agent/stages/03-identity-master-data/evidence.json
+ M .agent/stages/03-identity-master-data/evidence.md
+ M .agent/stages/03-identity-master-data/feature_list.json
+ M .agent/stages/03-identity-master-data/problems.md
+ M .agent/stages/03-identity-master-data/progress.md
+ M .agent/stages/03-identity-master-data/sprint_contract.md
+ M .agent/stages/03-identity-master-data/stage_spec.md
+ M .agent/stages/03-identity-master-data/verdict.json
+ M apps/backend/docs/swagger/docs.go
+ M apps/backend/docs/swagger/swagger.json
+ M apps/backend/docs/swagger/swagger.yaml
+ M apps/backend/internal/app/app.go
+ M apps/backend/internal/equipment/measuringinstrument/repository.go
+ M apps/backend/internal/equipment/measuringinstrument/service.go
+ M apps/backend/internal/equipment/standard/errors.go
+ M apps/backend/internal/equipment/standard/handler.go
+ M apps/backend/internal/equipment/standard/models.go
+ M apps/backend/internal/equipment/standard/repository.go
+ M apps/backend/internal/equipment/standard/service.go
+ M apps/web/app/(runtime)/equipment/page.tsx
+ D apps/web/app/api/equipment/standards/[standardId]/archive/route.ts
+ D apps/web/app/api/equipment/standards/[standardId]/journals/route.ts
+ D apps/web/app/api/equipment/standards/[standardId]/route.ts
+ D apps/web/app/api/equipment/standards/route.ts
+ M apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+ M apps/web/shared/api/equipment.ts
+ M apps/web/shared/api/index.ts
+ M apps/web/shared/storybook/runtime-api-mock.tsx
+ M apps/web/shared/storybook/runtime-fixtures.ts
+ M apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+ M apps/web/tests/equipment-registries.smoke.spec.ts
+ M docs/PRD-MVP.md
+ M docs/architecture/frontend-architecture.md
+ M docs/architecture/identity-master-data.md
+ M docs/roadmap.md
+?? .agent/stages/03-identity-master-data/equipment-domain-correction-plan.md
+?? .agent/stages/03-identity-master-data/raw/.slice-014-final-current-prod-status.tmp
+?? .agent/stages/03-identity-master-data/raw/.slice-014-final-second-prod-status.tmp
+?? .agent/stages/03-identity-master-data/raw/slice-014-doc-fix-diff-check-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-doc-fix-harness-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-doc-fix-json-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-doc-fix-stage-doc-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-backend-build-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-backend-test-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-compose-migration-status-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-diff-check-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-diff-check-post-evidence-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-equipment-smoke-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-harness-post-evidence-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-json-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-standard-journal-route-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-storybook-build-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-ui-review-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-build-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-lint-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-source-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-typecheck-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-final-verifier-diff-check-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-final-verifier-harness-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-final-verifier-json-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-final-verifier-production-delta-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-final-verifier-stage-doc-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-final-verifier-ui-review-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fixer-backend-build-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fixer-backend-test-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fixer-compose-migrate-down-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fixer-compose-ps-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fixer-compose-stop-backend-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fixer-gofmt-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fixer-persistence-source-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fixer-standard-journal-route-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fixer-standards-surface-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fixer-storybook-build-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fixer-storybook-lookup-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fixer-swagger-refresh-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fixer-ui-placeholder-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fixer-ui-review-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fixer-web-build-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fixer-web-guidelines-fetch-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fixer-web-lint-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fixer-web-typecheck-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fixer-web-typecheck-rerun-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-backend-build-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-backend-test-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-compose-migration-status-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-current-db-standard-ownership-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-current-db-standard-ownership-detail-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-diff-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-diff-check-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-equipment-smoke-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-evidence-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-harness-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-json-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-persistence-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-post-verdict-harness-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-post-verdict-json-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-source-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-standard-journal-route-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-storybook-build-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-storybook-lookup-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-ui-review-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-web-build-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-web-lint-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-web-typecheck-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-backend-build-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-backend-readyz-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-backend-rebuild-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-backend-test-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-compose-ps-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-diff-check-after-fix-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-equipment-smoke-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-equipment-smoke-rerun-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-git-status-after-fix-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-harness-after-fix-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-json-audit-after-fix-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-json-audit-before-verifier-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-migration-down-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-migration-status-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-migration-up-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-obsolete-ui-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-obsolete-ui-audit-precise-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-owned-standard-db-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-standards-surface-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-standards-surface-audit-precise-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-storybook-build-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-web-build-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-web-lint-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-parent-web-typecheck-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-backend-build-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-backend-test-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-compose-db-api-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-diff-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-diff-check-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-doc-stage-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-equipment-smoke-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-evidence-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-harness-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-json-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-obsolete-ui-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-persistence-source-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-post-smoke-db-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-post-verdict-harness-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-post-verdict-json-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-standards-surface-audit-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-storybook-build-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-storybook-lookup-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-ui-review-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-web-build-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-web-lint-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/slice-014-second-verifier-web-typecheck-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/storybook-lookup-equipment-domain-correction-ui-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/storybook-lookup-slice-014-equipment-domain-correction-2026-05-11.txt
+?? .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-05-11-slice-014-final-verifier.md
+?? .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-05-11-slice-014-fixer.md
+?? .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-05-11-slice-014-fresh-verifier.md
+?? .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-05-11-slice-014-second-verifier.md
+?? apps/backend/internal/equipment/measuringinstrument/service_test.go
+?? apps/backend/internal/equipment/standard/service_test.go
+?? apps/backend/migrations/000016_equipment_domain_correction.down.sql
+?? apps/backend/migrations/000016_equipment_domain_correction.up.sql
+?? apps/web/app/api/equipment/measuring-instruments/[measuringInstrumentId]/standards/
+
+Current git diff --name-status (tracked changes):
+M	.agent/stages/03-identity-master-data/evidence.json
+M	.agent/stages/03-identity-master-data/evidence.md
+M	.agent/stages/03-identity-master-data/feature_list.json
+M	.agent/stages/03-identity-master-data/problems.md
+M	.agent/stages/03-identity-master-data/progress.md
+M	.agent/stages/03-identity-master-data/sprint_contract.md
+M	.agent/stages/03-identity-master-data/stage_spec.md
+M	.agent/stages/03-identity-master-data/verdict.json
+M	apps/backend/docs/swagger/docs.go
+M	apps/backend/docs/swagger/swagger.json
+M	apps/backend/docs/swagger/swagger.yaml
+M	apps/backend/internal/app/app.go
+M	apps/backend/internal/equipment/measuringinstrument/repository.go
+M	apps/backend/internal/equipment/measuringinstrument/service.go
+M	apps/backend/internal/equipment/standard/errors.go
+M	apps/backend/internal/equipment/standard/handler.go
+M	apps/backend/internal/equipment/standard/models.go
+M	apps/backend/internal/equipment/standard/repository.go
+M	apps/backend/internal/equipment/standard/service.go
+M	apps/web/app/(runtime)/equipment/page.tsx
+D	apps/web/app/api/equipment/standards/[standardId]/archive/route.ts
+D	apps/web/app/api/equipment/standards/[standardId]/journals/route.ts
+D	apps/web/app/api/equipment/standards/[standardId]/route.ts
+D	apps/web/app/api/equipment/standards/route.ts
+M	apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+M	apps/web/shared/api/equipment.ts
+M	apps/web/shared/api/index.ts
+M	apps/web/shared/storybook/runtime-api-mock.tsx
+M	apps/web/shared/storybook/runtime-fixtures.ts
+M	apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+M	apps/web/tests/equipment-registries.smoke.spec.ts
+M	docs/PRD-MVP.md
+M	docs/architecture/frontend-architecture.md
+M	docs/architecture/identity-master-data.md
+M	docs/roadmap.md
+
+Second verifier production status set (from raw/slice-014-second-verifier-diff-audit-2026-05-11.txt, excluding .agent stage artifacts):
+apps/backend/docs/swagger/docs.go
+apps/backend/docs/swagger/swagger.json
+apps/backend/docs/swagger/swagger.yaml
+apps/backend/internal/app/app.go
+apps/backend/internal/equipment/measuringinstrument/repository.go
+apps/backend/internal/equipment/measuringinstrument/service.go
+apps/backend/internal/equipment/measuringinstrument/service_test.go
+apps/backend/internal/equipment/standard/errors.go
+apps/backend/internal/equipment/standard/handler.go
+apps/backend/internal/equipment/standard/models.go
+apps/backend/internal/equipment/standard/repository.go
+apps/backend/internal/equipment/standard/service.go
+apps/backend/internal/equipment/standard/service_test.go
+apps/backend/migrations/000016_equipment_domain_correction.down.sql
+apps/backend/migrations/000016_equipment_domain_correction.up.sql
+apps/web/app/(runtime)/equipment/page.tsx
+apps/web/app/api/equipment/measuring-instruments/[measuringInstrumentId]/standards/
+apps/web/app/api/equipment/standards/[standardId]/archive/route.ts
+apps/web/app/api/equipment/standards/[standardId]/journals/route.ts
+apps/web/app/api/equipment/standards/[standardId]/route.ts
+apps/web/app/api/equipment/standards/route.ts
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+apps/web/shared/api/equipment.ts
+apps/web/shared/api/index.ts
+apps/web/shared/storybook/runtime-api-mock.tsx
+apps/web/shared/storybook/runtime-fixtures.ts
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+apps/web/tests/equipment-registries.smoke.spec.ts
+docs/PRD-MVP.md
+docs/architecture/frontend-architecture.md
+docs/architecture/identity-master-data.md
+docs/roadmap.md
+
+Current production status set (excluding .agent stage artifacts):
+apps/backend/docs/swagger/docs.go
+apps/backend/docs/swagger/swagger.json
+apps/backend/docs/swagger/swagger.yaml
+apps/backend/internal/app/app.go
+apps/backend/internal/equipment/measuringinstrument/repository.go
+apps/backend/internal/equipment/measuringinstrument/service.go
+apps/backend/internal/equipment/measuringinstrument/service_test.go
+apps/backend/internal/equipment/standard/errors.go
+apps/backend/internal/equipment/standard/handler.go
+apps/backend/internal/equipment/standard/models.go
+apps/backend/internal/equipment/standard/repository.go
+apps/backend/internal/equipment/standard/service.go
+apps/backend/internal/equipment/standard/service_test.go
+apps/backend/migrations/000016_equipment_domain_correction.down.sql
+apps/backend/migrations/000016_equipment_domain_correction.up.sql
+apps/web/app/(runtime)/equipment/page.tsx
+apps/web/app/api/equipment/measuring-instruments/[measuringInstrumentId]/standards/
+apps/web/app/api/equipment/standards/[standardId]/archive/route.ts
+apps/web/app/api/equipment/standards/[standardId]/journals/route.ts
+apps/web/app/api/equipment/standards/[standardId]/route.ts
+apps/web/app/api/equipment/standards/route.ts
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+apps/web/shared/api/equipment.ts
+apps/web/shared/api/index.ts
+apps/web/shared/storybook/runtime-api-mock.tsx
+apps/web/shared/storybook/runtime-fixtures.ts
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+apps/web/tests/equipment-registries.smoke.spec.ts
+docs/PRD-MVP.md
+docs/architecture/frontend-architecture.md
+docs/architecture/identity-master-data.md
+docs/roadmap.md
+
+Set comparison:
+PASS: production status path set is unchanged since second verifier diff audit.
+
+Modified-after-second-verifier audit for apps/backend and apps/web changed files:
+May 11 20:16:19 2026 apps/backend/docs/swagger/docs.go
+May 11 20:16:19 2026 apps/backend/docs/swagger/swagger.json
+May 11 20:16:19 2026 apps/backend/docs/swagger/swagger.yaml
+May 11 20:09:51 2026 apps/backend/internal/app/app.go
+May 11 20:09:05 2026 apps/backend/internal/equipment/measuringinstrument/repository.go
+May 11 19:17:37 2026 apps/backend/internal/equipment/measuringinstrument/service.go
+May 11 19:27:05 2026 apps/backend/internal/equipment/measuringinstrument/service_test.go
+May 11 19:17:37 2026 apps/backend/internal/equipment/standard/errors.go
+May 11 20:10:28 2026 apps/backend/internal/equipment/standard/handler.go
+May 11 20:09:24 2026 apps/backend/internal/equipment/standard/models.go
+May 11 20:09:34 2026 apps/backend/internal/equipment/standard/repository.go
+May 11 20:09:41 2026 apps/backend/internal/equipment/standard/service.go
+May 11 19:27:05 2026 apps/backend/internal/equipment/standard/service_test.go
+May 11 20:08:48 2026 apps/backend/migrations/000016_equipment_domain_correction.down.sql
+May 11 20:08:36 2026 apps/backend/migrations/000016_equipment_domain_correction.up.sql
+May 11 19:13:21 2026 apps/web/app/(runtime)/equipment/page.tsx
+May 11 20:11:15 2026 apps/web/app/api/equipment/measuring-instruments/[measuringInstrumentId]/standards/
+deleted apps/web/app/api/equipment/standards/[standardId]/archive/route.ts
+deleted apps/web/app/api/equipment/standards/[standardId]/journals/route.ts
+deleted apps/web/app/api/equipment/standards/[standardId]/route.ts
+deleted apps/web/app/api/equipment/standards/route.ts
+May 11 20:11:22 2026 apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+May 11 20:11:39 2026 apps/web/shared/api/equipment.ts
+May 11 20:11:47 2026 apps/web/shared/api/index.ts
+May 11 20:12:20 2026 apps/web/shared/storybook/runtime-api-mock.tsx
+May 11 20:27:41 2026 apps/web/shared/storybook/runtime-fixtures.ts
+May 11 19:03:45 2026 apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+May 11 20:12:29 2026 apps/web/tests/equipment-registries.smoke.spec.ts
+
+Paths newer than second verifier completion marker:
+PASS: no existing changed apps/backend or apps/web file is newer than the second verifier completion marker; deleted/untracked path set is unchanged from second verifier.
+
+RESULT: PASS

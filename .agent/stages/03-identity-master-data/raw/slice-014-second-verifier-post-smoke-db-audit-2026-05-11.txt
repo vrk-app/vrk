@@ -1,0 +1,12 @@
+## post-smoke registry standard ownership and reuse audit
+ without_parent | active_without_parent | total
+----------------+-----------------------+-------
+             81 |                     0 |   109
+(1 row)
+
+
+## post-smoke reusable standard rows from legacy link table
+ reusable_standard_rows
+------------------------
+                      0
+(1 row)

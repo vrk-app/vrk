@@ -1,0 +1,2 @@
+COMMAND: fetch latest Web Interface Guidelines source
+EXIT_CODE=0

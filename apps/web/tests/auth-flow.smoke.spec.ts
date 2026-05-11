@@ -90,9 +90,13 @@ test.describe("stage 03 first-admin bootstrap", () => {
     await page.getByRole("button", { name: "Сохранить профиль" }).click();
 
     await page.getByRole("tab", { name: "Дивизионы" }).click();
-    await page.getByLabel("Наименование").fill(divisionName);
-    await page.getByLabel("Регион").fill("Москва");
-    await page.getByRole("button", { name: "Создать дивизион" }).click();
+    await page.getByRole("button", { name: "Создать дивизион" }).first().click();
+    const divisionCreateDialog = page.getByRole("dialog", { name: "Новый дивизион" });
+    await expect(divisionCreateDialog).toBeVisible();
+    await divisionCreateDialog.getByLabel("Наименование").fill(divisionName);
+    await divisionCreateDialog.getByLabel("Регион").fill("Москва");
+    await divisionCreateDialog.getByRole("button", { name: "Создать дивизион" }).click();
+    await expect(divisionCreateDialog).toHaveCount(0);
     await expect(page.getByTestId("scope-graph").getByText(divisionName)).toBeVisible();
 
     await page.getByRole("button", { name: `Редактировать дивизион ${divisionName}` }).click();
@@ -105,10 +109,14 @@ test.describe("stage 03 first-admin bootstrap", () => {
     await expect(page.getByTestId("scope-graph").getByText(editedDivisionName)).toBeVisible();
 
     await page.getByRole("tab", { name: "Юниты" }).click();
+    await page.getByRole("button", { name: "Создать юнит" }).first().click();
+    const unitCreateDialog = page.getByRole("dialog", { name: "Новый юнит" });
+    await expect(unitCreateDialog).toBeVisible();
     await selectFieldOption(page, "Родитель", editedDivisionName);
-    await page.getByLabel("Наименование").fill(unitName);
-    await page.getByLabel("Регион").fill("Москва");
-    await page.getByRole("button", { name: "Создать юнит" }).click();
+    await unitCreateDialog.getByLabel("Наименование").fill(unitName);
+    await unitCreateDialog.getByLabel("Регион").fill("Москва");
+    await unitCreateDialog.getByRole("button", { name: "Создать юнит" }).click();
+    await expect(unitCreateDialog).toHaveCount(0);
     await expect(page.getByTestId("scope-graph").getByText(unitName)).toBeVisible();
 
     await page.getByRole("button", { name: `Редактировать юнит ${unitName}` }).click();
@@ -125,14 +133,19 @@ test.describe("stage 03 first-admin bootstrap", () => {
 
     await page.getByRole("tab", { name: "Сотрудники" }).click();
     await expect(page.getByRole("heading", { level: 2, name: "Сотрудники и доступ" })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 2, name: "Пригласить сотрудника" })).toBeVisible();
+    const unitHeadInviteButton = page.getByRole("button", { name: "Пригласить сотрудника" }).first();
+    await expect(unitHeadInviteButton).toBeVisible();
 
-    await page.getByLabel("Имя сотрудника").fill(unitHead.fullName);
-    await page.getByLabel("Email приглашения").fill(unitHead.email);
+    await unitHeadInviteButton.click();
+    const unitHeadInviteDialog = page.getByRole("dialog", { name: "Пригласить сотрудника" });
+    await expect(unitHeadInviteDialog).toBeVisible();
+    await unitHeadInviteDialog.getByLabel("Имя сотрудника").fill(unitHead.fullName);
+    await unitHeadInviteDialog.getByLabel("Email приглашения").fill(unitHead.email);
     await selectFieldOption(page, "Роль доступа", "Руководитель юнита");
     await selectFieldOption(page, "Уровень доступа", "Юнит");
     await selectFieldOption(page, "Объект доступа", editedUnitName);
-    await page.getByRole("button", { name: "Создать черновик приглашения" }).click();
+    await unitHeadInviteDialog.getByRole("button", { name: "Создать черновик приглашения" }).click();
+    await expect(unitHeadInviteDialog).toHaveCount(0);
     await page.getByRole("button", { name: "Отправить" }).first().click();
 
     const unitHeadInvitePath = await page.getByTestId("employee-invite-path").first().textContent();
@@ -158,14 +171,19 @@ test.describe("stage 03 first-admin bootstrap", () => {
 
     await expect(page).toHaveURL(/\/company$/);
     await page.getByRole("tab", { name: "Сотрудники" }).click();
-    await expect(page.getByRole("heading", { level: 2, name: "Пригласить сотрудника" })).toBeVisible();
+    const employeeInviteButton = page.getByRole("button", { name: "Пригласить сотрудника" }).first();
+    await expect(employeeInviteButton).toBeVisible();
 
-    await page.getByLabel("Имя сотрудника").fill(employee.fullName);
-    await page.getByLabel("Email приглашения").fill(employee.email);
+    await employeeInviteButton.click();
+    const employeeInviteDialog = page.getByRole("dialog", { name: "Пригласить сотрудника" });
+    await expect(employeeInviteDialog).toBeVisible();
+    await employeeInviteDialog.getByLabel("Имя сотрудника").fill(employee.fullName);
+    await employeeInviteDialog.getByLabel("Email приглашения").fill(employee.email);
     await selectFieldOption(page, "Роль доступа", "Сотрудник юнита");
     await selectFieldOption(page, "Уровень доступа", "Юнит");
     await selectFieldOption(page, "Объект доступа", editedUnitName);
-    await page.getByRole("button", { name: "Создать черновик приглашения" }).click();
+    await employeeInviteDialog.getByRole("button", { name: "Создать черновик приглашения" }).click();
+    await expect(employeeInviteDialog).toHaveCount(0);
 
     await expect(page.getByText(employee.email)).toBeVisible();
     await expect(page.getByText("Черновик").first()).toBeVisible();

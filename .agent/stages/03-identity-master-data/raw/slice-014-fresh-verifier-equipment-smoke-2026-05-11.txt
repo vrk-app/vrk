@@ -1,0 +1,29 @@
+COMMANDS:
+curl -fsS -I --max-time 5 http://localhost:3100/equipment
+env PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false WEB_SMOKE_PORT=3100 WEB_SMOKE_BACKEND_URL=http://127.0.0.1:18080 pnpm --dir apps/web exec playwright test tests/equipment-registries.smoke.spec.ts --config playwright.config.ts
+
+HTTP/1.1 200 OK
+Vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding
+link: </_next/static/media/0aa834ed78bf6d07-s.p.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/media/21350d82a1f187e9-s.p.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/media/bb3ef058b751a6ad-s.p.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/media/e4af272ccee01ff0-s.p.woff2>; rel=preload; as="font"; crossorigin=""; type="font/woff2", </_next/static/css/app/layout.css?v=1778518240921>; rel=preload; as="style"
+Cache-Control: no-store, must-revalidate
+X-Powered-By: Next.js
+Content-Type: text/html; charset=utf-8
+Date: Mon, 11 May 2026 16:50:40 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+
+HEAD_EXIT_CODE=0
+
+
+Running 1 test using 1 worker
+
+(node:31348) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:31348) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/equipment-registries.smoke.spec.ts:334:7 › stage 03 unified equipment workspace › customer admin uses one /equipment surface with owned standards while scoped and contractor access stay bounded (12.7s)
+
+  1 passed (13.5s)
+
+SMOKE_EXIT_CODE=0

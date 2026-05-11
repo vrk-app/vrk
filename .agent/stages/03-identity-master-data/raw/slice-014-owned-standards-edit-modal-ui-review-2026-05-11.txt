@@ -1,0 +1,15 @@
+## apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+
+PASS - diagnostic edit-modal standard-kit controls use labeled form fields, real buttons, visible destructive labels, pending-removal undo, stable focusable shared Button primitives, long-content wrapping, explicit empty state, and no immediate destructive persistence before modal save.
+
+## apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+
+PASS - story exercises the diagnostic edit dialog and visible add/delete controls.
+
+## apps/web/shared/storybook/runtime-api-mock.tsx
+
+PASS - Storybook-only runtime mock; no user-facing UI findings.
+
+## apps/web/app/api/equipment/measuring-instruments/[measuringInstrumentId]/standards/[standardId]/route.ts
+
+PASS - Next proxy route; Web Interface UI checks not applicable.

@@ -140,7 +140,7 @@
 - один подрядчик на заявку
 - один вид работ на заявку
 - несколько единиц оборудования в одной заявке
-- реестры `оборудование -> СИ -> эталоны` и журналы метрологических операций как часть master-data contour
+- реестры технологического оборудования, диагностического оборудования заказчика (`СИ`) и эталонов/установочных мер в комплекте диагностического оборудования как часть master-data contour
 - договорная маршрутизация
 - отдельный контур сметы для внеплановых работ
 - приемка результата внутри системы
@@ -153,6 +153,7 @@
 
 - юридически значимая ЭП / КЭП
 - самостоятельный отраслевой метрологический модуль вне встроенных реестров и журналов
+- оборудование подрядчика и его метрологическое оборудование в customer-side master-data MVP
 - тендер между несколькими подрядчиками
 - несколько подрядчиков внутри одной заявки
 - несколько видов работ в одной заявке
@@ -377,11 +378,10 @@
 - contractor/customer relation layer
 - contracts registry
 - contract status baseline `inactive / active / expired` для customer-admin contour
-- equipment registry
-- measuring instruments registry
-- standards registry
-- metrology operation journals, URL/reference attachment baseline и derived status for MI / standards
-- bounded ownership-scope labels for standards; standalone org-scoped dictionary/local-draft CRUD остается вне proven Stage 03 contract
+- equipment registry with a split between technological equipment and customer diagnostic equipment / measuring instruments
+- standards / setup measures attached to customer diagnostic equipment
+- unified equipment operation journal, URL/reference attachment baseline и derived status for diagnostic equipment
+- historical bounded ownership-scope labels for standards remain implementation floor only; target correction moves standards under diagnostic equipment while standalone org-scoped dictionary/local-draft CRUD остается вне proven Stage 03 contract
 - archive baseline для организаций, дивизионов, юнитов, пользователей, договоров, оборудования, СИ и эталонов
 - audit baseline для auth + CRUD changes
 - web UI:
@@ -390,7 +390,7 @@
   - division / unit selectors и scoped singular-session landing без multi-workspace picker
   - people, memberships, invites и access grant screens
   - contracts lists, cards and routing surfaces на публичном `/contracts` contour
-  - equipment / measuring instrument / standard lists and cards на одном публичном `/equipment` contour с query-backed tabs и explicit archive visibility state
+- one `/equipment` workspace with unified create form, type selector, equipment cards, owned standards inside diagnostic cards, add/delete kit management from the diagnostic edit modal, unified equipment journal, compatibility-only old tab params, and explicit archive visibility state
 
 ### Что обязательно доказать
 
@@ -409,10 +409,10 @@
 - direct login с несколькими eligible memberships/grants truthfully возвращает `409`, а не silently выбирает один workspace
 - `/platform/organization-shells` и Stage 03 `organizations` admin surface не доступны анонимно и не раскрывают deployment-scoped admin credential в browser
 - нельзя создать рабочий request flow без зарегистрированного оборудования
-- оборудование, СИ и эталоны существуют как отдельные сущности, а не как одна mega-form
+- технологическое оборудование и диагностическое оборудование заказчика (`СИ`) создаются через единую форму с типом, а эталоны/установочные меры существуют только как owned children диагностического оборудования
 - `/equipment` остается canonical public contour для equipment/master-data surface, а narrower scopes видят только read-only разрешенный subtree
-- текущий метрологический статус и ближайшая дата для СИ/эталонов рассчитываются из последней применимой записи журнала, а не только из denormalized полей карточки
-- эталон остается самостоятельным реестром и может использоваться повторно, без жесткой связи `1:1` с одним СИ
+- текущий метрологический статус и ближайшая дата диагностического оборудования рассчитываются из последней применимой записи единого журнала операций по оборудованию, а не только из denormalized полей карточки
+- у одного диагностического оборудования может быть `0..N` эталонов/установочных мер; эталон в MVP принадлежит комплекту конкретного диагностического оборудования, а не свободно переиспользуется между несколькими СИ
 - договор ограничивает допустимого подрядчика, а routing eligibility считается только для `active` + in-window contract
 - archive применяется вместо physical delete для ключевых master-data сущностей, archived rows скрыты из default active lists и открываются только через explicit archive state
 - база ролей и организаций масштабируется под multi-org model
@@ -435,7 +435,7 @@
 
 - customer admin активируется по invite и управляет организацией, дивизионами и юнитами из постоянного `/company` UI, включая first-empty state и повторное добавление структурных узлов
 - сотрудники приглашаются по email и получают только scoped access своего уровня
-- contracts + equipment + measuring instruments + standards CRUD, journal и archive flows работают end-to-end
+- contracts + unified equipment workspace, diagnostic equipment with owned standards, journal и archive flows работают end-to-end
 - contractor user видит только свой релевантный контур в рамках договоров и выданных грантов
 - audit trail фиксирует критичные действия
 - seeded demo data пригодны для Stage 04

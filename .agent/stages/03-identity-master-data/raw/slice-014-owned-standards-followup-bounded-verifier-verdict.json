@@ -1,0 +1,70 @@
+{
+  "status": "FAIL",
+  "stage_id": "03-identity-master-data",
+  "sprint_contract_id": "slice-014-owned-standards-edit-modal-follow-up",
+  "verified_at": "2026-05-11",
+  "scope": "Bounded source/proof audit only. Heavy build/test/smoke commands were not run per user instruction.",
+  "summary": "The implementation source matches the follow-up contract: diagnostic equipment edit modal additions/removals are queued locally and persisted only from the save handler, and backend hard delete is scoped to an owned, visible, non-archived diagnostic parent. The verifier still returns FAIL because the current stage evidence for this frontend follow-up has material proof drift.",
+  "source_contract_result": "PASS",
+  "failed_criteria": [
+    "Stage artifacts synced for the follow-up",
+    "Frontend evidence metadata completeness for the follow-up"
+  ],
+  "proof_gaps": [
+    {
+      "file": ".agent/stages/03-identity-master-data/evidence.json",
+      "line": 1201,
+      "issue": "The follow-up evidence entry still marks status as SELF_VERIFIED_AWAITING_FRESH_VERIFIER."
+    },
+    {
+      "file": ".agent/stages/03-identity-master-data/evidence.json",
+      "line": 1244,
+      "issue": "The follow-up proof list still says JSON audit, harness, and git diff --check are pending."
+    },
+    {
+      "file": ".agent/stages/03-identity-master-data/evidence.json",
+      "line": 1199,
+      "issue": "The follow-up frontend evidence lacks an explicit prompt/brief source and changed UI files list."
+    },
+    {
+      "file": ".agent/stages/03-identity-master-data/evidence.json",
+      "line": 510,
+      "issue": "The top-level changed_ui_files list is stale for this follow-up: it omits the nested DELETE proxy route and still lists removed legacy /api/equipment/standards routes."
+    }
+  ],
+  "source_evidence": [
+    "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:594 marks existing standards for removal only in local edit dialog state.",
+    "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:608 restores pending removals before save.",
+    "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:774 states add/delete apply after saving the card.",
+    "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:961 exposes the save action as 'Сохранить изменения'.",
+    "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1290 POSTs new standard drafts only from updateEditedRecord.",
+    "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1298 DELETEs removed standards only from updateEditedRecord.",
+    "apps/web/app/api/equipment/measuring-instruments/[measuringInstrumentId]/standards/[standardId]/route.ts:7 proxies DELETE to the backend nested route.",
+    "apps/backend/internal/app/app.go:219 wires POST and DELETE nested standard routes under measuring instruments.",
+    "apps/backend/internal/equipment/standard/service.go:232 verifies manager access, parent scope, archived state, and standard ownership before repository delete.",
+    "apps/backend/internal/equipment/standard/repository.go:312 deletes standard journal rows and then the registry_standards row in one transaction.",
+    "apps/web/tests/equipment-registries.smoke.spec.ts:596 covers add-on-save and hard-delete-on-save in the diagnostic edit modal.",
+    "apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx:114 covers the diagnostic edit standards story.",
+    "apps/web/shared/storybook/runtime-api-mock.tsx:568 supports nested POST and DELETE in Storybook runtime proof.",
+    "apps/backend/docs/swagger/swagger.yaml:2837 documents DELETE /measuring-instruments/{id}/standards/{standardId}.",
+    "docs/architecture/identity-master-data.md:652 documents the hard-delete exception for diagnostic-owned standards."
+  ],
+  "reproduction": [
+    "git diff --check: PASS",
+    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data: PASS",
+    "jq empty .agent/stages/03-identity-master-data/evidence.json .agent/stages/03-identity-master-data/feature_list.json .agent/stages/03-identity-master-data/verdict.json: PASS",
+    "rg/nl bounded source audit over requested files and stage evidence: source contract PASS, evidence metadata FAIL",
+    "Fresh Web Interface Guidelines source fetched and changed UI files reviewed by source inspection: PASS, no open findings",
+    "No heavy build/test/smoke commands were run"
+  ],
+  "artifacts_written": [
+    ".agent/stages/03-identity-master-data/raw/slice-014-owned-standards-followup-bounded-verifier-ui-review-2026-05-11.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-014-owned-standards-followup-bounded-verifier-verdict.json",
+    ".agent/stages/03-identity-master-data/raw/slice-014-owned-standards-followup-bounded-verifier-problems.md"
+  ],
+  "smallest_safe_fix_direction": [
+    "Update only stage evidence for equipment_owned_standards_edit_modal: set the follow-up status to fresh-verifier PASS or equivalent completed verifier state, add prompt/brief source, add changed_ui_files including the nested DELETE proxy, and replace the pending proof note with completed raw verifier refs.",
+    "Refresh the top-level changed_ui_files list so it no longer names removed legacy standards routes and includes the follow-up route.",
+    "Rerun jq empty, verify_harness.py, and git diff --check, then request a new fresh verifier."
+  ]
+}

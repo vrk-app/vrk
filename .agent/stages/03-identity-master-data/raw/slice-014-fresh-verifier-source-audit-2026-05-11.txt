@@ -1,0 +1,32 @@
+COMMANDS: targeted rg audits for obsolete equipment UI labels/routes and active proxy/API surfaces
+
+--- obsolete tab/list/journal labels in current web equipment UI/story/test files ---
+apps/web/tests/equipment-registries.smoke.spec.ts:468:    await expect(page.getByRole("tablist")).toHaveCount(0);
+apps/web/tests/equipment-registries.smoke.spec.ts:469:    await expect(page.getByRole("tab")).toHaveCount(0);
+apps/web/tests/equipment-registries.smoke.spec.ts:550:    await expect(page.getByRole("tablist")).toHaveCount(0);
+
+--- active standard proxy/list routes and API helpers ---
+apps/web/shared/api/equipment.ts:44:export type LinkedStandardRecord = {
+apps/web/shared/api/equipment.ts:76:  standards: LinkedStandardRecord[];
+apps/web/shared/api/equipment.ts:77:  journalCount: number;
+apps/web/shared/api/equipment.ts:79:  latestJournal?: JournalRecord;
+apps/web/shared/api/equipment.ts:85:export type StandardRecord = {
+apps/web/shared/api/equipment.ts:106:  journalCount: number;
+apps/web/shared/api/equipment.ts:108:  latestJournal?: JournalRecord;
+apps/web/shared/api/equipment.ts:138:export async function fetchStandardRegistry(sessionToken: string, includeArchived = false) {
+apps/web/shared/api/equipment.ts:140:  const result = await fetchBackend<StandardRecord[]>(`/api/v1/standards${search}`, {
+apps/backend/docs/swagger/swagger.yaml:886:      journalCount:
+apps/backend/docs/swagger/swagger.yaml:888:      latestJournal:
+apps/backend/docs/swagger/swagger.yaml:1187:      journalCount:
+apps/backend/docs/swagger/swagger.yaml:1189:      latestJournal:
+apps/web/app/api/equipment/standards/route.ts:2:import type { StandardRecord } from "@/shared/api";
+apps/web/app/api/equipment/standards/route.ts:5:  return proxySessionBackend<StandardRecord[]>(withRequestSearch("/api/v1/standards", request));
+apps/web/app/api/equipment/standards/route.ts:9:  return proxySessionBackend<StandardRecord>("/api/v1/standards", {
+apps/backend/internal/equipment/standard/models.go:105:	JournalCount                int                         `json:"journalCount"`
+apps/backend/internal/equipment/standard/models.go:107:	LatestJournal               *JournalResponse            `json:"latestJournal,omitempty"`
+apps/web/app/api/equipment/standards/[standardId]/route.ts:2:import type { StandardRecord } from "@/shared/api";
+apps/web/app/api/equipment/standards/[standardId]/route.ts:6:  return proxySessionBackend<StandardRecord>(`/api/v1/standards/${standardId}`, {
+apps/web/app/api/equipment/standards/[standardId]/archive/route.ts:2:import type { StandardRecord } from "@/shared/api";
+apps/web/app/api/equipment/standards/[standardId]/archive/route.ts:6:  return proxySessionBackend<StandardRecord>(`/api/v1/standards/${standardId}/archive`, {
+
+EXIT_CODE=0

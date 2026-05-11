@@ -2555,6 +2555,149 @@ const docTemplate = `{
                 }
             }
         },
+        "/measuring-instruments/{id}/standards": {
+            "post": {
+                "description": "Creates one standard/setup measure owned by the diagnostic equipment record.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "equipment"
+                ],
+                "summary": "Create diagnostic equipment standard",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Diagnostic equipment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Standard payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/standard.CreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/standard.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/standard.StandardResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/standard.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/standard.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/standard.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/measuring-instruments/{id}/standards/{standardId}": {
+            "delete": {
+                "description": "Permanently deletes one standard/setup measure owned by the diagnostic equipment record.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "equipment"
+                ],
+                "summary": "Delete diagnostic equipment standard",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Diagnostic equipment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Standard ID",
+                        "name": "standardId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/standard.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/standard.DeleteResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/standard.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/standard.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/standard.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/standard.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/organizations": {
             "get": {
                 "description": "Возвращает список организаций с пагинацией",
@@ -3101,467 +3244,6 @@ const docTemplate = `{
                         "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/bootstrap.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/standards": {
-            "get": {
-                "description": "Returns standard records visible inside the authenticated customer session scope.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "equipment"
-                ],
-                "summary": "List standards registry",
-                "parameters": [
-                    {
-                        "maximum": 100,
-                        "minimum": 1,
-                        "type": "integer",
-                        "default": 20,
-                        "description": "Page size",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "minimum": 0,
-                        "type": "integer",
-                        "default": 0,
-                        "description": "Offset",
-                        "name": "offset",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/standard.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/standard.StandardResponse"
-                                            }
-                                        },
-                                        "meta": {
-                                            "$ref": "#/definitions/standard.Meta"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Creates one standard registry record inside the authenticated customer organization.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "equipment"
-                ],
-                "summary": "Create standard registry record",
-                "parameters": [
-                    {
-                        "description": "Standard payload",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/standard.CreateRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/standard.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/standard.StandardResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/standards/{id}": {
-            "get": {
-                "description": "Returns one standard record visible inside the authenticated customer session scope.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "equipment"
-                ],
-                "summary": "Get standard registry record",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Standard ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/standard.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/standard.StandardResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "description": "Updates one standard record inside the authenticated customer organization.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "equipment"
-                ],
-                "summary": "Update standard registry record",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Standard ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Standard patch payload",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/standard.UpdateRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/standard.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/standard.StandardResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/standards/{id}/archive": {
-            "post": {
-                "description": "Archives one standard record inside the authenticated customer organization/session scope.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "equipment"
-                ],
-                "summary": "Archive standard registry record",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Standard ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/standard.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/standard.StandardResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/standards/{id}/journals": {
-            "get": {
-                "description": "Returns metrology journal entries for one standard visible inside the authenticated customer session scope.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "equipment"
-                ],
-                "summary": "List standard journal",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Standard ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/standard.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/standard.JournalResponse"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Appends one metrology journal entry to the standard visible inside the authenticated customer organization.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "equipment"
-                ],
-                "summary": "Create standard journal entry",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Standard ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Journal payload",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/standard.CreateJournalRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/standard.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/standard.JournalResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/standard.Response"
                         }
                     }
                 }
@@ -5220,36 +4902,13 @@ const docTemplate = `{
                 }
             }
         },
-        "standard.CreateJournalRequest": {
-            "type": "object",
-            "properties": {
-                "attachmentUrl": {
-                    "type": "string"
-                },
-                "comment": {
-                    "type": "string"
-                },
-                "documentNumber": {
-                    "type": "string"
-                },
-                "executorOrganization": {
-                    "type": "string"
-                },
-                "operationDate": {
-                    "type": "string"
-                },
-                "operationType": {
-                    "type": "string"
-                },
-                "validUntil": {
-                    "type": "string"
-                }
-            }
-        },
         "standard.CreateRequest": {
             "type": "object",
             "properties": {
                 "comment": {
+                    "type": "string"
+                },
+                "diagnosticEquipmentId": {
                     "type": "string"
                 },
                 "divisionId": {
@@ -5281,34 +4940,21 @@ const docTemplate = `{
                 }
             }
         },
-        "standard.JournalResponse": {
+        "standard.DeleteResponse": {
             "type": "object",
             "properties": {
-                "attachmentUrl": {
+                "id": {
                     "type": "string"
-                },
-                "comment": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "documentNumber": {
-                    "type": "string"
-                },
-                "executorOrganization": {
-                    "type": "string"
-                },
+                }
+            }
+        },
+        "standard.DiagnosticEquipmentSummary": {
+            "type": "object",
+            "properties": {
                 "id": {
                     "type": "string"
                 },
-                "operationDate": {
-                    "type": "string"
-                },
-                "operationType": {
-                    "type": "string"
-                },
-                "validUntil": {
+                "name": {
                     "type": "string"
                 }
             }
@@ -5368,6 +5014,9 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
+                "diagnosticEquipment": {
+                    "$ref": "#/definitions/standard.DiagnosticEquipmentSummary"
+                },
                 "documentUrl": {
                     "type": "string"
                 },
@@ -5377,22 +5026,10 @@ const docTemplate = `{
                 "identifier": {
                     "type": "string"
                 },
-                "journalCount": {
-                    "type": "integer"
-                },
-                "latestJournal": {
-                    "$ref": "#/definitions/standard.JournalResponse"
-                },
-                "linkedMeasuringInstruments": {
-                    "type": "integer"
-                },
                 "metrologicalCharacteristics": {
                     "type": "string"
                 },
                 "model": {
-                    "type": "string"
-                },
-                "nextDueDate": {
                     "type": "string"
                 },
                 "organizationId": {
@@ -5411,41 +5048,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "standard.UpdateRequest": {
-            "type": "object",
-            "properties": {
-                "comment": {
-                    "type": "string"
-                },
-                "divisionId": {
-                    "type": "string"
-                },
-                "documentUrl": {
-                    "type": "string"
-                },
-                "identifier": {
-                    "type": "string"
-                },
-                "metrologicalCharacteristics": {
-                    "type": "string"
-                },
-                "model": {
-                    "type": "string"
-                },
-                "ownerLabel": {
-                    "type": "string"
-                },
-                "serialNumber": {
-                    "type": "string"
-                },
-                "standardType": {
-                    "type": "string"
-                },
-                "unitId": {
                     "type": "string"
                 }
             }

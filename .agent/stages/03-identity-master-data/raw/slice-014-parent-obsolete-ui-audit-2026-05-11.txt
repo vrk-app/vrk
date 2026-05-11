@@ -1,0 +1,3 @@
+apps/web/tests/equipment-registries.smoke.spec.ts:466:    await expect(page.getByRole("tablist")).toHaveCount(0);
+apps/web/tests/equipment-registries.smoke.spec.ts:467:    await expect(page.getByRole("tab")).toHaveCount(0);
+apps/web/tests/equipment-registries.smoke.spec.ts:548:    await expect(page.getByRole("tablist")).toHaveCount(0);

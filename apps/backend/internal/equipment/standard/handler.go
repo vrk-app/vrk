@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
@@ -18,18 +17,19 @@ func NewHandler(service StandardService) *StandardHandler {
 	return &StandardHandler{service: service}
 }
 
-// @Summary      Create standard registry record
-// @Description  Creates one standard registry record inside the authenticated customer organization.
+// @Summary      Create diagnostic equipment standard
+// @Description  Creates one standard/setup measure owned by the diagnostic equipment record.
 // @Tags         equipment
 // @Accept       json
 // @Produce      json
+// @Param        id path string true "Diagnostic equipment ID"
 // @Param        request body CreateRequest true "Standard payload"
 // @Success      201  {object}  Response{data=StandardResponse}
 // @Failure      400  {object}  Response
 // @Failure      401  {object}  Response
 // @Failure      403  {object}  Response
-// @Router       /standards [post]
-func (h *StandardHandler) Create(w http.ResponseWriter, r *http.Request) {
+// @Router       /measuring-instruments/{id}/standards [post]
+func (h *StandardHandler) CreateForDiagnostic(w http.ResponseWriter, r *http.Request) {
 	token, err := readBearerToken(r)
 	if err != nil {
 		sendError(w, http.StatusUnauthorized, "missing bearer token")
@@ -42,6 +42,13 @@ func (h *StandardHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	diagnosticEquipmentID := strings.TrimSpace(chi.URLParam(r, "id"))
+	if diagnosticEquipmentID == "" {
+		sendError(w, http.StatusBadRequest, ErrDiagnosticEquipmentRequired.Error())
+		return
+	}
+	req.DiagnosticEquipmentID = &diagnosticEquipmentID
+
 	resp, err := h.service.Create(r.Context(), token, req)
 	if err != nil {
 		writeServiceError(w, err)
@@ -51,188 +58,37 @@ func (h *StandardHandler) Create(w http.ResponseWriter, r *http.Request) {
 	sendSuccess(w, http.StatusCreated, resp, nil)
 }
 
-// @Summary      List standards registry
-// @Description  Returns standard records visible inside the authenticated customer session scope.
+// @Summary      Delete diagnostic equipment standard
+// @Description  Permanently deletes one standard/setup measure owned by the diagnostic equipment record.
 // @Tags         equipment
 // @Produce      json
-// @Param        limit   query     int  false  "Page size"  default(20)  minimum(1)  maximum(100)
-// @Param        offset  query     int  false  "Offset"     default(0)   minimum(0)
-// @Success      200     {object}  Response{data=[]StandardResponse,meta=Meta}
-// @Failure      401     {object}  Response
-// @Failure      403     {object}  Response
-// @Router       /standards [get]
-func (h *StandardHandler) List(w http.ResponseWriter, r *http.Request) {
-	token, err := readBearerToken(r)
-	if err != nil {
-		sendError(w, http.StatusUnauthorized, "missing bearer token")
-		return
-	}
-
-	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
-	offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
-	includeArchived := r.URL.Query().Get("includeArchived") == "true" || r.URL.Query().Get("includeArchived") == "1"
-	items, total, err := h.service.List(r.Context(), token, includeArchived, int32(limit), int32(offset))
-	if err != nil {
-		writeServiceError(w, err)
-		return
-	}
-	if limit <= 0 {
-		limit = 20
-	}
-	if limit > 100 {
-		limit = 100
-	}
-	if offset < 0 {
-		offset = 0
-	}
-
-	sendSuccess(w, http.StatusOK, items, &Meta{
-		Total:  total,
-		Limit:  int32(limit),
-		Offset: int32(offset),
-	})
-}
-
-// @Summary      Get standard registry record
-// @Description  Returns one standard record visible inside the authenticated customer session scope.
-// @Tags         equipment
-// @Produce      json
-// @Param        id path string true "Standard ID"
-// @Success      200  {object}  Response{data=StandardResponse}
-// @Failure      401  {object}  Response
-// @Failure      403  {object}  Response
-// @Failure      404  {object}  Response
-// @Router       /standards/{id} [get]
-func (h *StandardHandler) GetByID(w http.ResponseWriter, r *http.Request) {
-	token, err := readBearerToken(r)
-	if err != nil {
-		sendError(w, http.StatusUnauthorized, "missing bearer token")
-		return
-	}
-
-	resp, err := h.service.GetByID(r.Context(), token, chi.URLParam(r, "id"))
-	if err != nil {
-		writeServiceError(w, err)
-		return
-	}
-
-	sendSuccess(w, http.StatusOK, resp, nil)
-}
-
-// @Summary      Update standard registry record
-// @Description  Updates one standard record inside the authenticated customer organization.
-// @Tags         equipment
-// @Accept       json
-// @Produce      json
-// @Param        id path string true "Standard ID"
-// @Param        request body UpdateRequest true "Standard patch payload"
-// @Success      200  {object}  Response{data=StandardResponse}
+// @Param        id path string true "Diagnostic equipment ID"
+// @Param        standardId path string true "Standard ID"
+// @Success      200  {object}  Response{data=DeleteResponse}
 // @Failure      400  {object}  Response
 // @Failure      401  {object}  Response
 // @Failure      403  {object}  Response
 // @Failure      404  {object}  Response
-// @Router       /standards/{id} [patch]
-func (h *StandardHandler) Update(w http.ResponseWriter, r *http.Request) {
+// @Router       /measuring-instruments/{id}/standards/{standardId} [delete]
+func (h *StandardHandler) DeleteFromDiagnostic(w http.ResponseWriter, r *http.Request) {
 	token, err := readBearerToken(r)
 	if err != nil {
 		sendError(w, http.StatusUnauthorized, "missing bearer token")
 		return
 	}
 
-	var req UpdateRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendError(w, http.StatusBadRequest, "invalid request body")
+	diagnosticEquipmentID := strings.TrimSpace(chi.URLParam(r, "id"))
+	standardID := strings.TrimSpace(chi.URLParam(r, "standardId"))
+	if diagnosticEquipmentID == "" {
+		sendError(w, http.StatusBadRequest, ErrDiagnosticEquipmentRequired.Error())
+		return
+	}
+	if standardID == "" {
+		sendError(w, http.StatusBadRequest, ErrInvalidID.Error())
 		return
 	}
 
-	resp, err := h.service.Update(r.Context(), token, chi.URLParam(r, "id"), req)
-	if err != nil {
-		writeServiceError(w, err)
-		return
-	}
-
-	sendSuccess(w, http.StatusOK, resp, nil)
-}
-
-// @Summary      List standard journal
-// @Description  Returns metrology journal entries for one standard visible inside the authenticated customer session scope.
-// @Tags         equipment
-// @Produce      json
-// @Param        id path string true "Standard ID"
-// @Success      200  {object}  Response{data=[]JournalResponse}
-// @Failure      401  {object}  Response
-// @Failure      403  {object}  Response
-// @Failure      404  {object}  Response
-// @Router       /standards/{id}/journals [get]
-func (h *StandardHandler) ListJournals(w http.ResponseWriter, r *http.Request) {
-	token, err := readBearerToken(r)
-	if err != nil {
-		sendError(w, http.StatusUnauthorized, "missing bearer token")
-		return
-	}
-
-	resp, err := h.service.ListJournals(r.Context(), token, chi.URLParam(r, "id"))
-	if err != nil {
-		writeServiceError(w, err)
-		return
-	}
-
-	sendSuccess(w, http.StatusOK, resp, nil)
-}
-
-// @Summary      Create standard journal entry
-// @Description  Appends one metrology journal entry to the standard visible inside the authenticated customer organization.
-// @Tags         equipment
-// @Accept       json
-// @Produce      json
-// @Param        id path string true "Standard ID"
-// @Param        request body CreateJournalRequest true "Journal payload"
-// @Success      201  {object}  Response{data=JournalResponse}
-// @Failure      400  {object}  Response
-// @Failure      401  {object}  Response
-// @Failure      403  {object}  Response
-// @Failure      404  {object}  Response
-// @Router       /standards/{id}/journals [post]
-func (h *StandardHandler) CreateJournal(w http.ResponseWriter, r *http.Request) {
-	token, err := readBearerToken(r)
-	if err != nil {
-		sendError(w, http.StatusUnauthorized, "missing bearer token")
-		return
-	}
-
-	var req CreateJournalRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		sendError(w, http.StatusBadRequest, "invalid request body")
-		return
-	}
-
-	resp, err := h.service.CreateJournal(r.Context(), token, chi.URLParam(r, "id"), req)
-	if err != nil {
-		writeServiceError(w, err)
-		return
-	}
-
-	sendSuccess(w, http.StatusCreated, resp, nil)
-}
-
-// @Summary      Archive standard registry record
-// @Description  Archives one standard record inside the authenticated customer organization/session scope.
-// @Tags         equipment
-// @Produce      json
-// @Param        id path string true "Standard ID"
-// @Success      200  {object}  Response{data=StandardResponse}
-// @Failure      401  {object}  Response
-// @Failure      403  {object}  Response
-// @Failure      404  {object}  Response
-// @Router       /standards/{id}/archive [post]
-func (h *StandardHandler) Archive(w http.ResponseWriter, r *http.Request) {
-	token, err := readBearerToken(r)
-	if err != nil {
-		sendError(w, http.StatusUnauthorized, "missing bearer token")
-		return
-	}
-
-	resp, err := h.service.Archive(r.Context(), token, chi.URLParam(r, "id"))
+	resp, err := h.service.DeleteFromDiagnostic(r.Context(), token, diagnosticEquipmentID, standardID)
 	if err != nil {
 		writeServiceError(w, err)
 		return
@@ -273,6 +129,8 @@ func writeServiceError(w http.ResponseWriter, err error) {
 		errors.Is(err, ErrModelRequired),
 		errors.Is(err, ErrIdentifierRequired),
 		errors.Is(err, ErrMetrologicalCharRequired),
+		errors.Is(err, ErrDiagnosticEquipmentRequired),
+		errors.Is(err, ErrDiagnosticEquipmentInvalid),
 		errors.Is(err, ErrScopeInvalid),
 		errors.Is(err, ErrOperationTypeRequired),
 		errors.Is(err, ErrOperationTypeInvalid),

@@ -1,7 +1,7 @@
 # Identity, Access, and Master Data
 
 Статус: accepted baseline  
-Обновлено: 2026-04-29
+Обновлено: 2026-05-11
 
 ## Назначение
 
@@ -11,7 +11,7 @@
 - иерархия `организация -> дивизион -> юнит`;
 - сотрудники, приглашения, membership и scoped access;
 - master-data контур для договоров, оборудования, СИ и эталонов;
-- правила архивирования и bounded ownership labels.
+- правила архивирования и target correction для диагностического оборудования / эталонов.
 
 Это не замена `docs/roadmap.md`, а более узкий source of truth для решений, которые уже не помещаются в короткое stage summary.
 
@@ -52,7 +52,7 @@ flowchart LR
 - ручная раздача логина/пароля не используется как основной сценарий;
 - внешний вход вроде Яндекс ID допустим позже как дополнительный путь после открытия приглашения, но не как замена invite acceptance в MVP;
 - `invite code` допустим только как резервный offline-friendly сценарий;
-- пароль при активации first-admin и employee invite должен содержать минимум 8 символов, хотя бы одну букву, одну цифру и один non-space символ;
+- пароль при активации first-admin и employee invite должен содержать минимум 8 символов; дополнительных требований к составу символов нет;
 - после активации пользователь не попадает в пустой кабинет или одноразовый wizard, а в рабочий кабинет организации с management actions;
 - создание первого дивизиона и первого юнита является частным случаем постоянного UI управления оргструктурой.
 
@@ -140,9 +140,9 @@ flowchart TD
     A["Организация"] --> B["Дивизион (optional)"]
     A --> C["Юнит"]
     B --> C
-    C --> D["Оборудование"]
-    D --> E["Средство измерения"]
-    E --> F["Эталон"]
+    C --> D["Технологическое оборудование"]
+    C --> E["Диагностическое оборудование / СИ"]
+    E --> F["0..N эталонов / установочных мер"]
 ```
 
 ### 2.1. Организация
@@ -422,11 +422,44 @@ flowchart LR
 
 ## 5. Оборудование, СИ и эталоны
 
+### 5.0. Product correction 2026-05-11: диагностическое оборудование заказчика
+
+После встречи с заказчиком термин `средство измерения` в VRK нужно трактовать уже, чем прежняя обобщенная модель:
+
+- `СИ` в MVP — это диагностическое оборудование заказчика, которым на вагоноремонтном предприятии проверяют качество ремонта или состояние узлов вагона: колесных пар, буксовых узлов, тормозов, подшипников и т.д.;
+- это не оборудование подрядчика и не отдельный контур метрологического оборудования аккредитованной организации;
+- технологическое оборудование и диагностическое оборудование являются customer-side equipment master data внутри юнита;
+- contractor-side метрологическое оборудование и эталоны аккредитованной организации остаются вне MVP и могут появиться отдельным контуром позже.
+
+Ключевая модель связи меняется с прежнего reusable many-to-many допущения на customer-side комплект:
+
+```mermaid
+flowchart LR
+    A["Юнит заказчика"] --> B["Технологическое оборудование"]
+    A --> C["Диагностическое оборудование / СИ"]
+    C --> D["Эталон / установочная мера"]
+    C --> E["Эталон / установочная мера"]
+    F["Аккредитованная организация"] -. "post-MVP external contour" .-> G["свои эталонные приборы"]
+```
+
+Эта диаграмма фиксирует target contract после уточнения: у одного диагностического оборудования может быть несколько эталонов, а эталон в MVP принадлежит комплекту конкретного диагностического оборудования. Эталонный манометр, частотомер и другое оборудование, которое привозит внешний метролог для официальной поверки, не заводится как customer-side equipment в первой версии.
+
 ### 5.1. Оборудование
 
-Оборудование создается отдельной карточкой, без принудительной mega-form с метрологией.
+Оборудование создается из единой формы `Новое оборудование` с обязательным типом. В пользовательской модели нужно различать:
 
-Минимальные поля:
+- технологическое оборудование — стенды, установки, оборудование цехов и другие объекты производственного/ремонтного процесса;
+- диагностическое оборудование / СИ — оборудование заказчика для проверки качества ремонта или состояния узлов, включая простые инструменты и сложные приборы вроде Robocon, УКВР и приборов ЖТ.
+
+Общие минимальные поля:
+
+- тип оборудования: `Техническое` / `Диагностическое`;
+- статус;
+- юнит;
+- документы;
+- комментарий.
+
+Для технологического оборудования:
 
 - производитель;
 - классификация;
@@ -434,17 +467,21 @@ flowchart LR
 - полное наименование;
 - заводской номер;
 - инвентарный номер;
-- год выпуска;
-- статус;
-- юнит;
-- документы;
-- комментарий.
+- год выпуска.
 
-После создания карточки оборудование может жить без метрологии, если она не нужна.
+Для диагностического оборудования:
+
+- наименование / тип / модель;
+- ФИФ / регистрационный номер;
+- серийный номер;
+- опциональная связь с технологическим оборудованием;
+- `0..N` эталонов / установочных мер внутри той же формы.
+
+После создания карточки технологическое оборудование может жить без метрологии, если она не нужна. Диагностическое оборудование должно иметь метрологический статус и журнал официальных операций, потому что его показания влияют на вывод `исправен / неисправен`.
 
 ### 5.2. Средства измерения
 
-СИ являются отдельной сущностью, а не просто вложенным набором полей в оборудовании.
+СИ являются диагностическим оборудованием заказчика. Текущий технический ресурс `measuring-instruments` допустим как implementation boundary, но пользовательский и продуктовый смысл — не "самостоятельный класс оборудования подрядчика", а customer-side diagnostic equipment внутри юнита.
 
 Минимальные поля:
 
@@ -453,25 +490,31 @@ flowchart LR
 - заводской номер;
 - статус;
 - владелец / юнит;
-- признак `встроенное в оборудование` или `самостоятельное`.
+- связь с технологическим оборудованием, если диагностическое оборудование обслуживает конкретную карточку;
+- метрологический статус, рассчитанный по журналу официальных операций.
 
 ### 5.3. Эталоны
 
-Эталон является отдельным реестром.
+Эталон / установочная мера — объект из комплекта диагностического оборудования, который используется для настройки или проверки прибора: эталонное кольцо, пробка, скоба и т.п.
+
+Важное разграничение:
+
+- рабочая настройка прибора на своем эталоне не является официальной поверкой и обычно не требует ручной записи пользователем в VRK;
+- официальная поверка аккредитованной организацией фиксируется через журнал операции, протокол и организацию-исполнителя;
+- эталоны внешней аккредитованной организации не заводятся в MVP как customer-side реестр.
 
 Минимальные поля:
 
 - тип / модель;
 - идентификатор / серийный номер;
 - метрологические характеристики;
-- владелец;
-- scope владения: юнит / дивизион / организация;
+- родительское диагностическое оборудование / СИ;
 - статус;
 - документы.
 
 ### 5.4. Журналы операций
 
-Для СИ и эталонов источником правды является журнал метрологических операций, а не только пара дат в карточке.
+Для оборудования источником правды по официальным операциям является единый журнал операций по оборудованию, а не только пара дат в карточке.
 
 Запись журнала хранит:
 
@@ -483,27 +526,31 @@ flowchart LR
 - вложение;
 - комментарий.
 
-Правило расчета:
+Правило расчета для диагностического оборудования:
 
-- текущий статус и ближайшая дата рассчитываются из последней действующей записи журнала;
+- текущий статус и ближайшая дата рассчитываются из последней действующей записи журнала оборудования;
 - денормализованные поля на карточке допустимы как cache/view-model, но не как единственный источник правды.
 
 ### 5.5. Связи между оборудованием, СИ и эталонами
 
-Stage 03 не использует жесткую связь `1:1` между СИ и эталоном.
+Stage 03 больше не должен проектироваться вокруг reusable many-to-many связи между СИ и эталонами как целевой модели.
 
-Поддерживаемая модель:
+Целевая модель после product correction:
 
-- у оборудования может быть `0..N` СИ;
-- у СИ может быть `0..N` эталонов;
-- один эталон может повторно использоваться в нескольких операциях или для нескольких СИ.
+- у юнита может быть `0..N` технологических единиц оборудования;
+- у юнита может быть `0..N` единиц диагностического оборудования / СИ;
+- диагностическое оборудование может быть связано с технологическим оборудованием, если оно применяется для конкретного объекта контроля;
+- у диагностического оборудования может быть `0..N` эталонов / установочных мер;
+- эталон в MVP принадлежит одному диагностическому оборудованию и не переиспользуется как свободный общий справочник между несколькими СИ.
 
 Связь допускается:
 
-- через таблицу назначений;
-- через журнал операций.
+- через parent foreign key `standard -> diagnostic equipment`;
+- через журнал официальных метрологических операций для поверки/калибровки/приостановки/вывода.
 
 ### 5.6. Реализованный slice-004 registry contract
+
+Исторический slice-004 доказывает прежний registry baseline. После product correction 2026-05-11 он остается важным implementation floor, но не является финальным target contract для следующей итерации оборудования.
 
 В четвертом живом Stage 03 slice registry layer зафиксирован следующим контрактом:
 
@@ -515,42 +562,42 @@ Stage 03 не использует жесткую связь `1:1` между С
 - анонимный пользователь видит truthful shell без live data;
 - customer `organization_admin` на organization scope может создавать записи во всех трех registries;
 - division-scope и unit-scope пользователи работают на том же route, но только в read-only contour и без broader organization leak;
-- backend protected endpoints для Stage 03 registries остаются отдельными ресурсами, а не одной mega-form:
+- historical backend protected endpoints for the original slice-004 registry floor были отдельными ресурсами, а не одной mega-form:
   - `GET/POST /equipment`
   - `GET/POST /measuring-instruments`
-  - `GET/POST /standards`;
+  - legacy standalone standards registry endpoints, retired from the current target contract;
 - equipment может существовать без обязательных metrology attachments;
 - measuring instrument может быть `standalone` либо `built_in` к equipment;
-- standard остается самостоятельным reusable record и может быть связан более чем с одним measuring instrument.
+- historical standard остается самостоятельным reusable record и может быть связан более чем с одним measuring instrument, но это допущение должно быть заменено в следующем equipment-domain correction slice.
 
 ```mermaid
 flowchart TD
-    A["/equipment"] --> B["equipment registry"]
-    A --> C["/equipment?tab=mi"]
-    A --> D["/equipment?tab=standards"]
+    A["historical /equipment"] --> B["equipment registry"]
+    A --> C["historical /equipment?tab=mi"]
+    A --> D["historical /equipment?tab=standards"]
     B --> E["equipment without MI is valid"]
     B --> F["equipment with linked MI"]
     C --> G["standalone MI"]
     C --> H["built-in MI -> equipment"]
     D --> I["organization / division / unit-owned standard"]
-    I --> J["reusable links to many MI"]
+    I --> J["legacy reusable links to many MI"]
 ```
 
 ### 5.7. Реализованный slice-005 journal + archive contract
 
 Пятый живой Stage 03 slice не создает новый public route family, а расширяет тот же `/equipment` contour:
 
-- page state остается URL-backed:
-  - `tab=equipment | mi | standards`;
-  - `archived=1` включает explicit archive visibility на том же route;
+- historical page state used tab query values for equipment, measuring instruments and standards;
+- `archived=1` включает explicit archive visibility на том же route;
 - web route handlers остаются под `app/api/equipment*` и проксируют browser к backend journal/archive endpoints без раскрытия internal host;
 - paginated registry list responses сохраняют envelope `meta` на web boundary, чтобы `/equipment` contour мог truthfully видеть `total/limit/offset`, а не только текущий `data` slice;
-- protected backend contract для slice-005 добавляет:
+- historical protected backend contract для slice-005 добавлял:
   - `GET/POST /measuring-instruments/{id}/journals`;
-  - `GET/POST /standards/{id}/journals`;
   - `POST /equipment/{id}/archive`;
   - `POST /measuring-instruments/{id}/archive`;
-  - `POST /standards/{id}/archive`;
+- removed by equipment-domain correction 2026-05-11:
+  - standalone standard journal endpoints;
+  - standalone standard archive endpoint;
 - journal entry хранит:
   - `operationType`;
   - `operationDate`;
@@ -589,9 +636,50 @@ flowchart LR
 
 Диаграмма фиксирует текущий slice-005 derivation contract: archived state хранится отдельно, а текущий metrology status и ближайшая дата вычисляются по latest applicable journal record.
 
-## 6. Ownership labels and lifecycle rules
+### 5.8. Target correction: unified equipment workspace
 
-Текущий proven Stage 03 contract не вводит отдельный CRUD-модуль для organization-scoped dictionaries с local drafts.
+Equipment-domain correction moves the user-facing contract from three tabbed registries to one workspace:
+
+- public route remains `/equipment`;
+- old query params `tab=mi` and `tab=standards` are compatibility-only and must not expose separate active surfaces;
+- UI title is `Оборудование`;
+- workspace uses two top-level client-side tabs: `Оборудование` and `Журнал операций`;
+- create surface is action `Добавить оборудование`, opening Dialog `Новое оборудование` with required type `Техническое` / `Диагностическое`;
+- list surface is `Оборудование в учете`;
+- technical cards show ordinary equipment data and lifecycle state;
+- diagnostic cards show diagnostic fields, ФИФ/serial data, owned standards count and standards list inside the card;
+- standards are not created or viewed as a standalone reusable registry in the target UI;
+- current API no longer exposes a standalone `/standards` list/get/update/archive registry; creating an owned standard is nested under its diagnostic parent via `POST /measuring-instruments/{id}/standards`;
+- customer admins can manage the owned kit from the diagnostic equipment edit modal: newly added standards are created on save, and removed standards are physically deleted through `DELETE /measuring-instruments/{id}/standards/{standardId}` rather than archived or detached;
+- hard-deleting an owned standard also removes legacy standard-journal rows for that standard; the target product keeps the journal at the equipment/diagnostic-equipment level;
+- journal surface is `Журнал операций по оборудованию`;
+- no separate standard journal is exposed in the target UI.
+
+```mermaid
+flowchart LR
+    A["/equipment"] --> T{"UI tab"}
+    T -->|"Оборудование"| G["Оборудование в учете"]
+    T -->|"Журнал операций"| I["Журнал операций по оборудованию"]
+    G --> B["Новое оборудование"]
+    B --> C{"Техническое / Диагностическое"}
+    C --> D["technical equipment"]
+    C --> E["diagnostic equipment"]
+    E --> F["owned standards 0..N"]
+    G --> H["standards visible only in diagnostic card"]
+```
+
+Эта диаграмма является target source of truth для Stage 03 correction: historical backend resources may remain as compatibility implementation detail, but product behavior is equipment -> owned standards -> equipment journal.
+
+Migration `000016_equipment_domain_correction` makes the legacy data truthful for this contract:
+
+- active standards with one legacy diagnostic-equipment link receive that diagnostic parent;
+- active standards linked to several diagnostic equipment records are copied per diagnostic parent, so no current child standard is reused across cards;
+- active standards without a derivable diagnostic parent are archived with a migration comment instead of staying visible as standalone current records;
+- unarchived standards are constrained to have `diagnostic_equipment_id`, while archived historical rows may remain as read-only compatibility data.
+
+## 6. Исторические ownership labels и lifecycle rules
+
+Текущий proven Stage 03 contract не вводит отдельный CRUD-модуль для organization-scoped dictionaries с local drafts. Для historical slice-005 standards были реализованы через ownership labels:
 
 Вместо этого реализовано более узкое и документированное решение:
 
@@ -600,7 +688,9 @@ flowchart LR
 - UI может явно переопределить label для читаемого представления владельца, но это не отдельная dictionary family;
 - справочники вроде производителей, классификаций и типов пока остаются текстовыми или seeded boundaries и не доказаны как самостоятельный Stage 03 CRUD contour.
 
-Это ограничение намеренное: slice-005 закрывает journal/archive truth и doc-sync, а не расширяет Stage 03 в parallel dictionary module.
+Это ограничение было намеренным для slice-005: он закрывал journal/archive truth и doc-sync, а не расширял Stage 03 в parallel dictionary module.
+
+После product correction 2026-05-11 ownership labels больше не являются целевым способом владения эталоном. Equipment-domain correction заменяет их parent relation к диагностическому оборудованию, сохраняя archive/history правила.
 
 ## 7. Архивирование и явные non-goals
 

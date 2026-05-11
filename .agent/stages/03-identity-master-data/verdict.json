@@ -1,30 +1,41 @@
 {
   "status": "PASS",
   "stage_id": "03-identity-master-data",
-  "sprint_contract_id": "slice-011-input-help-tooltip",
-  "summary": "Second fresh verification reproduced the active slice contract after the story-level fixer. The existing shared InputField is extended, non-error hints are no longer rendered as persistent below-field helper copy, hint help opens through a compact hover/focus trigger, visible errors keep aria-describedby priority, InputField stories and the Storybook backlog are updated, the lookup decision is extend, and the Web Interface Guidelines gate is closed.",
-  "last_verified_at": "2026-04-30T14:29:08Z",
+  "sprint_contract_id": "slice-014-owned-standards-edit-modal-follow-up",
+  "summary": "Metadata gaps from the prior bounded verifier are closed, and the owned-standards edit-modal source contract still passes under the requested light verification scope.",
+  "last_verified_at": "2026-05-11T19:11:10Z",
   "failed_criteria": [],
   "proof_gaps": [],
-  "artifacts_written": [
-    ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-harness-2026-04-30.txt",
-    ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-harness-post-verdict-2026-04-30.txt",
-    ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-storybook-lookup-2026-04-30.txt",
-    ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-web-interface-guidelines-source-2026-04-30.md",
-    ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-web-lint-2026-04-30.txt",
-    ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-web-typecheck-2026-04-30.txt",
-    ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-web-build-2026-04-30.txt",
-    ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-web-build-storybook-2026-04-30.txt",
-    ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-source-audit-2026-04-30.txt",
-    ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-ui-review-2026-04-30.txt",
-    ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-dom-proof-script-2026-04-30.cjs",
-    ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-storybook-dom-proof-2026-04-30.txt",
-    ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-localhost-3100-company-head-2026-04-30.txt",
-    ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-localhost-3100-company-html-2026-04-30.txt",
-    ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-company-runtime-note-2026-04-30.txt",
-    ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-git-diff-check-2026-04-30.txt",
-    ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-json-audit-2026-04-30.txt",
-    ".agent/stages/03-identity-master-data/verdict.json",
-    ".agent/stages/03-identity-master-data/problems.md"
-  ]
+  "reproduced_checks": [
+    "jq empty .agent/stages/03-identity-master-data/evidence.json: PASS",
+    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data: PASS",
+    "git diff --check: PASS",
+    "evidence.json readback: equipment_owned_standards_edit_modal status is FRESH_VERIFIER_SOURCE_PASS_METADATA_FIXED; prompt_source is present; changed_ui_files is present; completed JSON/harness/diff refs are present; top-level changed_ui_files includes the nested measuring-instrument standard DELETE proxy and excludes removed legacy standards routes",
+    "frontend evidence readback: lookup/reuse decision and web-design-guidelines PASS result are present for the follow-up; no net-new reusable UI family is claimed",
+    "source readback: EquipmentRegistryWorkspace queues edit-modal standard drafts/removals locally and applies create/delete only during Save after diagnostic PATCH",
+    "source readback: nested Next.js DELETE proxy forwards to /api/v1/measuring-instruments/{id}/standards/{standardId}",
+    "source readback: backend route/service/repository scope the hard delete to visible non-archived diagnostic equipment, require registry-manager access, require the standard to belong to the diagnostic parent, delete standard journal rows, then hard-delete the registry_standards row"
+  ],
+  "evidence_line_refs": [
+    ".agent/stages/03-identity-master-data/evidence.json:512",
+    ".agent/stages/03-identity-master-data/evidence.json:1200",
+    ".agent/stages/03-identity-master-data/evidence.json:1202",
+    ".agent/stages/03-identity-master-data/evidence.json:1207",
+    ".agent/stages/03-identity-master-data/evidence.json:1238",
+    ".agent/stages/03-identity-master-data/evidence.json:1255",
+    ".agent/stages/03-identity-master-data/evidence.json:1267",
+    ".agent/stages/03-identity-master-data/evidence.json:1279"
+  ],
+  "source_line_refs": [
+    "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:574",
+    "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:594",
+    "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:775",
+    "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1290",
+    "apps/web/app/api/equipment/measuring-instruments/[measuringInstrumentId]/standards/[standardId]/route.ts:7",
+    "apps/backend/internal/app/app.go:220",
+    "apps/backend/internal/equipment/standard/service.go:232",
+    "apps/backend/internal/equipment/standard/service.go:485",
+    "apps/backend/internal/equipment/standard/repository.go:312"
+  ],
+  "smallest_safe_fix_direction": "None. No verifier-blocking gaps remain for this follow-up under the allowed light-check scope."
 }

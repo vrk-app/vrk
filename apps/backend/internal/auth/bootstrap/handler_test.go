@@ -318,11 +318,10 @@ func TestHashInvitePasswordPolicy(t *testing.T) {
 		password string
 		wantErr  error
 	}{
-		{name: "accepts letter digit and symbol", password: "Vrk_2026"},
+		{name: "accepts eight characters", password: "password"},
+		{name: "accepts digits only", password: "12345678"},
+		{name: "accepts symbols only", password: "________"},
 		{name: "rejects too short", password: "Vrk_26", wantErr: ErrPasswordTooShort},
-		{name: "rejects missing symbol", password: "Vrk20260", wantErr: ErrPasswordWeak},
-		{name: "rejects missing digit", password: "Vrk_secret", wantErr: ErrPasswordWeak},
-		{name: "rejects missing letter", password: "1234567_", wantErr: ErrPasswordWeak},
 	}
 
 	for _, tt := range tests {

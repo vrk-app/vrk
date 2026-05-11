@@ -1,0 +1,31 @@
+## standalone standards registry / standard journal target surface audit
+apps/backend/docs/swagger/swagger.yaml:886:      journalCount:
+apps/backend/docs/swagger/swagger.yaml:888:      latestJournal:
+apps/web/shared/api/equipment.ts:44:export type LinkedStandardRecord = {
+apps/web/shared/api/equipment.ts:76:  standards: LinkedStandardRecord[];
+apps/web/shared/api/equipment.ts:77:  journalCount: number;
+apps/web/shared/api/equipment.ts:79:  latestJournal?: JournalRecord;
+apps/web/shared/api/equipment.ts:85:export type StandardRecord = {
+apps/web/shared/api/index.ts:58:  type LinkedStandardRecord,
+apps/web/shared/api/index.ts:62:  type StandardRecord,
+apps/web/app/api/equipment/measuring-instruments/[measuringInstrumentId]/standards/route.ts:2:import type { StandardRecord } from "@/shared/api";
+apps/web/app/api/equipment/measuring-instruments/[measuringInstrumentId]/standards/route.ts:6:  return proxySessionBackend<StandardRecord>(`/api/v1/measuring-instruments/${measuringInstrumentId}/standards`, {
+apps/backend/internal/equipment/standard/handler.go:31:// @Router       /measuring-instruments/{id}/standards [post]
+
+## remaining standards route files
+apps/web/app/api/equipment/measuring-instruments/[measuringInstrumentId]/standards/route.ts
+
+## backend current standards handlers/routes markers
+apps/backend/docs/swagger/swagger.yaml:2787:  /measuring-instruments/{id}/standards:
+apps/backend/docs/swagger/swagger.yaml:2791:      description: Creates one standard/setup measure owned by the diagnostic equipment
+apps/backend/docs/swagger/swagger.yaml:2829:      summary: Create diagnostic equipment standard
+apps/backend/internal/equipment/standard/errors.go:14:	ErrDiagnosticEquipmentRequired = errors.New("diagnostic equipment is required")
+apps/backend/internal/equipment/standard/errors.go:15:	ErrDiagnosticEquipmentInvalid  = errors.New("diagnostic equipment is invalid for current scope")
+apps/backend/internal/equipment/standard/service_test.go:75:	if !errors.Is(err, ErrDiagnosticEquipmentRequired) {
+apps/backend/internal/equipment/standard/service_test.go:76:		t.Fatalf("expected ErrDiagnosticEquipmentRequired, got %v", err)
+apps/backend/internal/equipment/standard/service.go:331:		return Standard{}, ErrDiagnosticEquipmentRequired
+apps/backend/internal/equipment/standard/handler.go:20:// @Summary      Create diagnostic equipment standard
+apps/backend/internal/equipment/standard/handler.go:21:// @Description  Creates one standard/setup measure owned by the diagnostic equipment record.
+apps/backend/internal/equipment/standard/handler.go:31:// @Router       /measuring-instruments/{id}/standards [post]
+apps/backend/internal/equipment/standard/handler.go:47:		sendError(w, http.StatusBadRequest, ErrDiagnosticEquipmentRequired.Error())
+apps/backend/internal/equipment/standard/handler.go:93:		errors.Is(err, ErrDiagnosticEquipmentRequired),

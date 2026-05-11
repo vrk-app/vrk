@@ -1,9 +1,9 @@
 # Evidence
 
 - Stage ID: `03-identity-master-data`
-- Current correction slice: `slice-010-stage03-org-structure-management`
-- Current continuation slice: `slice-011-input-help-tooltip`
-- Current bounded UI correction slice: `slice-013-access-confirmation-dialogs`
+- Current correction slice: `slice-014-equipment-domain-correction`
+- Previous continuation slice: `slice-011-input-help-tooltip`
+- Previous bounded UI correction slice: `slice-013-access-confirmation-dialogs`
 - Builder state: `COMPLETE`
 - Verifier state: `AWAITING_FRESH_VERIFIER`
 
@@ -23,7 +23,101 @@ The 2026-04-30 access confirmation dialogs slice is a bounded UI-only correction
 
 The 2026-04-30 input help tooltip slice extends the existing shared `InputField` instead of creating a new input family. Non-error `hint` text now appears through a compact help trigger near the label and opens on hover/focus; the hint no longer occupies a persistent helper row under the field. Field errors remain visible below the input and keep `aria-describedby` priority.
 
+The 2026-05-11 equipment domain correction replaces the historical tabbed `/equipment` target with one customer equipment workspace. The page keeps the public `/equipment` route, removes the visible `Оборудование / СИ / Эталоны` tab model, provides one `Новое оборудование` form with `Техническое` / `Диагностическое` type selection, treats diagnostic equipment as the owner of `0..N` standards/setup measures, shows those standards only inside diagnostic equipment cards, removes the target standard journal route, and keeps one equipment operation journal. Canonical product and technical docs were synced because this changes the product/API/persistence contract.
+
+Fresh verifier initially failed this slice for owned-standard migration/read-path gaps, remaining standalone standards registry exposure, stale current-slice UI evidence metadata, and two placeholder findings. The minimal fixer plus parent follow-up closed those gaps: migration 16 now makes current standards diagnostic-owned or archived, diagnostic cards ignore the old many-to-many table, standalone standards routes/proxies are removed, placeholders pass the UI gate, and current-slice metadata points to slice-014. The second fresh verifier reproduced the product/API/persistence/UI proof and failed only for a stale `stage_spec.md` verification-plan bullet. The doc-only drift was fixed, and the final fresh verifier returned `PASS`.
+
+The 2026-05-11 owned-standards edit-modal follow-up extends the same unified `/equipment` contract: customer admins can now add new owned standards/setup measures and mark existing owned standards for physical deletion while editing diagnostic equipment. Both operations are queued in the modal and sent only after `Сохранить изменения`. The backend adds `DELETE /api/v1/measuring-instruments/{id}/standards/{standardId}` and the matching Next proxy; the service verifies manager access, customer scope, visible diagnostic parent, non-archived parent, and standard ownership before hard-deleting standard journal rows and the standard row. Canonical docs and stage artifacts are synced because this is an explicit hard-delete exception for diagnostic-owned standards, not archive visibility for equipment.
+
 ## Commands Run
+
+- Equipment domain correction:
+  - Used `$vrk-web-ui-workflow`, read `.impeccable.md`, `docs/design/ui-workflow.md`, `docs/design/serviceops-design-system.md`, `docs/architecture/frontend-architecture.md`, `docs/architecture/documentation-workflow.md`, `docs/roadmap.md`, `docs/PRD-MVP.md`, `docs/architecture/identity-master-data.md`, and the active Stage 03 artifacts before implementation.
+  - Ran Storybook lookup for `equipment registry diagnostic equipment standards journal`; reuse decision: `extend`, matched existing `Equipment/EquipmentRegistryWorkspace`.
+  - Changed `/equipment` so old `tab=mi|standards` query params redirect to the unified route while preserving `archived=1`.
+  - Extended `EquipmentRegistryWorkspace` instead of adding a parallel page or reusable family:
+    - one surface `Оборудование в учете`;
+    - one form `Новое оборудование`;
+    - `Тип оборудования: Техническое | Диагностическое`;
+    - diagnostic-only fields and dynamic `0..N` standards/setup measures;
+    - standards shown only inside diagnostic equipment cards;
+    - one `Журнал операций по оборудованию`.
+  - Updated `apps/web/shared/api/equipment.ts`, Storybook runtime fixtures, `EquipmentRegistryWorkspace` stories, and targeted `/equipment` smoke tests for the unified model.
+  - Added migration `000016_equipment_domain_correction` and backend service/repository validation so standards are owned by one diagnostic equipment record, archived parents reject new standard/journal mutations, and the removed standard journal route is no longer exposed in target API/Swagger.
+  - Synced canonical docs:
+    - `docs/PRD-MVP.md`
+    - `docs/roadmap.md`
+    - `docs/architecture/identity-master-data.md`
+    - `docs/architecture/frontend-architecture.md`
+    - `.agent/stages/03-identity-master-data/stage_spec.md`
+    - `.agent/stages/03-identity-master-data/sprint_contract.md`
+    - `.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md`
+  - Verification status before fresh verifier: `SELF_VERIFIED_AWAITING_FRESH_VERIFIER`; backend tests/build, migration, Swagger refresh, web lint/typecheck/build, Storybook build, targeted smoke, source audits, UI review, and `git diff --check` passed.
+  - Fresh verifier result: `FAIL`; see `.agent/stages/03-identity-master-data/problems.md` and `.agent/stages/03-identity-master-data/verdict.json`.
+  - Fixer/parent follow-up:
+    - updated migration/read paths so current standards are diagnostic-owned and old many-to-many links no longer feed cards;
+    - removed standalone standards API/proxy/Swagger surfaces from the current target;
+    - added nested owned-standard creation under diagnostic equipment;
+    - fixed placeholder copy and Storybook fixture ownership;
+    - refreshed current-slice evidence metadata.
+  - Post-fix proof:
+    - backend tests/build passed;
+    - web lint/typecheck/build and Storybook build passed;
+    - migration 16 reapplied cleanly and DB audit reports `active_without_parent=0`, `reusable_standard_rows=0`;
+    - rebuilt backend `/readyz` passed;
+    - targeted `/equipment` smoke rerun passed;
+    - precise source audits passed.
+  - Second fresh verifier result: product/API/persistence/UI proof passed; `FAIL` only for stale `stage_spec.md` verification-plan wording.
+  - Doc-only follow-up: `.agent/stages/03-identity-master-data/stage_spec.md` now requires unified `/equipment` workspace proof instead of separate equipment / measuring-instrument / standards registries.
+  - Final fresh verifier: `PASS`; failed criteria none, proof gaps none.
+  - Owned-standards edit-modal follow-up:
+    - added nested hard-delete backend/API/proxy support for diagnostic-owned standards;
+    - replaced the old edit-modal non-editable standard note with a compact `Комплект эталонов` editor;
+    - existing standards can be marked for deletion/restored before save;
+    - new standards use the same required fields as diagnostic create and block save while incomplete;
+    - modal save PATCHes diagnostic equipment, POSTs new standards, DELETEs removed standards, reloads registries, and selects the edited diagnostic record;
+    - Storybook, runtime mocks, targeted smoke coverage, Swagger/OpenAPI, canonical docs, and stage artifacts were updated.
+  - Owned-standards edit-modal raw:
+    - `.agent/stages/03-identity-master-data/raw/storybook-lookup-slice-014-owned-standards-edit-modal-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-05-11-slice-014-owned-standards-edit-modal.md`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-owned-standards-edit-modal-ui-review-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-owned-standards-edit-modal-json-audit-post-metadata-fix-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-owned-standards-edit-modal-harness-post-metadata-fix-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-owned-standards-edit-modal-diff-check-post-metadata-fix-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-owned-standards-followup-bounded-verifier-verdict.json`
+    - `.agent/stages/03-identity-master-data/verdict.json`
+    - `.agent/stages/03-identity-master-data/problems.md`
+  - Owned-standards edit-modal fresh verifier: final bounded readback `PASS`; failed criteria none, proof gaps none.
+  - Raw:
+    - `.agent/stages/03-identity-master-data/raw/storybook-lookup-slice-014-equipment-domain-correction-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/storybook-lookup-equipment-domain-correction-ui-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-backend-test-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-backend-build-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-lint-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-typecheck-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-build-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-storybook-build-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-equipment-smoke-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-web-source-audit-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-standard-journal-route-audit-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-compose-migration-status-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-ui-review-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-equipment-domain-correction-diff-check-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-fresh-verifier-*.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-fixer-*.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-parent-migration-status-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-parent-backend-test-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-parent-backend-build-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-parent-web-lint-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-parent-web-typecheck-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-parent-web-build-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-parent-storybook-build-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-parent-equipment-smoke-rerun-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-parent-standards-surface-audit-precise-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-parent-obsolete-ui-audit-precise-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-parent-owned-standard-db-audit-2026-05-11.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-second-verifier-*.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-014-final-verifier-*.txt`
 
 - Input help tooltip:
   - Used `$vrk-web-ui-workflow` and read `.impeccable.md`, `docs/design/ui-workflow.md`, `docs/design/serviceops-design-system.md`, `docs/architecture/frontend-architecture.md`, `docs/design/storybook-component-backlog.md`, and the active Stage 03 `sprint_contract.md`.

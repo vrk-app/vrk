@@ -17,7 +17,7 @@ type EquipmentPageProps = {
 
 function resolveTab(value: string | string[] | undefined) {
   const raw = Array.isArray(value) ? value[0] : value;
-  return raw === "mi" || raw === "standards" ? raw : "equipment";
+  return raw;
 }
 
 function resolveArchiveVisibility(value: string | string[] | undefined) {
@@ -28,7 +28,7 @@ function resolveArchiveVisibility(value: string | string[] | undefined) {
 function AnonymousEquipmentShell() {
   return (
     <>
-      <PageHeader title="Оборудование, СИ и эталоны" />
+      <PageHeader title="Оборудование" />
 
       <Card className="max-w-2xl gap-4" padding="lg">
         <div className="space-y-2">
@@ -49,6 +49,13 @@ export default async function EquipmentPage({ searchParams }: EquipmentPageProps
   const cookieStore = await cookies();
   const session = await fetchSessionSummary(cookieStore.get(SESSION_COOKIE_NAME)?.value);
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const legacyTab = resolveTab(resolvedSearchParams?.tab);
+  const initialShowArchived = resolveArchiveVisibility(resolvedSearchParams?.archived);
+
+  if (legacyTab) {
+    redirect(initialShowArchived ? "/equipment?archived=1" : "/equipment");
+  }
+
   if (session?.requiresLaunchWizard) {
     redirect("/company/setup");
   }
@@ -79,24 +86,21 @@ export default async function EquipmentPage({ searchParams }: EquipmentPageProps
     );
   }
 
-  const activeTab = resolveTab(resolvedSearchParams?.tab);
-  const initialShowArchived = resolveArchiveVisibility(resolvedSearchParams?.archived);
   const canManageRegistry = sessionHasCapability(session, "manage_equipment");
 
   return (
     <>
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <h1 className="text-balance text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-          Оборудование, средства измерения и эталоны
+          Оборудование
         </h1>
         <Badge tone={canManageRegistry ? "interactive" : "warning"}>
-          {canManageRegistry ? "Управление реестрами" : "Только просмотр"}
+          {canManageRegistry ? "Управление реестром" : "Только просмотр"}
         </Badge>
       </div>
 
       <EquipmentRegistryWorkspace
         initialShowArchived={initialShowArchived}
-        initialTab={activeTab}
         session={session}
       />
     </>

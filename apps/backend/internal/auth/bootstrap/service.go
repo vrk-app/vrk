@@ -9,7 +9,6 @@ import (
 	"path"
 	"strings"
 	"time"
-	"unicode"
 	"unicode/utf8"
 
 	"backend/internal/db/generated"
@@ -1703,27 +1702,7 @@ func hashInvitePassword(password string) ([]byte, error) {
 	if utf8.RuneCountInString(password) < 8 {
 		return nil, ErrPasswordTooShort
 	}
-	if !passwordHasRequiredClasses(password) {
-		return nil, ErrPasswordWeak
-	}
 	return bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-}
-
-func passwordHasRequiredClasses(password string) bool {
-	hasLetter := false
-	hasDigit := false
-	hasSymbol := false
-	for _, r := range password {
-		switch {
-		case unicode.IsLetter(r):
-			hasLetter = true
-		case unicode.IsDigit(r):
-			hasDigit = true
-		case !unicode.IsSpace(r):
-			hasSymbol = true
-		}
-	}
-	return hasLetter && hasDigit && hasSymbol
 }
 
 func httpDetectContentType(payload []byte) string {

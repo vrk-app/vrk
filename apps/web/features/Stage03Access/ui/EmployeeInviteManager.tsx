@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { ArrowUpRight, Mail, MailX, ShieldCheck, UserRound } from "lucide-react";
+import { ArrowUpRight, Mail, MailX, Plus, ShieldCheck, UserRound } from "lucide-react";
 import {
   Badge,
   Button,
   ConfirmDialog,
+  Dialog,
   CopyableText,
   FormListScrollArea,
-  FormListSplitLayout,
   InputField,
   IslandCard,
   SelectField,
@@ -114,6 +114,7 @@ export function EmployeeInviteManager({ session }: Props) {
   const [loadingList, setLoadingList] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [revokeConfirmation, setRevokeConfirmation] = useState<EmployeeInviteResponse | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -168,7 +169,19 @@ export function EmployeeInviteManager({ session }: Props) {
     }
   }
 
-  async function handleCreateDraft() {
+  function resetInviteForm() {
+    setFullName("");
+    setEmail("");
+    setRoleTemplate("auditor");
+    {
+      const nextScopeType = defaultScopeForRole("auditor", scopeOptions);
+      setScopeType(nextScopeType);
+      setScopeId(scopeOptions[nextScopeType][0]?.value ?? "");
+    }
+    setExpiresAt(toLocalDateTimeInput(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)));
+  }
+
+  async function handleCreateDraft({ keepOpen = false }: { keepOpen?: boolean } = {}) {
     setFormError(null);
     setError(null);
 
@@ -198,15 +211,10 @@ export function EmployeeInviteManager({ session }: Props) {
         "Не удалось создать черновик приглашения.",
       );
 
-      setFullName("");
-      setEmail("");
-      setRoleTemplate("auditor");
-      {
-        const nextScopeType = defaultScopeForRole("auditor", scopeOptions);
-        setScopeType(nextScopeType);
-        setScopeId(scopeOptions[nextScopeType][0]?.value ?? "");
+      resetInviteForm();
+      if (!keepOpen) {
+        setInviteDialogOpen(false);
       }
-      setExpiresAt(toLocalDateTimeInput(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)));
       setInvites((current) => [createdInvite, ...current]);
     } catch (error) {
       setFormError(error instanceof Error ? error.message : "Не удалось создать черновик приглашения.");
@@ -261,14 +269,57 @@ export function EmployeeInviteManager({ session }: Props) {
         tone="danger"
       />
 
-      <FormListSplitLayout
-        columnsClassName="xl:grid-cols-[0.92fr_1.08fr]"
-        form={
-          <IslandCard
-            headingLevel={2}
-            icon={<UserRound aria-hidden="true" className="size-4" />}
-            title="Пригласить сотрудника"
-          >
+      <Dialog
+        bodyClassName="grid gap-5"
+        dismissible={!isPending}
+        footer={
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">
+              Проверьте параметры доступа перед отправкой приглашения.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Button disabled={isPending} onClick={() => setInviteDialogOpen(false)} type="button" variant="secondary">
+                Отмена
+              </Button>
+              <Button
+                disabled={isPending}
+                onClick={() =>
+                  startTransition(() => {
+                    void handleCreateDraft({ keepOpen: true });
+                  })
+                }
+                type="button"
+                variant="secondary"
+              >
+                Создать и добавить ещё
+              </Button>
+              <Button
+                leftIcon={<Plus className="size-4" />}
+                loading={isPending}
+                onClick={() =>
+                  startTransition(() => {
+                    void handleCreateDraft();
+                  })
+                }
+                type="button"
+              >
+                Создать черновик приглашения
+              </Button>
+            </div>
+          </div>
+        }
+        headerIcon={<UserRound aria-hidden="true" className="size-4" />}
+        headerVariant="muted"
+        onOpenChange={(open) => {
+          if (!open && !isPending) {
+            setInviteDialogOpen(false);
+          }
+        }}
+        open={inviteDialogOpen}
+        showClose={!isPending}
+        size="lg"
+        title="Пригласить сотрудника"
+      >
           <div className="grid gap-4">
             <InputField
               autoComplete="off"
@@ -358,30 +409,24 @@ export function EmployeeInviteManager({ session }: Props) {
               <p>Проверьте параметры доступа перед отправкой приглашения.</p>
             </div>
           </div>
+      </Dialog>
 
-          <Button
-            fullWidth
-            loading={isPending}
-            onClick={() =>
-              startTransition(() => {
-                void handleCreateDraft();
-              })
-            }
+      <IslandCard
+        action={
+          <button
+            aria-label="Пригласить сотрудника"
+            onClick={() => setInviteDialogOpen(true)}
+            title="Пригласить сотрудника"
             type="button"
           >
-            Создать черновик приглашения
-          </Button>
-          </IslandCard>
+            <Plus aria-hidden="true" className="size-4" />
+          </button>
         }
-        list={
-          <IslandCard
-            bodyClassName="min-h-0 flex-1"
-            className="h-full min-h-0 overflow-hidden"
-            headingLevel={2}
-            icon={<UserRound aria-hidden="true" className="size-4" />}
-            metric={invites.length}
-            title="Статусы приглашений"
-          >
+        headingLevel={2}
+        icon={<UserRound aria-hidden="true" className="size-4" />}
+        metric={invites.length}
+        title="Статусы приглашений"
+      >
 
           {error ? (
             <div
@@ -467,13 +512,20 @@ export function EmployeeInviteManager({ session }: Props) {
               })}
             </FormListScrollArea>
           ) : (
-            <div className="rounded-[var(--radius-lg)] border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
-              После первого черновика здесь появится список приглашений сотрудников и их текущие статусы.
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
+              <span>После первого черновика здесь появится список приглашений сотрудников и их текущие статусы.</span>
+              <Button
+                leftIcon={<Plus className="size-4" />}
+                onClick={() => setInviteDialogOpen(true)}
+                size="sm"
+                type="button"
+                variant="secondary"
+              >
+                Пригласить сотрудника
+              </Button>
             </div>
           )}
-          </IslandCard>
-        }
-      />
+      </IslandCard>
     </>
   );
 }

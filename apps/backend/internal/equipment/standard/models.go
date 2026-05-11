@@ -6,11 +6,13 @@ type Standard struct {
 	ID                          string
 	OrganizationID              string
 	OrganizationName            string
-	DivisionID               *string
-	DivisionName             *string
+	DivisionID                  *string
+	DivisionName                *string
 	UnitID                      *string
 	UnitName                    *string
 	OwnerLabel                  *string
+	DiagnosticEquipmentID       *string
+	DiagnosticEquipmentName     *string
 	StandardType                string
 	Model                       string
 	Identifier                  string
@@ -19,14 +21,14 @@ type Standard struct {
 	Status                      string
 	Comment                     *string
 	DocumentURL                 *string
-	LinkedMeasuringInstruments  int
 	ArchivedAt                  *time.Time
 	CreatedAt                   time.Time
 	UpdatedAt                   time.Time
 }
 
 type CreateRequest struct {
-	DivisionID               *string `json:"divisionId,omitempty"`
+	DiagnosticEquipmentID       *string `json:"diagnosticEquipmentId,omitempty"`
+	DivisionID                  *string `json:"divisionId,omitempty"`
 	UnitID                      *string `json:"unitId,omitempty"`
 	OwnerLabel                  *string `json:"ownerLabel,omitempty"`
 	StandardType                string  `json:"standardType"`
@@ -39,7 +41,8 @@ type CreateRequest struct {
 }
 
 type UpdateRequest struct {
-	DivisionID               *string `json:"divisionId,omitempty"`
+	DiagnosticEquipmentID       *string `json:"diagnosticEquipmentId,omitempty"`
+	DivisionID                  *string `json:"divisionId,omitempty"`
 	UnitID                      *string `json:"unitId,omitempty"`
 	OwnerLabel                  *string `json:"ownerLabel,omitempty"`
 	StandardType                *string `json:"standardType,omitempty"`
@@ -79,25 +82,31 @@ type OwnershipScopeResponse struct {
 	Label     string  `json:"label"`
 }
 
+type DiagnosticEquipmentSummary struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
 type StandardResponse struct {
-	ID                          string                 `json:"id"`
-	OrganizationID              string                 `json:"organizationId"`
-	OwnershipScope              OwnershipScopeResponse `json:"ownershipScope"`
-	StandardType                string                 `json:"standardType"`
-	Model                       string                 `json:"model"`
-	Identifier                  string                 `json:"identifier"`
-	SerialNumber                *string                `json:"serialNumber,omitempty"`
-	MetrologicalCharacteristics string                 `json:"metrologicalCharacteristics"`
-	Status                      string                 `json:"status"`
-	Comment                     *string                `json:"comment,omitempty"`
-	DocumentURL                 *string                `json:"documentUrl,omitempty"`
-	LinkedMeasuringInstruments  int                    `json:"linkedMeasuringInstruments"`
-	JournalCount                int                    `json:"journalCount"`
-	NextDueDate                 *string                `json:"nextDueDate,omitempty"`
-	LatestJournal               *JournalResponse       `json:"latestJournal,omitempty"`
-	ArchivedAt                  *string                `json:"archivedAt,omitempty"`
-	CreatedAt                   string                 `json:"createdAt"`
-	UpdatedAt                   string                 `json:"updatedAt"`
+	ID                          string                      `json:"id"`
+	OrganizationID              string                      `json:"organizationId"`
+	OwnershipScope              OwnershipScopeResponse      `json:"ownershipScope"`
+	DiagnosticEquipment         *DiagnosticEquipmentSummary `json:"diagnosticEquipment,omitempty"`
+	StandardType                string                      `json:"standardType"`
+	Model                       string                      `json:"model"`
+	Identifier                  string                      `json:"identifier"`
+	SerialNumber                *string                     `json:"serialNumber,omitempty"`
+	MetrologicalCharacteristics string                      `json:"metrologicalCharacteristics"`
+	Status                      string                      `json:"status"`
+	Comment                     *string                     `json:"comment,omitempty"`
+	DocumentURL                 *string                     `json:"documentUrl,omitempty"`
+	ArchivedAt                  *string                     `json:"archivedAt,omitempty"`
+	CreatedAt                   string                      `json:"createdAt"`
+	UpdatedAt                   string                      `json:"updatedAt"`
+}
+
+type DeleteResponse struct {
+	ID string `json:"id"`
 }
 
 type Meta struct {

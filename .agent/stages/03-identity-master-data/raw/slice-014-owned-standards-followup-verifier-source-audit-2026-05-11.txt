@@ -1,0 +1,144 @@
+## changed files
+M	.agent/stages/03-identity-master-data/evidence.json
+M	.agent/stages/03-identity-master-data/evidence.md
+M	.agent/stages/03-identity-master-data/feature_list.json
+M	.agent/stages/03-identity-master-data/problems.md
+M	.agent/stages/03-identity-master-data/progress.md
+M	.agent/stages/03-identity-master-data/sprint_contract.md
+M	.agent/stages/03-identity-master-data/stage_spec.md
+M	.agent/stages/03-identity-master-data/verdict.json
+M	apps/backend/docs/swagger/docs.go
+M	apps/backend/docs/swagger/swagger.json
+M	apps/backend/docs/swagger/swagger.yaml
+M	apps/backend/internal/app/app.go
+M	apps/backend/internal/auth/bootstrap/errors.go
+M	apps/backend/internal/auth/bootstrap/handler.go
+M	apps/backend/internal/auth/bootstrap/handler_test.go
+M	apps/backend/internal/auth/bootstrap/service.go
+M	apps/backend/internal/equipment/measuringinstrument/repository.go
+M	apps/backend/internal/equipment/measuringinstrument/service.go
+M	apps/backend/internal/equipment/standard/errors.go
+M	apps/backend/internal/equipment/standard/handler.go
+M	apps/backend/internal/equipment/standard/models.go
+M	apps/backend/internal/equipment/standard/repository.go
+M	apps/backend/internal/equipment/standard/service.go
+M	apps/web/app/(runtime)/equipment/page.tsx
+D	apps/web/app/api/equipment/standards/[standardId]/archive/route.ts
+D	apps/web/app/api/equipment/standards/[standardId]/journals/route.ts
+D	apps/web/app/api/equipment/standards/[standardId]/route.ts
+D	apps/web/app/api/equipment/standards/route.ts
+M	apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx
+M	apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+M	apps/web/shared/api/equipment.ts
+M	apps/web/shared/api/index.ts
+M	apps/web/shared/storybook/runtime-api-mock.tsx
+M	apps/web/shared/storybook/runtime-fixtures.ts
+M	apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+M	apps/web/tests/equipment-registries.smoke.spec.ts
+M	docs/PRD-MVP.md
+M	docs/architecture/frontend-architecture.md
+M	docs/architecture/identity-master-data.md
+M	docs/roadmap.md
+
+## UI modal controls/save
+134:      standardDrafts: DiagnosticStandardDraft[];
+135:      removedStandardIds: string[];
+546:      : isMeasuringInstrumentFormReady(editor.form) && areDiagnosticStandardDraftsReady(editor.standardDrafts);
+568:      standardDrafts: editor.standardDrafts.map((draft) =>
+580:      standardDrafts: editor.standardDrafts.filter((draft) => draft.localId !== localId),
+590:      standardDrafts: [...editor.standardDrafts, createDiagnosticStandardDraft()],
+595:    if (editor.kind !== "measuringInstrument" || editor.removedStandardIds.includes(standardId)) {
+604:      removedStandardIds: [...editor.removedStandardIds, standardId],
+618:      removedStandardIds: editor.removedStandardIds.filter((id) => id !== standardId),
+777:            <p className="text-sm font-semibold text-foreground">Комплект эталонов</p>
+789:            Добавить меру
+795:              const pendingRemoval = state.removedStandardIds.includes(standard.id);
+807:                          {pendingRemoval ? "Будет удален" : statusLabelMap[standard.status]}
+819:                        aria-label={`Вернуть эталон ${standard.identifier}`}
+825:                        Вернуть
+844:        ) : state.standardDrafts.length ? null : (
+847:        {state.standardDrafts.length ? (
+849:            {state.standardDrafts.map((draft, index) => (
+928:        {state.removedStandardIds.length ? (
+930:            К удалению отмечено: {state.removedStandardIds.length}. Записи будут физически удалены после сохранения.
+968:              Сохранить изменения
+1257:      standardDrafts: [],
+1258:      removedStandardIds: [],
+1290:      for (const draft of editDialog.standardDrafts) {
+1291:        const standardResponse = await fetch(`/api/equipment/measuring-instruments/${updated.id}/standards`, {
+1298:      for (const standardId of editDialog.removedStandardIds) {
+1299:        const deleteResponse = await fetch(`/api/equipment/measuring-instruments/${updated.id}/standards/${standardId}`, {
+1607:              Добавить меру
+1874:            <EmptyState detail="Комплект эталонов для этой карточки не задан." title="Эталоны не привязаны" />
+
+## route/proxy/backend delete
+apps/backend/internal/app/app.go:220:			r.Delete("/{id}/standards/{standardId}", stdHandler.DeleteFromDiagnostic)
+apps/backend/docs/swagger/swagger.yaml:2837:  /measuring-instruments/{id}/standards/{standardId}:
+apps/backend/internal/equipment/standard/service_test.go:179:func TestDeleteFromDiagnosticDeletesOwnedStandard(t *testing.T) {
+apps/backend/internal/equipment/standard/service_test.go:208:	resp, err := service.DeleteFromDiagnostic(context.Background(), "session-token", diagnosticEquipmentID, standardID.String())
+apps/backend/internal/equipment/standard/service_test.go:220:func TestDeleteFromDiagnosticRejectsForeignOwnedStandard(t *testing.T) {
+apps/backend/internal/equipment/standard/service_test.go:250:	_, err := service.DeleteFromDiagnostic(context.Background(), "session-token", diagnosticEquipmentID, standardID.String())
+apps/backend/internal/equipment/standard/service_test.go:259:func TestDeleteFromDiagnosticRejectsArchivedParent(t *testing.T) {
+apps/backend/internal/equipment/standard/service_test.go:289:	_, err := service.DeleteFromDiagnostic(context.Background(), "session-token", diagnosticEquipmentID, standardID.String())
+apps/backend/internal/equipment/standard/service_test.go:298:func TestDeleteFromDiagnosticRejectsReadonlySession(t *testing.T) {
+apps/backend/internal/equipment/standard/service_test.go:329:	_, err := service.DeleteFromDiagnostic(context.Background(), "session-token", diagnosticEquipmentID, standardID.String())
+apps/backend/internal/equipment/standard/service.go:21:	DeleteFromDiagnostic(ctx context.Context, token string, diagnosticEquipmentID string, standardID string) (*DeleteResponse, error)
+apps/backend/internal/equipment/standard/service.go:232:func (s *standardService) DeleteFromDiagnostic(
+apps/web/app/api/equipment/measuring-instruments/[measuringInstrumentId]/standards/[standardId]/route.ts:7:export async function DELETE(
+apps/backend/internal/equipment/standard/handler.go:72:// @Router       /measuring-instruments/{id}/standards/{standardId} [delete]
+apps/backend/internal/equipment/standard/handler.go:73:func (h *StandardHandler) DeleteFromDiagnostic(w http.ResponseWriter, r *http.Request) {
+apps/backend/internal/equipment/standard/handler.go:91:	resp, err := h.service.DeleteFromDiagnostic(r.Context(), token, diagnosticEquipmentID, standardID)
+
+## repository hard delete
+apps/backend/migrations/000008_stage03_equipment_registries.up.sql:5:    organization_id UUID NOT NULL REFERENCES auth_bootstrap_organizations(id) ON DELETE CASCADE,
+apps/backend/migrations/000008_stage03_equipment_registries.up.sql:26:    organization_id UUID NOT NULL REFERENCES auth_bootstrap_organizations(id) ON DELETE CASCADE,
+apps/backend/migrations/000008_stage03_equipment_registries.up.sql:51:    organization_id UUID NOT NULL REFERENCES auth_bootstrap_organizations(id) ON DELETE CASCADE,
+apps/backend/migrations/000008_stage03_equipment_registries.up.sql:79:    measuring_instrument_id UUID NOT NULL REFERENCES registry_measuring_instruments(id) ON DELETE CASCADE,
+apps/backend/migrations/000008_stage03_equipment_registries.up.sql:80:    standard_id UUID NOT NULL REFERENCES registry_standards(id) ON DELETE CASCADE,
+apps/backend/migrations/000016_equipment_domain_correction.up.sql:4:    ADD COLUMN diagnostic_equipment_id UUID REFERENCES registry_measuring_instruments(id) ON DELETE CASCADE;
+apps/backend/internal/equipment/standard/repository.go:312:func (r *standardRepository) Delete(ctx context.Context, id uuid.UUID) error {
+apps/backend/internal/equipment/standard/repository.go:320:        DELETE FROM registry_metrology_journal_entries
+apps/backend/internal/equipment/standard/repository.go:327:        DELETE FROM registry_standards
+
+## tests/story/docs evidence markers
+docs/roadmap.md:393:- one `/equipment` workspace with unified create form, type selector, equipment cards, owned standards inside diagnostic cards, add/delete kit management from the diagnostic edit modal, unified equipment journal, compatibility-only old tab params, and explicit archive visibility state
+docs/roadmap.md:438:- contracts + unified equipment workspace, diagnostic equipment with owned standards, journal и archive flows работают end-to-end
+.agent/stages/03-identity-master-data/evidence.json:508:    "summary": "Replace tabbed equipment / СИ / standards registries with one /equipment workspace: technical or diagnostic equipment, diagnostic-owned standards 0..N, and one equipment operation journal."
+.agent/stages/03-identity-master-data/evidence.json:1064:    "summary": "Replaced the /equipment tabbed registry model with one equipment workspace: one create form with technical/diagnostic type, diagnostic owned standards inside the form/card, no standalone standards list or standard journal route, unified equipment operation journal, scoped access/archive behavior preserved, and backend standards now bind to one diagnostic equipment parent.",
+.agent/stages/03-identity-master-data/evidence.json:1187:      "summary": "Replace tabbed equipment / СИ / standards registries with one /equipment workspace: technical or diagnostic equipment, diagnostic-owned standards 0..N, and one equipment operation journal."
+.agent/stages/03-identity-master-data/evidence.json:1189:    "fixer_summary": "Fresh-verifier gaps were fixed: migration 000016 now converts legacy links into diagnostic-owned standards and archives orphan current rows; diagnostic cards read only standard.diagnostic_equipment_id; standalone standards API/proxy/Swagger surfaces are removed; current-slice UI evidence metadata is refreshed; placeholder findings pass.",
+.agent/stages/03-identity-master-data/evidence.json:1202:    "summary": "Diagnostic equipment edit modal now queues new owned standards and physical owned-standard deletions until Save; backend exposes a nested hard-delete endpoint scoped to the diagnostic equipment parent.",
+.agent/stages/03-identity-master-data/evidence.json:1212:      "edit modal section: Комплект эталонов",
+.agent/stages/03-identity-master-data/evidence.json:1243:      "targeted /equipment smoke add/delete owned standards in edit modal: PASS",
+docs/architecture/frontend-architecture.md:198:  - diagnostic equipment card with owned standards inside the card;
+docs/architecture/frontend-architecture.md:199:  - diagnostic edit modal with add-on-save and hard-delete-on-save controls for owned standards;
+docs/architecture/frontend-architecture.md:209:    E -->|"Диагностическое"| G["diagnostic payload<br/>owned standards 0..N"]
+docs/architecture/frontend-architecture.md:213:    J --> M["edit modal<br/>add / hard-delete standards on save"]
+docs/architecture/frontend-architecture.md:227:- customer admins can add new owned standards and physically delete existing owned standards from the diagnostic equipment edit modal; these changes are queued locally until `Сохранить изменения`;
+docs/architecture/frontend-architecture.md:240:    E --> F["owned standards"]
+apps/backend/internal/equipment/standard/service_test.go:179:func TestDeleteFromDiagnosticDeletesOwnedStandard(t *testing.T) {
+apps/backend/internal/equipment/standard/service_test.go:208:	resp, err := service.DeleteFromDiagnostic(context.Background(), "session-token", diagnosticEquipmentID, standardID.String())
+apps/backend/internal/equipment/standard/service_test.go:220:func TestDeleteFromDiagnosticRejectsForeignOwnedStandard(t *testing.T) {
+apps/backend/internal/equipment/standard/service_test.go:250:	_, err := service.DeleteFromDiagnostic(context.Background(), "session-token", diagnosticEquipmentID, standardID.String())
+apps/backend/internal/equipment/standard/service_test.go:259:func TestDeleteFromDiagnosticRejectsArchivedParent(t *testing.T) {
+apps/backend/internal/equipment/standard/service_test.go:289:	_, err := service.DeleteFromDiagnostic(context.Background(), "session-token", diagnosticEquipmentID, standardID.String())
+apps/backend/internal/equipment/standard/service_test.go:298:func TestDeleteFromDiagnosticRejectsReadonlySession(t *testing.T) {
+apps/backend/internal/equipment/standard/service_test.go:329:	_, err := service.DeleteFromDiagnostic(context.Background(), "session-token", diagnosticEquipmentID, standardID.String())
+docs/architecture/identity-master-data.md:649:- diagnostic cards show diagnostic fields, ФИФ/serial data, owned standards count and standards list inside the card;
+docs/architecture/identity-master-data.md:652:- customer admins can manage the owned kit from the diagnostic equipment edit modal: newly added standards are created on save, and removed standards are physically deleted through `DELETE /measuring-instruments/{id}/standards/{standardId}` rather than archived or detached;
+docs/architecture/identity-master-data.md:663:    E --> F["owned standards 0..N"]
+docs/architecture/identity-master-data.md:669:Эта диаграмма является target source of truth для Stage 03 correction: historical backend resources may remain as compatibility implementation detail, but product behavior is equipment -> owned standards -> equipment journal.
+.agent/stages/03-identity-master-data/evidence.md:30:The 2026-05-11 owned-standards edit-modal follow-up extends the same unified `/equipment` contract: customer admins can now add new owned standards/setup measures and mark existing owned standards for physical deletion while editing diagnostic equipment. Both operations are queued in the modal and sent only after `Сохранить изменения`. The backend adds `DELETE /api/v1/measuring-instruments/{id}/standards/{standardId}` and the matching Next proxy; the service verifies manager access, customer scope, visible diagnostic parent, non-archived parent, and standard ownership before hard-deleting standard journal rows and the standard row. Canonical docs and stage artifacts are synced because this is an explicit hard-delete exception for diagnostic-owned standards, not archive visibility for equipment.
+.agent/stages/03-identity-master-data/evidence.md:74:    - added nested hard-delete backend/API/proxy support for diagnostic-owned standards;
+.agent/stages/03-identity-master-data/evidence.md:75:    - replaced the old edit-modal non-editable standard note with a compact `Комплект эталонов` editor;
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx:125:    await userEvent.click(await canvas.findByRole("button", { name: /Редактировать диагностическое оборудование/ }));
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx:127:      name: "Редактировать диагностическое оборудование",
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx:131:    await expect(dialogCanvas.getByText("Комплект эталонов")).toBeVisible();
+apps/web/tests/equipment-registries.smoke.spec.ts:339:  test("customer admin uses one /equipment surface with owned standards while scoped and contractor access stay bounded", async ({
+apps/web/tests/equipment-registries.smoke.spec.ts:365:    const deleteStandardKeepIdentifier = `STD-DELETE-KEEP-${seed}`;
+apps/web/tests/equipment-registries.smoke.spec.ts:366:    const deleteStandardRemoveIdentifier = `STD-DELETE-REMOVE-${seed}`;
+apps/web/tests/equipment-registries.smoke.spec.ts:568:    await equipmentEditDialog.getByRole("button", { name: "Сохранить изменения" }).click();
+apps/web/tests/equipment-registries.smoke.spec.ts:596:    await page.getByRole("button", { name: `Редактировать диагностическое оборудование ${diagnosticName}` }).click();
+apps/web/tests/equipment-registries.smoke.spec.ts:597:    const diagnosticEditDialog = page.getByRole("dialog", { name: "Редактировать диагностическое оборудование" });
+apps/web/tests/equipment-registries.smoke.spec.ts:609:    await diagnosticEditDialog.getByRole("button", { name: "Сохранить изменения" }).click();
+apps/web/tests/equipment-registries.smoke.spec.ts:644:    await expect(page.getByRole("button", { name: `Редактировать диагностическое оборудование ${archiveInstrumentName}` })).toHaveCount(0);

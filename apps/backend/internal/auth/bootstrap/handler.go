@@ -868,7 +868,6 @@ func writeServiceError(w http.ResponseWriter, err error) {
 		errors.Is(err, ErrUnitNameRequired),
 		errors.Is(err, ErrUnitTypeRequired),
 		errors.Is(err, ErrStructureModeInvalid),
-		errors.Is(err, ErrPasswordWeak),
 		errors.Is(err, ErrLogoRequired),
 		errors.Is(err, ErrLogoInvalidContentType),
 		errors.Is(err, ErrLogoTooLarge):

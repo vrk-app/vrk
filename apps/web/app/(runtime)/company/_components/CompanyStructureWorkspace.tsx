@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition, type ChangeEvent, type ReactNode } from "react";
 import {
   Archive,
   Building2,
@@ -8,6 +8,7 @@ import {
   Image as ImageIcon,
   MapPinned,
   Pencil,
+  Plus,
   Save,
   Trash2,
   UploadCloud,
@@ -28,7 +29,6 @@ import {
   ConfirmDialog,
   Dialog,
   FormListScrollArea,
-  FormListSplitLayout,
   InlineAlert,
   InputField,
   IslandCard,
@@ -78,6 +78,8 @@ type StructureEditDialogState =
       recordLabel: string;
       form: StructureForm;
     };
+
+type StructureCreateDialogKind = "division" | "unit";
 
 type ArchiveConfirmation = {
   label: string;
@@ -304,6 +306,7 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
   const [profile, setProfile] = useState<CompanyProfilePayload>(() => profileFromSession(initialSession));
   const [divisionForm, setDivisionForm] = useState<StructureForm>(() => emptyStructureForm());
   const [unitForm, setUnitForm] = useState<StructureForm>(() => emptyStructureForm());
+  const [structureCreateDialog, setStructureCreateDialog] = useState<StructureCreateDialogKind | null>(null);
   const [structureEditDialog, setStructureEditDialog] = useState<StructureEditDialogState | null>(null);
   const [archiveConfirmation, setArchiveConfirmation] = useState<ArchiveConfirmation | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -462,7 +465,7 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
     });
   }
 
-  function submitDivision() {
+  function submitDivision({ keepOpen = false }: { keepOpen?: boolean } = {}) {
     startTransition(() => {
       void mutateSession(
         "/api/company/divisions",
@@ -474,6 +477,9 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
       )
         .then(() => {
           setDivisionForm(emptyStructureForm());
+          if (!keepOpen) {
+            setStructureCreateDialog(null);
+          }
           showToast({
             dedupeKey: "company-division-success",
             title: "Дивизион сохранен.",
@@ -491,7 +497,7 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
     });
   }
 
-  function submitUnit() {
+  function submitUnit({ keepOpen = false }: { keepOpen?: boolean } = {}) {
     startTransition(() => {
       void mutateSession(
         "/api/company/units",
@@ -503,6 +509,9 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
       )
         .then(() => {
           setUnitForm(emptyStructureForm());
+          if (!keepOpen) {
+            setStructureCreateDialog(null);
+          }
           showToast({
             dedupeKey: "company-unit-success",
             title: "Юнит сохранен.",
@@ -519,6 +528,28 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
         );
     });
   }
+
+  const createDivisionAction = canCreateDivision ? (
+    <button
+      aria-label="Создать дивизион"
+      onClick={() => setStructureCreateDialog("division")}
+      title="Создать дивизион"
+      type="button"
+    >
+      <Plus aria-hidden="true" className="size-4" />
+    </button>
+  ) : null;
+
+  const createUnitAction = canCreateUnit ? (
+    <button
+      aria-label="Создать юнит"
+      onClick={() => setStructureCreateDialog("unit")}
+      title="Создать юнит"
+      type="button"
+    >
+      <Plus aria-hidden="true" className="size-4" />
+    </button>
+  ) : null;
 
   function openDivisionEditor(division: Division) {
     setActiveTab("divisions");
@@ -610,10 +641,9 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
   }
 
   const divisionList = (
-    <div className={canCreateDivision ? "h-full min-h-0" : undefined} data-testid="scope-graph">
+    <div data-testid="scope-graph">
       <IslandCard
-        bodyClassName={canCreateDivision ? "min-h-0 flex-1" : undefined}
-        className={canCreateDivision ? "h-full min-h-0 overflow-hidden" : undefined}
+        action={createDivisionAction}
         headingLevel={2}
         icon={<Building2 aria-hidden="true" className="size-4" />}
         metric={session.divisions.length}
@@ -634,17 +664,31 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
             ))}
           </FormListScrollArea>
         ) : (
-          <EmptyBlock text="В текущей области нет активных дивизионов." />
+          <EmptyBlock
+            action={
+              canCreateDivision ? (
+                <Button
+                  leftIcon={<Plus className="size-4" />}
+                  onClick={() => setStructureCreateDialog("division")}
+                  size="sm"
+                  type="button"
+                  variant="secondary"
+                >
+                  Создать дивизион
+                </Button>
+              ) : null
+            }
+            text="В текущей области нет активных дивизионов."
+          />
         )}
       </IslandCard>
     </div>
   );
 
   const unitList = (
-    <div className={canCreateUnit ? "h-full min-h-0" : undefined} data-testid="scope-graph">
+    <div data-testid="scope-graph">
       <IslandCard
-        bodyClassName={canCreateUnit ? "min-h-0 flex-1" : undefined}
-        className={canCreateUnit ? "h-full min-h-0 overflow-hidden" : undefined}
+        action={createUnitAction}
         headingLevel={2}
         icon={<MapPinned aria-hidden="true" className="size-4" />}
         metric={session.units.length}
@@ -692,7 +736,22 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
                 />
               ))
             ) : (
-              <EmptyBlock text="Прямых юнитов пока нет." />
+              <EmptyBlock
+                action={
+                  canCreateUnit && session.units.length === 0 ? (
+                    <Button
+                      leftIcon={<Plus className="size-4" />}
+                      onClick={() => setStructureCreateDialog("unit")}
+                      size="sm"
+                      type="button"
+                      variant="secondary"
+                    >
+                      Создать юнит
+                    </Button>
+                  ) : null
+                }
+                text="Прямых юнитов пока нет."
+              />
             )}
           </div>
         </FormListScrollArea>
@@ -702,6 +761,18 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
 
   return (
     <>
+      <StructureCreateDialog
+        dialog={structureCreateDialog}
+        divisionForm={divisionForm}
+        divisionOptions={divisionOptions}
+        isPending={isPending}
+        onCancel={() => setStructureCreateDialog(null)}
+        onDivisionChange={setDivisionForm}
+        onDivisionSubmit={(keepOpen) => submitDivision({ keepOpen })}
+        onUnitChange={setUnitForm}
+        onUnitSubmit={(keepOpen) => submitUnit({ keepOpen })}
+        unitForm={unitForm}
+      />
       <StructureEditDialog
         canChangeUnitParent={canChangeUnitParent}
         dialog={structureEditDialog}
@@ -728,9 +799,9 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
       />
 
       <div
-        aria-hidden={structureEditDialog || archiveConfirmation ? true : undefined}
+        aria-hidden={structureCreateDialog || structureEditDialog || archiveConfirmation ? true : undefined}
         className="grid gap-4"
-        inert={structureEditDialog || archiveConfirmation ? true : undefined}
+        inert={structureCreateDialog || structureEditDialog || archiveConfirmation ? true : undefined}
       >
         {!hasStructure && canManageCompany(session) ? (
           <InlineAlert
@@ -1014,111 +1085,13 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
           </div>
         ) : null}
 
-        {activeTab === "divisions" ? (
-          canCreateDivision ? (
-            <FormListSplitLayout
-              columnsClassName="xl:grid-cols-[0.9fr_1.1fr]"
-              form={
-                <StructureFormCard
-                  form={divisionForm}
-                  isPending={isPending}
-                  onChange={setDivisionForm}
-                  onSubmit={submitDivision}
-                  namePrefix="division"
-                  submitLabel="Создать дивизион"
-                  showType={false}
-                  title="Новый дивизион"
-                />
-              }
-              list={divisionList}
-            />
-          ) : (
-            divisionList
-          )
-        ) : null}
+        {activeTab === "divisions" ? divisionList : null}
 
-        {activeTab === "units" ? (
-          canCreateUnit ? (
-            <FormListSplitLayout
-              columnsClassName="xl:grid-cols-[0.9fr_1.1fr]"
-              form={
-                <StructureFormCard
-                  form={unitForm}
-                  includeDivision
-                  isPending={isPending}
-                  onChange={setUnitForm}
-                  onSubmit={submitUnit}
-                  namePrefix="unit"
-                  divisionOptions={divisionOptions}
-                  submitLabel="Создать юнит"
-                  title="Новый юнит"
-                />
-              }
-              list={unitList}
-            />
-          ) : (
-            unitList
-          )
-        ) : null}
+        {activeTab === "units" ? unitList : null}
 
         {activeTab === "employees" && session.workspace.canViewEmployees ? <EmployeeAccessWorkspace session={session} /> : null}
       </div>
     </>
-  );
-}
-
-type StructureFormCardProps = {
-  form: StructureForm;
-  includeDivision?: boolean;
-  isPending: boolean;
-  onChange: (value: StructureForm) => void;
-  onSubmit: () => void;
-  namePrefix: string;
-  divisionOptions?: Array<{ label: string; value: string }>;
-  submitLabel: string;
-  showType?: boolean;
-  title: string;
-};
-
-function StructureFormCard({
-  form,
-  includeDivision = false,
-  isPending,
-  onChange,
-  onSubmit,
-  namePrefix,
-  divisionOptions = [],
-  submitLabel,
-  showType = true,
-  title,
-}: StructureFormCardProps) {
-  const canSubmit =
-    isStructureFormReady(form, showType) &&
-    (!includeDivision || divisionOptions.some((item) => item.value === form.divisionId));
-
-  return (
-    <IslandCard
-      icon={<Building2 aria-hidden="true" className="size-4" />}
-      headingLevel={2}
-      title={title}
-    >
-      <StructureFormFields
-        divisionOptions={divisionOptions}
-        form={form}
-        includeDivision={includeDivision}
-        namePrefix={namePrefix}
-        onChange={onChange}
-        showType={showType}
-      />
-
-      <Button
-        disabled={!canSubmit || isPending}
-        loading={isPending}
-        onClick={onSubmit}
-      >
-        {submitLabel}
-      </Button>
-    </IslandCard>
   );
 }
 
@@ -1235,6 +1208,104 @@ function StructureFormFields({
         value={form.comment}
       />
     </>
+  );
+}
+
+function StructureCreateDialog({
+  dialog,
+  divisionForm,
+  divisionOptions,
+  isPending,
+  onCancel,
+  onDivisionChange,
+  onDivisionSubmit,
+  onUnitChange,
+  onUnitSubmit,
+  unitForm,
+}: {
+  dialog: StructureCreateDialogKind | null;
+  divisionForm: StructureForm;
+  divisionOptions: Array<{ label: string; value: string }>;
+  isPending: boolean;
+  onCancel: () => void;
+  onDivisionChange: (value: StructureForm) => void;
+  onDivisionSubmit: (keepOpen: boolean) => void;
+  onUnitChange: (value: StructureForm) => void;
+  onUnitSubmit: (keepOpen: boolean) => void;
+  unitForm: StructureForm;
+}) {
+  if (!dialog) {
+    return null;
+  }
+
+  const isUnit = dialog === "unit";
+  const form = isUnit ? unitForm : divisionForm;
+  const canSubmit =
+    isStructureFormReady(form, isUnit) &&
+    (!isUnit || divisionOptions.some((item) => item.value === unitForm.divisionId));
+  const title = isUnit ? "Новый юнит" : "Новый дивизион";
+  const submitLabel = isUnit ? "Создать юнит" : "Создать дивизион";
+
+  return (
+    <Dialog
+      bodyClassName="grid gap-5"
+      dismissible={!isPending}
+      footer={
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground">
+            {!canSubmit ? "Заполните обязательные поля перед созданием." : "Запись появится в текущей структуре после сохранения."}
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Button disabled={isPending} onClick={onCancel} type="button" variant="secondary">
+              Отмена
+            </Button>
+            <Button
+              disabled={!canSubmit || isPending}
+              onClick={() => (isUnit ? onUnitSubmit(true) : onDivisionSubmit(true))}
+              type="button"
+              variant="secondary"
+            >
+              Создать и добавить ещё
+            </Button>
+            <Button
+              disabled={!canSubmit}
+              leftIcon={<Plus className="size-4" />}
+              loading={isPending}
+              onClick={() => (isUnit ? onUnitSubmit(false) : onDivisionSubmit(false))}
+              type="button"
+            >
+              {submitLabel}
+            </Button>
+          </div>
+        </div>
+      }
+      headerIcon={
+        isUnit ? (
+          <MapPinned aria-hidden="true" className="size-4" />
+        ) : (
+          <Building2 aria-hidden="true" className="size-4" />
+        )
+      }
+      headerVariant="muted"
+      onOpenChange={(open) => {
+        if (!open && !isPending) {
+          onCancel();
+        }
+      }}
+      open={Boolean(dialog)}
+      showClose={!isPending}
+      size="lg"
+      title={title}
+    >
+      <StructureFormFields
+        divisionOptions={divisionOptions}
+        form={form}
+        includeDivision={isUnit}
+        namePrefix={isUnit ? "unit" : "division"}
+        onChange={isUnit ? onUnitChange : onDivisionChange}
+        showType={isUnit}
+      />
+    </Dialog>
   );
 }
 
@@ -1368,10 +1439,11 @@ function NodeRow({ canManage, editLabel, meta, name, onArchive, onEdit, type }: 
   );
 }
 
-function EmptyBlock({ text }: { text: string }) {
+function EmptyBlock({ action, text }: { action?: ReactNode; text: string }) {
   return (
-    <div className="rounded-[var(--radius-lg)] border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
-      {text}
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-lg)] border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
+      <span>{text}</span>
+      {action}
     </div>
   );
 }

@@ -1,0 +1,140 @@
+Guidelines source: .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-05-11-slice-014-final-verifier.md
+Files reviewed:
+apps/web/app/(runtime)/equipment/page.tsx
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+
+Focused pattern audit:
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx:21:  ...cloneFixture(measuringInstrumentRecords[0]),
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx:38:  ...equipmentRecords,
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx:39:  ...Array.from({ length: 12 }, (_, index) => ({
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx:40:    ...equipmentRecords[index % equipmentRecords.length],
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx:49:  ...measuringInstrumentRecords,
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx:50:  ...Array.from({ length: 8 }, (_, index) => ({
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx:51:    ...measuringInstrumentRecords[index % measuringInstrumentRecords.length],
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx:85:      ...defaultApi,
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx:95:      ...defaultApi,
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx:105:      ...defaultApi,
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx:123:      ...defaultApi,
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx:137:  decorators: [withRuntimeApi({ ...defaultApi, failurePaths: ["/api/equipment"] })],
+apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx:143:      ...defaultApi,
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:252:    standardIds: record.standards.map((standard) => standard.id),
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:293:    items.push(...page.data);
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:417:  return new Intl.DateTimeFormat("ru-RU", {
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:428:  return new Intl.DateTimeFormat("ru-RU", {
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:439:    ...item,
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:548:    onChange({ ...editor, form: { ...editor.form, ...patch } });
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:555:    onChange({ ...editor, form: { ...editor.form, ...patch } });
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:565:          options={session.units.map((unit) => ({ label: unit.name, value: unit.id }))}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:578:          autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:585:          autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:592:          autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:599:          autoComplete={defaultAutoComplete("number")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:600:          inputMode="numeric"
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:608:          autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:615:          autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:624:          autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:633:          autoComplete={defaultAutoComplete("url")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:658:        options={session.units.map((unit) => ({ label: unit.name, value: unit.id }))}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:663:          autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:670:          autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:677:          autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:684:          autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:693:          autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:702:          autoComplete={defaultAutoComplete("url")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:738:            <Button disabled={loading} onClick={onCancel} type="button" variant="secondary">
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:746:              type="button"
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:786:      {journals.map((journal) => (
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:887:      setMeasuringInstruments(measuringInstrumentData.map(normalizeMeasuringInstrument));
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:950:        ...current,
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:984:          ...measuringInstrumentForm,
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1161:      current.map((draft) => (draft.localId === localId ? { ...draft, ...patch } : draft)),
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1176:            onChange={(event) => setEquipmentForm((current) => ({ ...current, unitId: event.target.value }))}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1177:            options={session.units.map((unit) => ({ label: unit.name, value: unit.id }))}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1185:                ...current,
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1195:            autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1198:            onChange={(event) => setEquipmentForm((current) => ({ ...current, manufacturer: event.target.value }))}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1202:            autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1205:            onChange={(event) => setEquipmentForm((current) => ({ ...current, classification: event.target.value }))}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1209:            autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1212:            onChange={(event) => setEquipmentForm((current) => ({ ...current, model: event.target.value }))}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1216:            autoComplete={defaultAutoComplete("number")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1217:            inputMode="numeric"
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1220:            onChange={(event) => setEquipmentForm((current) => ({ ...current, manufactureYear: event.target.value }))}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1225:            autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1228:            onChange={(event) => setEquipmentForm((current) => ({ ...current, fullName: event.target.value }))}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1232:            autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1235:            onChange={(event) => setEquipmentForm((current) => ({ ...current, factoryNumber: event.target.value }))}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1241:            autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1244:            onChange={(event) => setEquipmentForm((current) => ({ ...current, inventoryNumber: event.target.value }))}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1250:            autoComplete={defaultAutoComplete("url")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1253:            onChange={(event) => setEquipmentForm((current) => ({ ...current, documentUrl: event.target.value }))}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1261:          onChange={(event) => setEquipmentForm((current) => ({ ...current, comment: event.target.value }))}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1276:              setMeasuringInstrumentForm((current) => ({ ...current, unitId: event.target.value }))
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1278:            options={session.units.map((unit) => ({ label: unit.name, value: unit.id }))}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1282:            autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1285:            onChange={(event) => setMeasuringInstrumentForm((current) => ({ ...current, name: event.target.value }))}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1289:            autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1293:              setMeasuringInstrumentForm((current) => ({ ...current, instrumentType: event.target.value }))
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1298:            autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1301:            onChange={(event) => setMeasuringInstrumentForm((current) => ({ ...current, model: event.target.value }))}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1305:            autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1309:              setMeasuringInstrumentForm((current) => ({ ...current, registrationNumber: event.target.value }))
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1316:            autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1320:              setMeasuringInstrumentForm((current) => ({ ...current, serialNumber: event.target.value }))
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1327:            autoComplete={defaultAutoComplete("url")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1331:              setMeasuringInstrumentForm((current) => ({ ...current, documentUrl: event.target.value }))
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1342:                ...current,
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1349:              .map((item) => ({ label: item.fullName, value: item.id }))}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1350:            placeholder="Без связи…"
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1357:          onChange={(event) => setMeasuringInstrumentForm((current) => ({ ...current, comment: event.target.value }))}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1365:              onClick={() => setDiagnosticStandardDrafts((current) => [...current, createDiagnosticStandardDraft()])}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1367:              type="button"
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1375:              {diagnosticStandardDrafts.map((draft, index) => (
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1380:                      aria-label={`Удалить меру ${index + 1}`}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1384:                      type="button"
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1392:                      autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1399:                      autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1406:                      autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1415:                      autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1424:                      autoComplete={defaultAutoComplete("url")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1492:              type="button"
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1540:              aria-label={`Редактировать оборудование ${item.fullName}`}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1544:              type="button"
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1550:              aria-label={`Архивировать оборудование ${item.fullName}`}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1562:              type="button"
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1618:              {item.standards.map((standard) => (
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1643:              aria-label={`Редактировать диагностическое оборудование ${item.name}`}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1647:              type="button"
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1653:              aria-label={`Архивировать диагностическое оборудование ${item.name}`}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1665:              type="button"
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1699:          {equipmentRecords.map((item) => renderTechnicalEquipmentCard(item))}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1700:          {measuringInstruments.map((item) => renderDiagnosticEquipmentCard(item))}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1750:                    ...current,
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1758:                autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1762:                  setMeasuringInstrumentJournalForm((current) => ({ ...current, operationDate: event.target.value }))
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1768:                autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1772:                  setMeasuringInstrumentJournalForm((current) => ({ ...current, documentNumber: event.target.value }))
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1779:                autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1783:                  setMeasuringInstrumentJournalForm((current) => ({ ...current, validUntil: event.target.value }))
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1789:                autoComplete={defaultAutoComplete("text")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1793:                  setMeasuringInstrumentJournalForm((current) => ({ ...current, executorOrganization: event.target.value }))
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1798:                autoComplete={defaultAutoComplete("url")}
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1802:                  setMeasuringInstrumentJournalForm((current) => ({ ...current, attachmentUrl: event.target.value }))
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1812:                setMeasuringInstrumentJournalForm((current) => ({ ...current, comment: event.target.value }))
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1826:                type="button"
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1831:                aria-label="Архивировать выбранное оборудование"
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1843:                type="button"
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1900:              options={measuringInstruments.map((item) => ({
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1904:              placeholder="Выберите запись…"
+apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1952:            type="button"
+
+Manual Web Interface Guidelines review result:
+## apps/web/app/(runtime)/equipment/page.tsx
+✓ pass
+
+## apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+✓ pass
+
+## apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+✓ pass

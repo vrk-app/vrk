@@ -18,7 +18,6 @@ var (
 	ErrInviteExpiryRequired       = errors.New("invite expiry is required")
 	ErrInviteExpiryInvalid        = errors.New("invite expiry must be in the future")
 	ErrPasswordTooShort           = errors.New("password must be at least 8 characters")
-	ErrPasswordWeak               = errors.New("password must contain at least one letter, one digit, and one non-space symbol")
 	ErrInvalidCredentials         = errors.New("invalid email or password")
 	ErrInviteNotFound             = errors.New("invite not found")
 	ErrInviteExpired              = errors.New("invite expired")

@@ -1,0 +1,6 @@
+ version | dirty
+---------+-------
+      16 | f
+(1 row)
+
+{"checkedAt":"2026-05-11T16:35:50Z","environment":"development","service":"backend","status":"ok"}

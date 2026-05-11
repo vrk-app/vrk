@@ -53,8 +53,6 @@ export {
   fetchEquipmentRegistry,
   fetchMeasuringInstrumentJournals,
   fetchMeasuringInstrumentRegistry,
-  fetchStandardJournals,
-  fetchStandardRegistry,
   type EquipmentRecord,
   type JournalRecord,
   type LinkedStandardRecord,
