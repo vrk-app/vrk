@@ -1,0 +1,34 @@
+apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx:245:    kpp: isIp ? undefined : digitLengthError(profile.kpp, 9, "КПП"),
+apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx:736:                  error={profileErrors.kpp}
+apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx:737:                  hint={isIp ? "Для ИП КПП не применяется." : "9 цифр."}
+apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx:738:                  label="КПП"
+apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx:1287:            <Button aria-label={editLabel} onClick={onEdit} size="sm" type="button" variant="secondary">
+apps/web/stories/primitives/InputField.stories.tsx:90:    autoComplete: "off",
+apps/web/stories/primitives/InputField.stories.tsx:99:export const WithHint: Story = {
+apps/web/stories/primitives/InputField.stories.tsx:108:    await expect(input).not.toHaveAttribute("aria-describedby");
+apps/web/stories/primitives/InputField.stories.tsx:109:    await expect(helpTrigger).toHaveAccessibleDescription(
+apps/web/stories/primitives/InputField.stories.tsx:117:    await expect(tooltip).toBeVisible();
+apps/web/stories/primitives/InputField.stories.tsx:121:export const WithError: Story = {
+apps/web/stories/primitives/InputField.stories.tsx:133:    await expect(error).toBeVisible();
+apps/web/stories/primitives/InputField.stories.tsx:135:    await expect(input).toHaveAccessibleDescription(
+apps/web/stories/primitives/InputField.stories.tsx:141:export const WithHintAndError: Story = {
+apps/web/stories/primitives/InputField.stories.tsx:143:    autoComplete: "off",
+apps/web/stories/primitives/InputField.stories.tsx:145:    error: "КПП должен содержать 9 цифр.",
+apps/web/stories/primitives/InputField.stories.tsx:146:    hint: "9 цифр.",
+apps/web/stories/primitives/InputField.stories.tsx:147:    label: "КПП",
+apps/web/stories/primitives/InputField.stories.tsx:149:    placeholder: "770501001…",
+apps/web/stories/primitives/InputField.stories.tsx:153:    const input = canvas.getByLabelText("КПП");
+apps/web/stories/primitives/InputField.stories.tsx:154:    const error = canvas.getByText("КПП должен содержать 9 цифр.");
+apps/web/stories/primitives/InputField.stories.tsx:155:    const helpTrigger = canvas.getByRole("button", { name: "Справка: КПП" });
+apps/web/stories/primitives/InputField.stories.tsx:157:    await expect(error).toBeVisible();
+apps/web/stories/primitives/InputField.stories.tsx:158:    await expect(input).toHaveAccessibleDescription("КПП должен содержать 9 цифр.");
+apps/web/stories/primitives/InputField.stories.tsx:159:    await expect(helpTrigger).toHaveAccessibleDescription("9 цифр.");
+apps/web/shared/ui/InputField.tsx:58:              aria-describedby={hintDescriptionId}
+apps/web/shared/ui/InputField.tsx:59:              aria-label={`Справка: ${label}`}
+apps/web/shared/ui/InputField.tsx:68:                className="invisible absolute bottom-full left-1/2 z-30 mb-1.5 w-64 max-w-[min(16rem,calc(100vw-2rem))] -translate-x-1/2 whitespace-normal break-words rounded-[var(--radius-sm)] border border-border bg-card px-3 py-2 text-left text-xs font-medium leading-5 text-foreground opacity-0 shadow-lg transition-opacity duration-150 group-hover/help:visible group-hover/help:opacity-100 group-focus/help:visible group-focus/help:opacity-100"
+apps/web/shared/ui/InputField.tsx:69:                role="tooltip"
+apps/web/shared/ui/InputField.tsx:95:            aria-describedby={error ? messageId : undefined}
+apps/web/shared/ui/InputField.tsx:117:              aria-label={passwordToggleLabel}
+docs/design/storybook-component-backlog.md:101:- Контракт `hint`: вспомогательная справка показывается через compact help-trigger рядом с label/control и раскрывается по hover/focus; она не занимает постоянную строку под полем. `error` остается видимым текстом под полем и имеет приоритет в `aria-describedby`.
+docs/design/storybook-component-backlog.md:103:- Stories: `Text`, `Email`, `Password`, `Search`, `WithHint`, `WithError`, `WithHintAndError`, `Disabled`.
+docs/design/storybook-component-backlog.md:930:- Stories: `Default`, `WithErrors`, `Empty`, `Loading`.

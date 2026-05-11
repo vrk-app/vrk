@@ -63,6 +63,28 @@ export const WithUnreadCount: Story = {
   },
 };
 
+export const WithWorkspaceTitle: Story = {
+  args: {
+    breadcrumbs: DASHBOARD_BREADCRUMBS,
+    contextTitle: "ООО «ВРК Демо»",
+    contextTitleAsHeading: true,
+    eyebrow: "Рабочая область организации",
+    notificationsCount: 4,
+    searchValue: "",
+  },
+};
+
+export const LongWorkspaceTitle: Story = {
+  args: {
+    breadcrumbs: DASHBOARD_BREADCRUMBS,
+    contextTitle: "ООО «ВРК Северный промышленный контур с очень длинным названием организации»",
+    contextTitleAsHeading: true,
+    eyebrow: "Рабочая область организации",
+    notificationsCount: 0,
+    searchValue: "",
+  },
+};
+
 export const WithoutNotifications: Story = {
   args: {
     notificationsCount: 0,

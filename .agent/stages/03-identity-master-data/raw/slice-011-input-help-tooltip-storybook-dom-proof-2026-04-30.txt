@@ -1,0 +1,9 @@
+{
+  "story": "Primitives/InputField/WithHint",
+  "inputAriaDescribedBy": null,
+  "inputMessageRows": 0,
+  "helpTriggerVisible": true,
+  "helpDescription": "Используйте корпоративный логин без домена.",
+  "tooltipAfterHover": true,
+  "tooltipAfterFocus": true
+}

@@ -1,9 +1,10 @@
 {
   "stage_id": "03-identity-master-data",
-  "sprint_contract_id": "slice-010-stage03-org-structure-management",
+  "sprint_contract_id": "slice-011-input-help-tooltip",
+  "current_bounded_ui_correction_slice_id": "slice-013-access-confirmation-dialogs",
   "builder_state": "COMPLETE",
-  "verifier_state": "PASS_AFTER_COMPANY_PROFILE_ACCESS_POLICY_CONTINUATION",
-  "updated_at": "2026-04-29T20:46:14Z",
+  "verifier_state": "AWAITING_FRESH_VERIFIER",
+  "updated_at": "2026-04-30T17:36:15Z",
   "commands": [
     "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data",
     "PATH=/Users/yura-posledov/cursor/vrk/.agent/tmp-tools/go/bin:$PATH /Users/yura-posledov/cursor/vrk/.agent/tmp-tools/sqlc generate -f apps/backend/sqlc.yaml",
@@ -30,9 +31,7 @@
     "xmllint --noout docs/design/diagrams/customer-admin-bootstrap-flow.drawio",
     "jq empty .agent/stages/03-identity-master-data/evidence.json",
     "focused legal-type doc cleanup audit after Newton FAIL",
-    "python3 -m py_compile .agent/stages/03-identity-master-data/proof_slice010_org_structure.py",
     "VRK_API_BASE_URL=http://127.0.0.1:18180 VRK_WEB_BASE_URL=http://127.0.0.1:3110 VRK_STAGE03_SLICE010_SEED=20260429042 python3 .agent/stages/03-identity-master-data/proof_slice010_org_structure.py",
-    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data",
     "focused stale subdivision terminology audit over current docs/stage/proof artifacts",
     "focused division contract audit over docs, proof, backend role/service code, web API types, and Swagger",
     "jq empty .agent/stages/03-identity-master-data/evidence.json .agent/stages/03-identity-master-data/feature_list.json .agent/stages/03-identity-master-data/verdict.json",
@@ -77,7 +76,44 @@
     "python3 -m py_compile .agent/stages/03-identity-master-data/proof_slice010_org_structure.py .agent/stages/03-identity-master-data/proof_slice004_equipment_registries.py .agent/stages/03-identity-master-data/proof_slice005_metrology_archive.py > .agent/stages/03-identity-master-data/raw/company-profile-access-proof-pycompile-2026-04-29.txt",
     "xmllint --noout docs/design/diagrams/customer-admin-bootstrap-flow.drawio > .agent/stages/03-identity-master-data/raw/company-profile-access-drawio-xml-audit-2026-04-29.txt",
     "manual Web Interface Guidelines review saved .agent/stages/03-identity-master-data/raw/company-profile-access-ui-review-2026-04-29.txt",
-    "targeted legal-form, doc-sync, registration-label, stale-role, and git diff --check audits saved under raw/company-profile-access-*"
+    "targeted legal-form, doc-sync, registration-label, stale-role, and git diff --check audits saved under raw/company-profile-access-*",
+    "python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query \"archive action button equipment registry confirm dialog destructive\" > .agent/stages/03-identity-master-data/raw/storybook-lookup-slice-011-equipment-archive-action-parity-2026-04-30.txt 2>&1",
+    "curl -fsSL https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md -o .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-30-equipment-archive.md",
+    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data > .agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-harness-2026-04-30.txt 2>&1",
+    "PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run typecheck > .agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-web-typecheck-2026-04-30.txt 2>&1",
+    "PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run lint > .agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-web-lint-2026-04-30.txt 2>&1",
+    "PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run build > .agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-web-build-2026-04-30.txt 2>&1",
+    "PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run build-storybook > .agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-storybook-build-2026-04-30.txt 2>&1",
+    "curl -fsS -I --max-time 5 http://localhost:3100/equipment?tab=equipment > .agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-localhost-3100-head-2026-04-30.txt 2>&1",
+    "rg -n archive button source audit > .agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-source-audit-2026-04-30.txt 2>&1",
+    "manual Web Interface Guidelines review saved .agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-ui-review-2026-04-30.txt",
+    "git diff --check > .agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-diff-check-2026-04-30.txt 2>&1",
+    "python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query \"equipment registry archive toggle compact tabs toolbar\" > .agent/stages/03-identity-master-data/raw/storybook-lookup-slice-012-equipment-registry-declutter-2026-04-30.txt 2>&1",
+    "curl -fsSL https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md -o .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-30-equipment-declutter.md",
+    "curl -fsS -I --max-time 5 'http://localhost:3100/equipment?tab=equipment' > .agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-localhost-3100-head-2026-04-30.txt 2>&1",
+    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data > .agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-harness-2026-04-30.txt 2>&1",
+    "PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run lint > .agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-web-lint-2026-04-30.txt 2>&1",
+    "PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run typecheck > .agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-web-typecheck-2026-04-30.txt 2>&1",
+    "PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run build > .agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-web-build-2026-04-30.txt 2>&1",
+    "PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run build-storybook > .agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-storybook-build-2026-04-30.txt 2>&1",
+    "manual Web Interface Guidelines review saved .agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-ui-review-2026-04-30.txt",
+    "source audit saved .agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-source-audit-2026-04-30.txt",
+    "git diff --check > .agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-diff-check-2026-04-30.txt 2>&1",
+    "jq empty .agent/stages/03-identity-master-data/evidence.json .agent/stages/03-identity-master-data/feature_list.json .agent/stages/03-identity-master-data/verdict.json > .agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-json-audit-2026-04-30.txt 2>&1",
+    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data > .agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-harness-post-evidence-2026-04-30.txt 2>&1",
+    "python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query \"access employee invite confirmation dialog destructive\" > .agent/stages/03-identity-master-data/raw/storybook-lookup-slice-013-access-confirmation-dialogs-2026-04-30.txt 2>&1",
+    "curl -fsSL https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md -o .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-30-slice-013-access-confirmation-dialogs.md",
+    "rg -n \"window\\.confirm\" apps/web -S > .agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-source-audit-2026-04-30.txt 2>&1",
+    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data > .agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-harness-2026-04-30.txt 2>&1",
+    "PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run lint > .agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-web-lint-2026-04-30.txt 2>&1",
+    "PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run typecheck > .agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-web-typecheck-2026-04-30.txt 2>&1",
+    "PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run build > .agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-web-build-2026-04-30.txt 2>&1",
+    "PATH=/Users/yura-posledov/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH PNPM_CONFIG_ENGINE_STRICT=false pnpm --dir apps/web run build-storybook > .agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-storybook-build-2026-04-30.txt 2>&1",
+    "manual Web Interface Guidelines review saved .agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-ui-review-2026-04-30.txt",
+    "curl -fsS -I --max-time 5 http://localhost:3100/company > .agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-localhost-3100-company-head-2026-04-30.txt 2>&1",
+    "jq empty .agent/stages/03-identity-master-data/evidence.json .agent/stages/03-identity-master-data/feature_list.json .agent/stages/03-identity-master-data/verdict.json > .agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-json-audit-final-2026-04-30.txt 2>&1",
+    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data > .agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-harness-post-evidence-2026-04-30.txt 2>&1",
+    "git diff --check > .agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-diff-check-final-2026-04-30.txt 2>&1"
   ],
   "tests": [
     "verify_harness: PASS",
@@ -178,7 +214,26 @@
     "company profile/access Draw.io XML audit: PASS",
     "company profile/access legal-form/doc-sync/ФИФ/stale-role audits: PASS",
     "company profile/access stage harness self-check: PASS",
-    "company profile/access git diff --check: PASS"
+    "company profile/access git diff --check: PASS",
+    "equipment archive action parity harness self-check: PASS",
+    "equipment archive action parity web typecheck: PASS",
+    "equipment archive action parity web lint: PASS",
+    "equipment archive action parity web build: PASS",
+    "equipment archive action parity Storybook build: PASS with existing Vite use-client/chunk warnings only",
+    "equipment archive action parity source audit: PASS; all five archive triggers use visible Архивировать with entity-specific aria-label and compact ghost Button props",
+    "equipment archive action parity Web Interface Guidelines review: PASS",
+    "equipment archive action parity localhost:3100 HEAD check: PASS HTTP 200, but runtime bundle was stale and not claimed as proof for new TSX classes",
+    "equipment archive action parity git diff --check: PASS",
+    "access confirmation dialogs harness self-check: PASS",
+    "access confirmation dialogs web lint: PASS",
+    "access confirmation dialogs web typecheck: PASS after sequential rerun",
+    "access confirmation dialogs web build: PASS",
+    "access confirmation dialogs Storybook build: PASS with existing Vite use-client/chunk warnings only",
+    "access confirmation dialogs source audit: PASS; rg -n \"window\\.confirm\" apps/web -S returned no matches",
+    "access confirmation dialogs Web Interface Guidelines review: PASS",
+    "access confirmation dialogs localhost:3100 /company HEAD check: PASS HTTP 200; no ad-hoc dev server was started",
+    "access confirmation dialogs JSON audit: PASS",
+    "access confirmation dialogs git diff --check: PASS"
   ],
   "artifacts": [
     ".agent/stages/03-identity-master-data/evidence.md",
@@ -317,7 +372,39 @@
     ".agent/stages/03-identity-master-data/raw/local-dev-seed-file-mode-2026-04-29.txt",
     ".agent/stages/03-identity-master-data/raw/local-dev-seed-json-audit-2026-04-29.txt",
     ".agent/stages/03-identity-master-data/raw/local-dev-seed-harness-2026-04-29.txt",
-    ".agent/stages/03-identity-master-data/raw/local-dev-seed-diff-check-2026-04-29.txt"
+    ".agent/stages/03-identity-master-data/raw/local-dev-seed-diff-check-2026-04-29.txt",
+    ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-011-equipment-archive-action-parity-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-30-equipment-archive.md",
+    ".agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-harness-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-web-typecheck-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-web-lint-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-web-build-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-storybook-build-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-source-audit-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-ui-review-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-localhost-3100-head-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-runtime-note-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-diff-check-2026-04-30.txt",
+    "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx",
+    ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-013-access-confirmation-dialogs-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-30-slice-013-access-confirmation-dialogs.md",
+    ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-harness-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-harness-post-evidence-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-web-lint-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-web-typecheck-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-web-build-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-storybook-build-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-source-audit-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-ui-review-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-localhost-3100-company-head-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-json-audit-before-evidence-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-json-audit-final-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-diff-check-2026-04-30.txt",
+    ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-diff-check-final-2026-04-30.txt",
+    "apps/web/features/Stage03Access/ui/EmployeeAccessWorkspace.tsx",
+    "apps/web/stories/access/EmployeeAccessWorkspace.stories.tsx",
+    "apps/web/stories/access/EmployeeInviteManager.stories.tsx",
+    "apps/web/shared/storybook/runtime-api-mock.tsx"
   ],
   "docs_synced": [
     "docs/roadmap.md",
@@ -373,7 +460,11 @@
     "apps/web/shared/ui/SelectField.tsx",
     "apps/web/shared/ui/TextareaField.tsx",
     "apps/web/shared/ui/Tabs.tsx",
-    "apps/web/shared/ui/InlineAlert.tsx"
+    "apps/web/shared/ui/InlineAlert.tsx",
+    "apps/web/features/Stage03Access/ui/EmployeeAccessWorkspace.tsx",
+    "apps/web/stories/access/EmployeeAccessWorkspace.stories.tsx",
+    "apps/web/stories/access/EmployeeInviteManager.stories.tsx",
+    "apps/web/shared/storybook/runtime-api-mock.tsx"
   ],
   "ui_review": {
     "gate": "$web-design-guidelines",
@@ -713,6 +804,203 @@
       ".agent/stages/03-identity-master-data/raw/company-profile-access-doc-sync-audit-2026-04-29.txt",
       ".agent/stages/03-identity-master-data/raw/company-profile-access-harness-2026-04-29.txt",
       ".agent/stages/03-identity-master-data/raw/company-profile-access-diff-check-2026-04-29.txt"
+    ]
+  },
+  "equipment_archive_action_parity": {
+    "status": "SELF_VERIFIED_AWAITING_FRESH_VERIFIER",
+    "checked_at": "2026-04-30T13:34:00Z",
+    "summary": "Aligned equipment, measuring instrument, selected measuring instrument, standard, and selected standard archive triggers to the compact division/unit visual pattern: Archive icon, visible Архивировать, size=\"sm\", variant=\"ghost\". Existing ConfirmDialog and archive APIs are unchanged.",
+    "changed_ui_files": [
+      "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx"
+    ],
+    "ui_workflow": {
+      "skill": "$vrk-web-ui-workflow",
+      "design_context": ".impeccable.md",
+      "lookup": ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-011-equipment-archive-action-parity-2026-04-30.txt",
+      "decision": "reuse",
+      "matched": [
+        "Equipment/EquipmentRegistryWorkspace",
+        "Primitives/ConfirmDialog",
+        "Primitives/Dialog"
+      ],
+      "review": ".agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-ui-review-2026-04-30.txt",
+      "guidelines_source": ".agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-30-equipment-archive.md"
+    },
+    "docs_synced": [],
+    "docs_note": "No canonical docs changed; visual parity only, with no product behavior, API, schema, or workflow contract change.",
+    "runtime_note": ".agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-runtime-note-2026-04-30.txt",
+    "checks": [
+      "equipment archive action parity harness self-check: PASS",
+      "equipment archive action parity web typecheck: PASS",
+      "equipment archive action parity web lint: PASS",
+      "equipment archive action parity web build: PASS",
+      "equipment archive action parity Storybook build: PASS with existing Vite use-client/chunk warnings only",
+      "equipment archive action parity source audit: PASS; all five archive triggers use visible Архивировать with entity-specific aria-label and compact ghost Button props",
+      "equipment archive action parity Web Interface Guidelines review: PASS",
+      "equipment archive action parity localhost:3100 HEAD check: PASS HTTP 200, but runtime bundle was stale and not claimed as proof for new TSX classes",
+      "equipment archive action parity git diff --check: PASS"
+    ]
+  },
+  "equipment_registry_declutter": {
+    "status": "SELF_VERIFIED_AWAITING_FRESH_VERIFIER",
+    "checked_at": "2026-04-30T13:55:00Z",
+    "summary": "Decluttered the logged-in customer /equipment page by replacing the large PageHeader card with a compact h1/status row, removing duplicated manageability/access copy, keeping only the three registry KPI cards, and moving archive visibility into the tab row as a compact URL-backed toggle button.",
+    "changed_ui_files": [
+      "apps/web/app/(runtime)/equipment/page.tsx",
+      "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx",
+      "apps/web/tests/equipment-registries.smoke.spec.ts"
+    ],
+    "ui_workflow": {
+      "skill": "$vrk-web-ui-workflow",
+      "design_context": ".impeccable.md",
+      "lookup": ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-012-equipment-registry-declutter-2026-04-30.txt",
+      "decision": "reuse",
+      "matched": [
+        "Equipment/EquipmentRegistryWorkspace",
+        "Primitives/Tabs",
+        "Contracts/ContractsRegistry"
+      ],
+      "review": ".agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-ui-review-2026-04-30.txt",
+      "guidelines_source": ".agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-30-equipment-declutter.md"
+    },
+    "docs_synced": [],
+    "docs_note": "No canonical docs changed; this is visual decluttering of already documented /equipment route, tabs, and archive state. Product behavior, API, schema, and URL query contract are unchanged.",
+    "runtime_note": ".agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-localhost-3100-head-2026-04-30.txt",
+    "checks": [
+      "equipment registry declutter harness self-check: PASS",
+      "equipment registry declutter web lint: PASS",
+      "equipment registry declutter web typecheck: PASS",
+      "equipment registry declutter web build: PASS",
+      "equipment registry declutter Storybook build: PASS with existing chunk-size warning only",
+      "equipment registry declutter source audit: PASS; removed duplicated copy/dead symbols and confirmed compact h1, 3-column KPI grid, and aria-pressed archive toggle",
+      "equipment registry declutter Web Interface Guidelines review: PASS",
+      "equipment registry declutter localhost:3100 HEAD check: PASS HTTP 200; no ad-hoc dev server was started",
+      "equipment registry declutter git diff --check: PASS",
+      "equipment registry declutter JSON audit: PASS",
+      "equipment registry declutter post-evidence harness self-check: PASS"
+    ]
+  },
+  "input_help_tooltip": {
+    "status": "SELF_VERIFIED_AWAITING_FRESH_VERIFIER",
+    "checked_at": "2026-04-30T14:18:00Z",
+    "summary": "Extended the existing story-backed InputField so non-error hint text is exposed through a compact help trigger near the label, available on hover/focus, instead of rendering as persistent helper copy below the field. Field errors remain visible below the input and keep aria-describedby priority. Minimal fixer also updated the WithHintAndError КПП story args to use autoComplete=\"off\" and an example-pattern placeholder.",
+    "changed_ui_files": [
+      "apps/web/shared/ui/InputField.tsx",
+      "apps/web/stories/primitives/InputField.stories.tsx"
+    ],
+    "docs_synced": [
+      "docs/design/storybook-component-backlog.md"
+    ],
+    "ui_workflow": {
+      "skill": "$vrk-web-ui-workflow",
+      "design_context": ".impeccable.md",
+      "lookup": ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-011-input-help-tooltip-final-2026-04-30.txt",
+      "decision": "extend",
+      "matched": [
+        "Primitives/InputField"
+      ],
+      "review": ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-ui-review-final-2026-04-30.txt",
+      "guidelines_source": ".agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-30-slice-011-input-help-tooltip-final.md"
+    },
+    "proof": {
+      "storybook_dom": ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-storybook-dom-proof-final-2026-04-30.txt",
+      "company_runtime": ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-company-runtime-proof-final-2026-04-30.txt",
+      "company_runtime_note": "Existing localhost:3100 rendered a stale web bundle, so /company runtime proof was not claimed and no ad-hoc dev server was started."
+    },
+    "checks": [
+      "input help tooltip harness self-check: PASS",
+      "input help tooltip web lint: PASS",
+      "input help tooltip web typecheck: PASS",
+      "input help tooltip web build: PASS",
+      "input help tooltip Storybook build: PASS with existing chunk-size warnings only",
+      "input help tooltip Storybook DOM proof: PASS; persistentHintRows=0, tooltipAfterHover=true, tooltipAfterFocus=true",
+      "input help tooltip Web Interface Guidelines review: PASS",
+      "input help tooltip git diff --check: PASS",
+      "input help tooltip fixer story args: WithHintAndError uses autoComplete=\"off\" and placeholder=\"770501001…\" for the КПП field",
+      "input help tooltip fixer web lint: PASS",
+      "input help tooltip fixer web typecheck: PASS",
+      "input help tooltip fixer git diff --check: PASS",
+      "input help tooltip fixer harness self-check: PASS"
+    ],
+    "artifacts": [
+      ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-011-input-help-tooltip-final-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-30-slice-011-input-help-tooltip-final.md",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-harness-final-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-web-lint-final-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-web-typecheck-final-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-web-build-final-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-web-build-storybook-final-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-storybook-dom-proof-final-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-company-runtime-proof-final-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-ui-review-final-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-diff-check-final-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-harness-after-final-proof-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fixer-web-lint-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fixer-web-typecheck-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fixer-git-diff-check-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fixer-harness-2026-04-30.txt",
+      "apps/web/shared/ui/InputField.tsx",
+      "apps/web/stories/primitives/InputField.stories.tsx",
+      "docs/design/storybook-component-backlog.md"
+    ]
+  },
+  "access_confirmation_dialogs": {
+    "status": "SELF_VERIFIED_AWAITING_FRESH_VERIFIER",
+    "slice_id": "slice-013-access-confirmation-dialogs",
+    "checked_at": "2026-04-30T17:36:15Z",
+    "summary": "Reused the shared story-backed ConfirmDialog for destructive access confirmations: employee deactivation and invite revocation now open action-specific danger dialogs instead of native window.confirm, and the obsolete Storybook confirm shim was removed. The remaining company structure archive window.confirm was replaced with the same shared dialog pattern so apps/web has no feature-level window.confirm usage.",
+    "changed_ui_files": [
+      "apps/web/features/Stage03Access/ui/EmployeeAccessWorkspace.tsx",
+      "apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx",
+      "apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx",
+      "apps/web/stories/access/EmployeeAccessWorkspace.stories.tsx",
+      "apps/web/stories/access/EmployeeInviteManager.stories.tsx",
+      "apps/web/shared/storybook/runtime-api-mock.tsx"
+    ],
+    "ui_workflow": {
+      "skill": "$vrk-web-ui-workflow",
+      "design_context": ".impeccable.md",
+      "lookup": ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-013-access-confirmation-dialogs-2026-04-30.txt",
+      "decision": "reuse",
+      "matched": [
+        "Primitives/ConfirmDialog",
+        "Access/EmployeeAccessWorkspace",
+        "Access/EmployeeInviteManager"
+      ],
+      "review": ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-ui-review-2026-04-30.txt",
+      "guidelines_source": ".agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-30-slice-013-access-confirmation-dialogs.md"
+    },
+    "docs_synced": [],
+    "docs_note": "No canonical docs changed; this is a confirmation-surface correction only. Backend routes, public API contracts, persistence, access lifecycle rules, and product semantics are unchanged.",
+    "runtime_note": ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-localhost-3100-company-head-2026-04-30.txt",
+    "checks": [
+      "access confirmation dialogs harness self-check: PASS",
+      "access confirmation dialogs web lint: PASS",
+      "access confirmation dialogs web typecheck: PASS after sequential rerun",
+      "access confirmation dialogs web build: PASS",
+      "access confirmation dialogs Storybook build: PASS with existing Vite use-client/chunk warnings only",
+      "access confirmation dialogs source audit: PASS; rg -n \"window\\.confirm\" apps/web -S returned no matches",
+      "access confirmation dialogs Web Interface Guidelines review: PASS",
+      "access confirmation dialogs localhost:3100 /company HEAD check: PASS HTTP 200; no ad-hoc dev server was started",
+      "access confirmation dialogs JSON audit: PASS",
+      "access confirmation dialogs git diff --check: PASS"
+    ],
+    "artifacts": [
+      ".agent/stages/03-identity-master-data/raw/storybook-lookup-slice-013-access-confirmation-dialogs-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-30-slice-013-access-confirmation-dialogs.md",
+      ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-harness-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-harness-post-evidence-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-web-lint-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-web-typecheck-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-web-build-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-storybook-build-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-source-audit-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-ui-review-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-localhost-3100-company-head-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-json-audit-before-evidence-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-json-audit-final-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-diff-check-2026-04-30.txt",
+      ".agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-diff-check-final-2026-04-30.txt"
     ]
   }
 }

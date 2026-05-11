@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, EyeOff } from "lucide-react";
+import { CircleHelp, Eye, EyeOff } from "lucide-react";
 import { forwardRef, useId, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { cn } from "@/shared/lib/cn";
 
@@ -38,6 +38,7 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
     const autoId = useId();
     const inputId = id ?? autoId;
     const messageId = `${inputId}-message`;
+    const hintDescriptionId = `${inputId}-hint-description`;
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const shouldShowPasswordToggle = type === "password" && showPasswordToggle;
     const resolvedType = shouldShowPasswordToggle && isPasswordVisible ? "text" : type;
@@ -45,9 +46,33 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
 
     return (
       <div className="flex w-full flex-col gap-2.5">
-        <label className="text-sm font-medium text-foreground" htmlFor={inputId}>
-          {label}
-        </label>
+        <div className="flex min-h-5 min-w-0 items-center gap-1.5">
+          <label
+            className="min-w-0 break-words text-sm font-medium text-foreground"
+            htmlFor={inputId}
+          >
+            {label}
+          </label>
+          {hint ? (
+            <button
+              aria-describedby={hintDescriptionId}
+              aria-label={`Справка: ${label}`}
+              className="group/help relative -my-3 -ml-1 flex size-11 shrink-0 touch-manipulation items-center justify-center rounded-[var(--radius-sm)] text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25"
+              type="button"
+            >
+              <CircleHelp aria-hidden="true" className="size-4" />
+              <span className="sr-only" id={hintDescriptionId}>
+                {hint}
+              </span>
+              <span
+                className="invisible absolute bottom-full left-1/2 z-30 mb-1.5 w-64 max-w-[min(16rem,calc(100vw-2rem))] -translate-x-1/2 whitespace-normal break-words rounded-[var(--radius-sm)] border border-border bg-card px-3 py-2 text-left text-xs font-medium leading-5 text-foreground opacity-0 shadow-lg transition-opacity duration-150 group-hover/help:visible group-hover/help:opacity-100 group-focus/help:visible group-focus/help:opacity-100"
+                role="tooltip"
+              >
+                {hint}
+              </span>
+            </button>
+          ) : null}
+        </div>
         <span
           className={cn(
             "flex min-h-11 items-center gap-3 rounded-[var(--radius-md)] border bg-card px-3.5 shadow-xs transition-colors duration-150",
@@ -67,7 +92,7 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
           ) : null}
           <input
             ref={ref}
-            aria-describedby={hint || error ? messageId : undefined}
+            aria-describedby={error ? messageId : undefined}
             aria-invalid={Boolean(error)}
             className={cn(
               "min-w-0 flex-1 border-none bg-transparent text-sm text-foreground outline-none placeholder:text-text-tertiary disabled:cursor-not-allowed disabled:text-text-disabled",
@@ -105,13 +130,13 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
             </button>
           ) : null}
         </span>
-        {hint || error ? (
+        {error ? (
           <span
-            aria-live={error ? "polite" : undefined}
-            className={cn("text-sm", error ? "text-destructive" : "text-muted-foreground")}
+            aria-live="polite"
+            className="text-sm text-destructive"
             id={messageId}
           >
-            {error ?? hint}
+            {error}
           </span>
         ) : null}
       </div>

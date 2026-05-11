@@ -1,0 +1,15 @@
+Guidelines source:
+.agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-web-interface-guidelines-source-2026-04-30.md
+
+Reviewed files:
+- apps/web/shared/ui/InputField.tsx
+- apps/web/stories/primitives/InputField.stories.tsx
+
+## apps/web/shared/ui/InputField.tsx
+
+✓ pass
+
+## apps/web/stories/primitives/InputField.stories.tsx
+
+apps/web/stories/primitives/InputField.stories.tsx:142 - WithHintAndError inherits default autoComplete="username"; КПП field should set meaningful autocomplete or autoComplete="off"
+apps/web/stories/primitives/InputField.stories.tsx:148 - placeholder "Введите КПП" lacks required ellipsis/example pattern

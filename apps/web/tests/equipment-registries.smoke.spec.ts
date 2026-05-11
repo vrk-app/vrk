@@ -355,9 +355,12 @@ test.describe("stage 03 metrology journals and archive contour", () => {
 
     await expect(page.getByRole("heading", { level: 1, name: "Оборудование, средства измерения и эталоны" })).toBeVisible();
     await expect(page.getByRole("tablist", { name: "Реестры оборудования" })).toBeVisible();
-    await expect(page.getByRole("tab", { name: /^Оборудование/ })).toBeVisible();
-    await expect(page.getByRole("tab", { name: /^Средства измерения/ })).toBeVisible();
-    await expect(page.getByRole("tab", { name: /^Эталоны/ })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /^Оборудование\s+1$/ })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /^Средства измерения\s+1$/ })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /^Эталоны\s+1$/ })).toBeVisible();
+    await expect(page.getByText("Карточки оборудования в текущей области.", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Статус рассчитывается по журналам операций.", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Эталоны и связи со средствами измерения.", { exact: true })).toHaveCount(0);
     await expect(page.getByRole("heading", { level: 2, name: "Новое оборудование" })).toBeVisible();
     await expect(page.getByRole("heading", { level: 2, name: "Оборудование в учете" })).toBeVisible();
 
@@ -502,8 +505,9 @@ test.describe("stage 03 metrology journals and archive contour", () => {
     await expect(page.getByText(archiveStandardIdentifier)).toHaveCount(0);
 
     await page.getByRole("button", { name: "Показать архив" }).click();
-    await expect(page.getByRole("button", { name: "Скрыть архив" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Архив показан" })).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByText(archiveStandardIdentifier).first()).toBeVisible();
+    await expect(page.getByRole("tab", { name: /^Эталоны\s+2$/ })).toBeVisible();
     await expect(page.getByText("В архиве").first()).toBeVisible();
 
     await page.goto("/equipment");
@@ -522,11 +526,7 @@ test.describe("stage 03 metrology journals and archive contour", () => {
 
     await expect(page).toHaveURL(/\/company$/);
     await page.goto("/equipment");
-    await expect(
-      page.getByText(
-        "Текущая область доступна только для просмотра: активные записи, архив и журналы фильтруются по выданному доступу, а создание и архивирование скрыты.",
-      ),
-    ).toBeVisible();
+    await expect(page.getByText("Только просмотр").first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Создать оборудование" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /^Редактировать/ })).toHaveCount(0);
     await expect(page.getByText(updatedEquipmentName).first()).toBeVisible();

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { Mail, RefreshCw, Save, ShieldCheck, UserX } from "lucide-react";
-import { Badge, Button, Card, InlineAlert, SelectField } from "@/shared/ui";
+import { Mail, Save, ShieldCheck, UserX } from "lucide-react";
+import { Badge, Button, ConfirmDialog, InlineAlert, IslandCard, SelectField } from "@/shared/ui";
 import {
   isRoleScopeCompatible,
   parseApiResponse,
@@ -68,6 +68,7 @@ export function EmployeeAccessWorkspace({ session }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [editingAccessId, setEditingAccessId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<EditForm | null>(null);
+  const [deactivateConfirmation, setDeactivateConfirmation] = useState<EmployeeAccessResponse | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const canManage = session.workspace.canManageEmployees;
@@ -161,10 +162,6 @@ export function EmployeeAccessWorkspace({ session }: Props) {
   }
 
   async function deactivateEmployee(employee: EmployeeAccessResponse) {
-    if (!window.confirm("Доступ сотрудника будет отключен, активные сессии завершатся. Продолжить?")) {
-      return;
-    }
-
     setError(null);
     try {
       const response = await fetch(`/api/auth/employees/${employee.accessId}/deactivate`, { method: "POST" });
@@ -179,195 +176,218 @@ export function EmployeeAccessWorkspace({ session }: Props) {
     }
   }
 
+  function confirmDeactivateEmployee() {
+    if (!deactivateConfirmation) {
+      return;
+    }
+
+    const employee = deactivateConfirmation;
+    setDeactivateConfirmation(null);
+    startTransition(() => {
+      void deactivateEmployee(employee);
+    });
+  }
+
   return (
-    <div className="grid gap-4">
-      <Card className="gap-5" padding="lg">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="space-y-2">
-            <Badge tone="interactive">Сотрудники</Badge>
-            <div className="space-y-1">
-              <h2 className="text-xl font-semibold text-foreground">Сотрудники и доступ</h2>
+    <>
+      <ConfirmDialog
+        confirmLabel="Отключить"
+        description={
+          deactivateConfirmation
+            ? `Сотрудник «${deactivateConfirmation.fullName}» будет отключен, а активные сессии будут завершены.`
+            : ""
+        }
+        icon={<UserX aria-hidden="true" className="size-5" />}
+        loading={isPending}
+        onCancel={() => setDeactivateConfirmation(null)}
+        onConfirm={confirmDeactivateEmployee}
+        open={Boolean(deactivateConfirmation)}
+        title="Отключить сотрудника?"
+        tone="danger"
+      />
+
+      <div className="grid gap-4">
+        <IslandCard
+          headingLevel={2}
+          icon={<ShieldCheck aria-hidden="true" className="size-4" />}
+          metric={employees.length}
+          title="Сотрудники и доступ"
+        >
+          {!canManage ? (
+            <InlineAlert
+              description="Изменение ролей, областей доступа и отключение сотрудников доступны администратору в пределах видимой области."
+              title="Режим просмотра"
+              tone="info"
+            />
+          ) : null}
+
+          {error ? (
+            <div
+              aria-live="polite"
+              className="rounded-[var(--radius-lg)] border border-destructive/20 bg-destructive-soft px-4 py-3 text-sm text-destructive"
+            >
+              {error}
             </div>
-          </div>
-          <Button leftIcon={<RefreshCw className="size-4" />} onClick={() => void loadEmployees()} variant="secondary">
-            Обновить
-          </Button>
-        </div>
+          ) : null}
 
-        {!canManage ? (
-          <InlineAlert
-            description="Изменение ролей, областей доступа и отключение сотрудников доступны администратору в пределах видимой области."
-            title="Режим просмотра"
-            tone="info"
-          />
-        ) : null}
+          {loadingList ? (
+            <div
+              aria-live="polite"
+              className="rounded-[var(--radius-lg)] border border-border bg-muted/40 px-4 py-6 text-sm text-muted-foreground"
+            >
+              Загружаем сотрудников…
+            </div>
+          ) : employees.length ? (
+            <div className="grid gap-3">
+              {employees.map((employee) => {
+                const isEditing = editingAccessId === employee.accessId && editForm;
+                const isCurrentAccess = employee.accessId === currentAccessId;
+                const canSubmitEdit =
+                  Boolean(editForm?.scopeId) &&
+                  Boolean(editForm && scopeOptions[editForm.scopeType].some((item) => item.value === editForm.scopeId));
 
-        {error ? (
-          <div
-            aria-live="polite"
-            className="rounded-[var(--radius-lg)] border border-destructive/20 bg-destructive-soft px-4 py-3 text-sm text-destructive"
-          >
-            {error}
-          </div>
-        ) : null}
+                return (
+                  <div className="grid gap-3" key={employee.accessId}>
+                    <div className="rounded-[var(--radius-xl)] border border-border bg-card p-4 shadow-xs">
+                      <div className="flex flex-wrap items-start justify-between gap-4">
+                        <div className="min-w-0 space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="break-words text-sm font-semibold text-foreground">{employee.fullName}</p>
+                            {isCurrentAccess ? <Badge tone="info">Текущая сессия</Badge> : null}
+                          </div>
+                          <div className="grid gap-1 text-sm text-muted-foreground">
+                            <span className="flex min-w-0 items-center gap-2">
+                              <Mail aria-hidden="true" className="size-4 shrink-0" />
+                              <span className="break-all">{employee.email}</span>
+                            </span>
+                            <span className="flex min-w-0 items-center gap-2">
+                              <ShieldCheck aria-hidden="true" className="size-4 shrink-0" />
+                              <span className="break-words">
+                                {roleTemplateLabel(employee.roleTemplate)} / {scopeTypeLabels[employee.scopeType]} /{" "}
+                                {employee.scopeLabel}
+                              </span>
+                            </span>
+                          </div>
+                        </div>
 
-        {loadingList ? (
-          <div
-            aria-live="polite"
-            className="rounded-[var(--radius-lg)] border border-border bg-muted/40 px-4 py-6 text-sm text-muted-foreground"
-          >
-            Загружаем сотрудников…
-          </div>
-        ) : employees.length ? (
-          <div className="grid gap-3">
-            {employees.map((employee) => {
-              const isEditing = editingAccessId === employee.accessId && editForm;
-              const isCurrentAccess = employee.accessId === currentAccessId;
-              const canSubmitEdit =
-                Boolean(editForm?.scopeId) &&
-                Boolean(editForm && scopeOptions[editForm.scopeType].some((item) => item.value === editForm.scopeId));
-
-              return (
-                <div className="rounded-[var(--radius-xl)] border border-border bg-card p-4 shadow-xs" key={employee.accessId}>
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div className="min-w-0 space-y-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="break-words text-sm font-semibold text-foreground">{employee.fullName}</p>
-                        {isCurrentAccess ? <Badge tone="info">Текущая сессия</Badge> : null}
-                      </div>
-                      <div className="grid gap-1 text-sm text-muted-foreground">
-                        <span className="flex min-w-0 items-center gap-2">
-                          <Mail aria-hidden="true" className="size-4 shrink-0" />
-                          <span className="break-all">{employee.email}</span>
-                        </span>
-                        <span className="flex min-w-0 items-center gap-2">
-                          <ShieldCheck aria-hidden="true" className="size-4 shrink-0" />
-                          <span className="break-words">
-                            {roleTemplateLabel(employee.roleTemplate)} / {scopeTypeLabels[employee.scopeType]} /{" "}
-                            {employee.scopeLabel}
-                          </span>
-                        </span>
+                        {canManage ? (
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              disabled={isCurrentAccess}
+                              onClick={() => {
+                                setEditingAccessId(employee.accessId);
+                                setEditForm(makeEditForm(employee));
+                              }}
+                              size="sm"
+                              variant="secondary"
+                            >
+                              Редактировать
+                            </Button>
+                            <Button
+                              disabled={isCurrentAccess}
+                              leftIcon={<UserX className="size-4" />}
+                              onClick={() => setDeactivateConfirmation(employee)}
+                              size="sm"
+                              variant="danger"
+                            >
+                              Отключить
+                            </Button>
+                          </div>
+                        ) : null}
                       </div>
                     </div>
 
-                    {canManage ? (
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          disabled={isCurrentAccess}
-                          onClick={() => {
-                            setEditingAccessId(employee.accessId);
-                            setEditForm(makeEditForm(employee));
-                          }}
-                          size="sm"
-                          variant="secondary"
-                        >
-                          Редактировать
-                        </Button>
-                        <Button
-                          disabled={isCurrentAccess}
-                          leftIcon={<UserX className="size-4" />}
-                          onClick={() =>
-                            startTransition(() => {
-                              void deactivateEmployee(employee);
-                            })
+                    {isEditing ? (
+                      <div className="mt-4 grid gap-4 rounded-[var(--radius-lg)] border border-border bg-muted/40 p-4 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end">
+                        <SelectField
+                          label="Роль доступа"
+                          name={`employee-role-${employee.accessId}`}
+                          onChange={(event) =>
+                            setEditForm((current) =>
+                              current ? { ...current, roleTemplate: event.target.value as RoleTemplate } : current,
+                            )
                           }
-                          size="sm"
-                          variant="danger"
-                        >
-                          Отключить
-                        </Button>
+                          options={roleTemplates}
+                          value={editForm.roleTemplate}
+                        />
+                        <SelectField
+                          label="Уровень доступа"
+                          name={`employee-scope-type-${employee.accessId}`}
+                          onChange={(event) =>
+                            setEditForm((current) =>
+                              current ? { ...current, scopeType: event.target.value as ScopeType } : current,
+                            )
+                          }
+                          options={[
+                            {
+                              disabled: !isRoleScopeCompatible(editForm.roleTemplate, "organization"),
+                              label: "Вся организация",
+                              value: "organization",
+                            },
+                            {
+                              disabled:
+                                !isRoleScopeCompatible(editForm.roleTemplate, "division") || !scopeOptions.division.length,
+                              label: "Дивизион",
+                              value: "division",
+                            },
+                            {
+                              disabled: !isRoleScopeCompatible(editForm.roleTemplate, "unit") || !scopeOptions.unit.length,
+                              label: "Юнит",
+                              value: "unit",
+                            },
+                          ]}
+                          value={editForm.scopeType}
+                        />
+                        <SelectField
+                          disabled={!scopeOptions[editForm.scopeType].length}
+                          label="Объект доступа"
+                          name={`employee-scope-id-${employee.accessId}`}
+                          onChange={(event) =>
+                            setEditForm((current) => (current ? { ...current, scopeId: event.target.value } : current))
+                          }
+                          options={scopeOptions[editForm.scopeType]}
+                          value={editForm.scopeId}
+                        />
+                        <div className="flex items-end gap-2">
+                          <Button
+                            className="h-11"
+                            disabled={!canSubmitEdit}
+                            leftIcon={<Save className="size-4" />}
+                            loading={isPending}
+                            onClick={() =>
+                              startTransition(() => {
+                                void submitAccessUpdate();
+                              })
+                            }
+                          >
+                            Сохранить
+                          </Button>
+                          <Button
+                            className="h-11"
+                            onClick={() => {
+                              setEditingAccessId(null);
+                              setEditForm(null);
+                            }}
+                            variant="ghost"
+                          >
+                            Отменить
+                          </Button>
+                        </div>
                       </div>
                     ) : null}
                   </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="rounded-[var(--radius-lg)] border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
+              В текущей области пока нет активных сотрудников.
+            </div>
+          )}
+        </IslandCard>
 
-                  {isEditing ? (
-                    <div className="mt-4 grid gap-4 rounded-[var(--radius-lg)] border border-border bg-muted/40 p-4 md:grid-cols-[1fr_1fr_1fr_auto]">
-                      <SelectField
-                        label="Роль доступа"
-                        name={`employee-role-${employee.accessId}`}
-                        onChange={(event) =>
-                          setEditForm((current) =>
-                            current ? { ...current, roleTemplate: event.target.value as RoleTemplate } : current,
-                          )
-                        }
-                        options={roleTemplates}
-                        value={editForm.roleTemplate}
-                      />
-                      <SelectField
-                        label="Уровень доступа"
-                        name={`employee-scope-type-${employee.accessId}`}
-                        onChange={(event) =>
-                          setEditForm((current) =>
-                            current ? { ...current, scopeType: event.target.value as ScopeType } : current,
-                          )
-                        }
-                        options={[
-                          {
-                            disabled: !isRoleScopeCompatible(editForm.roleTemplate, "organization"),
-                            label: "Вся организация",
-                            value: "organization",
-                          },
-                          {
-                            disabled:
-                              !isRoleScopeCompatible(editForm.roleTemplate, "division") || !scopeOptions.division.length,
-                            label: "Дивизион",
-                            value: "division",
-                          },
-                          {
-                            disabled: !isRoleScopeCompatible(editForm.roleTemplate, "unit") || !scopeOptions.unit.length,
-                            label: "Юнит",
-                            value: "unit",
-                          },
-                        ]}
-                        value={editForm.scopeType}
-                      />
-                      <SelectField
-                        disabled={!scopeOptions[editForm.scopeType].length}
-                        label="Объект доступа"
-                        name={`employee-scope-id-${employee.accessId}`}
-                        onChange={(event) =>
-                          setEditForm((current) => (current ? { ...current, scopeId: event.target.value } : current))
-                        }
-                        options={scopeOptions[editForm.scopeType]}
-                        value={editForm.scopeId}
-                      />
-                      <div className="flex items-end gap-2">
-                        <Button
-                          disabled={!canSubmitEdit}
-                          leftIcon={<Save className="size-4" />}
-                          loading={isPending}
-                          onClick={() =>
-                            startTransition(() => {
-                              void submitAccessUpdate();
-                            })
-                          }
-                        >
-                          Сохранить
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            setEditingAccessId(null);
-                            setEditForm(null);
-                          }}
-                          variant="ghost"
-                        >
-                          Отменить
-                        </Button>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="rounded-[var(--radius-lg)] border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
-            В текущей области пока нет активных сотрудников.
-          </div>
-        )}
-      </Card>
-
-      {session.workspace.canManageEmployeeInvites ? <EmployeeInviteManager session={session} /> : null}
-    </div>
+        {session.workspace.canManageEmployeeInvites ? <EmployeeInviteManager session={session} /> : null}
+      </div>
+    </>
   );
 }

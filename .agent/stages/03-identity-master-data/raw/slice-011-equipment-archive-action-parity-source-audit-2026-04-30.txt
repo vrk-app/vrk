@@ -1,0 +1,24 @@
+974:            <Button disabled={loading} onClick={onCancel} type="button" variant="secondary">
+1026:                <Badge size="sm" tone="interactive">
+1029:                <Badge size="sm" tone="neutral">
+1038:              <Badge size="sm" tone="warning">
+1865:                      variant="secondary"
+1870:                      aria-label={`Архивировать оборудование ${item.fullName}`}
+1881:                      size="sm"
+1883:                      variant="ghost"
+2140:                            <Badge size="sm" tone={statusToneMap[standard.status]}>
+2158:                        variant="secondary"
+2163:                        aria-label={`Архивировать средство измерения ${item.name}`}
+2174:                        size="sm"
+2176:                        variant="ghost"
+2328:                        aria-label={`Архивировать средство измерения ${selectedMeasuringInstrument.name}`}
+2339:                        size="sm"
+2341:                        variant="ghost"
+2623:                        variant="secondary"
+2628:                        aria-label={`Архивировать эталон ${item.identifier}`}
+2639:                        size="sm"
+2641:                        variant="ghost"
+2797:                        aria-label={`Архивировать эталон ${selectedStandard.identifier}`}
+2808:                        size="sm"
+2810:                        variant="ghost"
+2949:          <Button onClick={handleArchiveVisibilityChange} type="button" variant="secondary">

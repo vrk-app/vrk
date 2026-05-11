@@ -1,0 +1,18 @@
+Storybook registry entries: 35
+Query: "equipment registry archive toggle compact tabs toolbar"
+
+1. Equipment/EquipmentRegistryWorkspace [EquipmentRegistryWorkspace]
+   story: apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+   source: apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+   stories: EquipmentTab, MeasuringInstrumentsTab, StandardsTab, WithArchiveVisible, ScopedReadonly, LoadError
+   tags: autodocs
+2. Primitives/Tabs [Tabs]
+   story: apps/web/stories/primitives/Tabs.stories.tsx
+   source: apps/web/shared/ui/Tabs.tsx
+   stories: Default, ActiveMiddle, FullWidth, ManyTabs, Focus
+   tags: autodocs
+3. Contracts/ContractsRegistry [ContractsRegistry]
+   story: apps/web/stories/contracts/ContractsRegistry.stories.tsx
+   source: apps/web/features/Stage03Contracts/ui/ContractsRegistry.tsx
+   stories: CustomerAdmin, CustomerEmpty, CustomerRestricted, DivisionAdminScoped, UnitAdminScoped, ContractorReadonly
+   tags: autodocs

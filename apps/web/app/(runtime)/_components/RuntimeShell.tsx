@@ -24,6 +24,14 @@ const runtimeMetaByPath = {
     activeKey: "equipment",
     breadcrumbs: [{ label: "Рабочая область", href: "/company" }, { label: "Оборудование" }],
   },
+  "/equipment/card-variants": {
+    activeKey: "equipment",
+    breadcrumbs: [
+      { label: "Рабочая область", href: "/company" },
+      { label: "Оборудование", href: "/equipment" },
+      { label: "Варианты карточек" },
+    ],
+  },
   "/contracts": {
     activeKey: "contracts",
     breadcrumbs: [{ label: "Рабочая область", href: "/company" }, { label: "Договоры" }],
@@ -35,6 +43,14 @@ const runtimeMetaByPath = {
 } as const;
 
 function resolveRuntimeMeta(pathname: string) {
+  if (pathname.startsWith("/equipment/card-variants")) {
+    return runtimeMetaByPath["/equipment/card-variants"];
+  }
+
+  if (pathname.startsWith("/equipment")) {
+    return runtimeMetaByPath["/equipment"];
+  }
+
   return runtimeMetaByPath[pathname as keyof typeof runtimeMetaByPath] ?? runtimeMetaByPath["/company"];
 }
 
@@ -45,20 +61,24 @@ export interface RuntimeShellProps {
     role: string;
   };
   eyebrow?: string;
+  workspaceTitle?: string;
 }
 
 const runtimeNavigationId = "runtime-primary-navigation";
 
-export function RuntimeShell({ children, eyebrow = "Рабочая область", viewer }: RuntimeShellProps) {
+export function RuntimeShell({ children, eyebrow = "Рабочая область", viewer, workspaceTitle }: RuntimeShellProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const currentMeta = resolveRuntimeMeta(pathname);
+  const isCompanyWorkspace = currentMeta.activeKey === "company";
 
   return (
     <AppShell
       header={
         <TopBar
           breadcrumbs={currentMeta.breadcrumbs}
+          contextTitle={viewer ? workspaceTitle : undefined}
+          contextTitleAsHeading={Boolean(viewer && workspaceTitle && isCompanyWorkspace)}
           eyebrow={eyebrow}
           mobileMenuId={runtimeNavigationId}
           mobileMenuOpen={mobileOpen}

@@ -1,8 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { ArrowUpRight, Mail, ShieldCheck, UserRound } from "lucide-react";
-import { Badge, Button, Card, CopyableText, InputField, SelectField } from "@/shared/ui";
+import { ArrowUpRight, Mail, MailX, ShieldCheck, UserRound } from "lucide-react";
+import {
+  Badge,
+  Button,
+  ConfirmDialog,
+  CopyableText,
+  FormListScrollArea,
+  FormListSplitLayout,
+  InputField,
+  IslandCard,
+  SelectField,
+} from "@/shared/ui";
 import {
   isRoleScopeCompatible,
   parseApiResponse,
@@ -104,6 +114,7 @@ export function EmployeeInviteManager({ session }: Props) {
   const [loadingList, setLoadingList] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [revokeConfirmation, setRevokeConfirmation] = useState<EmployeeInviteResponse | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const scopeOptions = useMemo<Record<ScopeType, ScopeOption[]>>(
@@ -217,240 +228,252 @@ export function EmployeeInviteManager({ session }: Props) {
     }
   }
 
+  function confirmRevokeInvite() {
+    if (!revokeConfirmation) {
+      return;
+    }
+
+    const invite = revokeConfirmation;
+    setRevokeConfirmation(null);
+    startTransition(() => {
+      void mutateInvite(
+        `/api/auth/employee-invites/${invite.id}/revoke`,
+        "Не удалось отозвать приглашение.",
+      );
+    });
+  }
+
   return (
-    <div className="grid gap-4 xl:grid-cols-[0.92fr_1.08fr]">
-      <Card className="gap-5" padding="lg">
-        <div className="space-y-2">
-          <Badge tone="interactive">Сотрудники и доступ</Badge>
-          <div className="space-y-2">
-            <h2 className="text-xl font-semibold text-foreground">Пригласить сотрудника</h2>
-            <p className="text-sm leading-6 text-muted-foreground">
-              Укажите роль, область доступа и срок действия ссылки.
-            </p>
-          </div>
-        </div>
+    <>
+      <ConfirmDialog
+        confirmLabel="Отозвать"
+        description={
+          revokeConfirmation
+            ? `Приглашение для «${revokeConfirmation.fullName}» (${revokeConfirmation.email}) будет отозвано, и ссылка перестанет работать.`
+            : ""
+        }
+        icon={<MailX aria-hidden="true" className="size-5" />}
+        loading={isPending}
+        onCancel={() => setRevokeConfirmation(null)}
+        onConfirm={confirmRevokeInvite}
+        open={Boolean(revokeConfirmation)}
+        title="Отозвать приглашение?"
+        tone="danger"
+      />
 
-        <div className="grid gap-4">
-          <InputField
-            autoComplete="off"
-            label="Имя сотрудника"
-            leftIcon={<UserRound className="size-4" />}
-            name="employeeName"
-            onChange={(event) => setFullName(event.target.value)}
-            placeholder="Например, Мария Кузнецова…"
-            value={fullName}
-          />
-          <InputField
-            autoComplete="off"
-            label="Email приглашения"
-            leftIcon={<Mail className="size-4" />}
-            name="employeeEmail"
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="Например, m.kuznetsova@vrk.local…"
-            spellCheck={false}
-            type="email"
-            value={email}
-          />
-          <SelectField
-            label="Роль доступа"
-            name="roleTemplate"
-            onChange={(event) => setRoleTemplate(event.target.value as RoleTemplate)}
-            options={roleTemplates}
-            value={roleTemplate}
-          />
-          <div className="grid gap-4 md:grid-cols-2">
-            <SelectField
-              label="Уровень доступа"
-              name="scopeType"
-              onChange={(event) => setScopeType(event.target.value as ScopeType)}
-              options={[
-                {
-                  disabled: !isRoleScopeCompatible(roleTemplate, "organization"),
-                  label: "Вся организация",
-                  value: "organization",
-                },
-                {
-                  disabled: !isRoleScopeCompatible(roleTemplate, "division") || !scopeOptions.division.length,
-                  label: "Дивизион",
-                  value: "division",
-                },
-                {
-                  disabled: !isRoleScopeCompatible(roleTemplate, "unit") || !scopeOptions.unit.length,
-                  label: "Юнит",
-                  value: "unit",
-                },
-              ]}
-              value={scopeType}
-            />
-            <SelectField
-              disabled={!scopeOptions[scopeType].length}
-              label="Объект доступа"
-              name="scopeId"
-              onChange={(event) => setScopeId(event.target.value)}
-              options={scopeOptions[scopeType]}
-              value={scopeId}
-            />
-          </div>
-          <label className="grid gap-2.5">
-            <span className="text-sm font-medium text-foreground">Срок действия ссылки до</span>
-            <input
-              className="h-10 rounded-[var(--radius-md)] border border-input bg-card px-3.5 text-sm text-foreground shadow-xs outline-none transition-colors hover:border-border-strong focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-ring/15"
-              autoComplete="off"
-              name="expiresAt"
-              onChange={(event) => setExpiresAt(event.target.value)}
-              type="datetime-local"
-              value={expiresAt}
-            />
-          </label>
-        </div>
-
-        {formError ? (
-          <div
-            aria-live="polite"
-            className="rounded-[var(--radius-lg)] border border-destructive/20 bg-destructive-soft px-4 py-3 text-sm text-destructive"
+      <FormListSplitLayout
+        columnsClassName="xl:grid-cols-[0.92fr_1.08fr]"
+        form={
+          <IslandCard
+            headingLevel={2}
+            icon={<UserRound aria-hidden="true" className="size-4" />}
+            title="Пригласить сотрудника"
           >
-            {formError}
+          <div className="grid gap-4">
+            <InputField
+              autoComplete="off"
+              label="Имя сотрудника"
+              leftIcon={<UserRound className="size-4" />}
+              name="employeeName"
+              onChange={(event) => setFullName(event.target.value)}
+              placeholder="Например, Мария Кузнецова…"
+              value={fullName}
+            />
+            <InputField
+              autoComplete="off"
+              label="Email приглашения"
+              leftIcon={<Mail className="size-4" />}
+              name="employeeEmail"
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="Например, m.kuznetsova@vrk.local…"
+              spellCheck={false}
+              type="email"
+              value={email}
+            />
+            <SelectField
+              label="Роль доступа"
+              name="roleTemplate"
+              onChange={(event) => setRoleTemplate(event.target.value as RoleTemplate)}
+              options={roleTemplates}
+              value={roleTemplate}
+            />
+            <div className="grid gap-4 md:grid-cols-2">
+              <SelectField
+                label="Уровень доступа"
+                name="scopeType"
+                onChange={(event) => setScopeType(event.target.value as ScopeType)}
+                options={[
+                  {
+                    disabled: !isRoleScopeCompatible(roleTemplate, "organization"),
+                    label: "Вся организация",
+                    value: "organization",
+                  },
+                  {
+                    disabled: !isRoleScopeCompatible(roleTemplate, "division") || !scopeOptions.division.length,
+                    label: "Дивизион",
+                    value: "division",
+                  },
+                  {
+                    disabled: !isRoleScopeCompatible(roleTemplate, "unit") || !scopeOptions.unit.length,
+                    label: "Юнит",
+                    value: "unit",
+                  },
+                ]}
+                value={scopeType}
+              />
+              <SelectField
+                disabled={!scopeOptions[scopeType].length}
+                label="Объект доступа"
+                name="scopeId"
+                onChange={(event) => setScopeId(event.target.value)}
+                options={scopeOptions[scopeType]}
+                value={scopeId}
+              />
+            </div>
+            <label className="grid gap-2.5">
+              <span className="text-sm font-medium text-foreground">Срок действия ссылки до</span>
+              <input
+                className="h-10 rounded-[var(--radius-md)] border border-input bg-card px-3.5 text-sm text-foreground shadow-xs outline-none transition-colors hover:border-border-strong focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-ring/15"
+                autoComplete="off"
+                name="expiresAt"
+                onChange={(event) => setExpiresAt(event.target.value)}
+                type="datetime-local"
+                value={expiresAt}
+              />
+            </label>
           </div>
-        ) : null}
 
-        <div className="rounded-[var(--radius-lg)] bg-muted/70 px-4 py-3 text-sm leading-6 text-muted-foreground">
-          <div className="flex items-start gap-2">
-            <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-accent" />
-            <p>Проверьте параметры доступа перед отправкой приглашения.</p>
-          </div>
-        </div>
+          {formError ? (
+            <div
+              aria-live="polite"
+              className="rounded-[var(--radius-lg)] border border-destructive/20 bg-destructive-soft px-4 py-3 text-sm text-destructive"
+            >
+              {formError}
+            </div>
+          ) : null}
 
-        <Button
-          fullWidth
-          loading={isPending}
-          onClick={() =>
-            startTransition(() => {
-              void handleCreateDraft();
-            })
-          }
-          type="button"
-        >
-          Создать черновик приглашения
-        </Button>
-      </Card>
-
-      <Card className="gap-5" padding="lg">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="space-y-2">
-            <Badge tone="info">История приглашений</Badge>
-            <div className="space-y-1">
-              <h2 className="text-xl font-semibold text-foreground">Статусы приглашений</h2>
+          <div className="rounded-[var(--radius-lg)] bg-muted/70 px-4 py-3 text-sm leading-6 text-muted-foreground">
+            <div className="flex items-start gap-2">
+              <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-accent" />
+              <p>Проверьте параметры доступа перед отправкой приглашения.</p>
             </div>
           </div>
-          <Button onClick={() => void loadInvites()} type="button" variant="secondary">
-            Обновить
+
+          <Button
+            fullWidth
+            loading={isPending}
+            onClick={() =>
+              startTransition(() => {
+                void handleCreateDraft();
+              })
+            }
+            type="button"
+          >
+            Создать черновик приглашения
           </Button>
-        </div>
-
-        {error ? (
-          <div
-            aria-live="polite"
-            className="rounded-[var(--radius-lg)] border border-destructive/20 bg-destructive-soft px-4 py-3 text-sm text-destructive"
+          </IslandCard>
+        }
+        list={
+          <IslandCard
+            bodyClassName="min-h-0 flex-1"
+            className="h-full min-h-0 overflow-hidden"
+            headingLevel={2}
+            icon={<UserRound aria-hidden="true" className="size-4" />}
+            metric={invites.length}
+            title="Статусы приглашений"
           >
-            {error}
-          </div>
-        ) : null}
 
-        {loadingList ? (
-          <div
-            aria-live="polite"
-            className="rounded-[var(--radius-lg)] border border-border bg-muted/40 px-4 py-6 text-sm text-muted-foreground"
-          >
-            Загружаем приглашения…
-          </div>
-        ) : invites.length ? (
-          <div className="grid gap-3">
-            {invites.map((invite) => {
-              const inviteUrl = toAbsoluteInviteUrl(invite.acceptPath);
+          {error ? (
+            <div
+              aria-live="polite"
+              className="rounded-[var(--radius-lg)] border border-destructive/20 bg-destructive-soft px-4 py-3 text-sm text-destructive"
+            >
+              {error}
+            </div>
+          ) : null}
 
-              return (
-                <div className="rounded-[var(--radius-xl)] border border-border bg-card p-4 shadow-xs" key={invite.id}>
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0 space-y-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="break-words text-sm font-semibold text-foreground">{invite.fullName}</p>
-                        <Badge tone={statusToneMap[invite.status]}>{statusLabelMap[invite.status]}</Badge>
+          {loadingList ? (
+            <div
+              aria-live="polite"
+              className="rounded-[var(--radius-lg)] border border-border bg-muted/40 px-4 py-6 text-sm text-muted-foreground"
+            >
+              Загружаем приглашения…
+            </div>
+          ) : invites.length ? (
+            <FormListScrollArea className="grid gap-3">
+              {invites.map((invite) => {
+                const inviteUrl = toAbsoluteInviteUrl(invite.acceptPath);
+
+                return (
+                  <div className="rounded-[var(--radius-xl)] border border-border bg-card p-4 shadow-xs" key={invite.id}>
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0 space-y-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="break-words text-sm font-semibold text-foreground">{invite.fullName}</p>
+                          <Badge tone={statusToneMap[invite.status]}>{statusLabelMap[invite.status]}</Badge>
+                        </div>
+                        <p className="break-all text-sm text-muted-foreground">{invite.email}</p>
+                        <p className="break-words text-sm text-muted-foreground">
+                          {roleTemplateLabel(invite.roleTemplate)} / {scopeTypeLabels[invite.scopeType]} /{" "}
+                          {invite.scopeLabel}
+                        </p>
                       </div>
-                      <p className="break-all text-sm text-muted-foreground">{invite.email}</p>
-                      <p className="break-words text-sm text-muted-foreground">
-                        {roleTemplateLabel(invite.roleTemplate)} / {scopeTypeLabels[invite.scopeType]} /{" "}
-                        {invite.scopeLabel}
-                      </p>
+                      <div className="text-right text-xs text-muted-foreground">
+                        <div>Действует до: {formatTimestamp(invite.expiresAt)}</div>
+                        <div>Открыто: {formatTimestamp(invite.openedAt)}</div>
+                        <div>Принято: {formatTimestamp(invite.acceptedAt)}</div>
+                      </div>
                     </div>
-                    <div className="text-right text-xs text-muted-foreground">
-                      <div>Действует до: {formatTimestamp(invite.expiresAt)}</div>
-                      <div>Открыто: {formatTimestamp(invite.openedAt)}</div>
-                      <div>Принято: {formatTimestamp(invite.acceptedAt)}</div>
+
+                    {inviteUrl ? (
+                      <CopyableText className="mt-3" data-testid="employee-invite-path" value={inviteUrl} />
+                    ) : null}
+
+                    <div className="mt-3 flex flex-wrap gap-3">
+                      {invite.status === "draft" ? (
+                        <Button
+                          onClick={() =>
+                            startTransition(() => {
+                              void mutateInvite(
+                                `/api/auth/employee-invites/${invite.id}/send`,
+                                "Не удалось отправить приглашение.",
+                              );
+                            })
+                          }
+                          type="button"
+                        >
+                          Отправить
+                        </Button>
+                      ) : null}
+                      {(invite.status === "sent" || invite.status === "opened") && inviteUrl ? (
+                        <a
+                          className="inline-flex min-h-10 touch-manipulation items-center gap-2 rounded-[var(--radius-md)] bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                          href={inviteUrl}
+                          rel="noopener noreferrer"
+                          target="_blank"
+                        >
+                          Открыть приглашение
+                          <ArrowUpRight aria-hidden="true" className="size-4" />
+                        </a>
+                      ) : null}
+                      {invite.status === "draft" || invite.status === "sent" || invite.status === "opened" ? (
+                        <Button onClick={() => setRevokeConfirmation(invite)} type="button" variant="ghost">
+                          Отозвать
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
-
-                  {inviteUrl ? (
-                    <CopyableText className="mt-3" data-testid="employee-invite-path" value={inviteUrl} />
-                  ) : null}
-
-                  <div className="mt-3 flex flex-wrap gap-3">
-                    {invite.status === "draft" ? (
-                      <Button
-                        onClick={() =>
-                          startTransition(() => {
-                            void mutateInvite(
-                              `/api/auth/employee-invites/${invite.id}/send`,
-                              "Не удалось отправить приглашение.",
-                            );
-                          })
-                        }
-                        type="button"
-                      >
-                        Отправить
-                      </Button>
-                    ) : null}
-                    {(invite.status === "sent" || invite.status === "opened") && inviteUrl ? (
-                      <a
-                        className="inline-flex min-h-10 touch-manipulation items-center gap-2 rounded-[var(--radius-md)] bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                        href={inviteUrl}
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      >
-                        Открыть приглашение
-                        <ArrowUpRight aria-hidden="true" className="size-4" />
-                      </a>
-                    ) : null}
-                    {invite.status === "draft" || invite.status === "sent" || invite.status === "opened" ? (
-                      <Button
-                        onClick={() =>
-                          startTransition(() => {
-                            if (!window.confirm("Приглашение будет отозвано. Продолжить?")) {
-                              return;
-                            }
-
-                            void mutateInvite(
-                              `/api/auth/employee-invites/${invite.id}/revoke`,
-                              "Не удалось отозвать приглашение.",
-                            );
-                          })
-                        }
-                        type="button"
-                        variant="ghost"
-                      >
-                        Отозвать
-                      </Button>
-                    ) : null}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="rounded-[var(--radius-lg)] border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
-            После первого черновика здесь появится список приглашений сотрудников и их текущие статусы.
-          </div>
-        )}
-      </Card>
-    </div>
+                );
+              })}
+            </FormListScrollArea>
+          ) : (
+            <div className="rounded-[var(--radius-lg)] border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
+              После первого черновика здесь появится список приглашений сотрудников и их текущие статусы.
+            </div>
+          )}
+          </IslandCard>
+        }
+      />
+    </>
   );
 }

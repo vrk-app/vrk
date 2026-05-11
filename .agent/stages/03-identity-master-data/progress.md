@@ -991,3 +991,166 @@
   - proof script `py_compile`;
   - `xmllint` for the Draw.io source;
   - JSON audits for evidence/feature/verdict.
+
+### 2026-04-30T16:20:31+03:00
+
+- Spec-freezer leaf froze the next narrow continuation slice as `slice-011-input-help-tooltip`.
+- Read the requested stage and UI sources:
+  - `AGENTS.md`;
+  - `docs/architecture/documentation-workflow.md`;
+  - `docs/roadmap.md` Stage 03 section;
+  - `.agent/stages/03-identity-master-data/progress.md`;
+  - `.agent/stages/03-identity-master-data/feature_list.json`;
+  - `.agent/stages/03-identity-master-data/sprint_contract.md`;
+  - `docs/design/ui-workflow.md`;
+  - `docs/design/serviceops-design-system.md`;
+  - `docs/architecture/frontend-architecture.md`;
+  - `docs/design/storybook-component-backlog.md`;
+  - `.agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py`.
+- Component lookup for `InputField hint helper help tooltip` returns existing `Primitives/InputField` with source `apps/web/shared/ui/InputField.tsx` and story `apps/web/stories/primitives/InputField.stories.tsx`; expected implementation decision is `extend`, not `create`.
+- `docs/design/storybook-component-backlog.md` already has `UI-03 InputField` with `hint` and stories including `WithHint`, so the builder should update that existing component/stories rather than introduce a new component family.
+- Canonical doc target decision:
+  - narrow `docs/design/storybook-component-backlog.md` update is likely needed if implementation formalizes `hint` as hover/focus help instead of inline helper text;
+  - no broad architecture docs are expected unless implementation introduces a broader tooltip primitive, dependency policy, or UI behavior decision.
+- Updated only stage artifacts:
+  - active `sprint_contract.md` now targets `slice-011-input-help-tooltip`;
+  - `feature_list.json` has one new pending `passes: false` feature/proof item;
+  - this `progress.md` note records the freeze.
+- No production code or canonical docs were edited by this spec-freezer leaf.
+
+### 2026-04-30T16:34:00+03:00
+
+- Implemented bounded UI parity slice `slice-011-equipment-archive-action-parity` without replacing the already-open `slice-011-input-help-tooltip` sprint contract.
+- Scope stayed limited to `/equipment` archive trigger buttons in `EquipmentRegistryWorkspace`:
+  - equipment cards;
+  - measuring instrument cards;
+  - selected measuring instrument detail action;
+  - standard cards;
+  - selected standard detail action.
+- Reuse decision: `reuse`.
+  - Storybook lookup matched `Equipment/EquipmentRegistryWorkspace`, `Primitives/ConfirmDialog`, and `Primitives/Dialog`;
+  - no new reusable component family, stories, backlog slice, API, or canonical product docs were needed.
+- UI behavior:
+  - archive triggers now use compact `Button size="sm" variant="ghost"` with the existing `Archive` icon;
+  - visible archive action text is normalized to `Архивировать`;
+  - entity-specific `aria-label` values are preserved/added;
+  - existing shared `ConfirmDialog`, archive API calls, loading state, toasts, and archive visibility routing remain unchanged.
+- Runtime check:
+  - `localhost:3100` responded with HTTP 200;
+  - the running compose-backed web served a stale bundle and was not used as proof for the new TSX class changes;
+  - no ad-hoc preview server was started.
+- Checks passed:
+  - harness self-check;
+  - web typecheck;
+  - web lint;
+  - web production build;
+  - Storybook build, with existing Vite `use client`/chunk warnings only;
+  - source audit for archive trigger labels/classes;
+  - Web Interface Guidelines review;
+  - `git diff --check`;
+  - JSON audit;
+  - post-evidence harness self-check.
+
+### 2026-04-30T16:55:00+03:00
+
+- Implemented bounded UI declutter slice `slice-012-equipment-registry-declutter` without replacing the already-open `slice-011-input-help-tooltip` sprint contract.
+- Scope stayed limited to the logged-in customer `/equipment` surface:
+  - compact `h1` + capability badge row replaced the large customer `PageHeader` card;
+  - anonymous and contractor explanatory states were left unchanged;
+  - the duplicated manageability note, access-area KPI card, and separate archive description island were removed;
+  - the three registry KPI cards remain;
+  - archive visibility moved into the tab row as a compact shared `Button` with `Archive` icon and `aria-pressed`.
+- Reuse decision: `reuse`.
+  - Storybook lookup matched `Equipment/EquipmentRegistryWorkspace`, `Primitives/Tabs`, and `Contracts/ContractsRegistry`;
+  - no new reusable component family, stories, backlog slice, API, or canonical product docs were needed.
+- URL/API behavior stayed unchanged:
+  - `tab=equipment | mi | standards`;
+  - `archived=1`;
+  - existing `buildEquipmentRoute` / `handleArchiveVisibilityChange` behavior.
+- Focused smoke expectations were updated for the retained read-only badge and new active archive button text `Архив показан`.
+- Runtime check:
+  - `localhost:3100` responded with HTTP 200;
+  - no ad-hoc preview server was started.
+- Checks passed:
+  - harness self-check;
+  - web lint;
+  - web typecheck;
+  - web production build;
+  - Storybook build, with existing chunk-size warning only;
+  - source audit for removed duplicated copy and compact controls;
+  - Web Interface Guidelines review;
+  - `git diff --check`.
+- `feature_list.json` records `stage03-slice012-equipment-registry-declutter` as `passes: false` until a fresh verifier owns the PASS.
+
+### 2026-04-30T17:03:00+03:00
+
+- Completed the implementation/evidence pass for `slice-011-input-help-tooltip`.
+- Extended the existing story-backed `InputField` instead of creating a new reusable input family:
+  - non-error `hint` now renders through a compact `CircleHelp` trigger near the label;
+  - the help trigger exposes the hint on hover and keyboard focus;
+  - the persistent helper row under the input is removed for non-error hints;
+  - visible below-field error text and input `aria-describedby` priority are preserved.
+- Updated `InputField` stories:
+  - `WithHint` now proves focus-accessible help without a persistent input description;
+  - `WithHintAndError` proves hint + visible error coexist.
+- Synced `docs/design/storybook-component-backlog.md` for the formal `InputField` hint contract and story coverage.
+- UI workflow:
+  - Storybook lookup matched existing `Primitives/InputField`;
+  - reuse decision is `extend`;
+  - Web Interface Guidelines review passed.
+- Proof:
+  - web lint, typecheck, production build, and Storybook build passed with bundled Node;
+  - Storybook DOM proof passed with `persistentHintRows=0`, `tooltipAfterHover=true`, and `tooltipAfterFocus=true`;
+  - existing `localhost:3100` rendered a stale web bundle, so `/company` runtime proof was not claimed and no ad-hoc dev server was started;
+  - harness self-check and `git diff --check` passed.
+- `feature_list.json` entry `stage03-slice011-input-help-tooltip` remains `passes: false` until a fresh verifier returns `PASS`.
+
+### 2026-04-30T17:30:00+03:00
+
+- Ran a second fresh verifier after the minimal story metadata fixer.
+- Fresh verifier result: `PASS` for `slice-011-input-help-tooltip`.
+- Verified gates:
+  - harness self-check;
+  - Storybook component lookup for `InputField hint helper help tooltip`;
+  - fresh Web Interface Guidelines review after the `autoComplete="off"` / example placeholder fix;
+  - web lint, typecheck, production build, and Storybook build;
+  - focused Storybook DOM proof for `WithHint` and `WithHintAndError`;
+  - `git diff --check`;
+  - JSON audit.
+- Residual runtime note:
+  - `http://localhost:3100/company` returned the unauthenticated shell, so no live authenticated `/company` field DOM proof was claimed;
+  - no ad-hoc dev server was started under the runtime policy.
+- Parent orchestrator marked only `stage03-slice011-input-help-tooltip` as passed in `feature_list.json` using the fresh verifier evidence refs.
+
+### 2026-04-30T17:18:00+03:00
+
+- Ran as the single minimal fixer for the fresh-verifier `slice-011-input-help-tooltip` story-level Web Interface Guidelines findings only.
+- Updated only `apps/web/stories/primitives/InputField.stories.tsx` production/story code:
+  - `WithHintAndError.args.autoComplete` is now `"off"` for the `КПП` field;
+  - `WithHintAndError.args.placeholder` is now the example-pattern `770501001…`.
+- No canonical docs changed; this closes story metadata only, with no product behavior, API, schema, or workflow contract change.
+- Refreshed requested proof artifacts:
+  - web lint: `raw/slice-011-input-help-tooltip-fixer-web-lint-2026-04-30.txt`;
+  - web typecheck: `raw/slice-011-input-help-tooltip-fixer-web-typecheck-2026-04-30.txt`;
+  - `git diff --check`: `raw/slice-011-input-help-tooltip-fixer-git-diff-check-2026-04-30.txt`;
+  - harness self-check: `raw/slice-011-input-help-tooltip-fixer-harness-2026-04-30.txt`.
+- `feature_list.json` and verifier verdict remain unchanged; a fresh verifier still owns the final PASS decision.
+
+### 2026-04-30T20:36:00+03:00
+
+- Completed the builder/evidence pass for `slice-013-access-confirmation-dialogs`.
+- Reused the shared story-backed `ConfirmDialog` for destructive access actions:
+  - employee `Отключить` now opens `Отключить сотрудника?` with `UserX`, danger tone, employee-specific copy, and the existing deactivate mutation;
+  - invite `Отозвать` now opens `Отозвать приглашение?` with `MailX`, danger tone, invite/email-specific copy, and the existing revoke mutation.
+- Removed native confirmation usage from the touched access flows and removed the obsolete Storybook runtime `window.confirm` shim.
+- Replaced the remaining company structure archive `window.confirm` with the same shared confirmation dialog pattern so `apps/web` no longer has feature-level `window.confirm` hits.
+- Added focused Storybook play coverage for opening/canceling/confirming employee deactivation and opening/confirming invite revocation.
+- UI workflow:
+  - Storybook lookup matched `Primitives/ConfirmDialog`, `Access/EmployeeAccessWorkspace`, and `Access/EmployeeInviteManager`;
+  - reuse decision is `reuse`;
+  - Web Interface Guidelines review passed.
+- Runtime/doc notes:
+  - `localhost:3100/company` responded with HTTP 200;
+  - no ad-hoc dev server was started;
+  - canonical docs were not changed because this changes only the confirmation surface, not APIs, persistence, or lifecycle rules.
+- Proof bundle recorded for harness, web lint/typecheck/build, Storybook build, source audit, UI review, JSON audit, and `git diff --check`; a fresh verifier still owns any final Stage 03 PASS decision.

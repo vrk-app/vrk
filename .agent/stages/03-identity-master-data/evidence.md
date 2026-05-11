@@ -2,9 +2,10 @@
 
 - Stage ID: `03-identity-master-data`
 - Current correction slice: `slice-010-stage03-org-structure-management`
-- Current continuation slice: `stage03-company-profile-access-policy`
+- Current continuation slice: `slice-011-input-help-tooltip`
+- Current bounded UI correction slice: `slice-013-access-confirmation-dialogs`
 - Builder state: `COMPLETE`
-- Verifier state: `PASS_AFTER_COMPANY_PROFILE_ACCESS_POLICY_CONTINUATION`
+- Verifier state: `AWAITING_FRESH_VERIFIER`
 
 This bundle records builder-collected proof, the minimal fixer doc-sync, and the historical post-fixer fresh verifier `PASS` for the 2026-04-29 Stage 03 correction that moves the product target from the historical launch wizard to persistent `/company` organization profile and structure management.
 
@@ -14,7 +15,118 @@ The 2026-04-29 local-dev seed slice adds an operational developer workflow on to
 
 The 2026-04-29 company profile/access continuation completes the expanded profile, scoped admin, logo storage, password policy, and contract-scope hardening proof. It adds the missing contract update visibility guard, aligns the contracts UI to workspace-visible scopes for `division_admin` / `unit_admin`, refreshes Storybook scoped-admin coverage, updates active stage legal-form evidence to `ООО` / `ПАО` / `НАО` / `ИП`, and confirms the measuring-instrument UI label is `ФИФ`.
 
+The 2026-04-30 equipment archive action parity slice is a bounded UI-only correction for `/equipment`. It keeps the existing `ConfirmDialog` confirmation and archive APIs, but aligns equipment, measuring-instrument, and standard archive trigger buttons to the compact division/unit pattern: `Archive` icon, visible `Архивировать`, `size="sm"`, and `variant="ghost"`. Canonical docs were not changed because no product behavior, API contract, schema, or workflow decision changed.
+
+The 2026-04-30 equipment registry declutter slice is a bounded UI-only correction for the logged-in customer `/equipment` page. It replaces the large PageHeader card with a compact `h1` + capability badge row, removes duplicated onboarding/manageability copy and the access-area summary card, keeps the three registry KPI cards, and moves archive visibility into the tab row as a compact `Button` with `aria-pressed`. Canonical docs were not changed because the documented `/equipment` route, query-backed tabs, archive query contract, APIs, and product behavior did not change.
+
+The 2026-04-30 access confirmation dialogs slice is a bounded UI-only correction for destructive access actions. It reuses the shared story-backed `ConfirmDialog` used by equipment archiving for employee deactivation and invite revocation, removes native `window.confirm` from the access flows and the remaining company structure archive action, and removes the obsolete Storybook runtime confirmation shim. Canonical docs were not changed because backend routes, API contracts, persistence, access lifecycle rules, and product semantics did not change.
+
+The 2026-04-30 input help tooltip slice extends the existing shared `InputField` instead of creating a new input family. Non-error `hint` text now appears through a compact help trigger near the label and opens on hover/focus; the hint no longer occupies a persistent helper row under the field. Field errors remain visible below the input and keep `aria-describedby` priority.
+
 ## Commands Run
+
+- Input help tooltip:
+  - Used `$vrk-web-ui-workflow` and read `.impeccable.md`, `docs/design/ui-workflow.md`, `docs/design/serviceops-design-system.md`, `docs/architecture/frontend-architecture.md`, `docs/design/storybook-component-backlog.md`, and the active Stage 03 `sprint_contract.md`.
+  - Ran Storybook lookup for `InputField hint helper help tooltip`.
+  - Reuse decision: `extend`; matched existing `Primitives/InputField` source and stories.
+  - Changed `apps/web/shared/ui/InputField.tsx` so `hint` renders through a `CircleHelp` trigger with hover/focus tooltip and stable screen-reader description.
+  - Preserved visible below-field error rendering and input `aria-describedby` priority for errors.
+  - Updated `apps/web/stories/primitives/InputField.stories.tsx` with focus proof for `WithHint` and a `WithHintAndError` story.
+  - Synced `docs/design/storybook-component-backlog.md` for the new `hint` contract and story coverage.
+  - Web Interface Guidelines review: `PASS`.
+  - Storybook DOM proof: `PASS`; `persistentHintRows=0`, `tooltipAfterHover=true`, and `tooltipAfterFocus=true`.
+  - Runtime note: existing `localhost:3100` rendered a stale web bundle, so `/company` runtime proof was not claimed and no ad-hoc dev server was started.
+  - Verification status before fresh verifier: `SELF_VERIFIED_AWAITING_FRESH_VERIFIER`; harness, lint, typecheck, web build, Storybook build, DOM proof, UI review, and `git diff --check` passed.
+  - Raw:
+    - `.agent/stages/03-identity-master-data/raw/storybook-lookup-slice-011-input-help-tooltip-final-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-30-slice-011-input-help-tooltip-final.md`
+    - `.agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-harness-final-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-web-lint-final-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-web-typecheck-final-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-web-build-final-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-web-build-storybook-final-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-storybook-dom-proof-final-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-company-runtime-proof-final-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-ui-review-final-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-diff-check-final-2026-04-30.txt`
+
+- Equipment archive action parity:
+  - Read `.impeccable.md`, `docs/design/ui-workflow.md`, current Stage 03 `sprint_contract.md`, and current Stage 03 evidence before implementation.
+  - Ran Storybook lookup for `archive action button equipment registry confirm dialog destructive`.
+  - Reuse decision: `reuse`; matched `Equipment/EquipmentRegistryWorkspace`, `Primitives/ConfirmDialog`, and `Primitives/Dialog`.
+  - Changed only `apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx` production code for the archive trigger visual treatment.
+  - Preserved current shared `ConfirmDialog`, archive API calls, loading state, toast behavior, and archive visibility route state.
+  - Web Interface Guidelines review: `PASS`.
+  - Runtime note: `localhost:3100` responded with HTTP 200 but served a stale bundle, so runtime screenshot proof for the new TSX classes was not claimed and no ad-hoc preview server was started.
+  - Canonical docs: not changed; visual parity only.
+  - Verification status before fresh verifier: `PASS` for harness, web typecheck, web lint, web build, Storybook build, source audit, UI review, and diff check.
+  - Raw:
+    - `.agent/stages/03-identity-master-data/raw/storybook-lookup-slice-011-equipment-archive-action-parity-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-30-equipment-archive.md`
+    - `.agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-harness-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-web-typecheck-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-web-lint-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-web-build-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-storybook-build-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-source-audit-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-ui-review-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-localhost-3100-head-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-runtime-note-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-011-equipment-archive-action-parity-diff-check-2026-04-30.txt`
+
+- Equipment registry declutter:
+  - Read `.impeccable.md`, `docs/design/ui-workflow.md`, `docs/design/serviceops-design-system.md`, `docs/architecture/frontend-architecture.md`, `docs/architecture/documentation-workflow.md`, and the Stage 03 roadmap/evidence context before implementation.
+  - Ran Storybook lookup for `equipment registry archive toggle compact tabs toolbar`.
+  - Reuse decision: `reuse`; matched `Equipment/EquipmentRegistryWorkspace`, `Primitives/Tabs`, and `Contracts/ContractsRegistry`.
+  - Changed the logged-in customer `/equipment` page header from a large `PageHeader` card to a compact `h1` + capability badge row.
+  - Removed duplicated manageability note, access-area KPI card, and the separate archive description island from `EquipmentRegistryWorkspace`.
+  - Preserved the three registry KPI cards, the existing `Tabs` navigation, `buildEquipmentRoute`, `handleArchiveVisibilityChange`, and the `?archived=1` URL contract.
+  - Moved archive visibility into the tab row as a compact shared `Button` with `Archive` icon and `aria-pressed`.
+  - Updated focused smoke assertions for the new `Архив показан` button state and retained read-only badge.
+  - Web Interface Guidelines review: `PASS`.
+  - Runtime note: `localhost:3100` responded with HTTP 200; no ad-hoc preview server was started.
+  - Canonical docs: not changed; visual decluttering only.
+  - Verification status before fresh verifier: `SELF_VERIFIED_AWAITING_FRESH_VERIFIER`; harness, lint, typecheck, web build, Storybook build, source audit, UI review, JSON audit, post-evidence harness, and `git diff --check` passed.
+  - Raw:
+    - `.agent/stages/03-identity-master-data/raw/storybook-lookup-slice-012-equipment-registry-declutter-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-30-equipment-declutter.md`
+    - `.agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-harness-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-web-lint-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-web-typecheck-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-web-build-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-storybook-build-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-ui-review-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-localhost-3100-head-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-source-audit-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-diff-check-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-json-audit-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-harness-post-evidence-2026-04-30.txt`
+
+- Access confirmation dialogs:
+  - Used `$vrk-web-ui-workflow` and the shared UI source-of-truth docs for a bounded Stage 03 UI correction.
+  - Ran Storybook lookup for `access employee invite confirmation dialog destructive`.
+  - Reuse decision: `reuse`; matched `Primitives/ConfirmDialog`, `Access/EmployeeAccessWorkspace`, and `Access/EmployeeInviteManager`.
+  - Changed `apps/web/features/Stage03Access/ui/EmployeeAccessWorkspace.tsx` so `Отключить` opens shared `ConfirmDialog` with title `Отключить сотрудника?`, `UserX` danger icon, employee-specific copy, and the existing deactivate mutation.
+  - Changed `apps/web/features/Stage03Access/ui/EmployeeInviteManager.tsx` so `Отозвать` opens shared `ConfirmDialog` with title `Отозвать приглашение?`, `MailX` danger icon, invite-specific copy, and the existing revoke mutation.
+  - Removed the obsolete Storybook runtime `window.confirm` shim and replaced the remaining company structure native archive confirmation with the same shared `ConfirmDialog` pattern.
+  - Added focused Storybook play coverage for opening, canceling, and confirming employee deactivation and invite revocation.
+  - Web Interface Guidelines review: `PASS`.
+  - Runtime note: `localhost:3100/company` responded with HTTP 200; no ad-hoc dev server was started.
+  - Canonical docs: not changed; confirmation surface only, APIs and lifecycle rules unchanged.
+  - Verification status before fresh verifier: `SELF_VERIFIED_AWAITING_FRESH_VERIFIER`; harness, lint, typecheck, web build, Storybook build, source audit, UI review, runtime HEAD check, JSON audit, and `git diff --check` passed.
+  - Raw:
+    - `.agent/stages/03-identity-master-data/raw/storybook-lookup-slice-013-access-confirmation-dialogs-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-2026-04-30-slice-013-access-confirmation-dialogs.md`
+    - `.agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-harness-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-web-lint-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-web-typecheck-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-web-build-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-storybook-build-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-source-audit-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-ui-review-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-localhost-3100-company-head-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-json-audit-before-evidence-2026-04-30.txt`
+    - `.agent/stages/03-identity-master-data/raw/slice-013-access-confirmation-dialogs-diff-check-2026-04-30.txt`
 
 - Company profile/access continuation:
   - Fixed contract update authorization so scoped admins cannot update contracts outside their visible scope/subtree.

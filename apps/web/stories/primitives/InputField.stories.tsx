@@ -100,12 +100,63 @@ export const WithHint: Story = {
   args: {
     hint: "Используйте корпоративный логин без домена.",
   },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByLabelText("Логин");
+    const helpTrigger = canvas.getByRole("button", { name: "Справка: Логин" });
+
+    await expect(input).not.toHaveAttribute("aria-describedby");
+    await expect(helpTrigger).toHaveAccessibleDescription(
+      "Используйте корпоративный логин без домена.",
+    );
+
+    const tooltip = canvas.getByRole("tooltip", { hidden: true });
+
+    helpTrigger.focus();
+    await expect(helpTrigger).toHaveFocus();
+    await expect(tooltip).toBeVisible();
+  },
 };
 
 export const WithError: Story = {
   args: {
     error: "Проверьте логин и пароль. Данные не совпадают с учетной записью.",
     defaultValue: "dispatcher.vrk",
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByLabelText("Логин");
+    const error = canvas.getByText(
+      "Проверьте логин и пароль. Данные не совпадают с учетной записью.",
+    );
+
+    await expect(error).toBeVisible();
+    await expect(input).toHaveAttribute("aria-invalid", "true");
+    await expect(input).toHaveAccessibleDescription(
+      "Проверьте логин и пароль. Данные не совпадают с учетной записью.",
+    );
+  },
+};
+
+export const WithHintAndError: Story = {
+  args: {
+    autoComplete: "off",
+    defaultValue: "123",
+    error: "КПП должен содержать 9 цифр.",
+    hint: "9 цифр.",
+    label: "КПП",
+    name: "kpp",
+    placeholder: "770501001…",
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByLabelText("КПП");
+    const error = canvas.getByText("КПП должен содержать 9 цифр.");
+    const helpTrigger = canvas.getByRole("button", { name: "Справка: КПП" });
+
+    await expect(error).toBeVisible();
+    await expect(input).toHaveAccessibleDescription("КПП должен содержать 9 цифр.");
+    await expect(helpTrigger).toHaveAccessibleDescription("9 цифр.");
   },
 };
 

@@ -16,6 +16,8 @@ export interface TopBarProps extends HTMLAttributes<HTMLElement> {
   notificationsCount: number;
   user: TopBarUser;
   breadcrumbs: readonly BreadcrumbItem[];
+  contextTitle?: string;
+  contextTitleAsHeading?: boolean;
   eyebrow?: string;
   mobileMenuOpen?: boolean;
   mobileMenuId?: string;
@@ -29,6 +31,8 @@ export interface TopBarProps extends HTMLAttributes<HTMLElement> {
 export function TopBar({
   breadcrumbs,
   className,
+  contextTitle,
+  contextTitleAsHeading = false,
   eyebrow = "Оперативная работа",
   mobileMenuId,
   mobileMenuOpen = false,
@@ -46,6 +50,7 @@ export function TopBar({
   const isSearchInteractive = typeof onSearch === "function";
   const isNotificationsInteractive = typeof onNotificationsClick === "function";
   const isUserMenuInteractive = typeof onUserMenu === "function";
+  const ContextTitleTag = contextTitleAsHeading ? "h1" : "p";
 
   useEffect(() => {
     const header = headerRef.current;
@@ -93,7 +98,7 @@ export function TopBar({
       {...props}
     >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           {onMobileMenuOpenChange ? (
             <button
               aria-controls={mobileMenuId}
@@ -110,12 +115,20 @@ export function TopBar({
               )}
             </button>
           ) : null}
-          <div className="space-y-2">
+          <div className="min-w-0 space-y-2">
             <Breadcrumbs items={breadcrumbs} />
-            <div>
+            <div className="min-w-0">
               <p className="text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground">
                 {eyebrow}
               </p>
+              {contextTitle ? (
+                <ContextTitleTag
+                  className="mt-1 block max-w-4xl truncate text-lg font-semibold leading-6 text-foreground md:text-xl md:leading-7"
+                  title={contextTitle}
+                >
+                  {contextTitle}
+                </ContextTitleTag>
+              ) : null}
             </div>
           </div>
         </div>

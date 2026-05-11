@@ -62,21 +62,9 @@ export function FirstAdminActivationForm({ invite, inviteToken }: Props) {
 
   return (
     <Card className="gap-5" padding="lg">
-      <div className="space-y-2">
-        <p className="text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground">
-          {invite.inviteKind === "first_admin" ? "Активация администратора" : "Активация сотрудника"}
-        </p>
-        <div className="space-y-2">
-          <h2 className="text-balance text-2xl font-bold tracking-tight text-foreground">
-            {invite.inviteKind === "first_admin" ? "Задать пароль администратора" : "Задать пароль сотрудника"}
-          </h2>
-          <p className="text-sm leading-6 text-muted-foreground">
-            {invite.inviteKind === "first_admin"
-              ? "После сохранения пароля откроется профиль компании и управление структурой."
-              : "После сохранения пароля вы сможете продолжить работу в VRK."}
-          </p>
-        </div>
-      </div>
+      <h2 className="text-balance text-2xl font-bold tracking-tight text-foreground">
+        {invite.inviteKind === "first_admin" ? "Задать пароль администратора" : "Задать пароль сотрудника"}
+      </h2>
 
       <div className="grid gap-3 rounded-[var(--radius-xl)] border border-border bg-muted/60 p-4">
         <div className="flex items-center gap-2 text-sm font-medium text-foreground">

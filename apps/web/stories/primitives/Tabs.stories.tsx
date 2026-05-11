@@ -9,6 +9,12 @@ const registryTabs = [
   { icon: Ruler, key: "standards", label: "Эталоны" },
 ] as const;
 
+const registryTabsWithBadges = [
+  { badge: "2", icon: Wrench, key: "equipment", label: "Оборудование" },
+  { badge: "3", icon: Cable, key: "mi", label: "Средства измерения" },
+  { badge: "1", icon: Ruler, key: "standards", label: "Эталоны" },
+] as const;
+
 const meta = {
   title: "Primitives/Tabs",
   component: Tabs,
@@ -44,6 +50,13 @@ export const ActiveMiddle: Story = {
 export const FullWidth: Story = {
   args: {
     fullWidth: true,
+  },
+};
+
+export const WithBadges: Story = {
+  args: {
+    fullWidth: true,
+    items: registryTabsWithBadges,
   },
 };
 

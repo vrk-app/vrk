@@ -1,0 +1,24 @@
+apps/web/shared/ui/InputField.tsx:10:  hint?: string;
+apps/web/shared/ui/InputField.tsx:26:      hint,
+apps/web/shared/ui/InputField.tsx:40:    const messageId = `${inputId}-message`;
+apps/web/shared/ui/InputField.tsx:41:    const hintDescriptionId = `${inputId}-hint-description`;
+apps/web/shared/ui/InputField.tsx:56:          {hint ? (
+apps/web/shared/ui/InputField.tsx:58:              aria-describedby={hintDescriptionId}
+apps/web/shared/ui/InputField.tsx:64:              <span className="sr-only" id={hintDescriptionId}>
+apps/web/shared/ui/InputField.tsx:65:                {hint}
+apps/web/shared/ui/InputField.tsx:69:                role="tooltip"
+apps/web/shared/ui/InputField.tsx:71:                {hint}
+apps/web/shared/ui/InputField.tsx:95:            aria-describedby={error ? messageId : undefined}
+apps/web/shared/ui/InputField.tsx:137:            id={messageId}
+apps/web/stories/primitives/InputField.stories.tsx:99:export const WithHint: Story = {
+apps/web/stories/primitives/InputField.stories.tsx:101:    hint: "Используйте корпоративный логин без домена.",
+apps/web/stories/primitives/InputField.stories.tsx:108:    await expect(input).not.toHaveAttribute("aria-describedby");
+apps/web/stories/primitives/InputField.stories.tsx:121:export const WithError: Story = {
+apps/web/stories/primitives/InputField.stories.tsx:141:export const WithHintAndError: Story = {
+apps/web/stories/primitives/InputField.stories.tsx:145:    hint: "9 цифр.",
+docs/design/storybook-component-backlog.md:100:- Обязательные props: `type`, `label`, `placeholder`, `value`, `hint`, `error`, `leftIcon`, `rightIcon`, `disabled`.
+docs/design/storybook-component-backlog.md:101:- Контракт `hint`: вспомогательная справка показывается через compact help-trigger рядом с label/control и раскрывается по hover/focus; она не занимает постоянную строку под полем. `error` остается видимым текстом под полем и имеет приоритет в `aria-describedby`.
+docs/design/storybook-component-backlog.md:102:- Состояния: `empty`, `filled`, `hint`, `error`, `hint + error`, `disabled`, `with icon`.
+docs/design/storybook-component-backlog.md:103:- Stories: `Text`, `Email`, `Password`, `Search`, `WithHint`, `WithError`, `WithHintAndError`, `Disabled`.
+docs/design/storybook-component-backlog.md:636:- Обязательные props: `label`, `value`, `placeholder`, `rows`, `maxLength`, `autoResize`, `hint`, `error`, `disabled`, `showCounter`.
+docs/design/storybook-component-backlog.md:930:- Stories: `Default`, `WithErrors`, `Empty`, `Loading`.

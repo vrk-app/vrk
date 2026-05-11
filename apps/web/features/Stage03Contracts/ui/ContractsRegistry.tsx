@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { Building2, ClipboardCheck, Route, ShieldAlert, UserRoundCheck } from "lucide-react";
-import { Badge, Button, Card, InputField, SelectField } from "@/shared/ui";
+import { Badge, Button, Card, InputField, IslandCard, SelectField } from "@/shared/ui";
 import { sessionHasCapability } from "@/shared/api";
 import type {
   ApiEnvelope,
@@ -249,7 +249,6 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
       {!isCustomerContour ? (
         <Card className="gap-4" padding="lg">
           <div className="space-y-2">
-            <Badge tone="info">Договоры подрядчика</Badge>
             <h2 className="text-xl font-semibold text-foreground">Доступные договоры</h2>
             <p className="text-sm leading-6 text-muted-foreground">
               Показаны договоры заказчиков, назначенные вашей организации.
@@ -304,15 +303,11 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
       {canManageContracts ? (
         <>
           <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-            <Card className="gap-5" padding="lg">
-              <div className="space-y-2">
-                <Badge tone="interactive">Реестр заказчика</Badge>
-                <h2 className="text-xl font-semibold text-foreground">Создать договор и привязать подрядчика</h2>
-                <p className="text-sm leading-6 text-muted-foreground">
-                  Укажите подрядчика, область действия, сроки, вид работ, тип оборудования и регион.
-                </p>
-              </div>
-
+            <IslandCard
+              headingLevel={2}
+              icon={<ClipboardCheck aria-hidden="true" className="size-4" />}
+              title="Создать договор и привязать подрядчика"
+            >
               <div className="grid gap-4 md:grid-cols-2">
                 <InputField
                   autoComplete="off"
@@ -421,19 +416,14 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                 >
                   Сохранить договор
                 </Button>
-                <Badge tone="info">Раздел «Договоры»</Badge>
               </div>
-            </Card>
+            </IslandCard>
 
-            <Card className="gap-5" padding="lg">
-              <div className="space-y-2">
-                <Badge tone="violet">Проверка маршрутизации</Badge>
-                <h2 className="text-xl font-semibold text-foreground">Проверить подходящий договор</h2>
-                <p className="text-sm leading-6 text-muted-foreground">
-                  Проверка показывает, какой подрядчик подходит под выбранный юнит, вид работ, тип оборудования и регион.
-                </p>
-              </div>
-
+            <IslandCard
+              headingLevel={2}
+              icon={<Route aria-hidden="true" className="size-4" />}
+              title="Проверить подходящий договор"
+            >
               <div className="grid gap-4">
                 <SelectField
                   label="Юнит"
@@ -512,12 +502,11 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   )}
                 </div>
               ) : null}
-            </Card>
+            </IslandCard>
           </div>
 
           <Card className="gap-4" padding="lg">
             <div className="space-y-2">
-              <Badge tone="info">Договоры заказчика</Badge>
               <h2 className="text-xl font-semibold text-foreground">Реестр договоров</h2>
               <p className="text-sm leading-6 text-muted-foreground">
                 Список договоров заказчика с привязкой подрядчика и статусом маршрута.

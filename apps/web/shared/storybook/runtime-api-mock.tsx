@@ -67,15 +67,12 @@ function RuntimeApiBoundary({
 }) {
   useEffect(() => {
     const originalFetch = globalThis.fetch;
-    const originalConfirm = window.confirm;
     const state = createRuntimeState(options);
 
-    window.confirm = () => true;
     globalThis.fetch = (input, init) => handleRuntimeFetch(input, init, state);
 
     return () => {
       globalThis.fetch = originalFetch;
-      window.confirm = originalConfirm;
     };
   }, [options]);
 

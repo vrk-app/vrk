@@ -130,18 +130,9 @@ export function LaunchWizardForm({ session }: Props) {
   return (
     <div className="grid gap-6 xl:grid-cols-[1.12fr_0.88fr]">
       <Card className="gap-5" padding="lg">
-        <div className="space-y-2">
-          <p className="text-sm font-medium uppercase tracking-[0.16em] text-muted-foreground">Первичный запуск</p>
-          <div className="space-y-2">
-            <h2 className="text-balance text-2xl font-bold tracking-tight text-foreground">
-              Запустить организацию и первую структуру
-            </h2>
-            <p className="text-sm leading-6 text-muted-foreground">
-              Сохраните базовые реквизиты организации и создайте первую рабочую структуру. После завершения вы
-              перейдете в рабочее пространство организации.
-            </p>
-          </div>
-        </div>
+        <h2 className="text-balance text-2xl font-bold tracking-tight text-foreground">
+          Запустить организацию и первую структуру
+        </h2>
 
         <form
           className="grid gap-5"

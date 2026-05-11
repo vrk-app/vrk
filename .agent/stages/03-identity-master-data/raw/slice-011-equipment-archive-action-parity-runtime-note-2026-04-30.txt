@@ -1,0 +1,7 @@
+Runtime check note for slice-011-equipment-archive-action-parity:
+
+- `http://localhost:3100/equipment?tab=equipment` responded with HTTP 200.
+- The existing compose-backed runtime was available, but it served a stale bundle that had not picked up the local TSX edit.
+- No ad-hoc `next dev`, `next start`, Storybook server, or preview server was started because the prompt and AGENTS.md disallow starting a new long-running preview server without explicit request.
+- Runtime screenshot proof for the new button class was therefore not claimed.
+- Source/build proof is recorded through typecheck, lint, production build, Storybook build, source audit, and Web Interface Guidelines review.

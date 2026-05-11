@@ -1,0 +1,8 @@
+status: NOT_CLAIMED_AS_SLICE_PROOF
+route: http://localhost:3100/company
+head_artifact: .agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-localhost-3100-company-head-2026-04-30.txt
+html_artifact: .agent/stages/03-identity-master-data/raw/slice-011-input-help-tooltip-fresh-verifier-2-localhost-3100-company-html-2026-04-30.txt
+
+The existing compose-backed web route returned HTTP 200, but the fetched HTML is the unauthenticated "Требуется вход" shell and does not render the profile form fields.
+Per the runtime/dev-server policy, this verifier did not start next dev or another long-running preview server.
+The slice behavior is claimed through source proof, fresh local production build, fresh Storybook build, and the focused Storybook DOM proof for WithHint and WithHintAndError.
