@@ -662,6 +662,7 @@ Dialog и confirm modal используют единую геометрию в�
 ## 11.6. Status badges / chips
 - soft background
 - semibold text
+- `1px` border in the same semantic color as the text with `0.75` opacity
 - height: `24–28px`
 - radius: full или `12px`
 - optional dot/icon
@@ -953,6 +954,7 @@ registry/
   --primary: 222 31% 14%;
   --primary-foreground: 0 0% 100%;
   --primary-hover: 222 47% 10%;
+  --brand-mark: 9 63% 11%;
 
   /* Interactive */
   --accent: 221 91% 58%;
@@ -1012,6 +1014,7 @@ registry/
 
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-brand-mark: hsl(var(--brand-mark));
 
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));

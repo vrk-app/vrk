@@ -131,8 +131,8 @@ export function Tabs<TKey extends string>({
     <div
       aria-label={ariaLabel}
       className={cn(
-        "flex gap-1 overflow-x-auto rounded-[var(--radius-lg)] border border-border bg-muted/70 p-1",
-        fullWidth && "w-full",
+        "inline-flex max-w-full gap-1 overflow-x-auto rounded-[var(--radius-lg)] border border-border bg-muted/70 p-1",
+        fullWidth && "flex w-full",
         className,
       )}
       onKeyDown={handleKeyDown}

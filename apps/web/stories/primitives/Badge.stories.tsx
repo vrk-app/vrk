@@ -3,6 +3,16 @@ import { ArrowDownRight, ArrowUpRight, CircleCheckBig, TriangleAlert } from "luc
 import { REQUEST_STATUSES } from "@/shared/storybook/fixtures";
 import { Badge } from "@/shared/ui";
 
+const badgeToneMatrix = [
+  { tone: "neutral", label: "Нейтрально" },
+  { tone: "interactive", label: "На согласовании" },
+  { tone: "success", label: "Активно" },
+  { tone: "warning", label: "Требует внимания" },
+  { tone: "danger", label: "Рекламация" },
+  { tone: "info", label: "Информация" },
+  { tone: "violet", label: "На подписи" },
+] as const;
+
 const meta = {
   title: "Primitives/Badge",
   component: Badge,
@@ -76,7 +86,7 @@ export const TrendDown: Story = {
 
 export const StatusMatrix: Story = {
   render: () => (
-    <div className="flex flex-wrap gap-3">
+    <div className="flex max-w-xl flex-wrap gap-3 rounded-[var(--radius-xl)] border border-border bg-card p-4">
       {REQUEST_STATUSES.map((status) => (
         <Badge
           key={status.value}
@@ -84,6 +94,18 @@ export const StatusMatrix: Story = {
           tone={status.tone}
         >
           {status.label}
+        </Badge>
+      ))}
+    </div>
+  ),
+};
+
+export const BorderedTones: Story = {
+  render: () => (
+    <div className="grid max-w-xl gap-3 rounded-[var(--radius-xl)] border border-border bg-card p-4 sm:grid-cols-2">
+      {badgeToneMatrix.map((item) => (
+        <Badge className="w-fit" key={item.tone} tone={item.tone}>
+          {item.label}
         </Badge>
       ))}
     </div>
