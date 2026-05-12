@@ -1,4 +1,5 @@
-import { CloudOff, RefreshCcw, ShieldCheck, Smartphone } from "lucide-react";
+import Image from "next/image";
+import { CloudOff, RefreshCcw, ShieldCheck } from "lucide-react";
 import { getFieldEnv } from "@/shared/config/env";
 
 const statusCards = [
@@ -49,7 +50,15 @@ export default function FieldHomePage() {
           <div className="border-b border-border bg-surface-muted/70 px-5 py-4 md:px-6">
             <div className="flex items-center gap-3 text-sm font-medium text-foreground/80">
               <span className="flex size-10 items-center justify-center rounded-2xl bg-interactive-soft text-interactive">
-                <Smartphone aria-hidden="true" className="size-5" />
+                <Image
+                  alt=""
+                  aria-hidden="true"
+                  className="size-7 rounded-[var(--radius-lg)] object-contain"
+                  height={28}
+                  priority
+                  src="/brand/app-icons/vrk-field-192.png"
+                  width={28}
+                />
               </span>
               <div className="flex flex-col">
                 <span className="text-xs uppercase tracking-[0.12em] text-foreground/45">

@@ -1,0 +1,1 @@
+PASS: journal selector state no longer uses measuring-instrument-only activeMeasuringInstruments/selectedMeasuringInstrumentId/measuringInstrumentJournals/createMeasuringInstrumentJournal symbols.

@@ -1,7 +1,7 @@
 # Source Of Truth
 
 Статус: accepted  
-Обновлено: 2026-04-18
+Обновлено: 2026-05-12
 
 ## Назначение
 
@@ -11,15 +11,18 @@
 
 При конфликте источники применяются в таком порядке:
 
-1. Текущее состояние репозитория:
+1. Текущее состояние репозитория и канонические MVP-документы:
    - `README.md`
    - `docs/PRD-MVP.md`
-   - `BACKEND.md`
+   - `docs/architecture/identity-master-data.md`
    - код и структура в `apps/backend/`
+   - код и структура в `apps/web/`
+   - миграции и сгенерированный Swagger в `apps/backend/`
 2. Операционный roadmap для агента:
    - `docs/roadmap.md`
    - `docs/architecture/documentation-workflow.md`
 3. Архивные bootstrap и исторические материалы:
+   - `BACKEND.md`
    - `docs/archive/agent-bootstrap/`
 
 Если описание в более позднем документе противоречит уже существующему коду и структуре репозитория, приоритет у репозитория и PRD. Любое сознательное отклонение должно оформляться отдельным ADR до изменения кода.
@@ -92,15 +95,18 @@
 - `docs/design/serviceops-design-system.md`
 - `docs/architecture/frontend-architecture.md`
 - `.agents/skills/vrk-mvp-stage-orchestrator/`
+- `.agents/skills/vrk-incubator-publish/`
 - `.codex/agents/`
 - `.codex/config.toml`
 - `.agent/stages/<stage-id>/`
 
 Для каждого нового stage-run Codex должен сначала читать эти артефакты, затем уже переходить к коду и новым изменениям.
 
+Для публикации в `Incubator` после stage-run Codex должен использовать отдельный publish workflow: `.agents/skills/vrk-incubator-publish/` и runbook `docs/architecture/yandex-cloud-incubator-deployment.md`. Stage evidence доказывает готовность реализации, но не заменяет PR checks, deploy workflow и runtime health proof.
+
 ## Что считать legacy-источником
 
-`BACKEND.md` и часть формулировок в `README.md` содержат более широкий желаемый охват, чем текущий код. Их нужно использовать как доменное объяснение и источник требований, но не как разрешение расширять MVP за пределы `docs/PRD-MVP.md` и `docs/roadmap.md`.
+`BACKEND.md` и часть старых формулировок в `README.md` содержат более широкий желаемый охват, чем текущий код. Их нужно использовать как доменное объяснение и источник требований, но не как разрешение расширять MVP за пределы `docs/PRD-MVP.md`, `docs/roadmap.md`, `docs/architecture/identity-master-data.md` и фактических runtime contracts в `apps/backend` / `apps/web`.
 
 ## Практическое правило для следующих этапов
 

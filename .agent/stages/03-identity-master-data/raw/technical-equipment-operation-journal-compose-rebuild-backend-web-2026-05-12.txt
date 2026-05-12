@@ -1,0 +1,468 @@
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.16kB done
+#1 DONE 0.0s
+
+#2 [web internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.04kB done
+#2 DONE 0.0s
+
+#3 [backend internal] load build definition from Dockerfile
+#3 transferring dockerfile: 1.49kB done
+#3 DONE 0.0s
+
+#4 [backend internal] load metadata for docker.io/library/golang:1.26-alpine
+#4 DONE 0.2s
+
+#5 [backend internal] load metadata for docker.io/library/alpine:3.19
+#5 ...
+
+#6 [web internal] load metadata for docker.io/library/node:24.14.1-alpine
+#6 DONE 0.2s
+
+#7 [web internal] load .dockerignore
+#7 transferring context: 190B done
+#7 DONE 0.0s
+
+#8 [web 1/9] FROM docker.io/library/node:24.14.1-alpine@sha256:8510330d3eb72c804231a834b1a8ebb55cb3796c3e4431297a24d246b8add4d5
+#8 resolve docker.io/library/node:24.14.1-alpine@sha256:8510330d3eb72c804231a834b1a8ebb55cb3796c3e4431297a24d246b8add4d5 done
+#8 DONE 0.0s
+
+#9 [web internal] load build context
+#9 transferring context: 16.61MB 0.2s done
+#9 DONE 0.2s
+
+#5 [backend internal] load metadata for docker.io/library/alpine:3.19
+#5 ...
+
+#10 [web 4/9] COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+#10 CACHED
+
+#11 [web 5/9] COPY apps/web/package.json apps/web/package.json
+#11 CACHED
+
+#12 [web 6/9] COPY apps/field/package.json apps/field/package.json
+#12 CACHED
+
+#13 [web 2/9] WORKDIR /workspace
+#13 CACHED
+
+#14 [web 3/9] RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
+#14 CACHED
+
+#15 [web 7/9] RUN pnpm install --frozen-lockfile
+#15 CACHED
+
+#16 [web 8/9] COPY . .
+#16 DONE 0.2s
+
+#5 [backend internal] load metadata for docker.io/library/alpine:3.19
+#5 DONE 1.4s
+
+#17 [web 9/9] RUN pnpm --filter @vrk/web build-storybook   && rm -rf apps/web/public/storybook   && mkdir -p apps/web/public/storybook   && cp -R apps/web/storybook-static/. apps/web/public/storybook/   && pnpm --filter @vrk/web build
+#17 ...
+
+#18 [backend internal] load .dockerignore
+#18 transferring context: 44B done
+#18 DONE 0.0s
+
+#19 [backend builder  1/12] FROM docker.io/library/golang:1.26-alpine@sha256:f85330846cde1e57ca9ec309382da3b8e6ae3ab943d2739500e08c86393a21b1
+#19 resolve docker.io/library/golang:1.26-alpine@sha256:f85330846cde1e57ca9ec309382da3b8e6ae3ab943d2739500e08c86393a21b1 0.0s done
+#19 DONE 0.0s
+
+#20 [backend stage-1 1/7] FROM docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1
+#20 resolve docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1 0.0s done
+#20 DONE 0.0s
+
+#21 [backend internal] load build context
+#21 transferring context: 591.24kB 0.0s done
+#21 DONE 0.0s
+
+#22 [backend builder  5/12] COPY go.mod go.sum ./
+#22 CACHED
+
+#23 [backend builder  2/12] RUN apk add --no-cache git ca-certificates tzdata
+#23 CACHED
+
+#24 [backend builder  4/12] WORKDIR /app
+#24 CACHED
+
+#25 [backend builder  7/12] COPY sqlc.yaml ./
+#25 CACHED
+
+#26 [backend builder  6/12] RUN go mod download
+#26 CACHED
+
+#27 [backend builder  3/12] RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0
+#27 CACHED
+
+#28 [backend builder  8/12] COPY internal/db/queries ./internal/db/queries
+#28 CACHED
+
+#29 [backend builder  9/12] COPY migrations ./migrations
+#29 DONE 0.1s
+
+#30 [backend builder 10/12] RUN sqlc generate
+#30 DONE 1.3s
+
+#17 [web 9/9] RUN pnpm --filter @vrk/web build-storybook   && rm -rf apps/web/public/storybook   && mkdir -p apps/web/public/storybook   && cp -R apps/web/storybook-static/. apps/web/public/storybook/   && pnpm --filter @vrk/web build
+#17 0.931
+#17 0.931 > @vrk/web@0.1.0 build-storybook /workspace/apps/web
+#17 0.931 > storybook build --quiet
+#17 0.931
+#17 1.452 @storybook/core v8.5.8
+#17 1.452
+#17 1.455 info => Cleaning outputDir: storybook-static
+#17 1.586 info => Loading presets
+#17 1.884 info => Building manager..
+#17 2.089 info => Manager built ([38;2;181;126;229m207 ms[39m)
+#17 2.092 info => Building preview..
+#17 ...
+
+#31 [backend builder 11/12] COPY . .
+#31 DONE 0.0s
+
+#32 [backend builder 12/12] RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build     -ldflags="-w -s"     -o /app/bin/api     ./cmd/api
+#32 ...
+
+#17 [web 9/9] RUN pnpm --filter @vrk/web build-storybook   && rm -rf apps/web/public/storybook   && mkdir -p apps/web/public/storybook   && cp -R apps/web/storybook-static/. apps/web/public/storybook/   && pnpm --filter @vrk/web build
+#17 3.205 info Using tsconfig paths for react-docgen
+#17 3.259 vite v6.4.2 building for production...
+#17 3.306 transforming...
+#17 6.949 info => Copying static files: public at storybook-static
+#17 6.963 (node:19) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+#17 6.963 (Use `node --trace-deprecation ...` to show where the warning was created)
+#17 8.926 app/(runtime)/company/_components/CompanyStructureWorkspace.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+#17 8.934 app/(runtime)/company/_components/CompanyStructureWorkspace.tsx (1:0): Module level directives cause errors when bundled, "use client" in "app/(runtime)/company/_components/CompanyStructureWorkspace.tsx" was ignored.
+#17 9.934 shared/ui/CopyableText.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+#17 9.935 shared/ui/CopyableText.tsx (1:0): Module level directives cause errors when bundled, "use client" in "shared/ui/CopyableText.tsx" was ignored.
+#17 9.935 shared/ui/Dialog.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+#17 9.935 shared/ui/Dialog.tsx (1:0): Module level directives cause errors when bundled, "use client" in "shared/ui/Dialog.tsx" was ignored.
+#17 9.959 shared/ui/FormListSplitLayout.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+#17 9.960 shared/ui/FormListSplitLayout.tsx (1:0): Module level directives cause errors when bundled, "use client" in "shared/ui/FormListSplitLayout.tsx" was ignored.
+#17 9.969 shared/ui/InputField.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+#17 9.969 shared/ui/InputField.tsx (1:0): Module level directives cause errors when bundled, "use client" in "shared/ui/InputField.tsx" was ignored.
+#17 9.971 shared/ui/Tooltip.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+#17 9.971 shared/ui/Tooltip.tsx (1:0): Module level directives cause errors when bundled, "use client" in "shared/ui/Tooltip.tsx" was ignored.
+#17 9.978 shared/ui/Toast.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+#17 9.978 shared/ui/Toast.tsx (1:0): Module level directives cause errors when bundled, "use client" in "shared/ui/Toast.tsx" was ignored.
+#17 9.989 shared/ui/SelectField.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+#17 9.990 shared/ui/SelectField.tsx (1:0): Module level directives cause errors when bundled, "use client" in "shared/ui/SelectField.tsx" was ignored.
+#17 10.01 shared/ui/TextareaField.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+#17 10.01 shared/ui/TextareaField.tsx (1:0): Module level directives cause errors when bundled, "use client" in "shared/ui/TextareaField.tsx" was ignored.
+#17 10.01 shared/ui/Tabs.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+#17 10.01 shared/ui/Tabs.tsx (1:0): Module level directives cause errors when bundled, "use client" in "shared/ui/Tabs.tsx" was ignored.
+#17 10.01 features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+#17 10.01 features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx (1:0): Module level directives cause errors when bundled, "use client" in "features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx" was ignored.
+#17 10.02 widgets/OperatorShell/ui/TopBar.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+#17 10.02 widgets/OperatorShell/ui/TopBar.tsx (1:0): Module level directives cause errors when bundled, "use client" in "widgets/OperatorShell/ui/TopBar.tsx" was ignored.
+#17 10.02 features/Stage03Bootstrap/ui/PlatformAdminInviteForm.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+#17 10.02 features/Stage03Bootstrap/ui/PlatformAdminInviteForm.tsx (1:0): Module level directives cause errors when bundled, "use client" in "features/Stage03Bootstrap/ui/PlatformAdminInviteForm.tsx" was ignored.
+#17 10.02 features/Stage03Bootstrap/ui/LaunchWizardForm.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+#17 10.02 features/Stage03Bootstrap/ui/LaunchWizardForm.tsx (1:0): Module level directives cause errors when bundled, "use client" in "features/Stage03Bootstrap/ui/LaunchWizardForm.tsx" was ignored.
+#17 10.02 widgets/Auth/ui/ConsentRow.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+#17 10.02 widgets/Auth/ui/ConsentRow.tsx (1:0): Module level directives cause errors when bundled, "use client" in "widgets/Auth/ui/ConsentRow.tsx" was ignored.
+#17 10.07 features/Stage03Contracts/ui/ContractsRegistry.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+#17 10.07 features/Stage03Contracts/ui/ContractsRegistry.tsx (1:0): Module level directives cause errors when bundled, "use client" in "features/Stage03Contracts/ui/ContractsRegistry.tsx" was ignored.
+#17 10.08 features/Stage03Access/ui/EmployeeInviteManager.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+#17 10.08 features/Stage03Access/ui/EmployeeInviteManager.tsx (1:0): Module level directives cause errors when bundled, "use client" in "features/Stage03Access/ui/EmployeeInviteManager.tsx" was ignored.
+#17 10.11 features/Stage03Access/ui/EmployeeAccessWorkspace.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+#17 10.11 features/Stage03Access/ui/EmployeeAccessWorkspace.tsx (1:0): Module level directives cause errors when bundled, "use client" in "features/Stage03Access/ui/EmployeeAccessWorkspace.tsx" was ignored.
+#17 10.11 ../../node_modules/.pnpm/@radix-ui+react-dialog@1.1.15_@types+react-dom@19.2.3_@types+react@19.2.14__@types+reac_779045218dc2799d336e7197abef9d38/node_modules/@radix-ui/react-dialog/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/.pnpm/@radix-ui+react-dialog@1.1.15_@types+react-dom@19.2.3_@types+react@19.2.14__@types+reac_779045218dc2799d336e7197abef9d38/node_modules/@radix-ui/react-dialog/dist/index.mjs" was ignored.
+#17 10.20 ../../node_modules/.pnpm/@radix-ui+react-toast@1.2.15_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_4581e89c6ba13e4159ce65546c8b2a16/node_modules/@radix-ui/react-toast/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/.pnpm/@radix-ui+react-toast@1.2.15_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_4581e89c6ba13e4159ce65546c8b2a16/node_modules/@radix-ui/react-toast/dist/index.mjs" was ignored.
+#17 10.27 ../../node_modules/.pnpm/@radix-ui+react-select@2.2.6_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_53894a32562cb9eeb6aef8b357a4f4e3/node_modules/@radix-ui/react-select/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/.pnpm/@radix-ui+react-select@2.2.6_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_53894a32562cb9eeb6aef8b357a4f4e3/node_modules/@radix-ui/react-select/dist/index.mjs" was ignored.
+#17 10.54 features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx (1:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+#17 10.54 features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx (1:0): Module level directives cause errors when bundled, "use client" in "features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx" was ignored.
+#17 10.67 ../../node_modules/.pnpm/@radix-ui+react-portal@1.1.9_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_7668895bec2444446faa4e0f4eb5244b/node_modules/@radix-ui/react-portal/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/.pnpm/@radix-ui+react-portal@1.1.9_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_7668895bec2444446faa4e0f4eb5244b/node_modules/@radix-ui/react-portal/dist/index.mjs" was ignored.
+#17 10.68 ../../node_modules/.pnpm/@radix-ui+react-presence@1.1.5_@types+react-dom@19.2.3_@types+react@19.2.14__@types+rea_c01c26c80b5ab5e3ecefbda6eca51ad1/node_modules/@radix-ui/react-presence/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/.pnpm/@radix-ui+react-presence@1.1.5_@types+react-dom@19.2.3_@types+react@19.2.14__@types+rea_c01c26c80b5ab5e3ecefbda6eca51ad1/node_modules/@radix-ui/react-presence/dist/index.mjs" was ignored.
+#17 10.68 ../../node_modules/.pnpm/@radix-ui+react-focus-guards@1.1.3_@types+react@19.2.14_react@19.2.4/node_modules/@radix-ui/react-focus-guards/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/.pnpm/@radix-ui+react-focus-guards@1.1.3_@types+react@19.2.14_react@19.2.4/node_modules/@radix-ui/react-focus-guards/dist/index.mjs" was ignored.
+#17 10.69 ../../node_modules/.pnpm/@radix-ui+react-dismissable-layer@1.1.11_@types+react-dom@19.2.3_@types+react@19.2.14___3d3960154a4c07d09bb90cb341135fc5/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/.pnpm/@radix-ui+react-dismissable-layer@1.1.11_@types+react-dom@19.2.3_@types+react@19.2.14___3d3960154a4c07d09bb90cb341135fc5/node_modules/@radix-ui/react-dismissable-layer/dist/index.mjs" was ignored.
+#17 10.70 ../../node_modules/.pnpm/@radix-ui+react-focus-scope@1.1.7_@types+react-dom@19.2.3_@types+react@19.2.14__@types+_f62f3af4ca2ba305a7aecf04c8534604/node_modules/@radix-ui/react-focus-scope/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/.pnpm/@radix-ui+react-focus-scope@1.1.7_@types+react-dom@19.2.3_@types+react@19.2.14__@types+_f62f3af4ca2ba305a7aecf04c8534604/node_modules/@radix-ui/react-focus-scope/dist/index.mjs" was ignored.
+#17 10.71 ../../node_modules/.pnpm/@radix-ui+react-collection@1.1.7_@types+react-dom@19.2.3_@types+react@19.2.14__@types+r_161926fa2509d0b7370b60b8bb4eb8b0/node_modules/@radix-ui/react-collection/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/.pnpm/@radix-ui+react-collection@1.1.7_@types+react-dom@19.2.3_@types+react@19.2.14__@types+r_161926fa2509d0b7370b60b8bb4eb8b0/node_modules/@radix-ui/react-collection/dist/index.mjs" was ignored.
+#17 10.72 ../../node_modules/.pnpm/@radix-ui+react-popper@1.2.8_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_13e0521d8aea7ebfbfb8bee1fb615c05/node_modules/@radix-ui/react-popper/dist/index.mjs (1:0): Module level directives cause errors when bundled, "use client" in "../../node_modules/.pnpm/@radix-ui+react-popper@1.2.8_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_13e0521d8aea7ebfbfb8bee1fb615c05/node_modules/@radix-ui/react-popper/dist/index.mjs" was ignored.
+#17 14.13 ✓ 1915 modules transformed.
+#17 14.32 ../../node_modules/.pnpm/@storybook+core@8.5.8/node_modules/@storybook/core/dist/preview/runtime.js (3212:15): Use of eval in "../../node_modules/.pnpm/@storybook+core@8.5.8/node_modules/@storybook/core/dist/preview/runtime.js" is strongly discouraged as it poses security risks and may cause issues with minification.
+#17 14.33 ../../node_modules/.pnpm/@storybook+core@8.5.8/node_modules/@storybook/core/dist/preview/runtime.js (3214:16): Use of eval in "../../node_modules/.pnpm/@storybook+core@8.5.8/node_modules/@storybook/core/dist/preview/runtime.js" is strongly discouraged as it poses security risks and may cause issues with minification.
+#17 14.46 rendering chunks...
+#17 14.73 computing gzip size...
+#17 14.79 storybook-static/iframe.html                                             17.56 kB │ gzip:   4.98 kB
+#17 14.79 storybook-static/assets/preview-DdaPb4hK.css                             66.03 kB │ gzip:  11.81 kB
+#17 14.79 storybook-static/assets/brand-DAkZ9Uqv.js                                 0.08 kB │ gzip:   0.10 kB
+#17 14.79 storybook-static/assets/_commonjsHelpers-CqkleIqs.js                      0.12 kB │ gzip:   0.13 kB
+#17 14.79 storybook-static/assets/next-navigation-mock-BEpP7TZW.js                  0.13 kB │ gzip:   0.11 kB
+#17 14.79 storybook-static/assets/index-CzYbgw1e.js                                 0.14 kB │ gzip:   0.13 kB
+#17 14.79 storybook-static/assets/preview-D8Rral7M.js                               0.16 kB │ gzip:   0.16 kB
+#17 14.79 storybook-static/assets/preview-Br-h4d84.js                               0.17 kB │ gzip:   0.15 kB
+#17 14.79 storybook-static/assets/client-envelope-CohWVMWj.js                       0.23 kB │ gzip:   0.18 kB
+#17 14.79 storybook-static/assets/plus-D61cD6cM.js                                  0.33 kB │ gzip:   0.25 kB
+#17 14.79 storybook-static/assets/arrow-right-BihRWUC8.js                           0.34 kB │ gzip:   0.26 kB
+#17 14.79 storybook-static/assets/arrow-up-right-YON6lyFv.js                        0.34 kB │ gzip:   0.27 kB
+#17 14.79 storybook-static/assets/search-D3TuEwZJ.js                                0.34 kB │ gzip:   0.27 kB
+#17 14.79 storybook-static/assets/user-round-Bjshgihc.js                            0.35 kB │ gzip:   0.28 kB
+#17 14.79 storybook-static/assets/mail-Bzj7w0H6.js                                  0.39 kB │ gzip:   0.31 kB
+#17 14.79 storybook-static/assets/archive-BqQ1di3-.js                               0.43 kB │ gzip:   0.31 kB
+#17 14.79 storybook-static/assets/lock-keyhole-9e4UKhMA.js                          0.43 kB │ gzip:   0.32 kB
+#17 14.79 storybook-static/assets/send-horizontal-Kt-AO1jz.js                       0.46 kB │ gzip:   0.33 kB
+#17 14.79 storybook-static/assets/index-DA9HuKLV.js                                 0.46 kB │ gzip:   0.30 kB
+#17 14.79 storybook-static/assets/bell-BXkPJ2NQ.js                                  0.46 kB │ gzip:   0.34 kB
+#17 14.79 storybook-static/assets/wrench-CFn5rfrn.js                                0.47 kB │ gzip:   0.34 kB
+#17 14.79 storybook-static/assets/shield-check-BQpieIMn.js                          0.49 kB │ gzip:   0.35 kB
+#17 14.79 storybook-static/assets/save-D5ncT5Zy.js                                  0.50 kB │ gzip:   0.33 kB
+#17 14.79 storybook-static/assets/file-text-CWlFqlax.js                             0.51 kB │ gzip:   0.32 kB
+#17 14.79 storybook-static/assets/clipboard-list-CHqypWkh.js                        0.58 kB │ gzip:   0.36 kB
+#17 14.79 storybook-static/assets/cable-6Soybtr7.js                                 0.67 kB │ gzip:   0.38 kB
+#17 14.79 storybook-static/assets/preview-DGUiP6tS.js                               0.71 kB │ gzip:   0.50 kB
+#17 14.79 storybook-static/assets/chunk-XP5HYGXS-B_VsWcPe.js                        0.72 kB │ gzip:   0.40 kB
+#17 14.79 storybook-static/assets/jsx-runtime-D_zvdyIk.js                           0.73 kB │ gzip:   0.46 kB
+#17 14.79 storybook-static/assets/index-DrFu-skq.js                                 0.77 kB │ gzip:   0.47 kB
+#17 14.79 storybook-static/assets/preview-DaFqi_gz.js                               0.84 kB │ gzip:   0.54 kB
+#17 14.79 storybook-static/assets/next-image-mock-DHQhZMmA.js                       0.96 kB │ gzip:   0.51 kB
+#17 14.79 storybook-static/assets/preview-BQqANH0E.js                               1.02 kB │ gzip:   0.63 kB
+#17 14.79 storybook-static/assets/sparkles-C-45m75S.js                              1.05 kB │ gzip:   0.48 kB
+#17 14.79 storybook-static/assets/StoryFrame-Dpmol3gz.js                            1.11 kB │ gzip:   0.52 kB
+#17 14.79 storybook-static/assets/Breadcrumbs.stories-uhRdQQkL.js                   1.22 kB │ gzip:   0.63 kB
+#17 14.79 storybook-static/assets/trash-2-BEKCi6ae.js                               1.29 kB │ gzip:   0.56 kB
+#17 14.79 storybook-static/assets/AuthPage.stories-ESrw0TdV.js                      1.35 kB │ gzip:   0.82 kB
+#17 14.79 storybook-static/assets/FirstAdminActivationForm.stories-nVvvwlKd.js      1.50 kB │ gzip:   0.76 kB
+#17 14.79 storybook-static/assets/PlatformAdminInviteForm.stories-CLLaEA2U.js       1.55 kB │ gzip:   0.75 kB
+#17 14.79 storybook-static/assets/preview-D-tgWo10.js                               2.12 kB │ gzip:   1.17 kB
+#17 14.79 storybook-static/assets/AuthSplitLayout.stories-ANMTNF9P.js               2.30 kB │ gzip:   1.07 kB
+#17 14.79 storybook-static/assets/CopyableText.stories-BlW1ZV4j.js                  2.39 kB │ gzip:   0.98 kB
+#17 14.79 storybook-static/assets/ConsentRow.stories-DDGkoF5o.js                    2.45 kB │ gzip:   1.15 kB
+#17 14.79 storybook-static/assets/RequestsPage.stories-CgKvRGKI.js                  2.52 kB │ gzip:   1.39 kB
+#17 14.79 storybook-static/assets/PageHeader.stories-D0gAmQBT.js                    2.62 kB │ gzip:   1.14 kB
+#17 14.79 storybook-static/assets/RequestListItem.stories-CcIowQWr.js               2.63 kB │ gzip:   0.89 kB
+#17 14.79 storybook-static/assets/Card.stories-kqeeEZiN.js                          2.68 kB │ gzip:   1.11 kB
+#17 14.79 storybook-static/assets/RequestStatusBadge.stories-BDudJTP4.js            2.80 kB │ gzip:   0.89 kB
+#17 14.79 storybook-static/assets/LoginForm.stories-GWsd8uz2.js                     3.07 kB │ gzip:   1.28 kB
+#17 14.79 storybook-static/assets/IconGallery.stories-Ddc9nVeW.js                   3.21 kB │ gzip:   1.35 kB
+#17 14.79 storybook-static/assets/Tooltip.stories-9_mMHE0t.js                       3.30 kB │ gzip:   1.23 kB
+#17 14.79 storybook-static/assets/preview-1l6V4UsQ.js                               3.50 kB │ gzip:   1.69 kB
+#17 14.79 storybook-static/assets/Tabs.stories-BXJ8zFyp.js                          3.84 kB │ gzip:   1.58 kB
+#17 14.79 storybook-static/assets/index-DuyKIudj.js                                 3.89 kB │ gzip:   1.52 kB
+#17 14.79 storybook-static/assets/FormListSplitLayout.stories-BNH2EDmf.js           4.03 kB │ gzip:   1.71 kB
+#17 14.79 storybook-static/assets/RequestList.stories-DQaVMXUO.js                   4.09 kB │ gzip:   1.41 kB
+#17 14.79 storybook-static/assets/TextareaField.stories-BnN-PWT5.js                 4.21 kB │ gzip:   1.43 kB
+#17 14.79 storybook-static/assets/InlineAlert.stories-B3rEOXG3.js                   4.31 kB │ gzip:   1.50 kB
+#17 14.79 storybook-static/assets/RegisterForm.stories-B2MBJPVB.js                  4.62 kB │ gzip:   2.07 kB
+#17 14.79 storybook-static/assets/ConfirmDialog.stories-cogEVO3B.js                 4.78 kB │ gzip:   1.75 kB
+#17 14.79 storybook-static/assets/preview-D77C14du.js                               5.03 kB │ gzip:   1.86 kB
+#17 14.79 storybook-static/assets/TopBar.stories-Dm1BPOe3.js                        5.13 kB │ gzip:   1.79 kB
+#17 14.79
+#17 14.79 (!) Some chunks are larger than 500 kB after minification. Consider:
+#17 14.79 - Using dynamic import() to code-split the application
+#17 14.79 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+#17 14.79 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+#17 14.79 storybook-static/assets/Button.stories-kzuYq-07.js                        5.14 kB │ gzip:   1.64 kB
+#17 14.79 storybook-static/assets/AppShell.stories-rTNi20Gr.js                      5.27 kB │ gzip:   2.36 kB
+#17 14.79 storybook-static/assets/Badge.stories-DlyUh5al.js                         5.68 kB │ gzip:   1.93 kB
+#17 14.79 storybook-static/assets/SidebarNav.stories-CCgoXRXO.js                    5.71 kB │ gzip:   2.26 kB
+#17 14.79 storybook-static/assets/SelectField.stories-D7IZsHbP.js                   5.87 kB │ gzip:   1.80 kB
+#17 14.79 storybook-static/assets/Toast.stories-duAgpfFt.js                         6.25 kB │ gzip:   2.36 kB
+#17 14.79 storybook-static/assets/EmployeeAccessWorkspace.stories-BA-GtVP6.js       6.65 kB │ gzip:   1.82 kB
+#17 14.79 storybook-static/assets/EmployeeInviteManager.stories-1Z3oA2OU.js         7.12 kB │ gzip:   1.90 kB
+#17 14.79 storybook-static/assets/preview-BWzBA1C2.js                               7.62 kB │ gzip:   1.56 kB
+#17 14.79 storybook-static/assets/IslandCard.stories-BYyvOjUE.js                    7.78 kB │ gzip:   2.11 kB
+#17 14.79 storybook-static/assets/preview-BBWR9nbA.js                               8.12 kB │ gzip:   3.10 kB
+#17 14.79 storybook-static/assets/index-DSvP83uV.js                                 8.31 kB │ gzip:   3.29 kB
+#17 14.79 storybook-static/assets/Dialog.stories-DeakTPj-.js                        9.34 kB │ gzip:   2.77 kB
+#17 14.79 storybook-static/assets/PlatformAdminInviteForm-x97x7gbA.js               9.37 kB │ gzip:   3.07 kB
+#17 14.79 storybook-static/assets/fixtures-BT8KHMKa.js                              9.81 kB │ gzip:   3.15 kB
+#17 14.79 storybook-static/assets/InputField.stories-BfhUV9CP.js                   10.32 kB │ gzip:   2.52 kB
+#17 14.79 storybook-static/assets/TokenDocs.stories-C0KNGlk7.js                    12.32 kB │ gzip:   3.68 kB
+#17 14.79 storybook-static/assets/RequestList-Dy56m30F.js                          13.34 kB │ gzip:   4.14 kB
+#17 14.79 storybook-static/assets/LoginForm-BirBY4MI.js                            14.70 kB │ gzip:   4.18 kB
+#17 14.79 storybook-static/assets/TopBar-BnfEOo9d.js                               18.86 kB │ gzip:   4.96 kB
+#17 14.79 storybook-static/assets/cn-BQHNewu7.js                                   26.69 kB │ gzip:   8.42 kB
+#17 14.79 storybook-static/assets/Color-YHDXOIA2-CuM1MNuq.js                       29.41 kB │ gzip:  11.09 kB
+#17 14.79 storybook-static/assets/matchers-57EZJSQE-DWPG-1WF.js                    29.75 kB │ gzip:  10.28 kB
+#17 14.79 storybook-static/assets/entry-preview-Uy32z8gc.js                        29.84 kB │ gzip:   9.72 kB
+#17 14.79 storybook-static/assets/ContractsRegistry.stories-CBIow0KU.js            32.69 kB │ gzip:   7.04 kB
+#17 14.79 storybook-static/assets/EmployeeAccessWorkspace-CmJV_Zs_.js              39.66 kB │ gzip:   7.10 kB
+#17 14.79 storybook-static/assets/runtime-api-mock-C2dfGfij.js                     42.68 kB │ gzip:   9.70 kB
+#17 14.79 storybook-static/assets/CompanyStructureWorkspace.stories-D1fqlu19.js    47.17 kB │ gzip:  10.82 kB
+#17 14.79 storybook-static/assets/index-DgH-xKnr.js                                57.15 kB │ gzip:  16.28 kB
+#17 14.79 storybook-static/assets/EquipmentRegistryWorkspace.stories-DpBwvNZA.js  112.68 kB │ gzip:  21.68 kB
+#17 14.79 storybook-static/assets/Toast-3G4bAxUd.js                               143.79 kB │ gzip:  44.15 kB
+#17 14.79 storybook-static/assets/react-18-D04w7MkK.js                            181.75 kB │ gzip:  57.20 kB
+#17 14.79 storybook-static/assets/iframe-B2RoyFH0.js                              204.78 kB │ gzip:  68.86 kB
+#17 14.79 storybook-static/assets/entry-preview-docs-B3hRfkkC.js                  247.01 kB │ gzip:  73.41 kB
+#17 14.79 storybook-static/assets/axe-CpEqoGoD.js                                 582.57 kB │ gzip: 160.58 kB
+#17 14.79 storybook-static/assets/index-CwE67Ieu.js                               661.54 kB │ gzip: 156.54 kB
+#17 14.79 storybook-static/assets/DocsRenderer-CFRXHY34-BIYkbHdC.js               875.16 kB │ gzip: 273.07 kB
+#17 14.79 ✓ built in 11.52s
+#17 14.79 info => Preview built ([38;2;181;126;229m13 s[39m)
+#17 14.79 info => Output directory: /workspace/apps/web/storybook-static
+#17 14.79
+#17 14.79 attention => Storybook now collects completely anonymous telemetry regarding usage.
+#17 14.79 This information is used to shape Storybook's roadmap and prioritize features.
+#17 14.79 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+#17 14.79 https://storybook.js.org/telemetry
+#17 14.79
+#17 ...
+
+#32 [backend builder 12/12] RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build     -ldflags="-w -s"     -o /app/bin/api     ./cmd/api
+#32 DONE 13.6s
+
+#33 [backend stage-1 2/7] RUN apk add --no-cache ca-certificates tzdata wget
+#33 CACHED
+
+#34 [backend stage-1 3/7] RUN addgroup -g 1001 -S appgroup &&     adduser -u 1001 -S appuser -G appgroup
+#34 CACHED
+
+#35 [backend stage-1 4/7] COPY --from=builder --chown=appuser:appgroup /app/bin/api /app/api
+#35 DONE 0.1s
+
+#36 [backend stage-1 5/7] COPY --chown=appuser:appgroup migrations /app/migrations
+#36 DONE 0.0s
+
+#17 [web 9/9] RUN pnpm --filter @vrk/web build-storybook   && rm -rf apps/web/public/storybook   && mkdir -p apps/web/public/storybook   && cp -R apps/web/storybook-static/. apps/web/public/storybook/   && pnpm --filter @vrk/web build
+#17 15.90
+#17 15.90 > @vrk/web@0.1.0 build /workspace/apps/web
+#17 15.90 > next build
+#17 15.90
+#17 ...
+
+#37 [backend stage-1 6/7] RUN chown -R appuser:appgroup /app
+#37 DONE 0.2s
+
+#38 [backend stage-1 7/7] WORKDIR /app
+#38 DONE 0.0s
+
+#39 [backend] exporting to image
+#39 exporting layers
+#39 exporting layers 1.0s done
+#39 exporting manifest sha256:03d7d35bad40e251f0dc42d834ae13c319ea1454fd69cc41c68a78d74f032c18 done
+#39 exporting config sha256:0f0c70a22718c9acbbd5ed741c43d822445dc804a0dbb0e5cd785279211015de done
+#39 exporting attestation manifest sha256:7623da2aaeabd4ff5985d77b2d8a79dd62a699767403af254ad8bebfb53e0533 done
+#39 exporting manifest list sha256:4d6c0d8a00a6d25d1a752520484b161a41248f385801e25377fccb7c4c89dcd3 done
+#39 naming to docker.io/library/vrk-backend:latest done
+#39 unpacking to docker.io/library/vrk-backend:latest 0.1s done
+#39 DONE 1.2s
+
+#40 [backend] resolving provenance for metadata file
+#40 DONE 0.0s
+
+#17 [web 9/9] RUN pnpm --filter @vrk/web build-storybook   && rm -rf apps/web/public/storybook   && mkdir -p apps/web/public/storybook   && cp -R apps/web/storybook-static/. apps/web/public/storybook/   && pnpm --filter @vrk/web build
+#17 16.75    ▲ Next.js 15.5.15
+#17 16.75
+#17 16.78    Creating an optimized production build ...
+#17 25.63  ✓ Compiled successfully in 7.4s
+#17 25.63    Linting and checking validity of types ...
+#17 29.89    Collecting page data ...
+#17 31.22    Generating static pages (0/30) ...
+#17 31.52    Generating static pages (7/30)
+#17 31.52    Generating static pages (14/30)
+#17 31.56    Generating static pages (22/30)
+#17 31.63  ✓ Generating static pages (30/30)
+#17 32.03    Finalizing page optimization ...
+#17 32.03    Collecting build traces ...
+#17 36.78
+#17 36.78 Route (app)                                                                                 Size  First Load JS
+#17 36.78 ┌ ○ /                                                                                      234 B         102 kB
+#17 36.78 ├ ○ /_not-found                                                                             1 kB         103 kB
+#17 36.78 ├ ○ /access-policy                                                                         211 B         151 kB
+#17 36.78 ├ ƒ /api/auth/employee-invites                                                             234 B         102 kB
+#17 36.78 ├ ƒ /api/auth/employee-invites/[inviteId]/revoke                                           234 B         102 kB
+#17 36.78 ├ ƒ /api/auth/employee-invites/[inviteId]/send                                             234 B         102 kB
+#17 36.78 ├ ƒ /api/auth/employees                                                                    234 B         102 kB
+#17 36.78 ├ ƒ /api/auth/employees/[accessId]                                                         234 B         102 kB
+#17 36.78 ├ ƒ /api/auth/employees/[accessId]/deactivate                                              234 B         102 kB
+#17 36.78 ├ ƒ /api/auth/invites/[token]                                                              234 B         102 kB
+#17 36.78 ├ ƒ /api/auth/invites/[token]/accept                                                       234 B         102 kB
+#17 36.78 ├ ƒ /api/auth/session                                                                      234 B         102 kB
+#17 36.78 ├ ƒ /api/auth/session/current                                                              234 B         102 kB
+#17 36.78 ├ ƒ /api/bootstrap                                                                         234 B         102 kB
+#17 36.78 ├ ƒ /api/company/divisions                                                                 234 B         102 kB
+#17 36.78 ├ ƒ /api/company/divisions/[divisionId]                                                    234 B         102 kB
+#17 36.78 ├ ƒ /api/company/divisions/[divisionId]/archive                                            234 B         102 kB
+#17 36.78 ├ ƒ /api/company/logo                                                                      234 B         102 kB
+#17 36.78 ├ ƒ /api/company/profile                                                                   234 B         102 kB
+#17 36.78 ├ ƒ /api/company/units                                                                     234 B         102 kB
+#17 36.78 ├ ƒ /api/company/units/[unitId]                                                            234 B         102 kB
+#17 36.78 ├ ƒ /api/company/units/[unitId]/archive                                                    234 B         102 kB
+#17 36.78 ├ ƒ /api/contracts                                                                         234 B         102 kB
+#17 36.78 ├ ƒ /api/contracts/[contractId]                                                            234 B         102 kB
+#17 36.78 ├ ƒ /api/contracts/contractors                                                             234 B         102 kB
+#17 36.78 ├ ƒ /api/contracts/routing/resolve                                                         234 B         102 kB
+#17 36.78 ├ ƒ /api/equipment                                                                         234 B         102 kB
+#17 36.78 ├ ƒ /api/equipment/[equipmentId]                                                           234 B         102 kB
+#17 36.78 ├ ƒ /api/equipment/[equipmentId]/archive                                                   234 B         102 kB
+#17 36.78 ├ ƒ /api/equipment/[equipmentId]/journals                                                  234 B         102 kB
+#17 36.78 ├ ƒ /api/equipment/[equipmentId]/photos                                                    234 B         102 kB
+#17 36.78 ├ ƒ /api/equipment/[equipmentId]/photos/[photoId]                                          234 B         102 kB
+#17 36.78 ├ ƒ /api/equipment/measuring-instruments                                                   234 B         102 kB
+#17 36.78 ├ ƒ /api/equipment/measuring-instruments/[measuringInstrumentId]                           234 B         102 kB
+#17 36.78 ├ ƒ /api/equipment/measuring-instruments/[measuringInstrumentId]/archive                   234 B         102 kB
+#17 36.78 ├ ƒ /api/equipment/measuring-instruments/[measuringInstrumentId]/journals                  234 B         102 kB
+#17 36.78 ├ ƒ /api/equipment/measuring-instruments/[measuringInstrumentId]/photos                    234 B         102 kB
+#17 36.78 ├ ƒ /api/equipment/measuring-instruments/[measuringInstrumentId]/photos/[photoId]          234 B         102 kB
+#17 36.78 ├ ƒ /api/equipment/measuring-instruments/[measuringInstrumentId]/standards                 234 B         102 kB
+#17 36.78 ├ ƒ /api/equipment/measuring-instruments/[measuringInstrumentId]/standards/[standardId]    234 B         102 kB
+#17 36.78 ├ ƒ /api/platform/organization-shells                                                      234 B         102 kB
+#17 36.78 ├ ○ /apple-icon.png                                                                          0 B            0 B
+#17 36.78 ├ ƒ /company                                                                             12.8 kB         175 kB
+#17 36.78 ├ ƒ /company/setup                                                                         234 B         102 kB
+#17 36.78 ├ ƒ /contracts                                                                           6.98 kB         166 kB
+#17 36.78 ├ ƒ /equipment                                                                           15.6 kB         178 kB
+#17 36.78 ├ ○ /icon.png                                                                                0 B            0 B
+#17 36.78 ├ ○ /login                                                                               3.31 kB         166 kB
+#17 36.78 ├ ○ /manifest.webmanifest                                                                  234 B         102 kB
+#17 36.78 ├ ○ /password-reset                                                                        211 B         151 kB
+#17 36.78 ├ ○ /register                                                                              537 B         173 kB
+#17 36.78 ├ ƒ /register/[token]                                                                      244 B         169 kB
+#17 36.78 ├ ƒ /requests                                                                            2.79 kB         159 kB
+#17 36.78 └ ○ /storybook                                                                             234 B         102 kB
+#17 36.78 + First Load JS shared by all                                                             102 kB
+#17 36.78   ├ chunks/3554-c19825f276ec337d.js                                                      45.5 kB
+#17 36.78   ├ chunks/a97b86c7-6ed9a45f307045da.js                                                  54.2 kB
+#17 36.78   └ other shared chunks (total)                                                          1.87 kB
+#17 36.78
+#17 36.78
+#17 36.78 ○  (Static)   prerendered as static content
+#17 36.78 ƒ  (Dynamic)  server-rendered on demand
+#17 36.78
+#17 DONE 36.9s
+
+#41 [web] exporting to image
+#41 exporting layers
+#41 exporting layers 2.5s done
+#41 exporting manifest sha256:0b585d7f30e917acd49339df12e2b4235c3c4d3b323427d59e0f43295f04bc02
+#41 exporting manifest sha256:0b585d7f30e917acd49339df12e2b4235c3c4d3b323427d59e0f43295f04bc02 done
+#41 exporting config sha256:938543b365ae994a604f60776600121b9cc134b2bcba223c43632ffd1e2da6fa done
+#41 exporting attestation manifest sha256:4d454104b7ee89531fc76aa66bee875cd9284b71180d585bda9885cc567901a1 done
+#41 exporting manifest list sha256:ae0f46401c69a1e9f39059b6088ca21a85ed50bc52625e6235f80dbfaa5908f4 done
+#41 naming to docker.io/library/vrk-web:latest done
+#41 unpacking to docker.io/library/vrk-web:latest
+#41 unpacking to docker.io/library/vrk-web:latest 0.4s done
+#41 DONE 3.0s
+
+#42 [web] resolving provenance for metadata file
+#42 DONE 0.0s
+ vrk-backend  Built
+ vrk-web  Built
+ Container vrk-db-1  Running
+ Container vrk-object-storage-1  Running
+ Container vrk-backend-1  Recreate
+ Container vrk-backend-1  Recreated
+ Container vrk-web-1  Recreate
+ Container vrk-web-1  Recreated
+ Container vrk-object-storage-1  Waiting
+ Container vrk-db-1  Waiting
+ Container vrk-db-1  Healthy
+ Container vrk-migrate-1  Starting
+ Container vrk-object-storage-1  Healthy
+ Container vrk-object-storage-init-1  Starting
+ Container vrk-object-storage-init-1  Started
+ Container vrk-migrate-1  Started
+ Container vrk-db-1  Waiting
+ Container vrk-migrate-1  Waiting
+ Container vrk-object-storage-init-1  Waiting
+ Container vrk-object-storage-init-1  Exited
+ Container vrk-migrate-1  Exited
+ Container vrk-db-1  Healthy
+ Container vrk-backend-1  Starting
+ Container vrk-backend-1  Started
+ Container vrk-backend-1  Waiting
+ Container vrk-backend-1  Healthy
+ Container vrk-web-1  Starting
+ Container vrk-web-1  Started

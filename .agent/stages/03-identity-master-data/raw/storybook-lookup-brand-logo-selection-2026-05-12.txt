@@ -1,0 +1,27 @@
+Storybook registry entries: 38
+Query: "sidebar brand logo auth brand mark app icon"
+
+1. Auth/FirstAdminActivationForm [FirstAdminActivationForm]
+   story: apps/web/stories/auth/FirstAdminActivationForm.stories.tsx
+   source: apps/web/features/Stage03Bootstrap/ui/FirstAdminActivationForm.tsx
+   stories: FirstAdmin, Employee
+   tags: autodocs
+2. Layout/SidebarNav [SidebarNav]
+   story: apps/web/stories/layout/SidebarNav.stories.tsx
+   source: apps/web/widgets/OperatorShell/ui/SidebarNav.tsx
+   stories: Default, ActiveRequests, Collapsed, LongLabels, LongNavigation, MobileDrawer, CollapsedMobileDrawer
+   tags: autodocs
+3. Foundations/IconGallery [IconGalleryShowcase]
+   story: apps/web/stories/foundations/IconGallery.stories.tsx
+   stories: NavigationIcons, ActionIcons, FileTypeIcons, StatusIcons
+   tags: autodocs
+4. Auth/ConsentRow [ConsentRow]
+   story: apps/web/stories/auth/ConsentRow.stories.tsx
+   source: apps/web/widgets/Auth/ui/ConsentRow.tsx
+   stories: Default, Checked, Error, Disabled
+   tags: autodocs
+5. Company/CompanyStructureWorkspace [CompanyStructureWorkspace]
+   story: apps/web/stories/company/CompanyStructureWorkspace.stories.tsx
+   source: apps/web/app/(runtime)/company/_components/CompanyStructureWorkspace.tsx
+   stories: OrganizationAdmin, EmptyStructure, ScopedReadonly, OrganizationHeadEmployees, DivisionHeadEmployees, UnitHeadEmployees, DivisionsLongList
+   tags: autodocs

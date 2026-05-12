@@ -16,6 +16,14 @@ const jetBrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "VRK",
   description: "Рабочий веб-интерфейс VRK для сервисных операций",
+  icons: {
+    icon: [
+      { url: "/brand/app-icons/vrk-web-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/brand/app-icons/vrk-web-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [{ url: "/brand/app-icons/vrk-web-180.png", sizes: "180x180", type: "image/png" }],
+  },
+  manifest: "/manifest.webmanifest",
 };
 
 export default function RootLayout({

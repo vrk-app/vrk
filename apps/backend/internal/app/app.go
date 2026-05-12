@@ -20,6 +20,7 @@ import (
 	"backend/internal/equipment/equipment"
 	"backend/internal/equipment/measuringinstrument"
 	"backend/internal/equipment/metrologyjournal"
+	"backend/internal/equipment/photo"
 	"backend/internal/equipment/standard"
 	"backend/internal/infrastructure/config"
 	"backend/internal/infrastructure/db"
@@ -63,19 +64,23 @@ func New(cfg *config.Config) (*App, error) {
 	orgHandler := organization.NewHandler(orgService)
 
 	bootstrapRepo := bootstrap.NewRepository(database, queries)
-	logoStorage, err := objectstorage.New(ctx, cfg.ObjectStorage)
+	objectStorage, err := objectstorage.New(ctx, cfg.ObjectStorage)
 	if err != nil {
 		return nil, err
 	}
-	bootstrapService := bootstrap.NewService(bootstrapRepo, queries, logoStorage)
+	bootstrapService := bootstrap.NewService(bootstrapRepo, queries, objectStorage)
 	bootstrapHandler := bootstrap.NewHandler(bootstrapService)
+
+	photoRepo := photo.NewRepository(database)
+	photoService := photo.NewService(photoRepo, bootstrapService, objectStorage)
+	photoHandler := photo.NewHandler(photoService)
+
+	journalRepo := metrologyjournal.NewRepository(database)
 
 	// Equipment
 	eqRepo := equipment.NewRepository(database)
-	eqService := equipment.NewService(eqRepo, bootstrapService)
+	eqService := equipment.NewService(eqRepo, journalRepo, bootstrapService, photoRepo)
 	eqHandler := equipment.NewHandler(eqService)
-
-	journalRepo := metrologyjournal.NewRepository(database)
 
 	// Standard
 	stdRepo := standard.NewRepository(database)
@@ -84,7 +89,7 @@ func New(cfg *config.Config) (*App, error) {
 
 	// Measuring Instrument
 	miRepo := measuringinstrument.NewRepository(database)
-	miService := measuringinstrument.NewService(miRepo, journalRepo, bootstrapService)
+	miService := measuringinstrument.NewService(miRepo, journalRepo, bootstrapService, photoRepo)
 	miHandler := measuringinstrument.NewHandler(miService)
 
 	agreementRepo := agreement.NewRepository(queries)
@@ -121,7 +126,7 @@ func New(cfg *config.Config) (*App, error) {
 	}
 
 	// Routes
-	app.registerRoutes(orgHandler, bootstrapHandler, eqHandler, stdHandler, miHandler, agreementHandler)
+	app.registerRoutes(orgHandler, bootstrapHandler, eqHandler, stdHandler, miHandler, photoHandler, agreementHandler)
 
 	return app, nil
 }
@@ -132,6 +137,7 @@ func (a *App) registerRoutes(
 	eqHandler *equipment.EquipmentHandler,
 	stdHandler *standard.StandardHandler,
 	miHandler *measuringinstrument.MeasuringInstrumentHandler,
+	photoHandler *photo.Handler,
 	agreementHandler *agreement.AgreementHandler,
 ) {
 	// Health/readiness вынесены из `/api/v1`, чтобы compose, CI и внешние
@@ -208,6 +214,11 @@ func (a *App) registerRoutes(
 			r.Get("/{id}", eqHandler.GetByID)
 			r.Patch("/{id}", eqHandler.Update)
 			r.Post("/{id}/archive", eqHandler.Archive)
+			r.Get("/{id}/journals", eqHandler.ListJournals)
+			r.Post("/{id}/journals", eqHandler.CreateJournal)
+			r.Post("/{id}/photos", photoHandler.UploadTechnicalPhoto)
+			r.Get("/{id}/photos/{photoId}", photoHandler.GetTechnicalPhoto)
+			r.Delete("/{id}/photos/{photoId}", photoHandler.DeleteTechnicalPhoto)
 		})
 
 		// Measuring Instruments
@@ -218,6 +229,9 @@ func (a *App) registerRoutes(
 			r.Patch("/{id}", miHandler.Update)
 			r.Post("/{id}/standards", stdHandler.CreateForDiagnostic)
 			r.Delete("/{id}/standards/{standardId}", stdHandler.DeleteFromDiagnostic)
+			r.Post("/{id}/photos", photoHandler.UploadDiagnosticPhoto)
+			r.Get("/{id}/photos/{photoId}", photoHandler.GetDiagnosticPhoto)
+			r.Delete("/{id}/photos/{photoId}", photoHandler.DeleteDiagnosticPhoto)
 			r.Get("/{id}/journals", miHandler.ListJournals)
 			r.Post("/{id}/journals", miHandler.CreateJournal)
 			r.Post("/{id}/archive", miHandler.Archive)

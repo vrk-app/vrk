@@ -1,41 +1,61 @@
 {
   "status": "PASS",
   "stage_id": "03-identity-master-data",
-  "sprint_contract_id": "slice-014-owned-standards-edit-modal-follow-up",
-  "summary": "Metadata gaps from the prior bounded verifier are closed, and the owned-standards edit-modal source contract still passes under the requested light verification scope.",
-  "last_verified_at": "2026-05-11T19:11:10Z",
+  "sprint_contract_id": "technical-equipment-operation-journal",
+  "summary": "Fresh verifier source/evidence pass for the technical equipment operation journal slice. Required fast checks passed; source inspection confirms technical equipment GET/POST journal routes, Next proxy, subject_type=technical_equipment persistence path, scoped manager-only create, archived create rejection with readable history, diagnostic journal compatibility, typed /equipment selector for technical and diagnostic records only, and canonical docs/stage evidence aligned to the implementation.",
+  "last_verified_at": "2026-05-12T09:32:18Z",
   "failed_criteria": [],
   "proof_gaps": [],
   "reproduced_checks": [
-    "jq empty .agent/stages/03-identity-master-data/evidence.json: PASS",
-    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data: PASS",
-    "git diff --check: PASS",
-    "evidence.json readback: equipment_owned_standards_edit_modal status is FRESH_VERIFIER_SOURCE_PASS_METADATA_FIXED; prompt_source is present; changed_ui_files is present; completed JSON/harness/diff refs are present; top-level changed_ui_files includes the nested measuring-instrument standard DELETE proxy and excludes removed legacy standards routes",
-    "frontend evidence readback: lookup/reuse decision and web-design-guidelines PASS result are present for the follow-up; no net-new reusable UI family is claimed",
-    "source readback: EquipmentRegistryWorkspace queues edit-modal standard drafts/removals locally and applies create/delete only during Save after diagnostic PATCH",
-    "source readback: nested Next.js DELETE proxy forwards to /api/v1/measuring-instruments/{id}/standards/{standardId}",
-    "source readback: backend route/service/repository scope the hard delete to visible non-archived diagnostic equipment, require registry-manager access, require the standard to belong to the diagnostic parent, delete standard journal rows, then hard-delete the registry_standards row"
+    {
+      "command": "jq empty .agent/stages/03-identity-master-data/evidence.json .agent/stages/03-identity-master-data/feature_list.json",
+      "status": "PASS"
+    },
+    {
+      "command": "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data",
+      "status": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "status": "PASS"
+    },
+    {
+      "command": "source inspection of backend equipment/metrology journal routes, services, models, migration, tests, web proxy, /equipment UI, smoke test, canonical docs, and raw proof artifacts",
+      "status": "PASS"
+    }
   ],
-  "evidence_line_refs": [
-    ".agent/stages/03-identity-master-data/evidence.json:512",
-    ".agent/stages/03-identity-master-data/evidence.json:1200",
-    ".agent/stages/03-identity-master-data/evidence.json:1202",
-    ".agent/stages/03-identity-master-data/evidence.json:1207",
-    ".agent/stages/03-identity-master-data/evidence.json:1238",
-    ".agent/stages/03-identity-master-data/evidence.json:1255",
-    ".agent/stages/03-identity-master-data/evidence.json:1267",
-    ".agent/stages/03-identity-master-data/evidence.json:1279"
+  "evidence_refs": [
+    ".agent/stages/03-identity-master-data/sprint_contract.md",
+    ".agent/stages/03-identity-master-data/progress.md",
+    ".agent/stages/03-identity-master-data/feature_list.json",
+    ".agent/stages/03-identity-master-data/evidence.md",
+    ".agent/stages/03-identity-master-data/evidence.json",
+    ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-backend-targeted-test-2026-05-12.txt",
+    ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-backend-go-test-2026-05-12.txt",
+    ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-compose-migrate-2026-05-12.txt",
+    ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-runtime-route-probe-after-rebuild-2026-05-12.txt",
+    ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-equipment-smoke-rerun4-2026-05-12.txt",
+    ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-selector-source-audit-final-2026-05-12.txt",
+    ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-standard-journal-route-audit-final-2026-05-12.txt",
+    ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-doc-stale-audit-final-2026-05-12.txt",
+    ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-ui-review-2026-05-12.txt",
+    ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-diff-check-final-2026-05-12.txt"
   ],
-  "source_line_refs": [
-    "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:574",
-    "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:594",
-    "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:775",
-    "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx:1290",
-    "apps/web/app/api/equipment/measuring-instruments/[measuringInstrumentId]/standards/[standardId]/route.ts:7",
-    "apps/backend/internal/app/app.go:220",
-    "apps/backend/internal/equipment/standard/service.go:232",
-    "apps/backend/internal/equipment/standard/service.go:485",
-    "apps/backend/internal/equipment/standard/repository.go:312"
-  ],
-  "smallest_safe_fix_direction": "None. No verifier-blocking gaps remain for this follow-up under the allowed light-check scope."
+  "source_refs": [
+    "apps/backend/migrations/000018_technical_equipment_journal_subject.up.sql",
+    "apps/backend/internal/equipment/metrologyjournal/models.go",
+    "apps/backend/internal/equipment/metrologyjournal/repository.go",
+    "apps/backend/internal/equipment/equipment/service.go",
+    "apps/backend/internal/equipment/equipment/handler.go",
+    "apps/backend/internal/equipment/equipment/service_test.go",
+    "apps/backend/internal/equipment/measuringinstrument/service.go",
+    "apps/backend/internal/app/app.go",
+    "apps/web/app/api/equipment/[equipmentId]/journals/route.ts",
+    "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx",
+    "apps/web/tests/equipment-registries.smoke.spec.ts",
+    "docs/PRD-MVP.md",
+    "docs/architecture/identity-master-data.md",
+    "docs/architecture/frontend-architecture.md",
+    "docs/roadmap.md"
+  ]
 }

@@ -1,7 +1,7 @@
 # Customer Admin Bootstrap Flow
 
 Статус: accepted baseline  
-Обновлено: 2026-04-29
+Обновлено: 2026-05-12
 
 ## Назначение
 
@@ -101,10 +101,10 @@ flowchart LR
 - contracts registry;
 - contractor lookup / invitation / activation baseline в рамках договорного контура;
 - contract status baseline;
-- equipment registry;
-- measuring instruments registry;
-- standards registry;
-- metrology operation journals;
+- unified equipment workspace;
+- technological equipment and customer diagnostic equipment / `СИ`;
+- owned standards / setup measures inside diagnostic equipment cards;
+- equipment operation journal;
 - access boundaries for customer / contractor contours.
 
 Именно здесь onboarding flow перестает быть shell и становится реальным master-data контуром: первый запуск, редактирование профиля, добавление дивизионов и добавление юнитов выполняются через один постоянный UI.
@@ -116,7 +116,7 @@ flowchart LR
 - `/register` используется платформенным админом для выпуска first-admin invite;
 - `/register/[token]` используется приглашенным администратором для password setup и accept;
 - после accept пользователь попадает в `/company`; empty state и первые действия по настройке организации живут в том же постоянном route;
-- `/company/setup` и launch wizard больше не являются целевым UX для Stage 03, даже если текущая historical implementation еще содержит этот route;
+- `/company/setup` и launch wizard больше не являются целевым UX для Stage 03; текущий `/company/setup` сохранен как redirect-only compatibility route, а старый backend `/launch-wizard` остается compatibility API;
 - профиль организации в `/company` использует selector `Тип` как ОПФ `ООО` / `ПАО` / `НАО` / `ИП`; legacy aliases `АО -> НАО`, `ЗАО -> НАО`, `ОАО -> ПАО`, `LLC -> ООО` поддерживаются только как входная совместимость и не показываются в UI;
 - форма дивизиона не содержит selector `Тип`; форма юнита сохраняет selector operational type `ВРД` / `ВРЗ` / `ВУ` / `ВРП`;
 - повторный переход по использованной одноразовой ссылке показывает состояние `Одноразовая ссылка больше не активна`;
@@ -176,13 +176,13 @@ flowchart LR
     F["/login<br/>contractor user"] --> G["/contracts<br/>restricted contractor contour"]
 ```
 
-### Реализованный route contour для slice-004
+### Historical route contour for slice-004
 
-Четвертый Stage 03 slice оживляет customer-side equipment/master-data contour без widening в Stage 04 request flow:
+Четвертый Stage 03 slice оживил customer-side equipment/master-data contour без widening в Stage 04 request flow. Этот slice теперь считается historical implementation floor: он доказал scoped access и backend resources, но текущий пользовательский contract больше не показывает отдельные реестры СИ и эталонов.
 
 - customer organization admin после login остается на `/company`, но открывает live master-data registry через публичный route `/equipment`;
 - `/equipment` остается одним public contour и не дробится на отдельные route families для СИ или эталонов;
-- отдельные registry surfaces переключаются query-backed tab state:
+- historical registry surfaces переключались query-backed tab state:
   - `/equipment`
   - `/equipment?tab=mi`
   - `/equipment?tab=standards`
@@ -205,12 +205,12 @@ flowchart LR
     H["/login<br/>contractor user"] --> I["/contracts only"]
 ```
 
-### Реализованный route contour для slice-005
+### Historical route contour for slice-005
 
-Пятый Stage 03 slice не создает отдельный public route для journal/archive behavior, а расширяет тот же `/equipment` contour:
+Пятый Stage 03 slice не создавал отдельный public route для journal/archive behavior, а расширял тот же `/equipment` contour. Этот раздел описывает historical query-backed floor до product correction 2026-05-11.
 
 - customer organization admin остается на `/equipment` и работает внутри того же route family;
-- tab state по-прежнему сохраняется в query:
+- historical tab state сохранялся в query:
   - `/equipment`
   - `/equipment?tab=mi`
   - `/equipment?tab=standards`
@@ -234,6 +234,32 @@ flowchart LR
     I["/login contractor"] --> J["/contracts only"]
 ```
 
+### Текущий route contour для equipment correction
+
+Текущий Stage 03 correction оставляет public route `/equipment`, но заменяет пользовательскую модель на единый workspace:
+
+- старые `tab=mi` и `tab=standards` теперь compatibility-only input и редиректятся/нормализуются к `/equipment`;
+- top-level UI tabs живут внутри клиента: `Оборудование` и `Журнал операций`;
+- create action `Добавить оборудование` открывает Dialog `Новое оборудование` с обязательным типом `Техническое` / `Диагностическое`;
+- технологическое оборудование и диагностическое оборудование показываются в одном списке `Оборудование в учете`;
+- диагностическая карточка содержит owned standards / setup measures внутри себя, а не отправляет пользователя в отдельный reusable standards registry;
+- edit modal диагностического оборудования позволяет добавить новые owned standards и удалить существующие hard delete-операцией через nested endpoint;
+- private photos are optional equipment media: cards render product-gallery through authenticated proxy streams, and fallback illustrations are used when no photo is available or a stream fails;
+- journal tab называется `Журнал операций по оборудованию` и не раскрывает отдельный standard journal.
+
+```mermaid
+flowchart LR
+    A["/equipment"] --> T{"Client tab"}
+    T -->|"Оборудование"| B["Оборудование в учете"]
+    T -->|"Журнал операций"| C["Журнал операций по оборудованию"]
+    B --> D["Новое оборудование"]
+    D --> E{"Техническое / Диагностическое"}
+    E --> F["Технологическое оборудование"]
+    E --> G["Диагностическое оборудование / СИ"]
+    G --> H["Owned standards / setup measures"]
+    B --> I["Private photo gallery + fallback"]
+```
+
 Каноническая object/access chain для этого stage:
 
 ```mermaid
@@ -241,9 +267,9 @@ flowchart TD
     A["Организация"] --> B["Дивизион (optional)"]
     A --> C["Юнит"]
     B --> C
-    C --> D["Оборудование"]
-    D --> E["СИ"]
-    E --> F["Эталон"]
+    C --> D["Технологическое оборудование"]
+    C --> E["Диагностическое оборудование / СИ"]
+    E --> F["Owned эталоны / установочные меры"]
     U["Пользователь"] --> M["Membership"]
     M --> G["Scoped grant"]
     G --> A

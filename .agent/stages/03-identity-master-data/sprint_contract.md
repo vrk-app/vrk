@@ -1,105 +1,117 @@
 # Sprint Contract
 
 - Stage ID: `03-identity-master-data`
-- Slice ID: `slice-014-equipment-domain-correction`
+- Slice ID: `technical-equipment-operation-journal`
+- Frozen at: `2026-05-12`
 - Status: `PENDING` until implementation evidence and one fresh verifier `PASS`
 
 ## Objective
 
-Replace the historical `/equipment` tabbed registry model with a single customer equipment workspace that matches the clarified domain:
+Correct the Stage 03 equipment journal parity gap without widening the MVP: `/equipment` remains the single customer equipment workspace, and the user-facing journal `Журнал операций по оборудованию` works for both technical equipment and diagnostic equipment / `СИ`.
 
-- ordinary production/repair equipment is `technical`;
-- customer `СИ` is `diagnostic` equipment used to check repair quality or unit condition;
-- standards/setup measures are owned children of one diagnostic equipment record;
-- official metrology operations are recorded in one equipment journal, not in a separate standard journal;
-- contractor-side metrology equipment stays out of MVP.
-
-Do not widen this slice into Stage 04 request workflows, contractor execution, Аршин integration, accredited-organization equipment registries, or a separate metrology module.
+This slice must not reopen the already-proven owned-standards correction, private photo work, contracts, Stage 04 request flow, contractor-side metrology, or a separate industry metrology module.
 
 ## Frozen Decisions
 
 - Public route stays `/equipment`.
-- User-facing tabs/switchers `Оборудование / СИ / Эталоны` are removed.
-- Old query params such as `tab=mi` and `tab=standards` must not break the page. They may normalize to `/equipment` or render the same unified workspace.
-- The page has one working surface: `Оборудование в учете`.
-- The create surface is one form titled `Новое оборудование`.
-- The form has a required equipment type selector:
-  - `Техническое`;
-  - `Диагностическое`.
-- Technical equipment uses ordinary equipment fields.
-- Diagnostic equipment uses diagnostic/СИ fields and an inline dynamic list of `0..N` standards/setup measures.
-- Standards are not reusable between equipment records in the target contract.
-- A standard can be viewed only inside its parent diagnostic equipment card.
-- There is no standalone standards list in the target UI.
-- There is no standard operations journal in the target UI.
-- The journal block is a unified `Журнал операций по оборудованию` and is selected by equipment record.
-- Explicit archive visibility remains.
-- Existing access behavior remains:
-  - customer admins with `manage_equipment` can create, edit, archive, add standards, and add journal entries inside visible scope;
-  - read-only roles see only their allowed subtree;
-  - contractor sessions do not receive the customer equipment registry.
+- User-facing workspace remains unified:
+  - equipment cards/list for technical equipment and diagnostic equipment / `СИ`;
+  - journal surface `Журнал операций по оборудованию`;
+  - no standalone standards registry in target UI;
+  - no standard journal in target UI.
+- `registry_metrology_journal_entries` keeps its legacy table name.
+- `registry_metrology_journal_entries.subject_type` must support technical equipment by adding `technical_equipment`.
+- Diagnostic equipment / `СИ` journal behavior remains supported; implementation may keep the existing legacy diagnostic subject value only as storage/API compatibility, but UI copy must stay diagnostic-equipment based.
+- Journal entries are scoped to the selected equipment subject. Standards/setup measures are not selectable journal subjects in the target UI.
+- Technical equipment journal List/Create must require the equipment record to be inside the user's visible customer scope.
+- Journal mutation requires `manage_equipment`.
+- Archived technical or diagnostic equipment rejects new journal mutations, while existing journal history remains readable.
+- Current `status` and `nextDueDate` for technical and diagnostic equipment derive from the latest applicable journal entry for that same equipment subject.
+- If an equipment record has no applicable journal history, `status` and `nextDueDate` fall back to the card/persisted fields so existing no-history data remains visible.
 
 ## Acceptance Criteria
 
-- `/equipment` header is `Оборудование`.
-- Capability badge is `Управление реестром` or `Только просмотр`.
-- There is no visible tab/switcher containing `Оборудование / Средства измерения / Эталоны`, `Оборудование / СИ / Эталоны`, or an equivalent three-registry navigation.
-- A single create form `Новое оборудование` is present for manageable customer sessions.
-- The equipment type control exposes `Техническое` and `Диагностическое`.
-- Technical card content includes ordinary equipment fields, status, edit/archive actions when allowed, and respects archived visibility.
-- Diagnostic card content includes basic diagnostic fields, `ФИФ`, serial number, `Эталоны: N`, standards/setup measures inside the card, and latest journal status.
-- Standards are not exposed as a free create/list surface and copy does not describe them as reusable registry records.
-- The journal area is titled `Журнал операций по оборудованию` and chooses from the unified equipment list.
-- Archived equipment rejects new journal/standard mutations but keeps read-only history.
-- API/persistence either migrate to `equipment -> owned standards -> equipment journal` or conservatively hide old measuring-instrument storage behind the target response model.
-- If persistence/API changes, migrations, backend services/repositories, tests, and Swagger/OpenAPI are refreshed.
-- Storybook `EquipmentRegistryWorkspace` stories are updated for:
-  - `TechnicalEquipmentList`;
-  - `DiagnosticEquipmentWithStandards`;
-  - `DiagnosticEquipmentWithoutStandards`;
-  - `UnifiedJournal`;
-  - `ScopedReadonly`;
-  - `ArchiveVisible`;
-  - `LoadError`;
-  - `LongEquipmentList`.
-- Targeted `/equipment` smoke/e2e proof is updated for the unified workspace and old tab params tolerance.
-- Canonical docs and stage artifacts describe the implemented contract without leaving old reusable-standard or tabbed-registry copy as current behavior.
+- `/equipment` still renders one workspace, not separate equipment/metrology modules.
+- The journal heading is exactly `Журнал операций по оборудованию`.
+- The journal subject selector/list includes technical equipment and diagnostic equipment / `СИ`.
+- The journal subject selector/list does not include standards/setup measures as journal subjects.
+- Standard journals remain absent from the `/equipment` target UI.
+- Creating a technical equipment journal entry persists a row in `registry_metrology_journal_entries` with `subject_type = 'technical_equipment'`.
+- Listing technical equipment journal entries returns only entries for visible-scope technical equipment.
+- Creating technical equipment journal entries is rejected without `manage_equipment`.
+- Creating technical equipment journal entries is rejected for equipment outside the user's visible scope.
+- Creating technical equipment journal entries is rejected for archived equipment with a clear 4xx response.
+- Archived equipment journal history remains readable for users who can see the equipment.
+- Diagnostic equipment / `СИ` journal List/Create behavior still works after the technical-equipment addition.
+- Technical equipment status and next due date are derived from its latest applicable journal entry when history exists.
+- Diagnostic equipment / `СИ` status and next due date are derived from its latest applicable journal entry when history exists.
+- Technical and diagnostic equipment with no applicable journal history keep their card/persisted status and next due date fallback.
+- Existing `/equipment` old-tab compatibility behavior remains intact.
+- Contractor sessions still do not receive the customer equipment registry.
+
+## API / Persistence Targets
+
+- Add or expose technical equipment journal routes:
+  - `GET /api/v1/equipment/{equipmentId}/journals`;
+  - `POST /api/v1/equipment/{equipmentId}/journals`.
+- Preserve diagnostic equipment / `СИ` journal routes or equivalent compatibility:
+  - `GET /api/v1/measuring-instruments/{measuringInstrumentId}/journals`;
+  - `POST /api/v1/measuring-instruments/{measuringInstrumentId}/journals`.
+- Add matching Next.js proxy routes for technical equipment under `apps/web/app/api/equipment/[equipmentId]/journals/`.
+- If a generic journal API is used instead of subject-specific handlers, Swagger/OpenAPI must still make technical versus diagnostic subject validation explicit.
+- Migration must alter the journal subject check/validation to include `technical_equipment` without renaming `registry_metrology_journal_entries`.
+- Backend derivation must ignore standard journal subjects for target equipment-card status unless a legacy migration explicitly rewrites them to equipment-subject history.
+
+## UI Workflow And Reuse
+
+- Use `$vrk-web-ui-workflow` before UI edits.
+- Component lookup target:
+  - `python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query "equipment registry operation journal technical diagnostic journal status"`
+- Expected reuse strategy: `extend` existing `Equipment/EquipmentRegistryWorkspace` and the current equipment journal surface.
+- Do not create a parallel `/equipment` route, a new reusable workspace family, or a separate metrology UI family unless lookup proves no viable extension path.
+- Record lookup result, reuse decision, changed UI files, and `$web-design-guidelines` result in evidence.
+- Storybook must cover:
+  - technical equipment with journal history;
+  - technical equipment without journal history fallback;
+  - diagnostic equipment / `СИ` with journal history;
+  - archived equipment with read-only journal history;
+  - read-only scoped user with visible journal history;
+  - mutation rejection/error state for archived or unauthorized journal create.
 
 ## Proof Requirements
 
 - Harness / stage artifacts:
   - `python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data`
   - `jq empty .agent/stages/03-identity-master-data/evidence.json .agent/stages/03-identity-master-data/feature_list.json .agent/stages/03-identity-master-data/verdict.json`
-- UI workflow:
-  - use `$vrk-web-ui-workflow`;
-  - read `.impeccable.md`, `docs/design/ui-workflow.md`, `docs/design/serviceops-design-system.md`, `docs/architecture/frontend-architecture.md`, and relevant equipment files before UI edits;
-  - run `python3 .agents/skills/vrk-web-ui-workflow/scripts/storybook_component_lookup.py --query "equipment registry diagnostic equipment standards journal"`;
-  - record lookup result, `reuse` / `extend` / `create` decision, changed UI files, and `$web-design-guidelines` result.
 - Backend checks if backend/API/persistence changes:
   - gofmt on touched Go files;
   - backend tests;
   - backend build;
+  - migration proof for `technical_equipment` subject acceptance;
   - Swagger/OpenAPI refresh if annotations or schema changed.
 - Web checks:
-  - `pnpm run web:typecheck` or repo-equivalent command;
-  - `pnpm run web:lint` or repo-equivalent command;
-  - `pnpm run web:build` or repo-equivalent command;
-  - Storybook build command used in this repo.
+  - web lint;
+  - web typecheck;
+  - web build;
+  - Storybook build.
 - Targeted proof:
-  - create technical equipment;
-  - create diagnostic equipment with two owned standards;
-  - prove a standard is not reusable/linkable by another equipment record;
-  - create equipment journal entry and verify derived status/nextDueDate;
-  - archive parent and prove new journal/standard mutations are rejected while history remains readable;
-  - source/browser audit that no standalone standards list or standard journal remains in `/equipment`.
+  - create or seed technical equipment;
+  - create technical journal entry through the API/UI path;
+  - prove technical status/nextDueDate derives from latest journal entry;
+  - prove fallback status/nextDueDate when no journal history exists;
+  - prove diagnostic equipment / `СИ` journal still works;
+  - prove archived technical/diagnostic equipment rejects new journal entries but preserves readable history;
+  - prove standard journal subjects are not visible in `/equipment`.
 - Verifier:
   - run one fresh verifier after implementation;
   - verifier may write only verification artifacts and must not edit production code;
-  - `feature_list.json` entry `stage03-equipment-diagnostic-equipment-correction` remains `passes: false` until verifier returns `PASS`.
+  - `feature_list.json` entry `stage03-technical-equipment-operation-journal-parity` remains `passes: false` until verifier returns `PASS`.
 
 ## File / Module Ownership
 
-- `apps/backend/internal/equipment/**`
+- `apps/backend/internal/equipment/metrologyjournal/**`
+- `apps/backend/internal/equipment/equipment/**`
+- `apps/backend/internal/equipment/measuringinstrument/**`
 - `apps/backend/migrations/**`
 - `apps/backend/docs/swagger/**`
 - `apps/web/app/(runtime)/equipment/page.tsx`
@@ -110,29 +122,27 @@ Do not widen this slice into Stage 04 request workflows, contractor execution, �
 - `apps/web/shared/storybook/runtime-api-mock.*`
 - `apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx`
 - `apps/web/tests/equipment-registries.smoke.spec.ts`
-- `docs/roadmap.md`
-- `docs/PRD-MVP.md`
-- `docs/architecture/identity-master-data.md`
-- `docs/architecture/frontend-architecture.md`
 - `.agent/stages/03-identity-master-data/**`
 
 ## Canonical Doc Targets If Slice Lands
 
 - `docs/architecture/identity-master-data.md`
-  - equipment domain source of truth, data ownership, archive/journal behavior, diagrams.
+  - journal subject model, legacy table-name decision, scope/mutation rules, status/nextDueDate derivation, and a small Mermaid derivation/data-flow diagram.
 - `docs/architecture/frontend-architecture.md`
-  - `/equipment` frontend route/query compatibility and unified workspace boundary.
+  - `/equipment` journal route/proxy/UI boundary and old-tab compatibility.
 - `docs/PRD-MVP.md`
-  - product-facing scope and exclusions.
+  - product-facing statement that `Журнал операций по оборудованию` covers technical and diagnostic equipment only.
 - `docs/roadmap.md`
-  - Stage 03 acceptance wording and handoff guardrails.
+  - Stage 03 acceptance wording for technical-equipment journal parity.
 - Swagger/OpenAPI files if backend contract changes.
+- `docs/design/storybook-component-backlog.md` only if a new reusable component family or backlog gap is introduced.
 
 ## Non-Goals
 
 - Stage 04 request creation/detail workflow.
-- Contractor execution or contractor-side equipment registries.
+- Contractor metrology equipment.
+- Separate industry metrology module.
 - Аршин integration.
-- Accredited-organization equipment master data.
-- A standalone industry metrology module.
-- Replacing the entire `/equipment` route with a new parallel page or reusable component family.
+- Standard journals in target UI.
+- Standalone standards CRUD or reusable standards registry.
+- Replacing the unified `/equipment` workspace with a parallel page.

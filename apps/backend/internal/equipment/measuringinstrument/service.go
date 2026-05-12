@@ -7,6 +7,7 @@ import (
 
 	"backend/internal/auth/bootstrap"
 	"backend/internal/equipment/metrologyjournal"
+	equipmentphoto "backend/internal/equipment/photo"
 	"backend/internal/equipment/registryaccess"
 
 	"github.com/google/uuid"
@@ -26,17 +27,20 @@ type measuringInstrumentService struct {
 	repository        MeasuringInstrumentRepository
 	journalRepository metrologyjournal.Repository
 	authService       bootstrap.Service
+	photos            equipmentphoto.Repository
 }
 
 func NewService(
 	repository MeasuringInstrumentRepository,
 	journalRepository metrologyjournal.Repository,
 	authService bootstrap.Service,
+	photos equipmentphoto.Repository,
 ) MeasuringInstrumentService {
 	return &measuringInstrumentService{
 		repository:        repository,
 		journalRepository: journalRepository,
 		authService:       authService,
+		photos:            photos,
 	}
 }
 
@@ -101,10 +105,14 @@ func (s *measuringInstrumentService) List(ctx context.Context, token string, inc
 	}
 
 	paged := paginate(filtered, limit, offset)
+	photosByInstrument, err := s.photosByInstrument(ctx, session.Organization.ID, paged)
+	if err != nil {
+		return nil, 0, err
+	}
 	result := make([]*MeasuringInstrumentResponse, 0, len(paged))
 	for index := range paged {
 		derived := metrologyjournal.DeriveState(journalsByInstrument[paged[index].ID], paged[index].Status)
-		result = append(result, toResponse(&paged[index], derived))
+		result = append(result, toResponse(&paged[index], derived, photosByInstrument[paged[index].ID]))
 	}
 
 	return result, int64(len(filtered)), nil
@@ -147,7 +155,12 @@ func (s *measuringInstrumentService) GetByID(ctx context.Context, token string, 
 		return nil, err
 	}
 
-	return toResponse(item, metrologyjournal.DeriveState(journals, item.Status)), nil
+	photos, err := s.photosForInstrument(ctx, session.Organization.ID, item.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return toResponse(item, metrologyjournal.DeriveState(journals, item.Status), photos), nil
 }
 
 func (s *measuringInstrumentService) Update(ctx context.Context, token string, id string, req UpdateRequest) (*MeasuringInstrumentResponse, error) {
@@ -228,7 +241,12 @@ func (s *measuringInstrumentService) Archive(ctx context.Context, token string, 
 		return nil, err
 	}
 
-	return toResponse(item, metrologyjournal.DeriveState(journals, item.Status)), nil
+	photos, err := s.photosForInstrument(ctx, session.Organization.ID, item.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return toResponse(item, metrologyjournal.DeriveState(journals, item.Status), photos), nil
 }
 
 func (s *measuringInstrumentService) ListJournals(ctx context.Context, token string, id string) ([]*JournalResponse, error) {
@@ -573,7 +591,42 @@ func (s *measuringInstrumentService) currentStandardIDs(ctx context.Context, org
 	return result, nil
 }
 
-func toResponse(item *MeasuringInstrument, derived metrologyjournal.DerivedState) *MeasuringInstrumentResponse {
+func (s *measuringInstrumentService) photosByInstrument(
+	ctx context.Context,
+	organizationID string,
+	items []MeasuringInstrument,
+) (map[string][]equipmentphoto.EquipmentPhoto, error) {
+	result := make(map[string][]equipmentphoto.EquipmentPhoto, len(items))
+	if s.photos == nil || len(items) == 0 {
+		return result, nil
+	}
+
+	ids := make([]uuid.UUID, 0, len(items))
+	for _, item := range items {
+		ids = append(ids, uuid.MustParse(item.ID))
+	}
+
+	return s.photos.ListBySubjects(ctx, uuid.MustParse(organizationID), equipmentphoto.SubjectDiagnosticEquipment, ids)
+}
+
+func (s *measuringInstrumentService) photosForInstrument(ctx context.Context, organizationID string, instrumentID string) ([]equipmentphoto.EquipmentPhoto, error) {
+	if s.photos == nil {
+		return []equipmentphoto.EquipmentPhoto{}, nil
+	}
+
+	return s.photos.ListBySubject(
+		ctx,
+		uuid.MustParse(organizationID),
+		equipmentphoto.SubjectDiagnosticEquipment,
+		uuid.MustParse(instrumentID),
+	)
+}
+
+func toResponse(
+	item *MeasuringInstrument,
+	derived metrologyjournal.DerivedState,
+	photos []equipmentphoto.EquipmentPhoto,
+) *MeasuringInstrumentResponse {
 	var equipment *EquipmentSummary
 	standards := item.Standards
 	if item.EquipmentID != nil && item.EquipmentFullName != nil {
@@ -610,6 +663,7 @@ func toResponse(item *MeasuringInstrument, derived metrologyjournal.DerivedState
 		PlacementKind:      item.PlacementKind,
 		Comment:            item.Comment,
 		DocumentURL:        item.DocumentURL,
+		Photos:             photoResponses(photos),
 		Standards:          standards,
 		JournalCount:       derived.JournalCount,
 		NextDueDate:        derived.NextDueDate,
@@ -623,6 +677,24 @@ func toResponse(item *MeasuringInstrument, derived metrologyjournal.DerivedState
 		CreatedAt:  item.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:  item.UpdatedAt.Format(time.RFC3339),
 	}
+}
+
+func photoResponses(photos []equipmentphoto.EquipmentPhoto) []EquipmentPhotoResponse {
+	source := equipmentphoto.ToResponses(photos)
+	result := make([]EquipmentPhotoResponse, 0, len(source))
+	for _, item := range source {
+		result = append(result, EquipmentPhotoResponse{
+			ID:          item.ID,
+			FileName:    item.FileName,
+			ContentType: item.ContentType,
+			SizeBytes:   item.SizeBytes,
+			SortOrder:   item.SortOrder,
+			URL:         item.URL,
+			CreatedAt:   item.CreatedAt,
+			UpdatedAt:   item.UpdatedAt,
+		})
+	}
+	return result
 }
 
 func paginate(items []MeasuringInstrument, limit, offset int32) []MeasuringInstrument {

@@ -7,6 +7,11 @@
 
 TBD
 
+## Brand baseline
+
+- Inherit the field/mobile brand mark from the 2026-05-12 decision: generated PNG option 5, `Полевой синк`.
+- Use `apps/field/public/brand/app-icons/vrk-field-*.png` for manifest/PWA icon work.
+
 ## Acceptance criteria
 
 - TBD

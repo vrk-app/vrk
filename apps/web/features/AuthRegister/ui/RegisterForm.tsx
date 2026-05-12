@@ -32,6 +32,7 @@ export function RegisterForm({
             leftIcon={<UserRound className="size-4" />}
             name="contact-name"
             placeholder="Анна Волкова…"
+            required
           />
           <InputField
             autoComplete="organization"
@@ -39,6 +40,7 @@ export function RegisterForm({
             leftIcon={<Building2 className="size-4" />}
             name="company-name"
             placeholder="ВРК Север…"
+            required
             spellCheck={false}
           />
           <InputField
@@ -47,6 +49,7 @@ export function RegisterForm({
             leftIcon={<Mail className="size-4" />}
             name="email"
             placeholder="admin@vrk.local…"
+            required
             spellCheck={false}
             type="email"
           />

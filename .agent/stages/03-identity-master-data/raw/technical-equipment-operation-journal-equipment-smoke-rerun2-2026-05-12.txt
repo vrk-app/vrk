@@ -1,0 +1,41 @@
+
+Running 1 test using 1 worker
+
+(node:43619) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:43619) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 tests/equipment-registries.smoke.spec.ts:447:7 › stage 03 unified equipment workspace › customer admin uses one /equipment surface with owned standards while scoped and contractor access stay bounded (31.2s)
+
+
+  1) tests/equipment-registries.smoke.spec.ts:447:7 › stage 03 unified equipment workspace › customer admin uses one /equipment surface with owned standards while scoped and contractor access stay bounded
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('option', { name: 'Манометр диагностический обновлен 1778576343342 • DIAG-1778576343342', exact: true })[22m
+
+
+      429 | async function selectFieldOption(page: Page, fieldLabel: string | RegExp, optionName: string | RegExp) {
+      430 |   await page.getByRole("combobox", { name: fieldLabel, exact: typeof fieldLabel === "string" }).click();
+    > 431 |   await page.getByRole("option", { name: optionName, exact: typeof optionName === "string" }).click();
+          |                                                                                               ^
+      432 | }
+      433 |
+      434 | const obsoleteStandaloneHeadings = [
+        at selectFieldOption (/Users/yura-posledov/cursor/vrk/apps/web/tests/equipment-registries.smoke.spec.ts:431:95)
+        at /Users/yura-posledov/cursor/vrk/apps/web/tests/equipment-registries.smoke.spec.ts:897:5
+
+    Error Context: test-results/equipment-registries.smoke-a49b6-tractor-access-stay-bounded/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/equipment-registries.smoke-a49b6-tractor-access-stay-bounded/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/equipment-registries.smoke-a49b6-tractor-access-stay-bounded/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    tests/equipment-registries.smoke.spec.ts:447:7 › stage 03 unified equipment workspace › customer admin uses one /equipment surface with owned standards while scoped and contractor access stay bounded

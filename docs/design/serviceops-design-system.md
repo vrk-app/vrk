@@ -105,6 +105,23 @@
 - **Синий** — для навигации и интеракции.
 - **`brand-mark`** — только как фирменный след, а не как массовый UI-цвет.
 
+### 3.1.1. Логотипы продукта
+
+Текущий брендовый выбор зафиксирован как raster-first concept set:
+
+- **`apps/web` / основной веб-интерфейс компании и оборудования** использует вариант 2 — `Технический реестр`.
+  - source concept: `apps/web/public/brand/logo-concepts/equipment-registry.png`;
+  - app/PWA icons: `apps/web/public/brand/app-icons/vrk-web-32.png`, `vrk-web-180.png`, `vrk-web-192.png`, `vrk-web-512.png`;
+  - compact UI mark: `apps/web/public/brand/app-icons/vrk-web-mark-sidebar.png`, cropped from the same source concept for 36–44px brand slots;
+  - padded app/PWA icons применяются в metadata, manifest, favicon и OS/PWA contexts;
+  - compact UI mark применяется в runtime sidebar/header и auth brand badges, чтобы знак не выглядел как маленькая картинка внутри отдельной темной плашки.
+- **`apps/field` / мобильный PWA-контур полевого инженера** использует вариант 5 — `Полевой синк`.
+  - source concept: `apps/web/public/brand/logo-concepts/field-sync.png`;
+  - app icons: `apps/field/public/brand/app-icons/vrk-field-*.png`;
+  - применяется в metadata/manifest и field scaffold header.
+
+Эти PNG считаются рабочими бренд-направлениями, а не финальной векторной айдентикой. Следующий шаг перед production-branding — ручная чистка и векторизация выбранных знаков с сохранением той же смысловой привязки: web = реестр/учет, field = мобильная синхронизация.
+
 ---
 
 ## 3.2. Нейтральная палитра
@@ -244,6 +261,8 @@
 - ошибки и подсказки — короткие и прямые
 - form и list cards не начинать с повторяющих intro/category-бейджей и абзацев вида “Укажите…”, “Добавьте…”, если заголовок и содержимое уже задают контекст
 - видимые labels полей обязательны; подсказки, alerts и описания оставлять только для правил, рисков, ошибок, read-only/disabled states и неочевидных ограничений
+- обязательные поля помечать compact `Asterisk` рядом с label и мягким `interactive-soft` фоном control; не добавлять в формы отдельный explanatory текст про обязательность
+- CRUD create/edit dialogs не используют generic mode badges вроде “Редактирование” / “Новое” и постоянные footer-helper тексты вроде “Заполните обязательные поля…” / “Изменения попадут после сохранения”; badge и description оставлять только для статуса, риска, объекта, доступа или неочевидного ограничения
 - не выносить в пользовательский UI stage/evidence/contract-пояснения вроде `Stage 03`, `slice`, `shell`, `backend`, `membership`, `grant`, `scope`, если это уже зафиксировано в канонических docs; в интерфейсе оставлять только пользовательский смысл действия и состояния
 
 ---
@@ -382,8 +401,11 @@ Dialog и confirm modal используют единую геометрию в�
 - та же закрепленная верхняя геометрия, что была у исходного dark-варианта;
 - surface `surface-muted`, `border`, `shadow-xs`;
 - доменная иконка использует interactive-blue акцент, но сама плашка остается светлой;
+- горизонтальный отступ верхней челки и action-slot равен body padding острова (`24px` / `card-padding-lg`); вертикальный зазор после челки использует тот же `24px` после фиксированной высоты челки `52px`;
 - metric списка отображается как типографический хвост рядом с заголовком: `Заголовок · 12`, без badge-фона, без подписи вроде “активных” и без смены semantic heading name;
 - action-slot справа повторяет muted action surface: `surface-muted` + `border` + `shadow-xs`.
+
+Вложенные list items могут иметь собственный внутренний padding (`16–20px`) как вторичный уровень плотности. Этот padding не должен сдвигать челку острова и не считается базовой кромкой `IslandCard`.
 
 Правило: runtime-острова в формах и списках не используют dark header по умолчанию. Темная челка допустима только для явно акцентных overlay-сценариев через отдельный design-system decision.
 
@@ -662,7 +684,7 @@ Dialog и confirm modal используют единую геометрию в�
 ## 11.6. Status badges / chips
 - soft background
 - semibold text
-- `1px` border in the same semantic color as the text with `0.75` opacity
+- `1px` border in the same semantic color as the text with `0.35` opacity
 - height: `24–28px`
 - radius: full или `12px`
 - optional dot/icon

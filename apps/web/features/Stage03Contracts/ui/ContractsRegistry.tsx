@@ -314,6 +314,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   label="Номер договора"
                   name="contractNumber"
                   onChange={(event) => setContractNumber(event.target.value)}
+                  required
                   value={contractNumber}
                 />
                 <SelectField
@@ -324,7 +325,8 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                     label: option.shortName ? `${option.name} (${option.shortName})` : option.name,
                     value: option.id,
                   }))}
-                  placeholder="Выберите подрядчика"
+                  placeholder="Выберите подрядчика…"
+                  required
                   value={contractorOrganizationId}
                 />
                 <SelectField
@@ -332,6 +334,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   name="contractStatus"
                   onChange={(event) => setContractStatus(event.target.value as ContractStatus)}
                   options={contractStatusOptions}
+                  required
                   value={contractStatus}
                 />
                 <SelectField
@@ -339,6 +342,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   name="workType"
                   onChange={(event) => setWorkType(event.target.value as WorkType)}
                   options={Object.entries(workTypeLabels).map(([value, label]) => ({ label, value }))}
+                  required
                   value={workType}
                 />
                 <InputField
@@ -346,6 +350,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   label="Дата начала"
                   name="startDate"
                   onChange={(event) => setStartDate(event.target.value)}
+                  required
                   type="date"
                   value={startDate}
                 />
@@ -354,6 +359,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   label="Дата окончания"
                   name="endDate"
                   onChange={(event) => setEndDate(event.target.value)}
+                  required
                   type="date"
                   value={endDate}
                 />
@@ -362,6 +368,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   label="Тип оборудования"
                   name="equipmentType"
                   onChange={(event) => setEquipmentType(event.target.value)}
+                  required
                   value={equipmentType}
                 />
                 <InputField
@@ -369,6 +376,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   label="Регион"
                   name="region"
                   onChange={(event) => setRegion(event.target.value)}
+                  required
                   value={region}
                 />
                 <InputField
@@ -387,6 +395,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                     setScopeId(scopeOptions[value][0]?.value ?? "");
                   }}
                   options={availableScopeTypeOptions}
+                  required
                   value={scopeType}
                 />
               </div>
@@ -397,7 +406,8 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   name="scopeId"
                   onChange={(event) => setScopeId(event.target.value)}
                   options={scopeOptions[scopeType]}
-                  placeholder="Выберите объект"
+                  placeholder="Выберите объект…"
+                  required
                   value={scopeId}
                 />
               ) : null}
@@ -430,7 +440,8 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   name="routingUnitId"
                   onChange={(event) => setRoutingUnitId(event.target.value)}
                   options={session.units.map((unit) => ({ label: unit.name, value: unit.id }))}
-                  placeholder="Выберите юнит"
+                  placeholder="Выберите юнит…"
+                  required
                   value={routingUnitId}
                 />
                 <SelectField
@@ -438,6 +449,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   name="routingWorkType"
                   onChange={(event) => setRoutingWorkType(event.target.value as WorkType)}
                   options={Object.entries(workTypeLabels).map(([value, label]) => ({ label, value }))}
+                  required
                   value={routingWorkType}
                 />
                 <InputField
@@ -445,6 +457,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   label="Тип оборудования"
                   name="routingEquipmentType"
                   onChange={(event) => setRoutingEquipmentType(event.target.value)}
+                  required
                   value={routingEquipmentType}
                 />
                 <InputField
@@ -452,6 +465,7 @@ export function ContractsRegistry({ contractorOptions, initialContracts, session
                   label="Регион"
                   name="routingRegion"
                   onChange={(event) => setRoutingRegion(event.target.value)}
+                  required
                   value={routingRegion}
                 />
                 <Button

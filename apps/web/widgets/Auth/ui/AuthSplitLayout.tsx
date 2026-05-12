@@ -1,5 +1,7 @@
 import type { HTMLAttributes, ReactNode } from "react";
+import Image from "next/image";
 import { ArrowUpRight, FileCheck2, ShieldCheck, Sparkles } from "lucide-react";
+import { WEB_BRAND_COMPACT_MARK_SRC } from "@/shared/config/brand";
 import { Badge, Card } from "@/shared/ui";
 import { cn } from "@/shared/lib/cn";
 
@@ -16,7 +18,17 @@ function DefaultIllustration() {
   return (
     <div className="grid h-full gap-4 rounded-[var(--radius-2xl)] border border-border/70 bg-accent-soft/55 p-6 shadow-sm">
       <div className="flex items-center justify-between">
-        <Badge tone="interactive">VRK</Badge>
+        <div className="inline-flex items-center gap-2 rounded-[var(--radius-full)] border border-border bg-card px-2.5 py-1 text-xs font-semibold text-foreground shadow-xs">
+          <Image
+            alt=""
+            aria-hidden="true"
+            className="size-6 rounded-[var(--radius-xs)] object-contain"
+            height={24}
+            src={WEB_BRAND_COMPACT_MARK_SRC}
+            width={24}
+          />
+          <span translate="no">VRK</span>
+        </div>
         <Sparkles aria-hidden="true" className="size-5 text-accent" />
       </div>
       <div className="space-y-3">

@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Building2, ClipboardList, LogOut, Wrench } from "lucide-react";
+import { WEB_BRAND_ALT, WEB_BRAND_COMPACT_MARK_SRC } from "@/shared/config/brand";
 import { AppShell, SidebarNav, TopBar } from "@/widgets/OperatorShell";
 
 const runtimeNavItems = [
@@ -97,11 +98,13 @@ export function RuntimeShell({ children, eyebrow = "Рабочая област�
       sidebar={
         <SidebarNav
           activeKey={currentMeta.activeKey}
+          brandLogoAlt={WEB_BRAND_ALT}
+          brandLogoSrc={WEB_BRAND_COMPACT_MARK_SRC}
           footerItems={runtimeFooterItems}
           id={runtimeNavigationId}
           items={runtimeNavItems}
-          metaLabel={viewer ? "VRK" : "Демо"}
-          metaTitle={viewer ? "Рабочая область" : "Обзор продукта"}
+          metaLabel={viewer ? null : "Демо"}
+          metaTitle={viewer ? "VRK" : "Обзор продукта"}
           mobileOpen={mobileOpen}
           onMobileOpenChange={setMobileOpen}
         />

@@ -7,6 +7,7 @@ type SubjectType string
 const (
 	SubjectTypeMeasuringInstrument SubjectType = "measuring_instrument"
 	SubjectTypeStandard            SubjectType = "standard"
+	SubjectTypeTechnicalEquipment  SubjectType = "technical_equipment"
 )
 
 type OperationType string

@@ -1,0 +1,6 @@
+HTTP/1.1 401 Unauthorized
+Content-Type: application/json
+Date: Tue, 12 May 2026 08:56:20 GMT
+Content-Length: 49
+
+{"success":false,"error":"missing bearer token"}

@@ -1,0 +1,8 @@
+Storybook registry entries: 38
+Query: "equipment operation journal selector technical diagnostic equipment"
+
+1. Equipment/EquipmentRegistryWorkspace [EquipmentRegistryWorkspace]
+   story: apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+   source: apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+   stories: TechnicalEquipmentList, TechnicalEquipmentSinglePhoto, TechnicalEquipmentGallery, TechnicalEquipmentNoPhotoFallback, DiagnosticEquipmentWithStandards, DiagnosticEquipmentWithoutStandards, DiagnosticEquipmentEditStandards, DiagnosticEquipmentEditPendingPhotos, UnifiedJournal, UnifiedJournalNoPhotoEmpty, ScopedReadonly, ArchiveVisible, LoadError, LongEquipmentList
+   tags: autodocs

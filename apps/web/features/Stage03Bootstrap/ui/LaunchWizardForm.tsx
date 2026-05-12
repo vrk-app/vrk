@@ -151,6 +151,7 @@ export function LaunchWizardForm({ session }: Props) {
               name="organizationName"
               onChange={(event) => setOrganizationName(event.target.value)}
               placeholder="Например, ООО ВРК Север…"
+              required
               value={organizationName}
             />
             <InputField
@@ -168,6 +169,7 @@ export function LaunchWizardForm({ session }: Props) {
               name="propertyType"
               onValueChange={setPropertyType}
               options={legalFormOptions}
+              required
               value={propertyType}
             />
             <InputField
@@ -177,6 +179,7 @@ export function LaunchWizardForm({ session }: Props) {
               name="inn"
               onChange={(event) => setInn(event.target.value)}
               placeholder="Например, 1234567890…"
+              required
               spellCheck={false}
               value={inn}
             />
@@ -187,6 +190,7 @@ export function LaunchWizardForm({ session }: Props) {
               name="kpp"
               onChange={(event) => setKpp(event.target.value)}
               placeholder="Например, 123456789…"
+              required
               spellCheck={false}
               value={kpp}
             />
@@ -196,6 +200,7 @@ export function LaunchWizardForm({ session }: Props) {
               name="contactEmail"
               onChange={(event) => setContactEmail(event.target.value)}
               placeholder="Например, admin@vrk.local…"
+              required
               spellCheck={false}
               type="email"
               value={contactEmail}
@@ -208,6 +213,7 @@ export function LaunchWizardForm({ session }: Props) {
               name="contactPhone"
               onChange={(event) => setContactPhone(event.target.value)}
               placeholder="Например, +7 (999) 123-45-67…"
+              required
               type="tel"
               value={contactPhone}
             />
@@ -218,6 +224,7 @@ export function LaunchWizardForm({ session }: Props) {
               name="legalAddress"
               onChange={(event) => setLegalAddress(event.target.value)}
               placeholder="Например, г. Москва, ул. Примерная, д. 1…"
+              required
               value={legalAddress}
             />
           </div>
@@ -260,6 +267,7 @@ export function LaunchWizardForm({ session }: Props) {
                   name="divisionName"
                   onChange={(event) => setDivisionName(event.target.value)}
                   placeholder="Например, Северный дивизион…"
+                  required
                   value={divisionName}
                 />
               </div>
@@ -272,6 +280,7 @@ export function LaunchWizardForm({ session }: Props) {
                 name="unitType"
                 onValueChange={setUnitType}
                 options={unitTypeOptions}
+                required
                 value={unitType}
               />
               <InputField
@@ -281,6 +290,7 @@ export function LaunchWizardForm({ session }: Props) {
                 name="unitName"
                 onChange={(event) => setUnitName(event.target.value)}
                 placeholder="Например, Юнит 01…"
+                required
                 value={unitName}
               />
             </div>

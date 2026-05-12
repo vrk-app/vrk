@@ -1,7 +1,7 @@
 # VRK Storybook Component Backlog
 
 Статус: proposed source backlog  
-Обновлено: 2026-04-29
+Обновлено: 2026-05-12
 
 ## Назначение
 
@@ -106,8 +106,9 @@
 
 - Назначение: все селекты фильтров и справочников.
 - Обязательные props: `label`, `placeholder`, `value`, `options`, `multiple`, `clearable`, `disabled`.
-- Состояния: `empty`, `selected`, `multi`, `disabled`, `loading options`.
-- Stories: `Single`, `Multiple`, `WithPlaceholder`, `Disabled`, `LoadingOptions`.
+- Дополнительные props: `searchable`, `searchPlaceholder`.
+- Состояния: `empty`, `selected`, `search`, `no results`, `multi`, `disabled`, `loading options`.
+- Stories: `Single`, `SearchableDefault`, `NoResults`, `SearchDisabled`, `Multiple`, `WithPlaceholder`, `Disabled`, `LoadingOptions`.
 - Реализация: `apps/web/shared/ui/SelectField.tsx`, stories в `apps/web/stories/primitives/SelectField.stories.tsx`.
 
 ### UI-05 DatePickerField [P0]
@@ -162,9 +163,10 @@
 
 ### UI-11.1 IslandCard [P0]
 
-- Назначение: wrapper над `Card` для рабочих островов с верхней neutral-челкой, доменной иконкой, optional metric и правым action badge.
+- Назначение: wrapper над `Card` для рабочих островов с верхней muted-челкой, доменной иконкой, optional metric и правым action badge.
 - Обязательные props: `title`, `children`, `icon`, `metric`, `action`, `headingLevel`, `className`, `bodyClassName`.
 - Metric отображается как типографический хвост рядом с заголовком (`Заголовок · 12`), без badge-фона и без текстовой подписи.
+- Горизонтальный отступ челки и вертикальный зазор до body равны body padding острова (`24px` / `card-padding-lg`); padding вложенных list items является вторичным уровнем и не задает кромку челки.
 - Состояния: `form`, `form with action`, `with metric`, `long title`, `mobile`.
 - Реализация: `apps/web/shared/ui/IslandCard.tsx`, stories в `apps/web/stories/primitives/IslandCard.stories.tsx`.
 - Примечание: компонент не заменяет базовый `Card`; он фиксирует выбранный островной паттерн поверх существующей поверхности.
@@ -173,7 +175,7 @@
 
 - Назначение: общий layout для operational surfaces, где слева форма добавления/редактирования, а справа список объектов.
 - Обязательные props: `form`, `list`, `className`, `formClassName`, `listClassName`, `columnsClassName`.
-- `FormListScrollArea` поддерживает `scrollMode: "page" | "contained"`; default `page` оставляет список в обычном page-flow, а `contained` включает desktop-only внутренний scroll без блокировки scroll chaining.
+- `FormListScrollArea` поддерживает `scrollMode: "page" | "contained"`; default `page` оставляет список в обычном page-flow без дополнительного right gutter, а `contained` включает desktop-only внутренний scroll и небольшой scrollbar gutter без блокировки scroll chaining.
 - Поведение: на desktop (`xl+`) измеряет высоту левой формы и задает эту высоту правой колонке; переполнение переносится во внутренний scroll только при явном `scrollMode="contained"`. На tablet/mobile колонки складываются в обычный стек без height-lock.
 - Состояния: `desktop short list`, `desktop long list scroll`, `mobile stacked`.
 - Stories: `DesktopShortList`, `DesktopLongListScroll`, `MobileStacked`.
@@ -602,9 +604,10 @@
 
 ### RUN-05 EquipmentRegistryWorkspace [P1]
 
-- Назначение: единый workspace оборудования с вкладками `Оборудование` и `Журнал операций`, owned standards внутри диагностических карточек и explicit archive visibility.
-- Состояния: `equipment tab`, `journal tab`, `archive visible`, `scoped admin`, `scoped read-only`, `load error`.
-- Stories: `TechnicalEquipmentList`, `UnifiedJournal`, `ArchiveVisible`, `ScopedReadonly`, `LoadError`, `LongEquipmentList`.
+- Назначение: единый workspace оборудования с вкладками `Оборудование` и `Журнал операций`, owned standards внутри диагностических карточек, product-gallery для приватных фото оборудования и explicit archive visibility.
+- Состояния: `equipment tab`, `journal tab`, `single photo`, `gallery`, `no-photo fallback`, `edit pending photo delete/upload`, `archive visible`, `scoped admin`, `scoped read-only`, `load error`.
+- Stories: `TechnicalEquipmentList`, `TechnicalEquipmentSinglePhoto`, `TechnicalEquipmentGallery`, `TechnicalEquipmentNoPhotoFallback`, `DiagnosticEquipmentWithStandards`, `DiagnosticEquipmentEditPendingPhotos`, `UnifiedJournal`, `ArchiveVisible`, `ScopedReadonly`, `LoadError`, `LongEquipmentList`.
+- Примечание: `EquipmentPhotoGallery` пока является feature-local domain UI внутри `EquipmentRegistryWorkspace`, а не shared reusable primitive; перед вынесением в shared нужно повторить lookup и добавить отдельную component-family запись.
 
 ## 10. P1: шаблоны реестров и отчетов
 

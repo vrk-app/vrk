@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { ShieldCheck } from "lucide-react";
 import { useState } from "react";
-import { Badge, Button, Dialog, InputField, SelectField, TextareaField, type DialogProps } from "@/shared/ui";
+import { Button, Dialog, InputField, SelectField, TextareaField, type DialogProps } from "@/shared/ui";
 
 function DialogStorySurface({
   body,
@@ -62,14 +62,11 @@ const editorBody = (
 );
 
 const editorFooter = (
-  <div className="flex flex-wrap items-center justify-between gap-3">
-    <p className="text-sm text-muted-foreground">Изменения попадут в структуру после сохранения.</p>
-    <div className="flex flex-wrap gap-3">
-      <Button type="button" variant="secondary">
-        Отмена
-      </Button>
-      <Button type="button">Сохранить изменения</Button>
-    </div>
+  <div className="flex flex-wrap justify-end gap-3">
+    <Button type="button" variant="secondary">
+      Отмена
+    </Button>
+    <Button type="button">Сохранить изменения</Button>
   </div>
 );
 
@@ -110,11 +107,6 @@ export const Default: Story = {
 export const NeutralHeader: Story = {
   render: () => (
     <DialogStorySurface
-      badge={
-        <Badge icon={<ShieldCheck className="size-4" />} tone="interactive">
-          Neutral
-        </Badge>
-      }
       body={editorBody}
       description="Основной светлый стиль модальных редакторов."
       footer={editorFooter}
@@ -129,11 +121,6 @@ export const NeutralHeader: Story = {
 export const MutedHeader: Story = {
   render: () => (
     <DialogStorySurface
-      badge={
-        <Badge tone="interactive">
-          Muted
-        </Badge>
-      }
       body={editorBody}
       description="Спокойная серая поверхность для вторичных модалок."
       footer={editorFooter}
@@ -148,7 +135,6 @@ export const MutedHeader: Story = {
 export const DarkHeader: Story = {
   render: () => (
     <DialogStorySurface
-      badge={<Badge tone="interactive">Dark</Badge>}
       body={editorBody}
       description="Исходный темный стиль для акцентных и критичных модалок."
       footer={editorFooter}

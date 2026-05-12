@@ -2,6 +2,88 @@
 
 ## Session log
 
+### 2026-05-12T12:03:00+03:00
+
+- Completed implementation/proof stabilization for correction slice `technical-equipment-operation-journal`.
+- Backend/API:
+  - added migration `000018_technical_equipment_journal_subject` so `registry_metrology_journal_entries.subject_type` accepts `technical_equipment` while preserving legacy `measuring_instrument` diagnostic rows;
+  - added technical equipment journal `GET/POST /api/v1/equipment/{id}/journals`;
+  - technical journal list validates customer session and visible scope/subtree;
+  - technical journal create requires `manage_equipment`, visible scope/subtree, non-archived equipment, writes `subject_type=technical_equipment`, derives current status from journal history, and updates `registry_equipment.status`;
+  - equipment list/get responses now expose `journalCount`, `latestJournal`, and `nextDueDate`.
+- Web/UI:
+  - used `$vrk-web-ui-workflow`;
+  - Storybook lookup matched existing `Equipment/EquipmentRegistryWorkspace`; reuse decision remains `extend`;
+  - journal state is now typed as `technical:<id>` / `diagnostic:<id>`;
+  - selector includes technical and diagnostic records with type labels, excludes standards, and routes create/list to the matching Next proxy/backend endpoint;
+  - read-only and archived records keep history visible while mutation controls stay hidden.
+- Canonical docs synced:
+  - `docs/PRD-MVP.md`;
+  - `docs/architecture/identity-master-data.md`;
+  - `docs/architecture/frontend-architecture.md`;
+  - `docs/roadmap.md`;
+  - `.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md`.
+- Proof before fresh verifier:
+  - targeted backend equipment/measuringinstrument tests passed;
+  - backend `go test ./...`, backend build, Swagger refresh, web lint/typecheck/build, Storybook build passed;
+  - existing compose-backed runtime was migrated/rebuilt for backend/web only, then targeted `/equipment` Playwright smoke passed against `localhost:3100` and backend `:18080`;
+  - source audits confirmed the journal selector is no longer measuring-instrument-only and standard journal routes remain absent;
+  - Web Interface Guidelines review passed.
+- `feature_list.json` still keeps `stage03-technical-equipment-operation-journal-parity` as `passes: false` until a fresh verifier returns `PASS`.
+
+### 2026-05-12T12:34:33+03:00
+
+- Fresh verifier returned `PASS` for `technical-equipment-operation-journal`.
+- Failed criteria: none.
+- Proof gaps: none.
+- Parent orchestrator marked `stage03-technical-equipment-operation-journal-parity` as passed in `feature_list.json`.
+- `verdict.json` and `problems.md` now point to this correction slice; the previous owned-standards verifier result is superseded only as the active verdict, not reverted.
+
+### 2026-05-12T10:05:14+03:00
+
+- Froze the Stage 03 correction contract for `technical-equipment-operation-journal`.
+- Scope remains intentionally small:
+  - `/equipment` stays the unified customer equipment workspace;
+  - the user-facing journal is `Журнал операций по оборудованию`;
+  - technical equipment and diagnostic equipment / `СИ` must both support journal List/Create and journal-driven `status` / `nextDueDate`;
+  - `registry_metrology_journal_entries` keeps its legacy name, while `subject_type` adds `technical_equipment`;
+  - standard journals remain absent from the target UI;
+  - contractor metrology and a separate industry metrology module stay out of MVP.
+- Required proof is pending, so `feature_list.json` now tracks `stage03-technical-equipment-operation-journal-parity` with `passes: false`.
+- No production code, canonical docs, evidence, or verifier verdict was edited in this freeze-only pass.
+
+### 2026-05-12T03:28:35+03:00
+
+- Completed the equipment photos/gallery implementation pass for the unified Stage 03 `/equipment` workspace.
+- Backend/API:
+  - added `registry_equipment_photos` metadata storage with `technical_equipment` / `diagnostic_equipment` subjects and private object keys under `organizations/{orgId}/equipment/{subject}/{subjectId}/photos/{uuid}.{ext}`;
+  - added upload/stream/delete photo routes for technical and diagnostic equipment;
+  - attached `photos` to equipment and diagnostic equipment list/get/update/archive responses;
+  - validated JPEG/PNG/WebP by payload signature, default 10 photos per record, and 5 MB per file.
+- Web/UI:
+  - added authenticated Next proxy routes for multipart upload, delete, and streaming GET;
+  - added create/edit photo draft state with local previews, pending delete/restore, and post-save upload/delete ordering;
+  - added feature-local `EquipmentPhotoGallery` with main image, thumbnails, count badge, keyboard-accessible thumbnail buttons, broken-image fallback, and public fallback illustrations;
+  - moved passport cards to a media-left desktop / media-top mobile layout.
+- Storybook/docs:
+  - updated equipment workspace stories and runtime mock for single photo, gallery, fallback, and pending edit states;
+  - synced `docs/architecture/identity-master-data.md`, `docs/PRD-MVP.md`, and `docs/design/storybook-component-backlog.md`.
+- Proof:
+  - backend gofmt, `go test ./...`, `go build -buildvcs=false ./...`, and Swagger refresh passed via Docker;
+  - web lint/typecheck/build and Storybook build passed with Node 24.14.1;
+  - Web Interface Guidelines review and `git diff --check` passed.
+- Runtime/smoke:
+  - targeted smoke coverage was updated but not executed because the existing compose backend on `127.0.0.1:18080` returned HTTP `404` for the new photo route;
+  - no long-running dev server or compose rebuild was started under the runtime policy.
+- Verification state: self-verified and ready for a fresh verifier; no final stage PASS is claimed for this media slice.
+
+### 2026-05-12T01:55:00+03:00
+
+- Applied the brand decision for current runtime surfaces:
+  - `apps/web` uses generated PNG option 2, `Технический реестр`, for the company/equipment web workspace;
+  - `apps/field` uses generated PNG option 5, `Полевой синк`, for the mobile/field PWA contour.
+- Updated app icons, manifests, web sidebar/auth brand surfaces, field scaffold header, canonical docs, and the Stage 06 harness brand baseline.
+
 ### 2026-05-11T15:07:41Z
 
 - Re-synced the equipment/metrology domain after the customer meeting.

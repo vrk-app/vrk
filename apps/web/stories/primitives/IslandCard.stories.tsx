@@ -2,6 +2,9 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { Building2, Plus } from "lucide-react";
 import { Button, InputField, IslandCard, SelectField, TextareaField } from "@/shared/ui";
 
+const bodyAlignmentRail =
+  "relative before:absolute before:bottom-0 before:left-0 before:top-0 before:w-px before:bg-accent/45";
+
 function StructureFormPreview({ namePrefix = "island" }: { namePrefix?: string }) {
   return (
     <>
@@ -95,7 +98,12 @@ export const FormWithAction: Story = {
 export const WithMetric: Story = {
   render: () => (
     <div className="w-[460px] max-w-[calc(100vw-2rem)]">
-      <IslandCard icon={<Building2 aria-hidden="true" className="size-4" />} metric="2" title="Активные дивизионы">
+      <IslandCard
+        bodyClassName={bodyAlignmentRail}
+        icon={<Building2 aria-hidden="true" className="size-4" />}
+        metric="2"
+        title="Активные дивизионы"
+      >
         <div className="grid gap-3">
           {["Северный дивизион", "Уральский дивизион"].map((name) => (
             <div

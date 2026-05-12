@@ -116,8 +116,9 @@ flowchart LR
 Блок называется `Журнал операций по оборудованию`.
 
 - Пользователь выбирает оборудование из единого списка.
-- Для технического оборудования журнал может быть пустым или недоступным по business rules, но UI остается единым.
-- Для диагностического оборудования журнал фиксирует официальные операции: поверка, калибровка, техобслуживание, приостановка, вывод.
+- Для технического оборудования журнал работает через `GET/POST /equipment/{id}/journals`; если history пустая, статус остается fallback из карточки.
+- Для диагностического оборудования журнал продолжает работать через legacy `GET/POST /measuring-instruments/{id}/journals`.
+- Для технического и диагностического оборудования журнал фиксирует официальные операции: поверка, калибровка, техобслуживание, приостановка, вывод.
 - `executorOrganization` отражает внутреннего метролога или аккредитованную организацию как исполнителя операции.
 - Рабочая настройка прибора на собственном эталоне не является обязательной записью журнала.
 - Отдельного standard journal в target UI больше нет.
@@ -164,7 +165,10 @@ flowchart LR
   - archived diagnostic equipment rejects new standards and owned-standard delete mutations.
 - Journal behavior:
   - equipment journal entries are attached to equipment/diagnostic equipment;
+  - technical equipment journal rows use `registry_metrology_journal_entries.subject_type = technical_equipment`;
+  - diagnostic equipment / `СИ` journal rows keep legacy `subject_type = measuring_instrument`;
   - archived equipment rejects new journal entries;
+  - current status and next due date derive from the latest applicable journal entry for both technical and diagnostic equipment;
   - existing read-only history remains accessible.
 
 ## Web Implementation Plan

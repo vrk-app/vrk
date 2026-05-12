@@ -72,6 +72,7 @@ export function PlatformAdminInviteForm() {
             name="organizationName"
             onChange={(event) => setOrganizationName(event.target.value)}
             placeholder="Например, ООО ВРК Север…"
+            required
             value={organizationName}
           />
           <SelectField
@@ -79,6 +80,7 @@ export function PlatformAdminInviteForm() {
             name="organizationRole"
             onChange={(event) => setOrganizationRole(event.target.value as (typeof roleOptions)[number]["value"])}
             options={roleOptions}
+            required
             value={organizationRole}
           />
           <div className="grid gap-4 md:grid-cols-2">
@@ -89,6 +91,7 @@ export function PlatformAdminInviteForm() {
               name="firstAdminName"
               onChange={(event) => setFirstAdminName(event.target.value)}
               placeholder="Например, Анна Волкова…"
+              required
               value={firstAdminName}
             />
             <InputField
@@ -98,6 +101,7 @@ export function PlatformAdminInviteForm() {
               name="firstAdminEmail"
               onChange={(event) => setFirstAdminEmail(event.target.value)}
               placeholder="Например, admin@vrk.local…"
+              required
               spellCheck={false}
               type="email"
               value={firstAdminEmail}

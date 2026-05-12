@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"backend/internal/auth/bootstrap"
+	"backend/internal/equipment/metrologyjournal"
+	equipmentphoto "backend/internal/equipment/photo"
 	"backend/internal/equipment/registryaccess"
 
 	"github.com/google/uuid"
@@ -17,17 +19,28 @@ type EquipmentService interface {
 	GetByID(ctx context.Context, token string, id string) (*EquipmentResponse, error)
 	Update(ctx context.Context, token string, id string, req UpdateRequest) (*EquipmentResponse, error)
 	Archive(ctx context.Context, token string, id string) (*EquipmentResponse, error)
+	ListJournals(ctx context.Context, token string, id string) ([]*JournalResponse, error)
+	CreateJournal(ctx context.Context, token string, id string, req CreateJournalRequest) (*JournalResponse, error)
 }
 
 type equipmentService struct {
-	repository  EquipmentRepository
-	authService bootstrap.Service
+	repository        EquipmentRepository
+	journalRepository metrologyjournal.Repository
+	authService       bootstrap.Service
+	photos            equipmentphoto.Repository
 }
 
-func NewService(repository EquipmentRepository, authService bootstrap.Service) EquipmentService {
+func NewService(
+	repository EquipmentRepository,
+	journalRepository metrologyjournal.Repository,
+	authService bootstrap.Service,
+	photos equipmentphoto.Repository,
+) EquipmentService {
 	return &equipmentService{
-		repository:  repository,
-		authService: authService,
+		repository:        repository,
+		journalRepository: journalRepository,
+		authService:       authService,
+		photos:            photos,
 	}
 }
 
@@ -53,7 +66,7 @@ func (s *equipmentService) Create(ctx context.Context, token string, req CreateR
 		return nil, err
 	}
 
-	return toResponse(created), nil
+	return toResponse(created, metrologyjournal.DeriveState(nil, created.Status), nil), nil
 }
 
 func (s *equipmentService) List(ctx context.Context, token string, includeArchived bool, limit, offset int32) ([]*EquipmentResponse, int64, error) {
@@ -76,9 +89,18 @@ func (s *equipmentService) List(ctx context.Context, token string, includeArchiv
 	}
 
 	paged := paginate(filtered, limit, offset)
+	photosByEquipment, err := s.photosByEquipment(ctx, session.Organization.ID, paged)
+	if err != nil {
+		return nil, 0, err
+	}
+	journalsByEquipment, err := s.journalsByEquipment(ctx, session.Organization.ID)
+	if err != nil {
+		return nil, 0, err
+	}
 	result := make([]*EquipmentResponse, 0, len(paged))
 	for index := range paged {
-		result = append(result, toResponse(&paged[index]))
+		derived := metrologyjournal.DeriveState(journalsByEquipment[paged[index].ID], paged[index].Status)
+		result = append(result, toResponse(&paged[index], derived, photosByEquipment[paged[index].ID]))
 	}
 
 	return result, int64(len(filtered)), nil
@@ -106,7 +128,16 @@ func (s *equipmentService) GetByID(ctx context.Context, token string, id string)
 		return nil, ErrForbidden
 	}
 
-	return toResponse(item), nil
+	photos, err := s.photosForEquipment(ctx, session.Organization.ID, item.ID)
+	if err != nil {
+		return nil, err
+	}
+	journals, err := s.journalsForEquipment(ctx, session.Organization.ID, item.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return toResponse(item, metrologyjournal.DeriveState(journals, item.Status), photos), nil
 }
 
 func (s *equipmentService) Update(ctx context.Context, token string, id string, req UpdateRequest) (*EquipmentResponse, error) {
@@ -144,7 +175,16 @@ func (s *equipmentService) Update(ctx context.Context, token string, id string, 
 		return nil, err
 	}
 
-	return toResponse(item), nil
+	photos, err := s.photosForEquipment(ctx, session.Organization.ID, item.ID)
+	if err != nil {
+		return nil, err
+	}
+	journals, err := s.journalsForEquipment(ctx, session.Organization.ID, item.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return toResponse(item, metrologyjournal.DeriveState(journals, item.Status), photos), nil
 }
 
 func (s *equipmentService) Archive(ctx context.Context, token string, id string) (*EquipmentResponse, error) {
@@ -177,7 +217,88 @@ func (s *equipmentService) Archive(ctx context.Context, token string, id string)
 		return nil, err
 	}
 
-	return toResponse(archived), nil
+	photos, err := s.photosForEquipment(ctx, session.Organization.ID, archived.ID)
+	if err != nil {
+		return nil, err
+	}
+	journals, err := s.journalsForEquipment(ctx, session.Organization.ID, archived.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return toResponse(archived, metrologyjournal.DeriveState(journals, archived.Status), photos), nil
+}
+
+func (s *equipmentService) ListJournals(ctx context.Context, token string, id string) ([]*JournalResponse, error) {
+	session, err := registryaccess.RequireCustomerSession(ctx, s.authService, token)
+	if err != nil {
+		return nil, mapAccessError(err)
+	}
+
+	equipmentID, _, err := s.visibleEquipment(ctx, session, id)
+	if err != nil {
+		return nil, err
+	}
+
+	journals, err := s.journalRepository.ListBySubject(
+		ctx,
+		uuid.MustParse(session.Organization.ID),
+		metrologyjournal.SubjectTypeTechnicalEquipment,
+		equipmentID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*JournalResponse, 0, len(journals))
+	for _, entry := range journals {
+		result = append(result, toJournalResponse(entry))
+	}
+
+	return result, nil
+}
+
+func (s *equipmentService) CreateJournal(ctx context.Context, token string, id string, req CreateJournalRequest) (*JournalResponse, error) {
+	session, err := registryaccess.RequireRegistryManager(ctx, s.authService, token)
+	if err != nil {
+		return nil, mapAccessError(err)
+	}
+
+	equipmentID, current, err := s.visibleEquipment(ctx, session, id)
+	if err != nil {
+		return nil, err
+	}
+	if current.ArchivedAt != nil {
+		return nil, ErrAlreadyArchived
+	}
+
+	entry, err := s.buildJournalEntry(session.Organization.ID, equipmentID.String(), req)
+	if err != nil {
+		return nil, err
+	}
+
+	created, err := s.journalRepository.Create(ctx, entry)
+	if err != nil {
+		return nil, err
+	}
+
+	journals, err := s.journalRepository.ListBySubject(
+		ctx,
+		uuid.MustParse(session.Organization.ID),
+		metrologyjournal.SubjectTypeTechnicalEquipment,
+		equipmentID,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	derived := metrologyjournal.DeriveState(journals, current.Status)
+	current.Status = derived.Status
+	if _, err := s.repository.Update(ctx, *current); err != nil {
+		return nil, err
+	}
+
+	return toJournalResponse(*created), nil
 }
 
 func (s *equipmentService) buildCreateModel(session *bootstrap.SessionSummaryResponse, req CreateRequest) (Equipment, error) {
@@ -315,7 +436,139 @@ func (s *equipmentService) buildUpdatedModel(session *bootstrap.SessionSummaryRe
 	return &updated, nil
 }
 
-func toResponse(item *Equipment) *EquipmentResponse {
+func (s *equipmentService) photosByEquipment(ctx context.Context, organizationID string, items []Equipment) (map[string][]equipmentphoto.EquipmentPhoto, error) {
+	result := make(map[string][]equipmentphoto.EquipmentPhoto, len(items))
+	if s.photos == nil || len(items) == 0 {
+		return result, nil
+	}
+
+	ids := make([]uuid.UUID, 0, len(items))
+	for _, item := range items {
+		ids = append(ids, uuid.MustParse(item.ID))
+	}
+
+	return s.photos.ListBySubjects(ctx, uuid.MustParse(organizationID), equipmentphoto.SubjectTechnicalEquipment, ids)
+}
+
+func (s *equipmentService) photosForEquipment(ctx context.Context, organizationID string, equipmentID string) ([]equipmentphoto.EquipmentPhoto, error) {
+	if s.photos == nil {
+		return []equipmentphoto.EquipmentPhoto{}, nil
+	}
+
+	return s.photos.ListBySubject(
+		ctx,
+		uuid.MustParse(organizationID),
+		equipmentphoto.SubjectTechnicalEquipment,
+		uuid.MustParse(equipmentID),
+	)
+}
+
+func (s *equipmentService) journalsByEquipment(ctx context.Context, organizationID string) (map[string][]metrologyjournal.Entry, error) {
+	if s.journalRepository == nil {
+		return map[string][]metrologyjournal.Entry{}, nil
+	}
+
+	return s.journalRepository.ListByOrganization(
+		ctx,
+		uuid.MustParse(organizationID),
+		metrologyjournal.SubjectTypeTechnicalEquipment,
+	)
+}
+
+func (s *equipmentService) journalsForEquipment(ctx context.Context, organizationID string, equipmentID string) ([]metrologyjournal.Entry, error) {
+	if s.journalRepository == nil {
+		return []metrologyjournal.Entry{}, nil
+	}
+
+	return s.journalRepository.ListBySubject(
+		ctx,
+		uuid.MustParse(organizationID),
+		metrologyjournal.SubjectTypeTechnicalEquipment,
+		uuid.MustParse(equipmentID),
+	)
+}
+
+func (s *equipmentService) visibleEquipment(ctx context.Context, session *bootstrap.SessionSummaryResponse, id string) (uuid.UUID, *Equipment, error) {
+	equipmentID, err := uuid.Parse(strings.TrimSpace(id))
+	if err != nil {
+		return uuid.Nil, nil, ErrInvalidID
+	}
+
+	current, err := s.repository.GetByID(ctx, equipmentID)
+	if err != nil {
+		return uuid.Nil, nil, err
+	}
+	if current.OrganizationID != session.Organization.ID {
+		return uuid.Nil, nil, ErrForbidden
+	}
+	if _, visible := registryaccess.VisibleUnitMap(session)[current.UnitID]; !visible {
+		return uuid.Nil, nil, ErrForbidden
+	}
+
+	return equipmentID, current, nil
+}
+
+func (s *equipmentService) buildJournalEntry(
+	organizationID string,
+	subjectID string,
+	req CreateJournalRequest,
+) (metrologyjournal.Entry, error) {
+	operationType := metrologyjournal.OperationType(strings.ToLower(strings.TrimSpace(req.OperationType)))
+	if operationType == "" {
+		return metrologyjournal.Entry{}, ErrOperationTypeRequired
+	}
+	switch operationType {
+	case metrologyjournal.OperationTypeVerification,
+		metrologyjournal.OperationTypeCalibration,
+		metrologyjournal.OperationTypeMaintenance,
+		metrologyjournal.OperationTypeSuspension,
+		metrologyjournal.OperationTypeDecommission:
+	default:
+		return metrologyjournal.Entry{}, ErrOperationTypeInvalid
+	}
+
+	operationDateValue := strings.TrimSpace(req.OperationDate)
+	if operationDateValue == "" {
+		return metrologyjournal.Entry{}, ErrOperationDateRequired
+	}
+	operationDate, err := time.Parse("2006-01-02", operationDateValue)
+	if err != nil {
+		return metrologyjournal.Entry{}, ErrOperationDateInvalid
+	}
+
+	documentNumber := strings.TrimSpace(req.DocumentNumber)
+	if documentNumber == "" {
+		return metrologyjournal.Entry{}, ErrDocumentNumberRequired
+	}
+	executorOrganization := strings.TrimSpace(req.ExecutorOrganization)
+	if executorOrganization == "" {
+		return metrologyjournal.Entry{}, ErrExecutorRequired
+	}
+
+	var validUntil *time.Time
+	if req.ValidUntil != nil && strings.TrimSpace(*req.ValidUntil) != "" {
+		value, parseErr := time.Parse("2006-01-02", strings.TrimSpace(*req.ValidUntil))
+		if parseErr != nil {
+			return metrologyjournal.Entry{}, ErrValidUntilInvalid
+		}
+		validUntil = &value
+	}
+
+	return metrologyjournal.Entry{
+		OrganizationID:       organizationID,
+		SubjectType:          metrologyjournal.SubjectTypeTechnicalEquipment,
+		SubjectID:            subjectID,
+		OperationType:        operationType,
+		OperationDate:        operationDate,
+		DocumentNumber:       documentNumber,
+		ValidUntil:           validUntil,
+		ExecutorOrganization: executorOrganization,
+		AttachmentURL:        normalizeOptional(req.AttachmentURL),
+		Comment:              normalizeOptional(req.Comment),
+	}, nil
+}
+
+func toResponse(item *Equipment, derived metrologyjournal.DerivedState, photos []equipmentphoto.EquipmentPhoto) *EquipmentResponse {
 	var archivedAt *string
 	if item.ArchivedAt != nil {
 		value := item.ArchivedAt.Format(time.RFC3339)
@@ -338,14 +591,64 @@ func toResponse(item *Equipment) *EquipmentResponse {
 		FactoryNumber:            item.FactoryNumber,
 		InventoryNumber:          item.InventoryNumber,
 		ManufactureYear:          item.ManufactureYear,
-		Status:                   item.Status,
+		Status:                   derived.Status,
 		Comment:                  item.Comment,
 		DocumentURL:              item.DocumentURL,
+		Photos:                   photoResponses(photos),
+		JournalCount:             derived.JournalCount,
+		NextDueDate:              derived.NextDueDate,
+		LatestJournal:            journalResponsePtr(derived.LatestJournal),
 		MeasuringInstrumentCount: item.MeasuringInstrumentCount,
 		ArchivedAt:               archivedAt,
 		CreatedAt:                item.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:                item.UpdatedAt.Format(time.RFC3339),
 	}
+}
+
+func journalResponsePtr(entry *metrologyjournal.Entry) *JournalResponse {
+	if entry == nil {
+		return nil
+	}
+
+	return toJournalResponse(*entry)
+}
+
+func toJournalResponse(entry metrologyjournal.Entry) *JournalResponse {
+	var validUntil *string
+	if entry.ValidUntil != nil {
+		value := entry.ValidUntil.UTC().Format("2006-01-02")
+		validUntil = &value
+	}
+
+	return &JournalResponse{
+		ID:                   entry.ID,
+		OperationType:        string(entry.OperationType),
+		OperationDate:        entry.OperationDate.UTC().Format("2006-01-02"),
+		DocumentNumber:       entry.DocumentNumber,
+		ValidUntil:           validUntil,
+		ExecutorOrganization: entry.ExecutorOrganization,
+		AttachmentURL:        entry.AttachmentURL,
+		Comment:              entry.Comment,
+		CreatedAt:            entry.CreatedAt.Format(time.RFC3339),
+	}
+}
+
+func photoResponses(photos []equipmentphoto.EquipmentPhoto) []EquipmentPhotoResponse {
+	source := equipmentphoto.ToResponses(photos)
+	result := make([]EquipmentPhotoResponse, 0, len(source))
+	for _, item := range source {
+		result = append(result, EquipmentPhotoResponse{
+			ID:          item.ID,
+			FileName:    item.FileName,
+			ContentType: item.ContentType,
+			SizeBytes:   item.SizeBytes,
+			SortOrder:   item.SortOrder,
+			URL:         item.URL,
+			CreatedAt:   item.CreatedAt,
+			UpdatedAt:   item.UpdatedAt,
+		})
+	}
+	return result
 }
 
 func paginate(items []Equipment, limit, offset int32) []Equipment {
