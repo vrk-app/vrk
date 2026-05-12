@@ -56,8 +56,8 @@ export function IslandCard({
   const hasMetric = metric !== undefined && metric !== null && metric !== false && metric !== "";
 
   return (
-    <Card className={cn("relative gap-5 overflow-visible pt-20", className)} padding="lg">
-      <div className="absolute inset-x-5 top-0 z-10 flex items-start justify-between gap-3">
+    <Card className={cn("relative gap-5 overflow-visible pt-[4.75rem]", className)} padding="lg">
+      <div className="absolute inset-x-6 top-0 z-10 flex items-start justify-between gap-3">
         <div
           className={cn(
             "flex h-[3.25rem] min-w-0 items-center gap-3 rounded-b-[1.4rem] border border-t-0 border-border bg-muted px-5 py-3 text-foreground shadow-xs",

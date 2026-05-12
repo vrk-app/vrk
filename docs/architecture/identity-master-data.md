@@ -1,7 +1,7 @@
 # Identity, Access, and Master Data
 
 Статус: accepted baseline  
-Обновлено: 2026-05-11
+Обновлено: 2026-05-12
 
 ## Назначение
 
@@ -72,14 +72,14 @@ flowchart TD
 
 ### 1.1. Historical slice-001 contract
 
-В первом живом Stage 03 slice этот сценарий был реализован через launch wizard. Это исторический proof текущей реализации, но продуктовый target от 2026-04-29 заменяет wizard на постоянный `/company` management surface:
+В первом живом Stage 03 slice этот сценарий был реализован через launch wizard. Это исторический proof ранней реализации, но текущий продуктовый contract заменил wizard на постоянный `/company` management surface:
 
 - `POST /platform/organization-shells` создает `organization shell` и first-admin invite, но только за deployment-scoped platform-admin boundary;
 - публичный `/register` не вызывает backend напрямую: Next route handler inject-ит `X-VRK-Platform-Admin-Secret` server-side, а browser не получает secret;
 - `GET /first-admin-invites/{token}` открывает одноразовую ссылку и переводит invite из `sent` в `opened`;
 - `POST /first-admin-invites/{token}/accept` задает пароль, создает `membership`, выдает initial `organization_admin` grant и возвращает session;
 - повторный `accept` по тому же token возвращает конфликт и не может создать вторую активацию;
-- `POST /launch-wizard` сохраняет core organization data и поддерживает оба пути: `organization -> division -> unit` и `organization -> unit`;
+- legacy `POST /launch-wizard` сохранял core organization data и поддерживал оба пути: `organization -> division -> unit` и `organization -> unit`; сейчас это compatibility API, а не целевой пользовательский путь;
 - `POST /sessions` и `GET /sessions/current` позволяют вернуться только в тот contour, который привязан к explicit active `membership_id + grant_id`;
 - direct login с несколькими eligible access paths возвращает `409` и не делает silent selection.
 
@@ -93,12 +93,13 @@ flowchart LR
     C --> E["replay rejected"]
 ```
 
-### 1.2. Target correction: organization structure management UI
+### 1.2. Current contract: organization structure management UI
 
-Следующий Stage 03 correction slice должен убрать зависимость бизнес-логики от "завершенного wizard":
+Stage 03 correction убрал целевую зависимость UX от "завершенного wizard":
 
 - first-admin invite acceptance сразу выпускает session и ведет администратора на `/company`;
 - `/company` показывает empty / partial / populated states организации и не требует отдельного `/company/setup`;
+- `/company/setup` сохранен только как redirect-only compatibility route для старых ссылок и больше не рендерит launch wizard;
 - organization-scope admin может в любое время создавать, редактировать и архивировать дивизионы и юниты;
 - создание первого дивизиона и первого юнита использует те же API и UI, что и создание последующих узлов;
 - юнит может быть создан под дивизионом или напрямую под организацией;
@@ -457,6 +458,7 @@ flowchart LR
 - статус;
 - юнит;
 - документы;
+- приватные фото, опционально;
 - комментарий.
 
 Для технологического оборудования:
@@ -477,7 +479,38 @@ flowchart LR
 - опциональная связь с технологическим оборудованием;
 - `0..N` эталонов / установочных мер внутри той же формы.
 
-После создания карточки технологическое оборудование может жить без метрологии, если она не нужна. Диагностическое оборудование должно иметь метрологический статус и журнал официальных операций, потому что его показания влияют на вывод `исправен / неисправен`.
+После создания карточки технологическое оборудование может жить без journal history, если официальных операций еще не было; в этом случае API возвращает fallback status из карточки. Диагностическое оборудование / СИ и технологическое оборудование используют один журнал официальных операций, а диагностическое оборудование дополнительно влияет на вывод `исправен / неисправен` по результатам проверки.
+
+#### 5.1.1. Equipment media contract
+
+Фото оборудования являются private media, а не обязательной частью карточки:
+
+- отсутствие фото не блокирует создание или редактирование технологического или диагностического оборудования;
+- metadata фото хранится в `registry_equipment_photos`: `subject_type`, `subject_id`, object key, file name, content type, size, sort order and timestamps;
+- `subject_type` фиксирован как `technical_equipment` или `diagnostic_equipment`;
+- object key строится как `organizations/{orgId}/equipment/{subject}/{subjectId}/photos/{uuid}.{ext}`;
+- файлы лежат в existing private S3-compatible object storage; Postgres не хранит binary payload;
+- допустимы только `image/jpeg`, `image/png`, `image/webp`; default limits: 10 фото на запись, 5 MB на файл;
+- list/get responses for `EquipmentResponse` and `MeasuringInstrumentResponse` include `photos: EquipmentPhotoResponse[]`;
+- upload/delete доступны только customer users с `manage_equipment`, только для visible non-archived parent record;
+- streaming view доступен customer users, которым видна parent record;
+- web не отдает object storage URL напрямую: `/api/equipment/.../photos` и `/api/equipment/measuring-instruments/.../photos` проксируют upload/delete/stream через authenticated Next route handlers.
+
+```mermaid
+flowchart LR
+    A["Equipment create/edit dialog"] --> B["Save JSON card"]
+    B --> C["Apply pending photo deletes/uploads"]
+    C --> D["Next /api/equipment/.../photos"]
+    D --> E["backend /api/v1/.../photos"]
+    E --> F["registry_equipment_photos metadata"]
+    E --> G["Private object storage"]
+    G --> E
+    E --> D
+    D --> H["EquipmentPhotoResponse.url"]
+    H --> I["Product gallery stream"]
+```
+
+UI contract: карточка оборудования показывает слева product-gallery с основным изображением и миниатюрами, на mobile gallery идет сверху. Если persisted фото нет или image stream ломается, карточка использует public fallback illustration: `/brand/illustrations/equipment/technical-wagon-lift.png` для технологического оборудования и `/brand/illustrations/equipment/diagnostic-ultrasonic-detector.png` для диагностического оборудования.
 
 ### 5.2. Средства измерения
 
@@ -516,6 +549,13 @@ flowchart LR
 
 Для оборудования источником правды по официальным операциям является единый журнал операций по оборудованию, а не только пара дат в карточке.
 
+Persistence table remains `registry_metrology_journal_entries` for compatibility with the historical metrology slice, but the table name is legacy. Current target journal subjects are:
+
+- `technical_equipment` for records stored in `registry_equipment`;
+- `measuring_instrument` for diagnostic equipment / `СИ` stored in the legacy `registry_measuring_instruments` implementation boundary.
+
+Standard journal rows may remain as historical compatibility data, but standard journals are not exposed as target `/equipment` UI subjects.
+
 Запись журнала хранит:
 
 - вид операции;
@@ -526,9 +566,23 @@ flowchart LR
 - вложение;
 - комментарий.
 
-Правило расчета для диагностического оборудования:
+```mermaid
+flowchart LR
+    A["/equipment journal selector"] --> B{"subject kind"}
+    B -->|"technical"| C["registry_equipment<br/>subject_type=technical_equipment"]
+    B -->|"diagnostic / СИ"| D["registry_measuring_instruments<br/>subject_type=measuring_instrument"]
+    C --> E["registry_metrology_journal_entries"]
+    D --> E
+    E --> F["latest applicable entry"]
+    F --> G["status + nextDueDate"]
+```
+
+Диаграмма фиксирует исправленный subject model: technical and diagnostic equipment share one user-facing journal surface, while the legacy storage names remain conservative implementation details.
+
+Правило расчета для технологического и диагностического оборудования:
 
 - текущий статус и ближайшая дата рассчитываются из последней действующей записи журнала оборудования;
+- если journal history пустая, API возвращает fallback status из карточки;
 - денормализованные поля на карточке допустимы как cache/view-model, но не как единственный источник правды.
 
 ### 5.5. Связи между оборудованием, СИ и эталонами
@@ -610,7 +664,7 @@ flowchart TD
   - запись остается в persistence с `archived_at`;
   - default active lists и active relation pickers ее не показывают;
   - explicit archive view показывает ту же запись и ее read-only history;
-  - archived СИ и archived standards отклоняют новые journal mutations.
+  - archived technical equipment, archived СИ и archived standards отклоняют новые journal mutations where those mutation routes exist.
 
 Current derived-state rule в repo реализован минимально и явно:
 
@@ -634,7 +688,7 @@ flowchart LR
     G -->|no| H["nextDueDate = validUntil"]
 ```
 
-Диаграмма фиксирует текущий slice-005 derivation contract: archived state хранится отдельно, а текущий metrology status и ближайшая дата вычисляются по latest applicable journal record.
+Диаграмма фиксирует текущий derivation contract: archived state хранится отдельно, а текущий status и ближайшая дата вычисляются по latest applicable journal record.
 
 ### 5.8. Target correction: unified equipment workspace
 
@@ -653,6 +707,8 @@ Equipment-domain correction moves the user-facing contract from three tabbed reg
 - customer admins can manage the owned kit from the diagnostic equipment edit modal: newly added standards are created on save, and removed standards are physically deleted through `DELETE /measuring-instruments/{id}/standards/{standardId}` rather than archived or detached;
 - hard-deleting an owned standard also removes legacy standard-journal rows for that standard; the target product keeps the journal at the equipment/diagnostic-equipment level;
 - journal surface is `Журнал операций по оборудованию`;
+- journal selector includes technical equipment and diagnostic equipment / `СИ`, labels the type, and never includes standards/setup measures;
+- technical journal entries use `subject_type = technical_equipment`; diagnostic journal entries keep `subject_type = measuring_instrument` for compatibility;
 - no separate standard journal is exposed in the target UI.
 
 ```mermaid
@@ -676,6 +732,22 @@ Migration `000016_equipment_domain_correction` makes the legacy data truthful fo
 - active standards linked to several diagnostic equipment records are copied per diagnostic parent, so no current child standard is reused across cards;
 - active standards without a derivable diagnostic parent are archived with a migration comment instead of staying visible as standalone current records;
 - unarchived standards are constrained to have `diagnostic_equipment_id`, while archived historical rows may remain as read-only compatibility data.
+
+### 5.9. Correction 2026-05-12: technical equipment journal parity
+
+The `technical-equipment-operation-journal` correction closes the remaining Stage 03 parity gap:
+
+- backend exposes `GET/POST /api/v1/equipment/{id}/journals` for technical equipment;
+- Next.js exposes the matching authenticated proxy at `/api/equipment/{equipmentId}/journals`;
+- `registry_metrology_journal_entries.subject_type` accepts `technical_equipment`;
+- technical `ListJournals` requires a customer session and visible scope/subtree;
+- technical `CreateJournal` requires `manage_equipment`, visible scope/subtree, and a non-archived equipment record;
+- successful technical journal creation recalculates derived status from journal history and persists the derived `registry_equipment.status`;
+- technical and diagnostic list/get responses expose `journalCount`, `latestJournal`, and `nextDueDate` summaries;
+- archived technical and diagnostic equipment preserve read-only journal history but reject new journal entries;
+- `/equipment` UI uses one typed target selector and routes journal load/create by selected record type.
+
+This correction intentionally does not rename `registry_metrology_journal_entries`, does not introduce a generic journal module, and does not make standards selectable journal subjects.
 
 ## 6. Исторические ownership labels и lifecycle rules
 

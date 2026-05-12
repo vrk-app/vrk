@@ -1,7 +1,7 @@
 # Evidence
 
 - Stage ID: `03-identity-master-data`
-- Current correction slice: `slice-014-equipment-domain-correction`
+- Current correction slice: `technical-equipment-operation-journal`
 - Previous continuation slice: `slice-011-input-help-tooltip`
 - Previous bounded UI correction slice: `slice-013-access-confirmation-dialogs`
 - Builder state: `COMPLETE`
@@ -29,7 +29,131 @@ Fresh verifier initially failed this slice for owned-standard migration/read-pat
 
 The 2026-05-11 owned-standards edit-modal follow-up extends the same unified `/equipment` contract: customer admins can now add new owned standards/setup measures and mark existing owned standards for physical deletion while editing diagnostic equipment. Both operations are queued in the modal and sent only after `Сохранить изменения`. The backend adds `DELETE /api/v1/measuring-instruments/{id}/standards/{standardId}` and the matching Next proxy; the service verifies manager access, customer scope, visible diagnostic parent, non-archived parent, and standard ownership before hard-deleting standard journal rows and the standard row. Canonical docs and stage artifacts are synced because this is an explicit hard-delete exception for diagnostic-owned standards, not archive visibility for equipment.
 
+The 2026-05-12 brand-logo decision applies generated PNG option 2, `Технический реестр`, to the current `apps/web` company/equipment workspace and generated PNG option 5, `Полевой синк`, to the `apps/field` mobile/PWA contour. Canonical docs and Stage 06 harness artifacts now record this split so future field work inherits the mobile logo choice instead of reselecting it.
+
+The 2026-05-12 equipment photos/gallery slice adds optional private media to the unified `/equipment` contract. Technical and diagnostic equipment now expose `photos`, store metadata in `registry_equipment_photos`, stream private objects through authenticated backend and Next proxy routes, and render a feature-local `EquipmentPhotoGallery` in the passport card media column with fallback illustrations for records without usable photos. Create/edit dialogs can stage local previews, mark existing photos for deletion, restore them before save, and apply upload/delete operations only after the JSON card save succeeds. Canonical product/API docs and Storybook equipment states were synced. Runtime smoke was not claimed because the existing compose backend on `127.0.0.1:18080` returned `404` for the new photo route and the runtime policy forbids replacing/restarting the long-running stack without an explicit request.
+
+The 2026-05-12 technical equipment journal correction closes the remaining `/equipment` journal parity gap. Technical equipment now has `GET/POST /api/v1/equipment/{id}/journals`, journal rows persist in legacy `registry_metrology_journal_entries` with `subject_type = technical_equipment`, and equipment list/get responses expose `journalCount`, `latestJournal`, and `nextDueDate` derived from the latest applicable journal entry. Diagnostic equipment / `СИ` keeps the existing `measuring_instrument` journal subject for compatibility. The web journal selector now uses typed targets (`technical:<id>` / `diagnostic:<id>`), includes both technical and diagnostic equipment, excludes standards, and dispatches to the correct endpoint. Archived technical/diagnostic records preserve read-only history and reject new journal entries; read-only sessions see history without mutation controls. Canonical product, architecture, frontend, roadmap, and stage-plan docs were synced because this changes product/API behavior.
+
+Fresh verifier returned `PASS` for `technical-equipment-operation-journal` at `2026-05-12T09:32:18Z`; failed criteria none, proof gaps none. The parent orchestrator marked `stage03-technical-equipment-operation-journal-parity` passed after that verifier result.
+
 ## Commands Run
+
+- Technical equipment operation journal:
+  - Used `$vrk-web-ui-workflow`; Storybook lookup for `technical-equipment-operation-journal` had already matched `Equipment/EquipmentRegistryWorkspace`, reuse decision `extend`, no new reusable component family introduced.
+  - Backend/API:
+    - added migration `000018_technical_equipment_journal_subject`;
+    - added `metrologyjournal.SubjectTypeTechnicalEquipment`;
+    - added technical equipment journal service/handler/routes and Swagger annotations;
+    - added technical journal response summary fields to `EquipmentResponse`;
+    - refreshed generated Swagger/OpenAPI.
+  - Web:
+    - added Next proxy route `/api/equipment/[equipmentId]/journals`;
+    - extended `EquipmentRegistryWorkspace` journal state with typed technical/diagnostic targets;
+    - updated API types, Storybook runtime mock/fixtures/stories, and targeted smoke coverage.
+  - Synced canonical docs:
+    - `docs/PRD-MVP.md`
+    - `docs/architecture/identity-master-data.md`
+    - `docs/architecture/frontend-architecture.md`
+    - `docs/roadmap.md`
+    - `.agent/stages/03-identity-master-data/equipment-domain-correction-plan.md`
+  - Proof:
+    - backend targeted equipment/measuringinstrument tests: PASS;
+    - backend `go test ./...`: PASS;
+    - backend `go build -buildvcs=false ./...`: PASS;
+    - Swagger refresh: PASS;
+    - web typecheck: PASS;
+    - web lint: PASS with existing equipment photo `<img>` warnings only;
+    - web build: PASS;
+    - Storybook build: PASS with existing chunk-size warnings only;
+    - existing compose-backed runtime migrated/rebuilt for backend/web, route probe changed from stale `404` to route-level `401` without token;
+    - targeted `/equipment` Playwright smoke: PASS against `localhost:3100` / backend `:18080`;
+    - source audits: selector no longer measuring-instrument-only, standard journal proxy routes absent, docs no longer claim diagnostic-only derivation;
+    - Web Interface Guidelines review: PASS;
+    - `git diff --check`: PASS.
+  - Raw:
+    - `.agent/stages/03-identity-master-data/raw/storybook-lookup-technical-equipment-operation-journal-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-technical-equipment-operation-journal-2026-05-12.md`
+    - `.agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-ui-review-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-backend-targeted-test-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-backend-go-test-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-backend-go-build-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-swagger-refresh-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-web-lint-final-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-web-typecheck-final-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-web-build-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-storybook-build-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-compose-migrate-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-compose-rebuild-backend-web-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-runtime-route-probe-after-rebuild-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-equipment-smoke-rerun4-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-selector-source-audit-final-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-standard-journal-route-audit-final-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-doc-stale-audit-final-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-diff-check-final-2026-05-12.txt`
+
+- Brand-logo decision:
+  - used `$imagegen` output from `apps/web/public/brand/logo-concepts`;
+  - ran Storybook lookup for `sidebar brand logo auth brand mark app icon`; reuse decision: `extend`, matched `Layout/SidebarNav`;
+  - applied web option 2 to `apps/web` metadata, manifest, favicon/special icons, auth surface, and runtime sidebar;
+  - applied mobile option 5 to `apps/field` metadata, manifest, special icons, and field scaffold header;
+  - synced canonical docs:
+    - `docs/design/serviceops-design-system.md`
+    - `docs/architecture/frontend-architecture.md`
+    - `docs/architecture/platform-runtime-baseline.md`
+    - `.agent/stages/06-field-engineer-offline/stage_spec.md`
+    - `.agent/stages/06-field-engineer-offline/sprint_contract.md`
+  - Raw:
+    - `.agent/stages/03-identity-master-data/raw/storybook-lookup-brand-logo-selection-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-brand-logo-selection-2026-05-12.md`
+    - `.agent/stages/03-identity-master-data/raw/brand-logo-selection-ui-review-2026-05-12.txt`
+
+- Equipment photos/gallery:
+  - Used `$vrk-web-ui-workflow`; Storybook lookup for `equipment photo gallery product media thumbnails` matched existing `Equipment/EquipmentRegistryWorkspace`, reuse decision `extend`, no shared reusable family introduced.
+  - Backend:
+    - added migration `000017_equipment_photos`;
+    - added private photo repository/service/handler package;
+    - added upload/stream/delete routes for `/api/v1/equipment/{id}/photos` and `/api/v1/measuring-instruments/{id}/photos`;
+    - extended equipment and diagnostic equipment responses with `photos`;
+    - refreshed Swagger/OpenAPI.
+  - Web:
+    - added Next photo proxy routes under `/api/equipment/.../photos`;
+    - extended registry API types and Storybook runtime mock/fixtures;
+    - added feature-local `EquipmentPhotoGallery`;
+    - added create/edit photo drafts with preview, pending delete, restore, and post-save mutation ordering;
+    - updated `EquipmentPassportCard` media layout and equipment stories for single-photo, gallery, fallback, and pending edit states.
+  - Synced canonical docs:
+    - `docs/architecture/identity-master-data.md`
+    - `docs/PRD-MVP.md`
+    - `docs/design/storybook-component-backlog.md`
+  - Proof:
+    - backend `go test ./...`: PASS;
+    - backend `go build -buildvcs=false ./...`: PASS;
+    - Swagger refresh: PASS;
+    - web lint: PASS with only the four expected private-stream/blob preview `<img>` warnings;
+    - web typecheck: PASS;
+    - web production build: PASS;
+    - Storybook build: PASS with existing chunk-size warnings only;
+    - Web Interface Guidelines review: PASS;
+    - `git diff --check`: PASS.
+  - Smoke/runtime note:
+    - targeted smoke file was updated, but not run against compose because `POST /api/v1/equipment/00000000-0000-0000-0000-000000000000/photos` returned HTTP `404` on the existing backend process.
+  - Raw:
+    - `.agent/stages/03-identity-master-data/raw/storybook-lookup-equipment-photos-gallery-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-equipment-photos-2026-05-12.md`
+    - `.agent/stages/03-identity-master-data/raw/equipment-photos-ui-review-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/equipment-photos-backend-go-test-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/equipment-photos-backend-go-build-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/equipment-photos-swagger-refresh-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/equipment-photos-web-lint-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/equipment-photos-web-typecheck-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/equipment-photos-web-build-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/equipment-photos-storybook-build-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/equipment-photos-diff-check-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/equipment-photos-smoke-not-run-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/equipment-photos-json-audit-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/equipment-photos-harness-2026-05-12.txt`
+    - `.agent/stages/03-identity-master-data/raw/equipment-photos-diff-check-post-evidence-2026-05-12.txt`
 
 - Equipment domain correction:
   - Used `$vrk-web-ui-workflow`, read `.impeccable.md`, `docs/design/ui-workflow.md`, `docs/design/serviceops-design-system.md`, `docs/architecture/frontend-architecture.md`, `docs/architecture/documentation-workflow.md`, `docs/roadmap.md`, `docs/PRD-MVP.md`, `docs/architecture/identity-master-data.md`, and the active Stage 03 artifacts before implementation.

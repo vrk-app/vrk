@@ -34,6 +34,18 @@ type EmployeeInviteResponse = {
 type EquipmentRecord = {
   id: string;
   fullName: string;
+  status: "active" | "inactive" | "retired";
+  photos: EquipmentPhotoRecord[];
+  nextDueDate?: string;
+  journalCount: number;
+};
+
+type EquipmentPhotoRecord = {
+  id: string;
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  url: string;
 };
 
 type StandardRecord = {
@@ -51,6 +63,7 @@ type MeasuringInstrumentRecord = {
   name: string;
   registrationNumber: string;
   status: "active" | "inactive" | "retired";
+  photos: EquipmentPhotoRecord[];
   standards: Array<{
     id: string;
     identifier: string;
@@ -110,6 +123,86 @@ async function expectBackendFailure(
 
   expect(response.ok(), `${options.method ?? "GET"} ${path} should fail`).toBe(false);
   expect(payload.success).toBe(false);
+}
+
+const tinyPng = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR42mP8z8Dwn4GBgYGJAQoAHxcCAs3H4usAAAAASUVORK5CYII=",
+  "base64",
+);
+
+async function uploadEquipmentPhoto(
+  request: APIRequestContext,
+  path: string,
+  token: string,
+  fileName: string,
+) {
+  const response = await request.fetch(`${backendBaseUrl}${path}`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    multipart: {
+      photo: {
+        name: fileName,
+        mimeType: "image/png",
+        buffer: tinyPng,
+      },
+    },
+  });
+
+  const payload = (await response.json()) as ApiEnvelope<EquipmentPhotoRecord>;
+  if (!response.ok || !payload.success || payload.data === undefined) {
+    throw new Error(`POST ${path} failed: ${JSON.stringify(payload)}`);
+  }
+  return payload.data;
+}
+
+async function expectPhotoMutationFailure(
+  request: APIRequestContext,
+  path: string,
+  token: string,
+  method: "POST" | "DELETE" = "POST",
+) {
+  const response = await request.fetch(`${backendBaseUrl}${path}`, {
+    method,
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    ...(method === "POST"
+      ? {
+          multipart: {
+            photo: {
+              name: "blocked-photo.png",
+              mimeType: "image/png",
+              buffer: tinyPng,
+            },
+          },
+        }
+      : {}),
+  });
+  const payload = (await response.json()) as ApiEnvelope<unknown>;
+
+  expect(response.ok(), `${method} ${path} should fail`).toBe(false);
+  expect(payload.success).toBe(false);
+}
+
+async function expectPhotoStream(
+  request: APIRequestContext,
+  path: string,
+  token: string,
+) {
+  const response = await request.fetch(`${backendBaseUrl}${path}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  expect(response.ok(), `GET ${path} should stream photo`).toBe(true);
+  expect(response.headers()["content-type"]).toContain("image/png");
+  expect((await response.body()).byteLength).toBeGreaterThan(0);
 }
 
 async function bootstrapOrg(
@@ -311,6 +404,21 @@ async function createMIJournalSeed(request: APIRequestContext, token: string, me
   });
 }
 
+async function createEquipmentJournalSeed(request: APIRequestContext, token: string, equipmentId: string, seed: string) {
+  return backend<JournalRecord>(request, `/api/v1/equipment/${equipmentId}/journals`, {
+    method: "POST",
+    token,
+    body: {
+      operationType: "maintenance",
+      operationDate: "2026-03-01",
+      documentNumber: `TECH-ARCH-JOURNAL-${seed}`,
+      validUntil: "2026-11-30",
+      executorOrganization: "Служба главного механика",
+      comment: "Архивная история технического оборудования",
+    },
+  });
+}
+
 async function confirmArchiveModal(page: Page) {
   await page
     .getByRole("dialog", { name: "Архивировать запись?" })
@@ -379,6 +487,15 @@ test.describe("stage 03 unified equipment workspace", () => {
       seed,
       archiveInstrumentName,
     );
+    await createEquipmentJournalSeed(request, admin.sessionToken, archiveEquipment.id, seed);
+    const journaledEquipment = await backend<EquipmentRecord>(
+      request,
+      `/api/v1/equipment/${archiveEquipment.id}`,
+      { token: admin.sessionToken },
+    );
+    expect(journaledEquipment.status).toBe("active");
+    expect(journaledEquipment.nextDueDate).toBe("2026-11-30");
+    expect(journaledEquipment.journalCount).toBeGreaterThan(0);
     const archivedInstrumentStandard = await createDiagnosticStandardSeed(
       request,
       admin.sessionToken,
@@ -457,6 +574,53 @@ test.describe("stage 03 unified equipment workspace", () => {
         password: employee.password,
       },
     });
+
+    const photoAccessEquipment = await createEquipmentSeed(
+      request,
+      admin.sessionToken,
+      admin.unit.id,
+      seed,
+      `Оборудование с фото ${seed}`,
+    );
+    const uploadedAccessPhoto = await uploadEquipmentPhoto(
+      request,
+      `/api/v1/equipment/${photoAccessEquipment.id}/photos`,
+      admin.sessionToken,
+      `access-photo-${seed}.png`,
+    );
+    await expectPhotoStream(
+      request,
+      `/api/v1/equipment/${photoAccessEquipment.id}/photos/${uploadedAccessPhoto.id}`,
+      readonlySession.sessionToken,
+    );
+    await expectPhotoMutationFailure(
+      request,
+      `/api/v1/equipment/${photoAccessEquipment.id}/photos`,
+      readonlySession.sessionToken,
+    );
+    await expectPhotoMutationFailure(
+      request,
+      `/api/v1/equipment/${photoAccessEquipment.id}/photos`,
+      contractor.sessionToken,
+    );
+    await backend<EquipmentPhotoRecord>(
+      request,
+      `/api/v1/equipment/${photoAccessEquipment.id}/photos/${uploadedAccessPhoto.id}`,
+      {
+        method: "DELETE",
+        token: admin.sessionToken,
+      },
+    );
+    await backend(request, `/api/v1/equipment/${photoAccessEquipment.id}/archive`, {
+      method: "POST",
+      token: admin.sessionToken,
+    });
+    await expectPhotoMutationFailure(
+      request,
+      `/api/v1/equipment/${photoAccessEquipment.id}/photos`,
+      admin.sessionToken,
+    );
+
     await expectBackendFailure(request, `/api/v1/measuring-instruments/${deleteSource.id}/standards/${deleteRemoveStandard.id}`, {
       method: "DELETE",
       token: readonlySession.sessionToken,
@@ -518,6 +682,23 @@ test.describe("stage 03 unified equipment workspace", () => {
         executorOrganization: "ФБУ Ростест-Москва",
       },
     });
+    await expectBackendFailure(request, `/api/v1/equipment/${archiveEquipment.id}/journals`, {
+      method: "POST",
+      token: admin.sessionToken,
+      body: {
+        operationType: "maintenance",
+        operationDate: "2026-04-01",
+        documentNumber: `TECH-ARCH-BLOCKED-${seed}`,
+        validUntil: "2026-12-01",
+        executorOrganization: "Служба главного механика",
+      },
+    });
+    const archivedEquipmentHistory = await backend<JournalRecord[]>(
+      request,
+      `/api/v1/equipment/${archiveEquipment.id}/journals`,
+      { token: admin.sessionToken },
+    );
+    expect(archivedEquipmentHistory.some((entry) => entry.documentNumber === `TECH-ARCH-JOURNAL-${seed}`)).toBe(true);
     const archivedHistory = await backend<JournalRecord[]>(
       request,
       `/api/v1/measuring-instruments/${archiveInstrument.id}/journals`,
@@ -562,11 +743,17 @@ test.describe("stage 03 unified equipment workspace", () => {
     await equipmentCreateDialog.getByLabel("Модель").first().fill("НП-01");
     await equipmentCreateDialog.getByLabel("Полное наименование").fill(equipmentName);
     await equipmentCreateDialog.getByLabel("Заводской номер").fill(`FAC-${seed}`);
+    await equipmentCreateDialog.locator('input[name="equipment-create-photos"]').setInputFiles({
+      name: `equipment-create-${seed}.png`,
+      mimeType: "image/png",
+      buffer: tinyPng,
+    });
     await equipmentCreateDialog.getByRole("button", { name: "Создать оборудование" }).click();
     await expect(equipmentCreateDialog).toHaveCount(0);
     await expect(page.getByText("Техническое оборудование создано и появилось в учете.", { exact: true })).toBeVisible();
     await expect(page.getByText(equipmentName).first()).toBeVisible();
     await expect(page.getByText("Техническое").first()).toBeVisible();
+    await expect(page.getByTestId("equipment-photo-gallery").first()).toBeVisible();
 
     await page.setViewportSize({ height: 844, width: 390 });
     await page.getByRole("button", { name: `Редактировать оборудование ${equipmentName}` }).click();
@@ -574,9 +761,18 @@ test.describe("stage 03 unified equipment workspace", () => {
     await expect(equipmentEditDialog).toBeVisible();
     await equipmentEditDialog.getByLabel("Полное наименование").fill(updatedEquipmentName);
     await equipmentEditDialog.getByLabel("Инвентарный номер").fill(`INV-EDIT-${seed}`);
+    await equipmentEditDialog.getByRole("button", { name: /Удалить фото/ }).click();
+    await equipmentEditDialog.locator('input[name="edit-equipment-photos"]').setInputFiles({
+      name: `equipment-edit-${seed}.png`,
+      mimeType: "image/png",
+      buffer: tinyPng,
+    });
+    await expect(equipmentEditDialog.getByText("Будет удалено")).toBeVisible();
+    await expect(equipmentEditDialog.getByText("Новое")).toBeVisible();
     await equipmentEditDialog.getByRole("button", { name: "Сохранить изменения" }).click();
     await expect(page.getByText("Оборудование обновлено.", { exact: true })).toBeVisible();
     await expect(page.getByText(updatedEquipmentName).first()).toBeVisible();
+    await expect(page.getByText("1 фото", { exact: true })).toHaveCount(0);
     await page.setViewportSize({ height: 720, width: 1280 });
 
     await page.getByRole("button", { name: "Добавить оборудование" }).click();
@@ -602,6 +798,7 @@ test.describe("stage 03 unified equipment workspace", () => {
     await expect(diagnosticCreateDialog).toHaveCount(0);
     await expect(page.getByText("Диагностическое оборудование создано с комплектом эталонов.", { exact: true })).toBeVisible();
     await expect(page.getByText(diagnosticName).first()).toBeVisible();
+    await expect(page.getByTestId("equipment-photo-fallback").first()).toBeVisible();
     await expect(page.getByText(/Эталоны\s*·\s*2/).first()).toBeVisible();
     await expect(page.getByText(diagnosticStandardOne).first()).toBeVisible();
     await expect(page.getByText(diagnosticStandardTwo).first()).toBeVisible();
@@ -630,20 +827,53 @@ test.describe("stage 03 unified equipment workspace", () => {
     await page.getByRole("tab", { name: "Журнал операций" }).click();
     await expect(page.getByRole("tab", { name: "Журнал операций" })).toHaveAttribute("aria-selected", "true");
     await expect(page.getByRole("heading", { level: 2, name: "Журнал операций по оборудованию" })).toBeVisible();
-    await selectFieldOption(page, "Оборудование", `${updatedDiagnosticName} • DIAG-${seed}`);
-    await selectFieldOption(page, "Тип операции", "Поверка");
-    await page.getByLabel("Дата операции").fill("2026-03-12");
-    await page.getByLabel("Документ", { exact: true }).fill(`EQ-DOC-${seed}`);
-    await page.getByLabel("Действует до").fill("2026-12-31");
-    await page.getByLabel("Организация-исполнитель").fill("ФБУ Ростест-Москва");
+    await page.getByRole("combobox", { name: "Оборудование" }).click();
+    await expect(
+      page.getByRole("option", { name: new RegExp(`Техническое.*${updatedEquipmentName}`) }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("option", { name: new RegExp(`Диагностическое.*${updatedDiagnosticName}`) }),
+    ).toBeVisible();
+    await page.getByRole("option", { name: new RegExp(`Техническое.*${updatedEquipmentName}`) }).click();
     await page.getByRole("button", { name: "Добавить запись журнала" }).click();
+    const technicalJournalDialog = page.getByRole("dialog", { name: "Новая запись журнала" });
+    await expect(technicalJournalDialog).toBeVisible();
+    await expect(technicalJournalDialog.getByLabel("Оборудование")).toContainText(updatedEquipmentName);
+    await selectFieldOption(page, "Тип операции", "Техобслуживание");
+    await technicalJournalDialog.getByLabel("Дата операции").fill("2026-04-10");
+    await technicalJournalDialog.getByLabel("Документ", { exact: true }).fill(`TECH-UI-DOC-${seed}`);
+    await technicalJournalDialog.getByLabel("Действует до").fill("2026-11-30");
+    await technicalJournalDialog.getByLabel("Организация-исполнитель").fill("Служба главного механика");
+    await technicalJournalDialog.getByRole("button", { name: "Добавить запись журнала" }).click();
+    await expect(technicalJournalDialog).toHaveCount(0);
+    await expect(
+      page.getByText("Запись журнала сохранена. Производный статус и ближайшая дата пересчитаны.", {
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(page.getByText(`TECH-UI-DOC-${seed}`).first()).toBeVisible();
+    await expect(page.getByText(/Действует до.*30 нояб\. 2026/).first()).toBeVisible();
+    await expect(page.getByText("Активно").first()).toBeVisible();
+    await selectFieldOption(page, "Оборудование", new RegExp(`${updatedDiagnosticName}.*DIAG-${seed}`));
+    await page.getByRole("button", { name: "Добавить запись журнала" }).click();
+    const journalCreateDialog = page.getByRole("dialog", { name: "Новая запись журнала" });
+    await expect(journalCreateDialog).toBeVisible();
+    await expect(journalCreateDialog.getByLabel("Оборудование")).toBeVisible();
+    await expect(journalCreateDialog.getByLabel("Оборудование")).toContainText(updatedDiagnosticName);
+    await selectFieldOption(page, "Тип операции", "Поверка");
+    await journalCreateDialog.getByLabel("Дата операции").fill("2026-03-12");
+    await journalCreateDialog.getByLabel("Документ", { exact: true }).fill(`EQ-DOC-${seed}`);
+    await journalCreateDialog.getByLabel("Действует до").fill("2026-12-31");
+    await journalCreateDialog.getByLabel("Организация-исполнитель").fill("ФБУ Ростест-Москва");
+    await journalCreateDialog.getByRole("button", { name: "Добавить запись журнала" }).click();
+    await expect(journalCreateDialog).toHaveCount(0);
     await expect(
       page.getByText("Запись журнала сохранена. Производный статус и ближайшая дата пересчитаны.", {
         exact: true,
       }),
     ).toBeVisible();
     await expect(page.getByText(`EQ-DOC-${seed}`).first()).toBeVisible();
-    await expect(page.getByText(/Текущий статус: Активно/).first()).toBeVisible();
+    await expect(page.getByText("Активно").first()).toBeVisible();
 
     await page.goto("/equipment?tab=standards");
     await expect(page).toHaveURL(/\/equipment$/);
@@ -664,7 +894,7 @@ test.describe("stage 03 unified equipment workspace", () => {
 
     await page.goto("/equipment");
     await page.getByRole("tab", { name: "Журнал операций" }).click();
-    await selectFieldOption(page, "Оборудование", `${updatedDiagnosticName} • DIAG-${seed}`);
+    await selectFieldOption(page, "Оборудование", new RegExp(`Диагностическое.*${updatedDiagnosticName}`));
     await page.getByRole("button", { name: "Архивировать выбранное оборудование" }).click();
     await confirmArchiveModal(page);
     await expect(
@@ -690,7 +920,7 @@ test.describe("stage 03 unified equipment workspace", () => {
     await expect(page.getByRole("heading", { level: 2, name: "Журнал операций по оборудованию" })).toHaveCount(0);
     await page.getByRole("tab", { name: "Журнал операций" }).click();
     await expect(page.getByRole("heading", { level: 2, name: "Журнал операций по оборудованию" })).toBeVisible();
-    await expect(page.getByRole("heading", { level: 3, name: "Хронология операций" })).toBeVisible();
+    await expect(page.getByText("Хронология операций").first()).toBeVisible();
     await expect(page.getByText("Редактирование скрыто")).toHaveCount(0);
     await expect(page.getByLabel("Тип оборудования")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Создать оборудование" })).toHaveCount(0);

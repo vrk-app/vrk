@@ -62,6 +62,19 @@ export const Email: Story = {
   },
 };
 
+export const Required: Story = {
+  args: {
+    label: "Контактный email",
+    name: "required-email",
+    autoComplete: "email",
+    placeholder: "admin@vrk.local…",
+    required: true,
+    spellCheck: false,
+    type: "email",
+    leftIcon: <Mail className="size-4" />,
+  },
+};
+
 export const Password: Story = {
   args: {
     defaultValue: "vrk-secret-2026",

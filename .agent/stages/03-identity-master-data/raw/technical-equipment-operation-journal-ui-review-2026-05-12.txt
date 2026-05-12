@@ -1,0 +1,24 @@
+Web Interface Guidelines review: PASS
+
+Slice: technical-equipment-operation-journal
+Changed UI surface:
+- apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+- apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+- apps/web/tests/equipment-registries.smoke.spec.ts
+- apps/web/app/api/equipment/[equipmentId]/journals/route.ts
+- apps/web/shared/storybook/runtime-api-mock.tsx
+- apps/web/shared/storybook/runtime-fixtures.ts
+
+Review source:
+- .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-technical-equipment-operation-journal-2026-05-12.md
+
+Checks:
+- The existing story-backed EquipmentRegistryWorkspace is extended; no duplicate route or reusable component family was introduced.
+- The journal surface keeps the established dense B2B layout and heading `Журнал операций по оборудованию`.
+- The journal selector labels target type explicitly (`Техническое`, `Диагностическое`) and excludes standards by construction.
+- Mutation controls remain hidden for read-only sessions and archived records.
+- Empty/loading states no longer imply diagnostic-only journal support.
+- Keyboard/accessibility path is preserved through existing SelectField, Dialog, and Button primitives.
+- No new raw color palette, decorative effects, nested card pattern, or consumer SaaS hero treatment was introduced.
+
+Findings: none blocking.

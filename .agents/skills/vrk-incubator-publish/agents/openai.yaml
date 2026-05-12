@@ -1,0 +1,4 @@
+interface:
+  display_name: "VRK Incubator Publish"
+  short_description: "Publish and verify VRK Incubator PRs"
+  default_prompt: "Use $vrk-incubator-publish to publish these VRK changes to Incubator and verify deploy."

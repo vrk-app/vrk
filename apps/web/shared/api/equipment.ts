@@ -16,6 +16,17 @@ export type JournalRecord = {
   createdAt: string;
 };
 
+export type EquipmentPhotoRecord = {
+  id: string;
+  fileName: string;
+  contentType: "image/jpeg" | "image/png" | "image/webp";
+  sizeBytes: number;
+  sortOrder: number;
+  url: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type EquipmentRecord = {
   id: string;
   organizationId: string;
@@ -35,6 +46,10 @@ export type EquipmentRecord = {
   status: RegistryStatus;
   comment?: string;
   documentUrl?: string;
+  photos: EquipmentPhotoRecord[];
+  journalCount: number;
+  nextDueDate?: string;
+  latestJournal?: JournalRecord;
   measuringInstrumentCount: number;
   archivedAt?: string;
   createdAt: string;
@@ -73,6 +88,7 @@ export type MeasuringInstrumentRecord = {
   placementKind: MeasuringInstrumentPlacement;
   comment?: string;
   documentUrl?: string;
+  photos: EquipmentPhotoRecord[];
   standards: LinkedStandardRecord[];
   journalCount: number;
   nextDueDate?: string;
@@ -133,6 +149,14 @@ export async function fetchMeasuringInstrumentRegistry(sessionToken: string, inc
 
 export async function fetchMeasuringInstrumentJournals(sessionToken: string, measuringInstrumentId: string) {
   const result = await fetchBackend<JournalRecord[]>(`/api/v1/measuring-instruments/${measuringInstrumentId}/journals`, {
+    headers: sessionHeaders(sessionToken),
+  });
+
+  return result.data;
+}
+
+export async function fetchEquipmentJournals(sessionToken: string, equipmentId: string) {
+  const result = await fetchBackend<JournalRecord[]>(`/api/v1/equipment/${equipmentId}/journals`, {
     headers: sessionHeaders(sessionToken),
   });
 

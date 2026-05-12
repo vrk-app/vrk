@@ -1,3 +1,10 @@
+# BACKEND.md
+
+Статус: legacy reference
+Обновлено: 2026-05-12
+
+Этот файл сохраняет раннее широкое описание backend-требований и доменных ожиданий. Он не является текущим runtime source of truth, если противоречит коду в `apps/backend` / `apps/web`, `docs/PRD-MVP.md`, `docs/roadmap.md` или `docs/architecture/identity-master-data.md`. Для разделов «Компания» и «Оборудование» текущий контракт зафиксирован в `docs/architecture/identity-master-data.md` и `docs/architecture/frontend-architecture.md`.
+
 # 1 Общее описание
 
 Бэкенд реализуется в виде монолита с модульной архитектурой, предоставляющего REST API для веб-интерфейса, взаимодействие – через JSON.

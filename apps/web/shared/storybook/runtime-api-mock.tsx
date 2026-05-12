@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from "react";
+import { useLayoutEffect, type ReactNode } from "react";
 import type { Decorator } from "@storybook/react";
 import {
   cloneFixture,
@@ -18,6 +18,7 @@ import type {
   ContractorOption,
   EmployeeAccessResponse,
   EmployeeInviteResponse,
+  EquipmentPhotoRecord,
   EquipmentRecord,
   JournalRecord,
   MeasuringInstrumentRecord,
@@ -65,7 +66,7 @@ function RuntimeApiBoundary({
   children: ReactNode;
   options: RuntimeApiOptions;
 }) {
-  useEffect(() => {
+  useLayoutEffect(() => {
     const originalFetch = globalThis.fetch;
     const state = createRuntimeState(options);
 
@@ -92,11 +93,18 @@ function createRuntimeState(options: RuntimeApiOptions): RuntimeApiState {
     contracts: cloneFixture(options.contracts ?? contractRecords),
     contractorOptions: cloneFixture(options.contractorOptions ?? contractorOptions),
     employees: cloneFixture(options.employees ?? employeeAccessRows),
-    equipment: cloneFixture(options.equipment ?? equipmentRecords),
+    equipment: cloneFixture(options.equipment ?? equipmentRecords).map((item) => ({
+      ...item,
+      journalCount: item.journalCount ?? 0,
+      photos: item.photos ?? [],
+    })),
     failurePaths: options.failurePaths ?? [],
     invites: cloneFixture(options.invites ?? employeeInvites),
     journals: cloneFixture(options.journals ?? journalRecords),
-    measuringInstruments: cloneFixture(options.measuringInstruments ?? measuringInstrumentRecords),
+    measuringInstruments: cloneFixture(options.measuringInstruments ?? measuringInstrumentRecords).map((item) => ({
+      ...item,
+      photos: item.photos ?? [],
+    })),
     pendingPaths: options.pendingPaths ?? [],
     session: cloneFixture(options.session ?? runtimeSession),
     standards: cloneFixture(options.standards ?? standardRecords),
@@ -436,6 +444,8 @@ async function handleRuntimeFetch(
       status: registryStatusValue(payload, "status"),
       comment: stringValue(payload, "comment", ""),
       documentUrl: stringValue(payload, "documentUrl", ""),
+      photos: [],
+      journalCount: 0,
       measuringInstrumentCount: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -495,6 +505,7 @@ async function handleRuntimeFetch(
       serialNumber: stringValue(payload, "serialNumber", "SN-NEW"),
       status: "active",
       placementKind: stringValue(payload, "placementKind", "standalone") === "built_in" ? "built_in" : "standalone",
+      photos: [],
       standards: state.standards
         .filter((standard) => standardIds.includes(standard.id))
         .map((standard) => ({
@@ -563,6 +574,82 @@ async function handleRuntimeFetch(
       success: true,
       data: state.measuringInstruments.find((item) => item.id === measuringInstrumentMatch[1]),
     });
+  }
+
+  const equipmentPhotoCollectionMatch = pathname.match(/^\/api\/equipment\/([^/]+)\/photos$/);
+  if (equipmentPhotoCollectionMatch && method === "POST") {
+    const equipmentId = equipmentPhotoCollectionMatch[1];
+    const photo = createEquipmentPhoto(init, `/api/equipment/${equipmentId}/photos`);
+    state.equipment = state.equipment.map((item) =>
+      item.id === equipmentId
+        ? {
+            ...item,
+            photos: [...(item.photos ?? []), photo],
+            updatedAt: new Date().toISOString(),
+          }
+        : item,
+    );
+    return jsonResponse({ success: true, data: photo }, 201);
+  }
+
+  const equipmentPhotoItemMatch = pathname.match(/^\/api\/equipment\/([^/]+)\/photos\/([^/]+)$/);
+  if (equipmentPhotoItemMatch && method === "GET") {
+    return pngResponse();
+  }
+  if (equipmentPhotoItemMatch && method === "DELETE") {
+    const [, equipmentId, photoId] = equipmentPhotoItemMatch;
+    const photo = state.equipment.find((item) => item.id === equipmentId)?.photos?.find((item) => item.id === photoId);
+    state.equipment = state.equipment.map((item) =>
+      item.id === equipmentId
+        ? {
+            ...item,
+            photos: (item.photos ?? []).filter((candidate) => candidate.id !== photoId),
+            updatedAt: new Date().toISOString(),
+          }
+        : item,
+    );
+    return jsonResponse({ success: true, data: photo ?? deletedPhoto(photoId) });
+  }
+
+  const measuringInstrumentPhotoCollectionMatch = pathname.match(
+    /^\/api\/equipment\/measuring-instruments\/([^/]+)\/photos$/,
+  );
+  if (measuringInstrumentPhotoCollectionMatch && method === "POST") {
+    const measuringInstrumentId = measuringInstrumentPhotoCollectionMatch[1];
+    const photo = createEquipmentPhoto(init, `/api/equipment/measuring-instruments/${measuringInstrumentId}/photos`);
+    state.measuringInstruments = state.measuringInstruments.map((item) =>
+      item.id === measuringInstrumentId
+        ? {
+            ...item,
+            photos: [...(item.photos ?? []), photo],
+            updatedAt: new Date().toISOString(),
+          }
+        : item,
+    );
+    return jsonResponse({ success: true, data: photo }, 201);
+  }
+
+  const measuringInstrumentPhotoItemMatch = pathname.match(
+    /^\/api\/equipment\/measuring-instruments\/([^/]+)\/photos\/([^/]+)$/,
+  );
+  if (measuringInstrumentPhotoItemMatch && method === "GET") {
+    return pngResponse();
+  }
+  if (measuringInstrumentPhotoItemMatch && method === "DELETE") {
+    const [, measuringInstrumentId, photoId] = measuringInstrumentPhotoItemMatch;
+    const photo = state.measuringInstruments
+      .find((item) => item.id === measuringInstrumentId)
+      ?.photos?.find((item) => item.id === photoId);
+    state.measuringInstruments = state.measuringInstruments.map((item) =>
+      item.id === measuringInstrumentId
+        ? {
+            ...item,
+            photos: (item.photos ?? []).filter((candidate) => candidate.id !== photoId),
+            updatedAt: new Date().toISOString(),
+          }
+        : item,
+    );
+    return jsonResponse({ success: true, data: photo ?? deletedPhoto(photoId) });
   }
 
   const measuringInstrumentStandardMatch = pathname.match(/^\/api\/equipment\/measuring-instruments\/([^/]+)\/standards$/);
@@ -644,6 +731,20 @@ async function handleRuntimeFetch(
     return jsonResponse({ success: true, data: item });
   }
 
+  const equipmentJournalMatch = pathname.match(/^\/api\/equipment\/([^/]+)\/journals$/);
+  if (equipmentJournalMatch && method === "GET") {
+    return jsonResponse({ success: true, data: state.journals });
+  }
+
+  if (equipmentJournalMatch && method === "POST") {
+    const journal = createJournal(payload);
+    state.journals = [journal, ...state.journals];
+    state.equipment = state.equipment.map((item) =>
+      item.id === equipmentJournalMatch[1] ? applyJournalSummary(item, journal) : item,
+    );
+    return jsonResponse({ success: true, data: journal });
+  }
+
   const archiveMiMatch = pathname.match(/^\/api\/equipment\/measuring-instruments\/([^/]+)\/archive$/);
   if (archiveMiMatch && method === "POST") {
     const item = archiveById(state.measuringInstruments, archiveMiMatch[1]);
@@ -658,6 +759,9 @@ async function handleRuntimeFetch(
   if (miJournalMatch && method === "POST") {
     const journal = createJournal(payload);
     state.journals = [journal, ...state.journals];
+    state.measuringInstruments = state.measuringInstruments.map((item) =>
+      item.id === miJournalMatch[1] ? applyJournalSummary(item, journal) : item,
+    );
     return jsonResponse({ success: true, data: journal });
   }
 
@@ -693,6 +797,18 @@ function jsonResponse<T>(body: ApiEnvelope<T>, status = 200) {
   });
 }
 
+function pngResponse() {
+  const bytes = Uint8Array.from(atob("iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR42mP8z8Dwn4GBgYGJAQoAHxcCAs3H4usAAAAASUVORK5CYII="), (char) =>
+    char.charCodeAt(0),
+  );
+  return new Response(bytes, {
+    headers: {
+      "Content-Type": "image/png",
+      "Content-Length": String(bytes.byteLength),
+    },
+  });
+}
+
 function pagedResponse<T extends { archivedAt?: string }>(items: T[], includeArchived: boolean) {
   const data = includeArchived ? items : items.filter((item) => !item.archivedAt);
   return jsonResponse({
@@ -704,6 +820,46 @@ function pagedResponse<T extends { archivedAt?: string }>(items: T[], includeArc
       total: data.length,
     },
   });
+}
+
+function createEquipmentPhoto(init: RequestInit | undefined, urlBase: string): EquipmentPhotoRecord {
+  const file = photoFile(init);
+  const id = `photo-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return {
+    id,
+    fileName: file?.name ?? "equipment-photo.png",
+    contentType:
+      file?.type === "image/jpeg" || file?.type === "image/webp" || file?.type === "image/png"
+        ? file.type
+        : "image/png",
+    sizeBytes: file?.size ?? 92,
+    sortOrder: 0,
+    url: file ? URL.createObjectURL(file) : `${urlBase}/${id}`,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+function photoFile(init: RequestInit | undefined) {
+  if (typeof FormData === "undefined" || !(init?.body instanceof FormData)) {
+    return null;
+  }
+  const value = init.body.get("photo");
+  return value instanceof File ? value : null;
+}
+
+function deletedPhoto(photoId: string): EquipmentPhotoRecord {
+  const timestamp = new Date().toISOString();
+  return {
+    id: photoId,
+    fileName: "deleted-photo.png",
+    contentType: "image/png",
+    sizeBytes: 1,
+    sortOrder: 0,
+    url: "",
+    createdAt: timestamp,
+    updatedAt: timestamp,
+  };
 }
 
 function matchesPath(paths: string[], pathname: string) {
@@ -764,6 +920,31 @@ function createJournal(payload: JsonPayload): JournalRecord {
     attachmentUrl: stringValue(payload, "attachmentUrl", ""),
     comment: stringValue(payload, "comment", ""),
     createdAt: new Date().toISOString(),
+  };
+}
+
+function applyJournalSummary<
+  T extends {
+    journalCount: number;
+    latestJournal?: JournalRecord;
+    nextDueDate?: string;
+    status: RegistryStatus;
+    updatedAt: string;
+  },
+>(
+  item: T,
+  journal: JournalRecord,
+): T {
+  const status: RegistryStatus =
+    journal.operationType === "decommission" ? "retired" : journal.operationType === "suspension" ? "inactive" : "active";
+
+  return {
+    ...item,
+    journalCount: item.journalCount + 1,
+    latestJournal: journal,
+    nextDueDate: journal.validUntil || item.nextDueDate,
+    status,
+    updatedAt: new Date().toISOString(),
   };
 }
 

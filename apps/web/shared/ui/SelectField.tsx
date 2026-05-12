@@ -1,10 +1,12 @@
 "use client";
 
 import * as RadixSelect from "@radix-ui/react-select";
-import { Check, ChevronDown } from "lucide-react";
+import { Asterisk, Check, ChevronDown, Search } from "lucide-react";
 import {
   forwardRef,
+  useEffect,
   useId,
+  useRef,
   useState,
   type ChangeEvent,
   type ReactNode,
@@ -13,6 +15,12 @@ import {
 import { cn } from "@/shared/lib/cn";
 
 const CLEAR_VALUE = "__vrk_select_clear__";
+const NO_RESULTS_VALUE = "__vrk_select_no_results__";
+const searchNavigationKeys = new Set(["ArrowDown", "ArrowUp", "Enter", "Escape", "Tab"]);
+const selectOptionRowHeight = 36;
+const selectViewportVerticalPadding = 8;
+const selectVisibleRowLimit = 6;
+const selectSearchPanelHeight = 53;
 
 export type SelectFieldOption = {
   disabled?: boolean;
@@ -32,6 +40,8 @@ export interface SelectFieldProps
   onValueChange?: (value: string) => void;
   options?: readonly SelectFieldOption[];
   placeholder?: string;
+  searchable?: boolean;
+  searchPlaceholder?: string;
 }
 
 function selectValue(value: SelectFieldProps["value"]) {
@@ -47,6 +57,25 @@ function createChangeEvent(name: string | undefined, value: string) {
     currentTarget: { name, value },
     target: { name, value },
   } as ChangeEvent<HTMLSelectElement>;
+}
+
+function FieldLabel({ label, required, selectId }: { label: string; required?: boolean; selectId: string }) {
+  return (
+    <div className="flex min-h-5 min-w-0 items-center gap-1.5">
+      <label className="min-w-0 break-words text-sm font-medium text-foreground" htmlFor={selectId}>
+        {label}
+      </label>
+      {required ? (
+        <span
+          className="inline-flex size-3.5 shrink-0 items-center justify-center text-destructive"
+          title="Обязательное поле"
+        >
+          <Asterisk aria-hidden="true" className="size-3.5" />
+          <span className="sr-only">обязательное поле</span>
+        </span>
+      ) : null}
+    </div>
+  );
 }
 
 export const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(
@@ -72,6 +101,8 @@ export const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(
       options,
       placeholder,
       required,
+      searchable = true,
+      searchPlaceholder = "Поиск…",
       value,
       ...props
     },
@@ -87,27 +118,59 @@ export const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(
     const hasOptions = Boolean(renderableOptions?.length);
     const resolvedPlaceholder = loading ? loadingLabel : (placeholder ?? emptyValueOption?.label);
     const [internalValue, setInternalValue] = useState(selectDefaultValue(defaultValue) ?? "");
+    const [open, setOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const searchInputRef = useRef<HTMLInputElement>(null);
+    const restoreSearchFocusRef = useRef(false);
     const selectedValue = selectValue(value);
     const isControlled = selectedValue !== undefined;
     const radixValue = selectedValue ?? internalValue;
+    const normalizedSearchQuery = searchQuery.trim().toLocaleLowerCase("ru-RU");
+    const filteredOptions = normalizedSearchQuery
+      ? renderableOptions?.filter((option) => option.label.toLocaleLowerCase("ru-RU").includes(normalizedSearchQuery))
+      : renderableOptions;
+    const hasFilteredOptions = Boolean(filteredOptions?.length);
+    const showSearch = searchable && !loading && hasOptions;
+    const listRowCount = Math.min(
+      Math.max((renderableOptions?.length ?? 0) + (clearable ? 1 : 0), 1),
+      selectVisibleRowLimit,
+    );
+    const listViewportHeight = listRowCount * selectOptionRowHeight + selectViewportVerticalPadding;
+    const contentMinHeight = showSearch ? listViewportHeight + selectSearchPanelHeight : undefined;
+
+    useEffect(() => {
+      if (!open || !restoreSearchFocusRef.current) {
+        return;
+      }
+
+      const frame = window.requestAnimationFrame(() => {
+        searchInputRef.current?.focus();
+        restoreSearchFocusRef.current = false;
+      });
+
+      return () => window.cancelAnimationFrame(frame);
+    }, [open, searchQuery]);
 
     if (multiple || children) {
       return (
         <div className="flex w-full flex-col gap-2.5">
-          <label className="text-sm font-medium text-foreground" htmlFor={selectId}>
-            {label}
-          </label>
+          <FieldLabel label={label} required={required} selectId={selectId} />
           <div className="relative">
             <select
               ref={ref}
               aria-describedby={hasMessage ? messageId : undefined}
               aria-invalid={Boolean(error)}
+              aria-required={required}
               autoComplete={autoComplete}
               className={cn(
                 "min-h-11 w-full appearance-none rounded-[var(--radius-md)] border bg-card px-3.5 pr-10 text-sm text-foreground shadow-xs outline-none transition-[border-color,box-shadow,background-color] duration-150",
                 "hover:border-border-strong focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-ring/15",
-                "disabled:cursor-not-allowed disabled:bg-muted disabled:text-text-disabled",
-                error ? "border-destructive bg-destructive-soft/30" : "border-input",
+                error
+                  ? "border-destructive bg-destructive-soft/30"
+                  : required
+                    ? "border-accent/45 bg-accent-soft/45"
+                    : "border-input",
+                "disabled:cursor-not-allowed disabled:border-input disabled:bg-muted disabled:text-text-disabled",
                 multiple && "h-auto min-h-24 py-2 pr-3",
                 className,
               )}
@@ -168,27 +231,37 @@ export const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(
 
     return (
       <div className="flex w-full flex-col gap-2.5">
-        <label className="text-sm font-medium text-foreground" htmlFor={selectId}>
-          {label}
-        </label>
+        <FieldLabel label={label} required={required} selectId={selectId} />
         <RadixSelect.Root
           autoComplete={autoComplete}
           disabled={isDisabled}
           form={form}
           name={name}
+          onOpenChange={(nextOpen) => {
+            setOpen(nextOpen);
+            if (!nextOpen) {
+              setSearchQuery("");
+            }
+          }}
           onValueChange={handleValueChange}
+          open={open}
           required={required}
           value={radixValue}
         >
           <RadixSelect.Trigger
             aria-describedby={hasMessage ? messageId : undefined}
             aria-invalid={Boolean(error)}
+            aria-required={required}
             className={cn(
               "flex min-h-11 w-full items-center justify-between gap-3 rounded-[var(--radius-md)] border bg-card px-3.5 text-left text-sm text-foreground shadow-xs outline-none transition-[border-color,box-shadow,background-color] duration-150",
               "hover:border-border-strong focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-ring/15",
-              "disabled:cursor-not-allowed disabled:bg-muted disabled:text-text-disabled",
               "data-[placeholder]:text-text-tertiary",
-              error ? "border-destructive bg-destructive-soft/30" : "border-input",
+              error
+                ? "border-destructive bg-destructive-soft/30"
+                : required
+                  ? "border-accent/45 bg-accent-soft/45"
+                  : "border-input",
+              "disabled:cursor-not-allowed disabled:border-input disabled:bg-muted disabled:text-text-disabled",
               className,
             )}
             id={selectId}
@@ -201,12 +274,52 @@ export const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(
           </RadixSelect.Trigger>
           <RadixSelect.Portal>
             <RadixSelect.Content
-              className="z-50 max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-[var(--radius-md)] border border-border bg-card text-foreground shadow-lg"
+              align="start"
+              className="z-50 max-h-72 w-[var(--radix-select-trigger-width)] overflow-hidden rounded-[var(--radius-md)] border border-border bg-card text-foreground shadow-lg"
               collisionPadding={12}
               position="popper"
               sideOffset={6}
+              style={contentMinHeight ? { minHeight: `${contentMinHeight}px` } : undefined}
             >
-              <RadixSelect.Viewport className="p-1">
+              {showSearch ? (
+                <div
+                  className="sticky top-0 z-10 border-b border-border bg-card p-2"
+                  onKeyDownCapture={(event) => {
+                    if (!searchNavigationKeys.has(event.key)) {
+                      event.stopPropagation();
+                    }
+                  }}
+                  onPointerDownCapture={(event) => event.stopPropagation()}
+                >
+                  <label className="flex h-9 min-w-0 items-center gap-2 rounded-[var(--radius-md)] border border-border bg-muted px-3 text-sm text-muted-foreground shadow-xs transition-[border-color,box-shadow,background-color] focus-within:border-accent focus-within:ring-2 focus-within:ring-ring/15">
+                    <Search aria-hidden="true" className="size-4 shrink-0" />
+                    <input
+                      aria-label={`Поиск в поле «${label}»`}
+                      autoComplete="off"
+                      className="min-w-0 flex-1 border-none bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                      name={`${name ?? selectId}-search`}
+                      onChange={(event) => {
+                        restoreSearchFocusRef.current = true;
+                        setSearchQuery(event.currentTarget.value);
+                      }}
+                      onKeyDownCapture={(event) => {
+                        if (!searchNavigationKeys.has(event.key)) {
+                          event.stopPropagation();
+                        }
+                      }}
+                      onPointerDownCapture={(event) => event.stopPropagation()}
+                      placeholder={searchPlaceholder}
+                      ref={searchInputRef}
+                      type="search"
+                      value={searchQuery}
+                    />
+                  </label>
+                </div>
+              ) : null}
+              <RadixSelect.Viewport
+                className="overflow-y-auto p-1"
+                style={{ height: `${listViewportHeight}px` }}
+              >
                 {clearable ? (
                   <RadixSelect.Item
                     className="relative flex min-h-9 cursor-default select-none items-center rounded-[var(--radius-sm)] px-9 py-2 text-sm text-muted-foreground outline-none transition-colors data-[highlighted]:bg-surface-hover data-[highlighted]:text-foreground"
@@ -227,8 +340,8 @@ export const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(
                       {loadingLabel}
                     </RadixSelect.ItemText>
                   </RadixSelect.Item>
-                ) : hasOptions ? (
-                  renderableOptions?.map((option) => (
+                ) : hasFilteredOptions ? (
+                  filteredOptions?.map((option) => (
                     <RadixSelect.Item
                       className="relative flex min-h-9 cursor-default select-none items-center rounded-[var(--radius-sm)] px-9 py-2 text-sm text-foreground outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:text-text-disabled data-[highlighted]:bg-surface-hover data-[highlighted]:text-foreground data-[state=checked]:bg-accent-soft data-[state=checked]:font-medium"
                       disabled={option.disabled}
@@ -241,6 +354,16 @@ export const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(
                       <RadixSelect.ItemText className="min-w-0 flex-1 truncate">{option.label}</RadixSelect.ItemText>
                     </RadixSelect.Item>
                   ))
+                ) : hasOptions ? (
+                  <RadixSelect.Item
+                    className="relative flex min-h-9 cursor-default select-none items-center rounded-[var(--radius-sm)] px-9 py-2 text-sm text-muted-foreground outline-none data-[disabled]:pointer-events-none"
+                    disabled
+                    value={NO_RESULTS_VALUE}
+                  >
+                    <RadixSelect.ItemText className="min-w-0 flex-1 truncate">
+                      Ничего не найдено
+                    </RadixSelect.ItemText>
+                  </RadixSelect.Item>
                 ) : (
                   <RadixSelect.Item
                     className="relative flex min-h-9 cursor-default select-none items-center rounded-[var(--radius-sm)] px-9 py-2 text-sm text-muted-foreground outline-none data-[disabled]:pointer-events-none"

@@ -1,10 +1,10 @@
 {
   "stage_id": "03-identity-master-data",
-  "sprint_contract_id": "slice-014-equipment-domain-correction",
+  "sprint_contract_id": "technical-equipment-operation-journal",
   "current_bounded_ui_correction_slice_id": "slice-013-access-confirmation-dialogs",
   "builder_state": "COMPLETE",
-  "verifier_state": "PASS",
-  "updated_at": "2026-05-11T19:11:10Z",
+  "verifier_state": "SELF_VERIFIED_AWAITING_FRESH_VERIFIER",
+  "updated_at": "2026-05-12T09:03:07Z",
   "commands": [
     "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data",
     "PATH=/Users/yura-posledov/cursor/vrk/.agent/tmp-tools/go/bin:$PATH /Users/yura-posledov/cursor/vrk/.agent/tmp-tools/sqlc generate -f apps/backend/sqlc.yaml",
@@ -130,7 +130,20 @@
     "rg route audit for removed /standards/{id}/journals target API/proxy routes",
     "docker compose -f compose.platform.yml run --rm migrate -path=/migrations -database=postgres://postgres:postgres@db:5432/db?sslmode=disable down 1",
     "curl -fsS http://127.0.0.1:18080/readyz",
-    "source audits for standalone standards routes and obsolete /equipment tab labels after fixer"
+    "source audits for standalone standards routes and obsolete /equipment tab labels after fixer",
+    "docker run --rm -v \"$PWD/apps/backend\":/app -w /app golang:1.26-alpine sh -lc \"export PATH=/usr/local/go/bin:$PATH; gofmt -w internal/equipment/photo/service.go internal/equipment/photo/service_test.go internal/equipment/equipment/models.go internal/equipment/equipment/service.go internal/equipment/measuringinstrument/models.go internal/equipment/measuringinstrument/service.go\"",
+    "docker run --rm -v \"$PWD/apps/backend\":/app -w /app -e GOCACHE=/tmp/go-cache -e GOMODCACHE=/tmp/go-mod-cache golang:1.26-alpine sh -lc \"export PATH=/usr/local/go/bin:$PATH; go test ./...\" > .agent/stages/03-identity-master-data/raw/equipment-photos-backend-go-test-2026-05-12.txt 2>&1",
+    "docker run --rm -v \"$PWD/apps/backend\":/app -w /app -e GOCACHE=/tmp/go-cache -e GOMODCACHE=/tmp/go-mod-cache golang:1.26-alpine sh -lc \"export PATH=/usr/local/go/bin:$PATH; go build -buildvcs=false ./...\" > .agent/stages/03-identity-master-data/raw/equipment-photos-backend-go-build-2026-05-12.txt 2>&1",
+    "docker run --rm -v \"$PWD/apps/backend\":/app -w /app -e GOCACHE=/tmp/go-cache -e GOMODCACHE=/tmp/go-mod-cache golang:1.26-alpine sh -lc \"export PATH=/usr/local/go/bin:/go/bin:$PATH; apk add --no-cache git ca-certificates >/dev/null && go install github.com/swaggo/swag/cmd/swag@v1.16.6 && swag init -g cmd/api/main.go -o docs/swagger\" > .agent/stages/03-identity-master-data/raw/equipment-photos-swagger-refresh-2026-05-12.txt 2>&1",
+    "source ~/.nvm/nvm.sh && nvm use 24.14.1 >/dev/null && pnpm run web:typecheck > .agent/stages/03-identity-master-data/raw/equipment-photos-web-typecheck-2026-05-12.txt 2>&1",
+    "source ~/.nvm/nvm.sh && nvm use 24.14.1 >/dev/null && pnpm run web:lint > .agent/stages/03-identity-master-data/raw/equipment-photos-web-lint-2026-05-12.txt 2>&1",
+    "source ~/.nvm/nvm.sh && nvm use 24.14.1 >/dev/null && pnpm run web:build > .agent/stages/03-identity-master-data/raw/equipment-photos-web-build-2026-05-12.txt 2>&1",
+    "source ~/.nvm/nvm.sh && nvm use 24.14.1 >/dev/null && pnpm run storybook:build > .agent/stages/03-identity-master-data/raw/equipment-photos-storybook-build-2026-05-12.txt 2>&1",
+    "git diff --check > .agent/stages/03-identity-master-data/raw/equipment-photos-diff-check-2026-05-12.txt 2>&1",
+    "curl probe for POST /api/v1/equipment/{id}/photos against existing 127.0.0.1:18080 backend > .agent/stages/03-identity-master-data/raw/equipment-photos-smoke-not-run-2026-05-12.txt",
+    "jq empty .agent/stages/03-identity-master-data/evidence.json .agent/stages/03-identity-master-data/feature_list.json .agent/stages/03-identity-master-data/verdict.json > .agent/stages/03-identity-master-data/raw/equipment-photos-json-audit-2026-05-12.txt 2>&1",
+    "python3 .agents/skills/vrk-mvp-stage-orchestrator/scripts/verify_harness.py --stage-id 03-identity-master-data > .agent/stages/03-identity-master-data/raw/equipment-photos-harness-2026-05-12.txt 2>&1",
+    "git diff --check > .agent/stages/03-identity-master-data/raw/equipment-photos-diff-check-post-evidence-2026-05-12.txt 2>&1"
   ],
   "tests": [
     "verify_harness: PASS",
@@ -291,7 +304,21 @@
     "slice-014 post-pass feature_list readback: PASS",
     "slice-014 post-pass JSON audit: PASS",
     "slice-014 post-pass harness: PASS",
-    "slice-014 post-pass git diff --check: PASS"
+    "slice-014 post-pass git diff --check: PASS",
+    "equipment photos/gallery backend gofmt via Docker: PASS",
+    "equipment photos/gallery backend go test ./... via Docker: PASS",
+    "equipment photos/gallery backend go build -buildvcs=false ./... via Docker: PASS",
+    "equipment photos/gallery Swagger/OpenAPI refresh via Docker: PASS",
+    "equipment photos/gallery web typecheck: PASS",
+    "equipment photos/gallery web lint: PASS with 4 expected private-stream/blob preview <img> warnings only",
+    "equipment photos/gallery web build: PASS",
+    "equipment photos/gallery Storybook build: PASS with existing chunk-size warnings only",
+    "equipment photos/gallery Web Interface Guidelines review: PASS",
+    "equipment photos/gallery git diff --check: PASS",
+    "equipment photos/gallery smoke: NOT RUN; existing compose backend at 127.0.0.1:18080 returned HTTP 404 for the new photo route, and runtime policy forbids replacing/restarting long-running stack without explicit request",
+    "equipment photos/gallery stage JSON audit: PASS",
+    "equipment photos/gallery harness self-check after evidence sync: PASS",
+    "equipment photos/gallery post-evidence git diff --check: PASS"
   ],
   "artifacts": [
     ".agent/stages/03-identity-master-data/evidence.md",
@@ -860,7 +887,7 @@
     ]
   },
   "equipment_archive_action_parity": {
-    "status": "SELF_VERIFIED_AWAITING_FRESH_VERIFIER",
+    "status": "PASS",
     "checked_at": "2026-04-30T13:34:00Z",
     "summary": "Aligned equipment, measuring instrument, selected measuring instrument, standard, and selected standard archive triggers to the compact division/unit visual pattern: Archive icon, visible Архивировать, size=\"sm\", variant=\"ghost\". Existing ConfirmDialog and archive APIs are unchanged.",
     "changed_ui_files": [
@@ -1285,5 +1312,161 @@
       "fix_summary": "Metadata gaps fixed: prompt source and changed UI files added, top-level changed_ui_files refreshed, pending proof note replaced with completed JSON/harness/diff refs.",
       "summary": "Final fresh verifier readback confirmed metadata gaps are closed and queued add/delete plus scoped backend hard delete still pass under the light-check scope."
     }
+  },
+  "equipment_photos_gallery": {
+    "slice_id": "equipment-photos-gallery-2026-05-12",
+    "status": "SELF_VERIFIED_AWAITING_FRESH_VERIFIER",
+    "scope": [
+      "private equipment photo metadata and object storage for technical and diagnostic equipment",
+      "backend upload/stream/delete routes and photos response contract",
+      "Next proxy routes for multipart upload/delete/streaming GET",
+      "feature-local EquipmentPhotoGallery and create/edit photo draft workflow",
+      "Storybook runtime mock, stories, targeted smoke coverage, and doc sync"
+    ],
+    "docs_synced": [
+      "docs/architecture/identity-master-data.md",
+      "docs/PRD-MVP.md",
+      "docs/design/storybook-component-backlog.md"
+    ],
+    "changed_ui_files": [
+      "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx",
+      "apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx",
+      "apps/web/shared/storybook/runtime-api-mock.tsx",
+      "apps/web/shared/storybook/runtime-fixtures.ts"
+    ],
+    "changed_api_files": [
+      "apps/backend/migrations/000017_equipment_photos.up.sql",
+      "apps/backend/migrations/000017_equipment_photos.down.sql",
+      "apps/backend/internal/equipment/photo",
+      "apps/backend/internal/app/app.go",
+      "apps/backend/internal/equipment/equipment/models.go",
+      "apps/backend/internal/equipment/equipment/service.go",
+      "apps/backend/internal/equipment/measuringinstrument/models.go",
+      "apps/backend/internal/equipment/measuringinstrument/service.go",
+      "apps/backend/docs/swagger",
+      "apps/web/app/api/equipment/photo-proxy.ts",
+      "apps/web/app/api/equipment/[equipmentId]/photos",
+      "apps/web/app/api/equipment/measuring-instruments/[measuringInstrumentId]/photos",
+      "apps/web/shared/api/equipment.ts"
+    ],
+    "raw": [
+      ".agent/stages/03-identity-master-data/raw/storybook-lookup-equipment-photos-gallery-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-equipment-photos-2026-05-12.md",
+      ".agent/stages/03-identity-master-data/raw/equipment-photos-ui-review-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/equipment-photos-backend-go-test-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/equipment-photos-backend-go-build-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/equipment-photos-swagger-refresh-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/equipment-photos-web-lint-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/equipment-photos-web-typecheck-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/equipment-photos-web-build-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/equipment-photos-storybook-build-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/equipment-photos-diff-check-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/equipment-photos-smoke-not-run-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/equipment-photos-json-audit-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/equipment-photos-harness-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/equipment-photos-diff-check-post-evidence-2026-05-12.txt"
+    ],
+    "runtime_note": "Targeted smoke was updated but not run because the existing compose backend on 127.0.0.1:18080 returned HTTP 404 for the new photo route. No long-running dev server or compose rebuild was started without explicit user request.",
+    "updated_at": "2026-05-12T00:29:54Z"
+  },
+  "technical_equipment_operation_journal": {
+    "slice_id": "technical-equipment-operation-journal",
+    "status": "PASS",
+    "summary": "Technical equipment now shares the official equipment operation journal with diagnostic equipment / СИ while standards remain absent from the target UI.",
+    "scope": [
+      "registry_metrology_journal_entries.subject_type accepts technical_equipment",
+      "technical equipment exposes GET/POST /api/v1/equipment/{id}/journals",
+      "technical equipment status, journalCount, latestJournal, and nextDueDate derive from latest applicable journal entry with card fallback when history is empty",
+      "diagnostic equipment journal behavior remains on legacy measuring_instrument subject type",
+      "EquipmentRegistryWorkspace journal selector includes typed technical and diagnostic targets and excludes standards"
+    ],
+    "docs_synced": [
+      "docs/PRD-MVP.md",
+      "docs/architecture/identity-master-data.md",
+      "docs/architecture/frontend-architecture.md",
+      "docs/roadmap.md",
+      ".agent/stages/03-identity-master-data/equipment-domain-correction-plan.md",
+      ".agent/stages/03-identity-master-data/evidence.md",
+      ".agent/stages/03-identity-master-data/progress.md"
+    ],
+    "changed_backend_files": [
+      "apps/backend/migrations/000018_technical_equipment_journal_subject.up.sql",
+      "apps/backend/migrations/000018_technical_equipment_journal_subject.down.sql",
+      "apps/backend/internal/equipment/metrologyjournal/models.go",
+      "apps/backend/internal/equipment/equipment/models.go",
+      "apps/backend/internal/equipment/equipment/errors.go",
+      "apps/backend/internal/equipment/equipment/service.go",
+      "apps/backend/internal/equipment/equipment/handler.go",
+      "apps/backend/internal/equipment/equipment/service_test.go",
+      "apps/backend/internal/app/app.go",
+      "apps/backend/docs/swagger/docs.go",
+      "apps/backend/docs/swagger/swagger.json",
+      "apps/backend/docs/swagger/swagger.yaml"
+    ],
+    "changed_ui_files": [
+      "apps/web/app/api/equipment/[equipmentId]/journals/route.ts",
+      "apps/web/shared/api/equipment.ts",
+      "apps/web/shared/api/index.ts",
+      "apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx",
+      "apps/web/shared/storybook/runtime-fixtures.ts",
+      "apps/web/shared/storybook/runtime-api-mock.tsx",
+      "apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx",
+      "apps/web/tests/equipment-registries.smoke.spec.ts"
+    ],
+    "ui_workflow": {
+      "skill": "$vrk-web-ui-workflow",
+      "lookup": ".agent/stages/03-identity-master-data/raw/storybook-lookup-technical-equipment-operation-journal-2026-05-12.txt",
+      "reuse_decision": "extend existing Equipment/EquipmentRegistryWorkspace",
+      "review_source": ".agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-technical-equipment-operation-journal-2026-05-12.md",
+      "review": ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-ui-review-2026-05-12.txt",
+      "review_result": "PASS"
+    },
+    "proof": [
+      "backend targeted equipment/measuringinstrument tests: PASS",
+      "backend go test ./... via Docker: PASS",
+      "backend go build -buildvcs=false ./... via Docker: PASS",
+      "Swagger refresh: PASS",
+      "web typecheck after smoke updates: PASS",
+      "web lint after smoke updates: PASS with existing equipment photo img warnings only",
+      "web build: PASS",
+      "Storybook build: PASS with existing chunk-size warnings only",
+      "compose-backed runtime route probe after rebuild: PASS, technical journal route returns 401 without token instead of stale 404",
+      "targeted /equipment Playwright smoke on localhost:3100/backend:18080: PASS",
+      "selector source audit: PASS",
+      "standard journal route audit: PASS",
+      "docs stale diagnostic-only derivation audit: PASS",
+      "Web Interface Guidelines review: PASS",
+      "git diff --check: PASS"
+    ],
+    "raw": [
+      ".agent/stages/03-identity-master-data/raw/storybook-lookup-technical-equipment-operation-journal-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-technical-equipment-operation-journal-2026-05-12.md",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-ui-review-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-backend-targeted-test-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-backend-go-test-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-backend-go-build-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-swagger-refresh-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-web-lint-final-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-web-typecheck-final-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-web-build-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-storybook-build-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-compose-migrate-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-compose-rebuild-backend-web-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-runtime-route-probe-after-rebuild-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-equipment-smoke-rerun4-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-selector-source-audit-final-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-standard-journal-route-audit-final-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-doc-stale-audit-final-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-diff-check-final-2026-05-12.txt"
+    ],
+    "runtime_note": "Existing compose-backed backend/web were stale for this slice; after migration and backend/web rebuild of the existing platform stack, targeted Playwright smoke ran against localhost:3100 with WEB_SMOKE_PORT=3100 and reused the existing server.",
+    "fresh_verifier": {
+      "status": "PASS",
+      "verdict": ".agent/stages/03-identity-master-data/verdict.json",
+      "problems": ".agent/stages/03-identity-master-data/problems.md",
+      "verified_at": "2026-05-12T09:32:18Z",
+      "summary": "Fresh verifier confirmed source/evidence pass for technical equipment journal parity with no failed criteria or proof gaps."
+    },
+    "updated_at": "2026-05-12T09:34:33Z"
   }
 }

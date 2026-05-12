@@ -77,6 +77,7 @@ export function LoginForm({
             name="username"
             onChange={onLoginChange}
             placeholder={copy.loginPlaceholder}
+            required
             spellCheck={false}
             type="email"
           />
@@ -88,6 +89,7 @@ export function LoginForm({
             leftIcon={<LockKeyhole className="size-4" />}
             name="password"
             placeholder={copy.passwordPlaceholder}
+            required
             type="password"
           />
         </div>

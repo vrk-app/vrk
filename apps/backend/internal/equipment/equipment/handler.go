@@ -180,6 +180,67 @@ func (h *EquipmentHandler) Archive(w http.ResponseWriter, r *http.Request) {
 	sendSuccess(w, http.StatusOK, resp, nil)
 }
 
+// @Summary      List technical equipment journal
+// @Description  Returns operation journal entries for one technical equipment record visible inside the authenticated customer session scope.
+// @Tags         equipment
+// @Produce      json
+// @Param        id path string true "Equipment ID"
+// @Success      200  {object}  Response{data=[]JournalResponse}
+// @Failure      401  {object}  Response
+// @Failure      403  {object}  Response
+// @Failure      404  {object}  Response
+// @Router       /equipment/{id}/journals [get]
+func (h *EquipmentHandler) ListJournals(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	resp, err := h.service.ListJournals(r.Context(), token, chi.URLParam(r, "id"))
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusOK, resp, nil)
+}
+
+// @Summary      Create technical equipment journal entry
+// @Description  Appends one operation journal entry to a visible, non-archived technical equipment record and updates its derived status.
+// @Tags         equipment
+// @Accept       json
+// @Produce      json
+// @Param        id path string true "Equipment ID"
+// @Param        request body CreateJournalRequest true "Journal payload"
+// @Success      201  {object}  Response{data=JournalResponse}
+// @Failure      400  {object}  Response
+// @Failure      401  {object}  Response
+// @Failure      403  {object}  Response
+// @Failure      404  {object}  Response
+// @Router       /equipment/{id}/journals [post]
+func (h *EquipmentHandler) CreateJournal(w http.ResponseWriter, r *http.Request) {
+	token, err := readBearerToken(r)
+	if err != nil {
+		sendError(w, http.StatusUnauthorized, "missing bearer token")
+		return
+	}
+
+	var req CreateJournalRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		sendError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	resp, err := h.service.CreateJournal(r.Context(), token, chi.URLParam(r, "id"), req)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	sendSuccess(w, http.StatusCreated, resp, nil)
+}
+
 func sendSuccess(w http.ResponseWriter, status int, data interface{}, meta *Meta) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
@@ -217,7 +278,14 @@ func writeServiceError(w http.ResponseWriter, err error) {
 		errors.Is(err, ErrManufactureYearInvalid),
 		errors.Is(err, ErrStatusRequired),
 		errors.Is(err, ErrStatusInvalid),
-		errors.Is(err, ErrAlreadyArchived):
+		errors.Is(err, ErrAlreadyArchived),
+		errors.Is(err, ErrOperationTypeRequired),
+		errors.Is(err, ErrOperationTypeInvalid),
+		errors.Is(err, ErrOperationDateRequired),
+		errors.Is(err, ErrOperationDateInvalid),
+		errors.Is(err, ErrDocumentNumberRequired),
+		errors.Is(err, ErrExecutorRequired),
+		errors.Is(err, ErrValidUntilInvalid):
 		sendError(w, http.StatusBadRequest, err.Error())
 	default:
 		sendError(w, http.StatusInternalServerError, err.Error())

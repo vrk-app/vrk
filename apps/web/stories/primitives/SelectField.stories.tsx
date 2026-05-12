@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { userEvent, within } from "@storybook/test";
+import { screen, userEvent, within } from "@storybook/test";
 import { SelectField } from "@/shared/ui";
 
 const roleOptions = [
@@ -40,6 +40,47 @@ export const Single: Story = {};
 
 export const Default: Story = Single;
 
+export const SearchableDefault: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByLabelText("Роль доступа"));
+    await userEvent.type(screen.getByLabelText("Поиск в поле «Роль доступа»"), "Администратор");
+  },
+};
+
+export const NoResults: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByLabelText("Роль доступа"));
+    await userEvent.type(screen.getByLabelText("Поиск в поле «Роль доступа»"), "нет совпадений");
+  },
+};
+
+export const SearchDisabled: Story = {
+  args: {
+    searchable: false,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByLabelText("Роль доступа"));
+  },
+};
+
+export const Required: Story = {
+  args: {
+    label: "Объект доступа",
+    name: "required-scope",
+    options: [
+      { label: "Вся организация", value: "organization" },
+      { label: "Северный дивизион", value: "division-north" },
+      { label: "Юнит 01", value: "unit-01" },
+    ],
+    placeholder: "Выберите объект…",
+    required: true,
+    value: "division-north",
+  },
+};
+
 export const Hover: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
@@ -59,7 +100,7 @@ export const WithPlaceholder: Story = {
     clearable: true,
     defaultValue: "",
     label: "Подрядчик",
-    placeholder: "Выберите подрядчика",
+    placeholder: "Выберите подрядчика…",
     options: [
       { label: "ВРК Север", value: "north" },
       { label: "Метрология Центр", value: "metrology-center" },

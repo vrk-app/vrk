@@ -3,6 +3,16 @@
   "sprint_contract_id": "slice-001",
   "commands": [],
   "tests": [],
-  "artifacts": [],
-  "updated_at": null
+  "artifacts": [
+    {
+      "kind": "brand-baseline",
+      "description": "Generated PNG option 5, `Полевой синк`, is fixed as the field/mobile PWA logo.",
+      "paths": [
+        "apps/field/public/brand/app-icons/vrk-field-*.png",
+        "apps/field/app/icon.png",
+        "apps/field/app/apple-icon.png"
+      ]
+    }
+  ],
+  "updated_at": "2026-05-12T01:55:00+03:00"
 }

@@ -76,7 +76,26 @@ export const OrganizationAdmin: Story = {
     const dialog = await body.findByRole("dialog", { name: "Новый дивизион" });
     await expect(dialog).toBeVisible();
     await expect(within(dialog).getByLabelText("Наименование")).toBeVisible();
+    await expect(within(dialog).queryByText("Заполните обязательные поля перед созданием.")).toBeNull();
+    await expect(within(dialog).queryByText("Запись появится в текущей структуре после сохранения.")).toBeNull();
     await userEvent.click(within(dialog).getByRole("button", { name: "Отмена" }));
+  },
+};
+
+export const OrganizationAdminEditDialog: Story = {
+  decorators: [withRuntimeApi({ session: runtimeSession })],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const body = within(document.body);
+
+    await userEvent.click(await canvas.findByRole("tab", { name: "Дивизионы" }));
+    await userEvent.click(await canvas.findByRole("button", { name: /^Редактировать дивизион/ }));
+    const editDialog = await body.findByRole("dialog", { name: "Редактировать дивизион" });
+    await expect(editDialog).toBeVisible();
+    await expect(within(editDialog).getByLabelText("Наименование")).toBeVisible();
+    await expect(within(editDialog).queryByText("Редактирование")).toBeNull();
+    await expect(within(editDialog).queryByText("Заполните обязательные поля перед сохранением.")).toBeNull();
+    await expect(within(editDialog).queryByText("Изменения попадут в текущую структуру после сохранения.")).toBeNull();
   },
 };
 

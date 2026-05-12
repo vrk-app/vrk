@@ -1,17 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
   Archive,
   Cable,
+  ClipboardList,
   FileText,
   Gauge,
+  ImageIcon,
+  ImagePlus,
   ListChecks,
   MapPin,
   Network,
   Pencil,
   Plus,
+  RotateCcw,
   Save,
   Trash2,
   Wrench,
@@ -19,6 +23,7 @@ import {
 import type {
   ApiEnvelope,
   ApiMeta,
+  EquipmentPhotoRecord,
   EquipmentRecord,
   JournalRecord,
   LinkedStandardRecord,
@@ -36,7 +41,6 @@ import {
   ConfirmDialog,
   Dialog,
   FormListScrollArea,
-  FormListSplitLayout,
   InputField,
   IslandCard,
   SelectField,
@@ -48,6 +52,25 @@ import { cn } from "@/shared/lib/cn";
 
 type EquipmentFormKind = "technical" | "diagnostic";
 type EquipmentWorkspaceTab = "equipment" | "journal";
+type JournalTargetKind = "technical" | "diagnostic";
+type JournalTargetValue = `${JournalTargetKind}:${string}`;
+type JournalTarget =
+  | {
+      kind: "technical";
+      id: string;
+      value: JournalTargetValue;
+      label: string;
+      record: EquipmentRecord;
+      archivedAt?: string;
+    }
+  | {
+      kind: "diagnostic";
+      id: string;
+      value: JournalTargetValue;
+      label: string;
+      record: MeasuringInstrumentRecord;
+      archivedAt?: string;
+    };
 
 type Props = {
   session: SessionSummaryResponse;
@@ -110,6 +133,7 @@ type DiagnosticStandardDraft = Pick<
 };
 
 type JournalFormState = {
+  targetValue: string;
   operationType: JournalRecord["operationType"];
   operationDate: string;
   documentNumber: string;
@@ -132,16 +156,33 @@ type EditDialogState =
       recordId: string;
       recordLabel: string;
       form: EquipmentFormState;
+      photos: EquipmentPhotoRecord[];
+      photoDraft: PhotoDraftState;
     }
   | {
       kind: "measuringInstrument";
       recordId: string;
       recordLabel: string;
       form: MeasuringInstrumentFormState;
+      photos: EquipmentPhotoRecord[];
+      photoDraft: PhotoDraftState;
       standards: LinkedStandardRecord[];
       standardDrafts: DiagnosticStandardDraft[];
       removedStandardIds: string[];
     };
+
+type PhotoSubjectKind = JournalTargetKind;
+
+type PhotoDraftUpload = {
+  localId: string;
+  file: File;
+  previewUrl: string;
+};
+
+type PhotoDraftState = {
+  uploads: PhotoDraftUpload[];
+  deletedPhotoIds: string[];
+};
 
 type EquipmentPassportSection = {
   id: string;
@@ -191,6 +232,13 @@ const statusLabelMap: Record<RegistryStatus, string> = {
   retired: "Выведено",
 };
 
+const equipmentPhotoAccept = "image/jpeg,image/png,image/webp";
+const equipmentPhotoContentTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+const equipmentPhotoMaxCount = 10;
+const equipmentPhotoMaxSizeBytes = 5 * 1024 * 1024;
+const technicalEquipmentFallbackImage = "/brand/illustrations/equipment/technical-wagon-lift.png";
+const diagnosticEquipmentFallbackImage = "/brand/illustrations/equipment/diagnostic-ultrasonic-detector.png";
+
 function defaultEquipmentForm(session: SessionSummaryResponse): EquipmentFormState {
   return {
     unitId: session.units[0]?.id ?? "",
@@ -239,8 +287,9 @@ function createDiagnosticStandardDraft(): DiagnosticStandardDraft {
   };
 }
 
-function defaultJournalForm(): JournalFormState {
+function defaultJournalForm(targetValue = ""): JournalFormState {
   return {
+    targetValue,
     operationType: "verification",
     operationDate: new Date().toISOString().slice(0, 10),
     documentNumber: "",
@@ -249,6 +298,57 @@ function defaultJournalForm(): JournalFormState {
     attachmentUrl: "",
     comment: "",
   };
+}
+
+function emptyPhotoDraft(): PhotoDraftState {
+  return {
+    uploads: [],
+    deletedPhotoIds: [],
+  };
+}
+
+function createLocalPhotoId() {
+  return globalThis.crypto?.randomUUID() ?? `equipment-photo-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function revokePhotoDrafts(draft: PhotoDraftState) {
+  for (const upload of draft.uploads) {
+    URL.revokeObjectURL(upload.previewUrl);
+  }
+}
+
+function activePhotoCount(photos: EquipmentPhotoRecord[], draft: PhotoDraftState) {
+  return photos.filter((photo) => !draft.deletedPhotoIds.includes(photo.id)).length + draft.uploads.length;
+}
+
+function validatePhotoFiles(
+  files: File[],
+  availableSlots: number,
+): { uploads: PhotoDraftUpload[]; errors: string[] } {
+  const uploads: PhotoDraftUpload[] = [];
+  const errors: string[] = [];
+
+  for (const file of files) {
+    if (!equipmentPhotoContentTypes.has(file.type)) {
+      errors.push(`${file.name}: поддерживаются только JPEG, PNG или WebP.`);
+      continue;
+    }
+    if (file.size > equipmentPhotoMaxSizeBytes) {
+      errors.push(`${file.name}: файл больше 5 MB.`);
+      continue;
+    }
+    if (uploads.length >= availableSlots) {
+      errors.push(`Можно прикрепить не больше ${equipmentPhotoMaxCount} фото к одной записи.`);
+      break;
+    }
+    uploads.push({
+      localId: createLocalPhotoId(),
+      file,
+      previewUrl: URL.createObjectURL(file),
+    });
+  }
+
+  return { uploads, errors };
 }
 
 function equipmentFormFromRecord(record: EquipmentRecord): EquipmentFormState {
@@ -431,6 +531,15 @@ function areDiagnosticStandardDraftsReady(drafts: DiagnosticStandardDraft[]) {
   return drafts.every(isDiagnosticStandardDraftReady);
 }
 
+function isJournalFormReady(form: JournalFormState) {
+  return Boolean(
+    form.targetValue &&
+      form.operationDate &&
+      form.documentNumber.trim() &&
+      form.executorOrganization.trim(),
+  );
+}
+
 function defaultAutoComplete(type: string | undefined) {
   switch (type) {
     case "url":
@@ -466,8 +575,27 @@ function formatOperationType(value: JournalRecord["operationType"]) {
 function normalizeMeasuringInstrument(item: MeasuringInstrumentRecord): MeasuringInstrumentRecord {
   return {
     ...item,
+    photos: Array.isArray(item.photos) ? item.photos : [],
     standards: Array.isArray(item.standards) ? item.standards : [],
   };
+}
+
+function normalizeEquipmentRecord(item: EquipmentRecord): EquipmentRecord {
+  return {
+    ...item,
+    journalCount: typeof item.journalCount === "number" ? item.journalCount : 0,
+    photos: Array.isArray(item.photos) ? item.photos : [],
+  };
+}
+
+function journalTargetValue(kind: JournalTargetKind, id: string): JournalTargetValue {
+  return `${kind}:${id}`;
+}
+
+function journalEndpoint(target: Pick<JournalTarget, "id" | "kind">) {
+  return target.kind === "technical"
+    ? `/api/equipment/${target.id}/journals`
+    : `/api/equipment/measuring-instruments/${target.id}/journals`;
 }
 
 function buildEquipmentRoute(showArchived: boolean) {
@@ -477,19 +605,6 @@ function buildEquipmentRoute(showArchived: boolean) {
   }
   const query = search.toString();
   return query ? `/equipment?${query}` : "/equipment";
-}
-
-function fieldDetail(label: string, value: string | number | undefined | null, translateNo = false) {
-  const content = value || "—";
-
-  return (
-    <div className="rounded-[var(--radius-lg)] border border-border bg-card px-4 py-3">
-      <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</div>
-      <div className="mt-2 text-sm font-medium text-foreground">
-        {translateNo && content !== "—" ? <span translate="no">{content}</span> : content}
-      </div>
-    </div>
-  );
 }
 
 function passportDetail(label: string, value: string | number | undefined | null, translateNo = false) {
@@ -544,12 +659,287 @@ function renderPassportSections(sections: EquipmentPassportSection[]) {
   ));
 }
 
+function EquipmentPhotoGallery({
+  fallbackSrc,
+  photos,
+  title,
+}: {
+  fallbackSrc: string;
+  photos: EquipmentPhotoRecord[];
+  title: string;
+}) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [brokenUrls, setBrokenUrls] = useState<string[]>([]);
+  const usablePhotos = photos.filter((photo) => !brokenUrls.includes(photo.url));
+  const activePhoto = usablePhotos[activeIndex] ?? usablePhotos[0];
+  const activeSrc = activePhoto?.url ?? fallbackSrc;
+  const activeAlt = activePhoto ? `${title}: ${activePhoto.fileName}` : `${title}: иллюстрация оборудования`;
+  const activePhotoIndex = activePhoto ? usablePhotos.findIndex((photo) => photo.id === activePhoto.id) : -1;
+  const activePhotoPosition = activePhotoIndex >= 0 ? activePhotoIndex + 1 : 0;
+  const hasMultiplePhotos = usablePhotos.length > 1;
+
+  useEffect(() => {
+    setActiveIndex(0);
+    setBrokenUrls([]);
+  }, [photos]);
+
+  const markBrokenActivePhoto = () => {
+    if (activePhoto) {
+      setBrokenUrls((current) => Array.from(new Set([...current, activePhoto.url])));
+    }
+  };
+
+  const renderActiveImage = (className?: string) => (
+    <img
+      alt={activeAlt}
+      className={cn("h-full min-h-48 w-full bg-muted object-cover", className)}
+      height={480}
+      loading="lazy"
+      onError={markBrokenActivePhoto}
+      src={activeSrc}
+      width={640}
+    />
+  );
+
+  const renderPhotoCountBadge = () =>
+    hasMultiplePhotos && activePhotoPosition ? (
+      <Badge className="bg-card/95 tabular-nums" icon={<ImageIcon className="size-3.5" />} size="sm" tone="neutral">
+        {activePhotoPosition}/{usablePhotos.length}
+      </Badge>
+    ) : null;
+
+  const renderThumbnailButton = (
+    photo: EquipmentPhotoRecord,
+    index: number,
+    className: string,
+    imageClassName = "h-full w-full object-cover",
+  ) => {
+    const active = activePhoto?.id === photo.id;
+
+    return (
+      <button
+        aria-current={active ? "true" : undefined}
+        aria-label={`Показать фото ${index + 1}: ${photo.fileName}`}
+        className={cn(
+          "relative min-w-0 touch-manipulation overflow-hidden bg-muted transition-colors focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+          className,
+        )}
+        key={photo.id}
+        onClick={() => setActiveIndex(index)}
+        type="button"
+      >
+        <img
+          alt=""
+          className={imageClassName}
+          height={160}
+          loading="lazy"
+          onError={() => {
+            setBrokenUrls((current) => Array.from(new Set([...current, photo.url])));
+          }}
+          src={photo.url}
+          width={160}
+        />
+        {active ? <span aria-hidden="true" className="absolute inset-0 ring-2 ring-inset ring-ring" /> : null}
+      </button>
+    );
+  };
+
+  return (
+    <div
+      className="relative h-full min-h-64 min-w-0 overflow-hidden bg-muted"
+      data-testid={photos.length ? "equipment-photo-gallery" : "equipment-photo-fallback"}
+    >
+      {renderActiveImage("min-h-64")}
+      {hasMultiplePhotos ? <div className="absolute left-3 top-3">{renderPhotoCountBadge()}</div> : null}
+
+      {hasMultiplePhotos ? (
+        <div
+          aria-label={`Фотографии ${title}`}
+          className="absolute bottom-3 left-1/2 flex max-w-[calc(100%-1.5rem)] -translate-x-1/2 gap-1.5 overflow-x-auto rounded-[var(--radius-md)] border border-slate-200/20 bg-slate-700/75 p-1.5 shadow-lg"
+        >
+          {usablePhotos.map((photo, index) =>
+            renderThumbnailButton(
+              photo,
+              index,
+              "h-[60px] w-20 flex-none rounded-[var(--radius-sm)] border border-border/80",
+            ),
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function EquipmentPhotoDraftField({
+  disabled,
+  draft,
+  idPrefix,
+  onAddFiles,
+  onMarkDeleted,
+  onRemoveUpload,
+  onRestoreDeleted,
+  photos,
+}: {
+  disabled: boolean;
+  draft: PhotoDraftState;
+  idPrefix: string;
+  onAddFiles: (files: File[]) => void;
+  onMarkDeleted?: (photoId: string) => void;
+  onRemoveUpload: (localId: string) => void;
+  onRestoreDeleted?: (photoId: string) => void;
+  photos?: EquipmentPhotoRecord[];
+}) {
+  const currentPhotos = photos ?? [];
+  const total = activePhotoCount(currentPhotos, draft);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  return (
+    <div className="grid gap-3 rounded-[var(--radius-lg)] border border-border bg-muted/30 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-sm font-semibold text-foreground">Фото оборудования</p>
+            <Badge size="sm" tone="neutral">
+              {total}/{equipmentPhotoMaxCount}
+            </Badge>
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">JPEG, PNG или WebP до 5&nbsp;MB.</p>
+        </div>
+        <Button
+          disabled={disabled}
+          leftIcon={<ImagePlus className="size-4" />}
+          onClick={() => inputRef.current?.click()}
+          size="sm"
+          type="button"
+          variant="secondary"
+        >
+          Добавить фото
+        </Button>
+        <input
+          accept={equipmentPhotoAccept}
+          aria-label="Добавить фото"
+          className="sr-only"
+          disabled={disabled}
+          multiple
+          name={`${idPrefix}-photos`}
+          onChange={(event) => {
+            onAddFiles(Array.from(event.target.files ?? []));
+            event.currentTarget.value = "";
+          }}
+          ref={inputRef}
+          tabIndex={-1}
+          type="file"
+        />
+      </div>
+
+      {currentPhotos.length || draft.uploads.length ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {currentPhotos.map((photo) => {
+            const pendingDelete = draft.deletedPhotoIds.includes(photo.id);
+            return (
+              <div
+                className={cn(
+                  "grid gap-2 rounded-[var(--radius-md)] border bg-card p-2",
+                  pendingDelete ? "border-destructive/40 bg-destructive-soft/40" : "border-border",
+                )}
+                key={photo.id}
+              >
+                <img
+                  alt={photo.fileName}
+                  className={cn(
+                    "aspect-[4/3] w-full rounded-[var(--radius-sm)] bg-muted object-cover",
+                    pendingDelete && "opacity-45 grayscale",
+                  )}
+                  height={240}
+                  loading="lazy"
+                  src={photo.url}
+                  width={320}
+                />
+                <div className="flex min-w-0 items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <span className="block truncate text-sm font-medium text-foreground">{photo.fileName}</span>
+                    {pendingDelete ? (
+                      <Badge className="mt-1" size="sm" tone="danger">
+                        Будет удалено
+                      </Badge>
+                    ) : null}
+                  </div>
+                  {pendingDelete ? (
+                    <Button
+                      aria-label={`Вернуть фото ${photo.fileName}`}
+                      leftIcon={<RotateCcw className="size-4" />}
+                      onClick={() => onRestoreDeleted?.(photo.id)}
+                      size="sm"
+                      type="button"
+                      variant="secondary"
+                    >
+                      Вернуть
+                    </Button>
+                  ) : (
+                    <Button
+                      aria-label={`Удалить фото ${photo.fileName}`}
+                      leftIcon={<Trash2 className="size-4" />}
+                      onClick={() => onMarkDeleted?.(photo.id)}
+                      size="sm"
+                      type="button"
+                      variant="ghost"
+                    >
+                      Удалить
+                    </Button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          {draft.uploads.map((upload) => (
+            <div
+              className="grid gap-2 rounded-[var(--radius-md)] border border-ring/30 bg-card p-2"
+              key={upload.localId}
+            >
+              <img
+                alt={upload.file.name}
+                className="aspect-[4/3] w-full rounded-[var(--radius-sm)] bg-muted object-cover"
+                height={240}
+                loading="lazy"
+                src={upload.previewUrl}
+                width={320}
+              />
+              <div className="flex min-w-0 items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <span className="block truncate text-sm font-medium text-foreground">{upload.file.name}</span>
+                  <Badge className="mt-1" size="sm" tone="interactive">
+                    Новое
+                  </Badge>
+                </div>
+                <Button
+                  aria-label={`Убрать новое фото ${upload.file.name}`}
+                  leftIcon={<Trash2 className="size-4" />}
+                  onClick={() => onRemoveUpload(upload.localId)}
+                  size="sm"
+                  type="button"
+                  variant="ghost"
+                >
+                  Убрать
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <EmptyState detail="Карточку можно сохранить без фото." title="Фото пока не добавлены" />
+      )}
+    </div>
+  );
+}
+
 function EquipmentPassportCard({
   actions,
   badges,
+  fullWidthSections,
   icon,
   intrinsicClassName,
   label,
+  media,
   primarySections,
   secondarySections,
   subtitle,
@@ -557,27 +947,30 @@ function EquipmentPassportCard({
 }: {
   actions?: ReactNode;
   badges: ReactNode;
+  fullWidthSections?: EquipmentPassportSection[];
   icon?: ReactNode;
   intrinsicClassName: string;
   label: string;
+  media: ReactNode;
   primarySections: EquipmentPassportSection[];
   secondarySections?: EquipmentPassportSection[];
   subtitle: string;
   title: string;
 }) {
   const hasSecondarySections = Boolean(secondarySections?.length);
+  const hasFullWidthSections = Boolean(fullWidthSections?.length);
 
   return (
     <Card className={cn("equipment-passport-card gap-5 [content-visibility:auto]", intrinsicClassName)} padding="md" tone="muted">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 items-start gap-3">
           {icon ? (
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-lg)] border border-border bg-muted/70 text-muted-foreground">
+            <span className="flex size-14 shrink-0 items-center justify-center rounded-[var(--radius-lg)] border border-border bg-muted/70 text-muted-foreground">
               {icon}
             </span>
           ) : null}
           <div className="min-w-0 space-y-1">
-            <h3 className="break-words text-xl font-semibold leading-7 text-foreground">{title}</h3>
+            <h3 className="break-words text-pretty text-xl font-semibold leading-7 text-foreground">{title}</h3>
             <p className="break-words text-sm leading-6 text-muted-foreground">{subtitle}</p>
           </div>
         </div>
@@ -587,12 +980,21 @@ function EquipmentPassportCard({
         </div>
       </div>
 
-      <div className={cn("equipment-passport-layout", hasSecondarySections && "equipment-passport-layout--split")}>
+      <div
+        className={cn(
+          "equipment-passport-layout equipment-passport-layout--with-media",
+          hasSecondarySections && "equipment-passport-layout--split",
+        )}
+      >
+        <div className="equipment-passport-media min-w-0">{media}</div>
         <div className="equipment-passport-main space-y-4 p-4">{renderPassportSections(primarySections)}</div>
         {hasSecondarySections ? (
           <div className="equipment-passport-aside p-4">
             <div className="grid gap-4">{renderPassportSections(secondarySections ?? [])}</div>
           </div>
+        ) : null}
+        {hasFullWidthSections ? (
+          <div className="equipment-passport-full p-4">{renderPassportSections(fullWidthSections ?? [])}</div>
         ) : null}
       </div>
 
@@ -658,15 +1060,23 @@ function ArchiveConfirmDialog({
 function EditRegistryDialog({
   editor,
   loading,
+  onAddPhotoFiles,
   onCancel,
   onChange,
+  onMarkPhotoDeleted,
+  onRemovePhotoUpload,
+  onRestorePhotoDeleted,
   onSubmit,
   session,
 }: {
   editor: EditDialogState | null;
   loading: boolean;
+  onAddPhotoFiles: (files: File[]) => void;
   onCancel: () => void;
   onChange: (next: EditDialogState) => void;
+  onMarkPhotoDeleted: (photoId: string) => void;
+  onRemovePhotoUpload: (localId: string) => void;
+  onRestorePhotoDeleted: (photoId: string) => void;
   onSubmit: () => void;
   session: SessionSummaryResponse;
 }) {
@@ -766,6 +1176,7 @@ function EditRegistryDialog({
           name="edit-equipment-unit-id"
           onChange={(event) => updateEquipmentForm({ unitId: event.target.value })}
           options={session.units.map((unit) => ({ label: unit.name, value: unit.id }))}
+          required
           value={state.form.unitId}
         />
         <SelectField
@@ -773,6 +1184,7 @@ function EditRegistryDialog({
           name="edit-equipment-status"
           onChange={(event) => updateEquipmentForm({ status: event.target.value as RegistryStatus })}
           options={registryStatusOptions}
+          required
           value={state.form.status}
         />
       </div>
@@ -782,6 +1194,7 @@ function EditRegistryDialog({
           label="Производитель"
           name="edit-equipment-manufacturer"
           onChange={(event) => updateEquipmentForm({ manufacturer: event.target.value })}
+          required
           value={state.form.manufacturer}
         />
         <InputField
@@ -789,6 +1202,7 @@ function EditRegistryDialog({
           label="Класс / тип"
           name="edit-equipment-classification"
           onChange={(event) => updateEquipmentForm({ classification: event.target.value })}
+          required
           value={state.form.classification}
         />
         <InputField
@@ -796,6 +1210,7 @@ function EditRegistryDialog({
           label="Модель"
           name="edit-equipment-model"
           onChange={(event) => updateEquipmentForm({ model: event.target.value })}
+          required
           value={state.form.model}
         />
         <InputField
@@ -804,6 +1219,7 @@ function EditRegistryDialog({
           label="Год выпуска"
           name="edit-equipment-manufacture-year"
           onChange={(event) => updateEquipmentForm({ manufactureYear: event.target.value })}
+          required
           type="number"
           value={state.form.manufactureYear}
         />
@@ -812,6 +1228,7 @@ function EditRegistryDialog({
           label="Полное наименование"
           name="edit-equipment-full-name"
           onChange={(event) => updateEquipmentForm({ fullName: event.target.value })}
+          required
           value={state.form.fullName}
         />
         <InputField
@@ -819,6 +1236,7 @@ function EditRegistryDialog({
           label="Заводской номер"
           name="edit-equipment-factory-number"
           onChange={(event) => updateEquipmentForm({ factoryNumber: event.target.value })}
+          required
           spellCheck={false}
           translate="no"
           value={state.form.factoryNumber}
@@ -847,6 +1265,16 @@ function EditRegistryDialog({
         onChange={(event) => updateEquipmentForm({ comment: event.target.value })}
         value={state.form.comment}
       />
+      <EquipmentPhotoDraftField
+        disabled={loading}
+        draft={state.photoDraft}
+        idPrefix="edit-equipment"
+        onAddFiles={onAddPhotoFiles}
+        onMarkDeleted={onMarkPhotoDeleted}
+        onRemoveUpload={onRemovePhotoUpload}
+        onRestoreDeleted={onRestorePhotoDeleted}
+        photos={state.photos}
+      />
     </div>
   );
 
@@ -859,6 +1287,7 @@ function EditRegistryDialog({
         name="edit-measuring-instrument-unit-id"
         onChange={(event) => updateMeasuringInstrumentForm({ unitId: event.target.value })}
         options={session.units.map((unit) => ({ label: unit.name, value: unit.id }))}
+        required
         value={state.form.unitId}
       />
       <div className="grid gap-4 md:grid-cols-2">
@@ -867,6 +1296,7 @@ function EditRegistryDialog({
           label="Наименование"
           name="edit-measuring-instrument-name"
           onChange={(event) => updateMeasuringInstrumentForm({ name: event.target.value })}
+          required
           value={state.form.name}
         />
         <InputField
@@ -874,6 +1304,7 @@ function EditRegistryDialog({
           label="Тип / класс"
           name="edit-measuring-instrument-type"
           onChange={(event) => updateMeasuringInstrumentForm({ instrumentType: event.target.value })}
+          required
           value={state.form.instrumentType}
         />
         <InputField
@@ -881,6 +1312,7 @@ function EditRegistryDialog({
           label="Модель"
           name="edit-measuring-instrument-model"
           onChange={(event) => updateMeasuringInstrumentForm({ model: event.target.value })}
+          required
           value={state.form.model}
         />
         <InputField
@@ -888,6 +1320,7 @@ function EditRegistryDialog({
           label="ФИФ"
           name="edit-measuring-instrument-registration-number"
           onChange={(event) => updateMeasuringInstrumentForm({ registrationNumber: event.target.value })}
+          required
           spellCheck={false}
           translate="no"
           value={state.form.registrationNumber}
@@ -897,6 +1330,7 @@ function EditRegistryDialog({
           label="Серийный номер"
           name="edit-measuring-instrument-serial-number"
           onChange={(event) => updateMeasuringInstrumentForm({ serialNumber: event.target.value })}
+          required
           spellCheck={false}
           translate="no"
           value={state.form.serialNumber}
@@ -1006,6 +1440,7 @@ function EditRegistryDialog({
                     label="Тип меры"
                     name={`edit-diagnostic-standard-type-${draft.localId}`}
                     onChange={(event) => updateEditStandardDraft(draft.localId, { standardType: event.target.value })}
+                    required
                     value={draft.standardType}
                   />
                   <InputField
@@ -1013,6 +1448,7 @@ function EditRegistryDialog({
                     label="Модель"
                     name={`edit-diagnostic-standard-model-${draft.localId}`}
                     onChange={(event) => updateEditStandardDraft(draft.localId, { model: event.target.value })}
+                    required
                     value={draft.model}
                   />
                   <InputField
@@ -1020,6 +1456,7 @@ function EditRegistryDialog({
                     label="Идентификатор"
                     name={`edit-diagnostic-standard-identifier-${draft.localId}`}
                     onChange={(event) => updateEditStandardDraft(draft.localId, { identifier: event.target.value })}
+                    required
                     spellCheck={false}
                     translate="no"
                     value={draft.identifier}
@@ -1051,6 +1488,7 @@ function EditRegistryDialog({
                       metrologicalCharacteristics: event.target.value,
                     })
                   }
+                  required
                   value={draft.metrologicalCharacteristics}
                 />
                 <TextareaField
@@ -1076,37 +1514,37 @@ function EditRegistryDialog({
         onChange={(event) => updateMeasuringInstrumentForm({ comment: event.target.value })}
         value={state.form.comment}
       />
+      <EquipmentPhotoDraftField
+        disabled={loading}
+        draft={state.photoDraft}
+        idPrefix="edit-measuring-instrument"
+        onAddFiles={onAddPhotoFiles}
+        onMarkDeleted={onMarkPhotoDeleted}
+        onRemoveUpload={onRemovePhotoUpload}
+        onRestoreDeleted={onRestorePhotoDeleted}
+        photos={state.photos}
+      />
     </div>
   );
 
   return (
     <Dialog
-      badge={
-        <Badge icon={<Pencil className="size-4" />} tone="interactive">
-          Редактирование
-        </Badge>
-      }
       description={editor.recordLabel}
       dismissible={!loading}
       footer={
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">
-            {!canSubmit ? "Заполните обязательные поля перед сохранением." : "Изменения попадут в текущий реестр после сохранения."}
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Button disabled={loading} onClick={onCancel} type="button" variant="secondary">
-              Отмена
-            </Button>
-            <Button
-              disabled={!canSubmit}
-              leftIcon={<Save className="size-4" />}
-              loading={loading}
-              onClick={onSubmit}
-              type="button"
-            >
-              Сохранить изменения
-            </Button>
-          </div>
+        <div className="flex flex-wrap justify-end gap-3">
+          <Button disabled={loading} onClick={onCancel} type="button" variant="secondary">
+            Отмена
+          </Button>
+          <Button
+            disabled={!canSubmit}
+            leftIcon={<Save className="size-4" />}
+            loading={loading}
+            onClick={onSubmit}
+            type="button"
+          >
+            Сохранить изменения
+          </Button>
         </div>
       }
       onOpenChange={(open) => {
@@ -1141,9 +1579,9 @@ function JournalTimeline({
   }
 
   return (
-    <div className="grid gap-3">
+    <ol className="grid gap-3">
       {journals.map((journal) => (
-        <div className="rounded-[var(--radius-lg)] border border-border bg-card px-4 py-4" key={journal.id}>
+        <li className="rounded-[var(--radius-md)] border border-border bg-card/70 px-3 py-3" key={journal.id}>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="space-y-1">
               <div className="flex flex-wrap items-center gap-2">
@@ -1164,19 +1602,63 @@ function JournalTimeline({
               </Badge>
             ) : null}
           </div>
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
-            {fieldDetail("Исполнитель", journal.executorOrganization)}
-            {fieldDetail("Вложение", journal.attachmentUrl)}
-          </div>
+          <dl className="mt-3 grid gap-3 sm:grid-cols-2">
+            {passportDetail("Исполнитель", journal.executorOrganization)}
+            {passportDetail("Вложение", journal.attachmentUrl, true)}
+          </dl>
           {journal.comment ? (
-            <div className="mt-3 rounded-[var(--radius-lg)] border border-border bg-muted/40 px-4 py-3 text-sm leading-6 text-foreground">
+            <p className="mt-3 border-t border-border pt-3 text-sm leading-6 text-foreground">
               {journal.comment}
-            </div>
+            </p>
           ) : null}
-        </div>
+        </li>
       ))}
-    </div>
+    </ol>
   );
+}
+
+function buildDiagnosticPrimarySections(
+  item: MeasuringInstrumentRecord,
+  {
+    extraSections = [],
+    includeDueDate = false,
+  }: {
+    extraSections?: EquipmentPassportSection[];
+    includeDueDate?: boolean;
+  } = {},
+): EquipmentPassportSection[] {
+  return [
+    {
+      id: "diagnostic-requisites",
+      title: "Реквизиты записи",
+      icon: <ClipboardList aria-hidden="true" className="size-4" />,
+      children: (
+        <dl className="grid gap-3 sm:grid-cols-2">
+          {passportDetail("ФИФ", item.registrationNumber, true)}
+          {passportDetail("Серийный номер", item.serialNumber, true)}
+          {passportDetail("Тип", item.instrumentType)}
+          {passportDetail("Модель", item.model)}
+          {passportDetail("Юнит", item.unit.name)}
+          {passportDetail("Связанное оборудование", item.equipment?.fullName)}
+          {includeDueDate
+            ? passportDetail("Действует до", item.nextDueDate ? formatDate(item.nextDueDate) : undefined)
+            : null}
+          {item.archivedAt ? passportDetail("Архивирован", formatTimestamp(item.archivedAt)) : null}
+        </dl>
+      ),
+    },
+    {
+      id: "diagnostic-scope",
+      title: "Область учета",
+      icon: <MapPin aria-hidden="true" className="size-4" />,
+      children: (
+        <p className="mt-2 break-words text-sm leading-6 text-foreground">
+          {[item.unit.divisionName, item.unit.name].filter(Boolean).join(", ")}
+        </p>
+      ),
+    },
+    ...extraSections,
+  ];
 }
 
 export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Props) {
@@ -1189,26 +1671,53 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
   const [equipmentFormKind, setEquipmentFormKind] = useState<EquipmentFormKind>("technical");
   const [equipmentForm, setEquipmentForm] = useState(() => defaultEquipmentForm(session));
   const [measuringInstrumentForm, setMeasuringInstrumentForm] = useState(() => defaultMeasuringInstrumentForm(session));
+  const [createPhotoDraft, setCreatePhotoDraft] = useState<PhotoDraftState>(() => emptyPhotoDraft());
   const [diagnosticStandardDrafts, setDiagnosticStandardDrafts] = useState<DiagnosticStandardDraft[]>([]);
-  const [measuringInstrumentJournalForm, setMeasuringInstrumentJournalForm] = useState(defaultJournalForm);
-  const [selectedMeasuringInstrumentId, setSelectedMeasuringInstrumentId] = useState("");
-  const [measuringInstrumentJournals, setMeasuringInstrumentJournals] = useState<JournalRecord[]>([]);
-  const [loadingMeasuringInstrumentJournals, setLoadingMeasuringInstrumentJournals] = useState(false);
+  const [journalForm, setJournalForm] = useState(defaultJournalForm);
+  const [selectedJournalTargetValue, setSelectedJournalTargetValue] = useState("");
+  const [journalEntries, setJournalEntries] = useState<JournalRecord[]>([]);
+  const [loadingJournalEntries, setLoadingJournalEntries] = useState(false);
   const [loading, setLoading] = useState(true);
   const hasLoadedRegistriesRef = useRef(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [archiveConfirmation, setArchiveConfirmation] = useState<ArchiveConfirmation | null>(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [journalCreateDialogOpen, setJournalCreateDialogOpen] = useState(false);
   const [editDialog, setEditDialog] = useState<EditDialogState | null>(null);
   const [mutationInFlight, setMutationInFlight] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const createPhotoDraftRef = useRef(createPhotoDraft);
+  const editDialogRef = useRef(editDialog);
 
   const canManageRegistry = sessionHasCapability(session, "manage_equipment");
-
-  const selectedMeasuringInstrument =
-    measuringInstruments.find((item) => item.id === selectedMeasuringInstrumentId) ?? null;
+  const journalTargets = useMemo<JournalTarget[]>(
+    () => [
+      ...equipmentRecords.map((item) => ({
+        kind: "technical" as const,
+        id: item.id,
+        value: journalTargetValue("technical", item.id),
+        label: `Техническое • ${item.fullName} • ${item.factoryNumber}`,
+        record: item,
+        archivedAt: item.archivedAt,
+      })),
+      ...measuringInstruments.map((item) => ({
+        kind: "diagnostic" as const,
+        id: item.id,
+        value: journalTargetValue("diagnostic", item.id),
+        label: `Диагностическое • ${item.name} • ${item.registrationNumber}`,
+        record: item,
+        archivedAt: item.archivedAt,
+      })),
+    ],
+    [equipmentRecords, measuringInstruments],
+  );
+  const activeJournalTargets = journalTargets.filter((item) => !item.archivedAt);
+  const selectedJournalTarget = journalTargets.find((item) => item.value === selectedJournalTargetValue) ?? null;
   const isMutating = isPending || mutationInFlight;
   const unifiedEquipmentCount = equipmentRecords.length + measuringInstruments.length;
+  const canCreateJournalEntry =
+    canManageRegistry &&
+    Boolean(selectedJournalTarget && !selectedJournalTarget.archivedAt && activeJournalTargets.length);
 
   const showSuccessToast = useCallback((title: string, dedupeKey: string) => {
     showToast({
@@ -1227,6 +1736,182 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
     });
   }, [showToast]);
 
+  useEffect(() => {
+    createPhotoDraftRef.current = createPhotoDraft;
+  }, [createPhotoDraft]);
+
+  useEffect(() => {
+    editDialogRef.current = editDialog;
+  }, [editDialog]);
+
+  useEffect(
+    () => () => {
+      revokePhotoDrafts(createPhotoDraftRef.current);
+      if (editDialogRef.current) {
+        revokePhotoDrafts(editDialogRef.current.photoDraft);
+      }
+    },
+    [],
+  );
+
+  const reportPhotoDraftErrors = useCallback((errors: string[]) => {
+    if (!errors.length) {
+      return;
+    }
+    showToast({
+      dedupeKey: "equipment-photo-draft-error",
+      description: errors.slice(0, 3).join(" "),
+      title: "Фото не добавлено.",
+      tone: "error",
+    });
+  }, [showToast]);
+
+  function appendCreatePhotoFiles(files: File[]) {
+    if (!files.length) {
+      return;
+    }
+    setCreatePhotoDraft((current) => {
+      const availableSlots = equipmentPhotoMaxCount - activePhotoCount([], current);
+      const { uploads, errors } = validatePhotoFiles(files, Math.max(availableSlots, 0));
+      reportPhotoDraftErrors(errors);
+      return uploads.length ? { ...current, uploads: [...current.uploads, ...uploads] } : current;
+    });
+  }
+
+  function removeCreatePhotoUpload(localId: string) {
+    setCreatePhotoDraft((current) => {
+      const upload = current.uploads.find((item) => item.localId === localId);
+      if (upload) {
+        URL.revokeObjectURL(upload.previewUrl);
+      }
+      return {
+        ...current,
+        uploads: current.uploads.filter((item) => item.localId !== localId),
+      };
+    });
+  }
+
+  function resetCreatePhotoDraft() {
+    revokePhotoDrafts(createPhotoDraftRef.current);
+    setCreatePhotoDraft(emptyPhotoDraft());
+  }
+
+  function closeCreateDialog() {
+    resetCreatePhotoDraft();
+    setCreateDialogOpen(false);
+  }
+
+  function closeEditDialog() {
+    if (editDialogRef.current) {
+      revokePhotoDrafts(editDialogRef.current.photoDraft);
+    }
+    setEditDialog(null);
+  }
+
+  function appendEditPhotoFiles(files: File[]) {
+    if (!files.length || !editDialogRef.current) {
+      return;
+    }
+    setEditDialog((current) => {
+      if (!current) {
+        return current;
+      }
+      const availableSlots = equipmentPhotoMaxCount - activePhotoCount(current.photos, current.photoDraft);
+      const { uploads, errors } = validatePhotoFiles(files, Math.max(availableSlots, 0));
+      reportPhotoDraftErrors(errors);
+      return uploads.length
+        ? { ...current, photoDraft: { ...current.photoDraft, uploads: [...current.photoDraft.uploads, ...uploads] } }
+        : current;
+    });
+  }
+
+  function removeEditPhotoUpload(localId: string) {
+    setEditDialog((current) => {
+      if (!current) {
+        return current;
+      }
+      const upload = current.photoDraft.uploads.find((item) => item.localId === localId);
+      if (upload) {
+        URL.revokeObjectURL(upload.previewUrl);
+      }
+      return {
+        ...current,
+        photoDraft: {
+          ...current.photoDraft,
+          uploads: current.photoDraft.uploads.filter((item) => item.localId !== localId),
+        },
+      };
+    });
+  }
+
+  function markEditPhotoDeleted(photoId: string) {
+    setEditDialog((current) => {
+      if (!current || current.photoDraft.deletedPhotoIds.includes(photoId)) {
+        return current;
+      }
+      return {
+        ...current,
+        photoDraft: {
+          ...current.photoDraft,
+          deletedPhotoIds: [...current.photoDraft.deletedPhotoIds, photoId],
+        },
+      };
+    });
+  }
+
+  function restoreEditPhotoDeleted(photoId: string) {
+    setEditDialog((current) => {
+      if (!current) {
+        return current;
+      }
+      return {
+        ...current,
+        photoDraft: {
+          ...current.photoDraft,
+          deletedPhotoIds: current.photoDraft.deletedPhotoIds.filter((id) => id !== photoId),
+        },
+      };
+    });
+  }
+
+  async function uploadEquipmentPhoto(subject: PhotoSubjectKind, recordId: string, file: File) {
+    const body = new FormData();
+    body.append("photo", file);
+    const basePath =
+      subject === "technical"
+        ? `/api/equipment/${recordId}/photos`
+        : `/api/equipment/measuring-instruments/${recordId}/photos`;
+
+    const response = await fetch(basePath, {
+      method: "POST",
+      body,
+    });
+
+    return parseEnvelope<EquipmentPhotoRecord>(response, "Не удалось загрузить фото оборудования.");
+  }
+
+  async function deleteEquipmentPhoto(subject: PhotoSubjectKind, recordId: string, photoId: string) {
+    const basePath =
+      subject === "technical"
+        ? `/api/equipment/${recordId}/photos/${photoId}`
+        : `/api/equipment/measuring-instruments/${recordId}/photos/${photoId}`;
+
+    const response = await fetch(basePath, {
+      method: "DELETE",
+    });
+
+    await parseEnvelope<EquipmentPhotoRecord>(response, "Не удалось удалить фото оборудования.");
+  }
+
+  async function applyPhotoDraft(subject: PhotoSubjectKind, recordId: string, draft: PhotoDraftState) {
+    for (const photoId of draft.deletedPhotoIds) {
+      await deleteEquipmentPhoto(subject, recordId, photoId);
+    }
+    for (const upload of draft.uploads) {
+      await uploadEquipmentPhoto(subject, recordId, upload.file);
+    }
+  }
+
   const loadRegistries = useCallback(async () => {
     if (!hasLoadedRegistriesRef.current) {
       setLoading(true);
@@ -1243,7 +1928,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
         ),
       ]);
 
-      setEquipmentRecords(equipmentData);
+      setEquipmentRecords(equipmentData.map(normalizeEquipmentRecord));
       setMeasuringInstruments(measuringInstrumentData.map(normalizeMeasuringInstrument));
       hasLoadedRegistriesRef.current = true;
     } catch (error) {
@@ -1253,17 +1938,17 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
     }
   }, [showArchived]);
 
-  const loadMeasuringInstrumentJournals = useCallback(async (id: string) => {
-    setLoadingMeasuringInstrumentJournals(true);
+  const loadJournalEntries = useCallback(async (target: JournalTarget) => {
+    setLoadingJournalEntries(true);
     try {
-      const journals = await fetch(`/api/equipment/measuring-instruments/${id}/journals`, {
+      const journals = await fetch(journalEndpoint(target), {
         cache: "no-store",
       }).then((response) => parseEnvelope<JournalRecord[]>(response, "Не удалось загрузить журнал оборудования."));
-      setMeasuringInstrumentJournals(journals);
+      setJournalEntries(journals);
     } catch (error) {
       showErrorToast("Не удалось загрузить журнал оборудования.", error, "equipment-journals-load-error");
     } finally {
-      setLoadingMeasuringInstrumentJournals(false);
+      setLoadingJournalEntries(false);
     }
   }, [showErrorToast]);
 
@@ -1276,25 +1961,25 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
   }, [loadRegistries]);
 
   useEffect(() => {
-    if (!measuringInstruments.length) {
-      if (selectedMeasuringInstrumentId !== "") {
-        setSelectedMeasuringInstrumentId("");
+    if (!journalTargets.length) {
+      if (selectedJournalTargetValue !== "") {
+        setSelectedJournalTargetValue("");
       }
       return;
     }
 
-    if (!measuringInstruments.some((item) => item.id === selectedMeasuringInstrumentId)) {
-      setSelectedMeasuringInstrumentId(measuringInstruments[0]?.id ?? "");
+    if (!journalTargets.some((item) => item.value === selectedJournalTargetValue)) {
+      setSelectedJournalTargetValue(journalTargets[0]?.value ?? "");
     }
-  }, [measuringInstruments, selectedMeasuringInstrumentId]);
+  }, [journalTargets, selectedJournalTargetValue]);
 
   useEffect(() => {
-    if (selectedMeasuringInstrumentId) {
-      void loadMeasuringInstrumentJournals(selectedMeasuringInstrumentId);
+    if (selectedJournalTarget) {
+      void loadJournalEntries(selectedJournalTarget);
     } else {
-      setMeasuringInstrumentJournals([]);
+      setJournalEntries([]);
     }
-  }, [loadMeasuringInstrumentJournals, selectedMeasuringInstrumentId]);
+  }, [loadJournalEntries, selectedJournalTarget]);
 
   useEffect(() => {
     if (
@@ -1329,9 +2014,12 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
       body: JSON.stringify(equipmentPayload(equipmentForm)),
     });
 
-    await parseEnvelope<EquipmentRecord>(response, "Не удалось создать карточку оборудования.");
+    const created = await parseEnvelope<EquipmentRecord>(response, "Не удалось создать карточку оборудования.");
+    await applyPhotoDraft("technical", created.id, createPhotoDraft);
     setEquipmentForm(defaultEquipmentForm(session));
+    resetCreatePhotoDraft();
     await loadRegistries();
+    setSelectedJournalTargetValue(journalTargetValue("technical", created.id));
     if (!keepOpen) {
       setCreateDialogOpen(false);
     }
@@ -1368,11 +2056,13 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
         await parseEnvelope<StandardRecord>(standardResponse, "Не удалось создать эталон или меру."),
       );
     }
+    await applyPhotoDraft("diagnostic", created.id, createPhotoDraft);
 
     setMeasuringInstrumentForm(defaultMeasuringInstrumentForm(session));
+    resetCreatePhotoDraft();
     setDiagnosticStandardDrafts([]);
     await loadRegistries();
-    setSelectedMeasuringInstrumentId(created.id);
+    setSelectedJournalTargetValue(journalTargetValue("diagnostic", created.id));
     if (!keepOpen) {
       setCreateDialogOpen(false);
     }
@@ -1390,6 +2080,8 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
       recordId: record.id,
       recordLabel: record.fullName,
       form: equipmentFormFromRecord(record),
+      photos: record.photos ?? [],
+      photoDraft: emptyPhotoDraft(),
     });
   }
 
@@ -1399,6 +2091,8 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
       recordId: record.id,
       recordLabel: record.name,
       form: measuringInstrumentFormFromRecord(record),
+      photos: record.photos ?? [],
+      photoDraft: emptyPhotoDraft(),
       standards: record.standards,
       standardDrafts: [],
       removedStandardIds: [],
@@ -1417,8 +2111,9 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
         body: JSON.stringify(equipmentPayload(editDialog.form)),
       });
       await parseEnvelope<EquipmentRecord>(response, "Не удалось обновить оборудование.");
+      await applyPhotoDraft("technical", editDialog.recordId, editDialog.photoDraft);
       await loadRegistries();
-      setEditDialog(null);
+      closeEditDialog();
       showSuccessToast("Оборудование обновлено.", "equipment-update-success");
       return;
     }
@@ -1447,9 +2142,10 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
         });
         await parseEnvelope<{ id: string }>(deleteResponse, "Не удалось удалить эталон или меру.");
       }
+      await applyPhotoDraft("diagnostic", updated.id, editDialog.photoDraft);
       await loadRegistries();
-      setSelectedMeasuringInstrumentId(updated.id);
-      setEditDialog(null);
+      setSelectedJournalTargetValue(journalTargetValue("diagnostic", updated.id));
+      closeEditDialog();
       showSuccessToast("Диагностическое оборудование обновлено.", "equipment-mi-update-success");
       return;
     }
@@ -1474,8 +2170,12 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
     });
     await parseEnvelope<MeasuringInstrumentRecord>(response, "Не удалось архивировать диагностическое оборудование.");
     await loadRegistries();
-    if (selectedMeasuringInstrumentId === id) {
-      await loadMeasuringInstrumentJournals(id);
+    const selectedValue = journalTargetValue("diagnostic", id);
+    if (selectedJournalTargetValue === selectedValue) {
+      const selected = journalTargets.find((item) => item.value === selectedValue);
+      if (selected) {
+        await loadJournalEntries(selected);
+      }
     }
     showSuccessToast(
       "Диагностическое оборудование переведено в архив и убрано из активного списка.",
@@ -1483,32 +2183,36 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
     );
   }
 
-  async function createMeasuringInstrumentJournal() {
-    if (!selectedMeasuringInstrumentId) {
+  async function createJournalEntry() {
+    const target = activeJournalTargets.find((item) => item.value === journalForm.targetValue);
+
+    if (!target) {
       throw new Error("Сначала выберите оборудование для журнала.");
     }
 
-    const response = await fetch(`/api/equipment/measuring-instruments/${selectedMeasuringInstrumentId}/journals`, {
+    const response = await fetch(journalEndpoint(target), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        operationType: measuringInstrumentJournalForm.operationType,
-        operationDate: measuringInstrumentJournalForm.operationDate,
-        documentNumber: measuringInstrumentJournalForm.documentNumber,
-        validUntil: optionalString(measuringInstrumentJournalForm.validUntil),
-        executorOrganization: measuringInstrumentJournalForm.executorOrganization,
-        attachmentUrl: optionalString(measuringInstrumentJournalForm.attachmentUrl),
-        comment: optionalString(measuringInstrumentJournalForm.comment),
+        operationType: journalForm.operationType,
+        operationDate: journalForm.operationDate,
+        documentNumber: journalForm.documentNumber,
+        validUntil: optionalString(journalForm.validUntil),
+        executorOrganization: journalForm.executorOrganization,
+        attachmentUrl: optionalString(journalForm.attachmentUrl),
+        comment: optionalString(journalForm.comment),
       }),
     });
 
     await parseEnvelope<JournalRecord>(response, "Не удалось добавить запись в журнал оборудования.");
-    setMeasuringInstrumentJournalForm(defaultJournalForm());
+    setJournalForm(defaultJournalForm(target.value));
+    setSelectedJournalTargetValue(target.value);
+    setJournalCreateDialogOpen(false);
     await loadRegistries();
-    await loadMeasuringInstrumentJournals(selectedMeasuringInstrumentId);
+    await loadJournalEntries(target);
     showSuccessToast(
       "Запись журнала сохранена. Производный статус и ближайшая дата пересчитаны.",
-      "equipment-mi-journal-create-success",
+      "equipment-journal-create-success",
     );
   }
 
@@ -1527,6 +2231,16 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
 
   function requestArchive(task: () => Promise<void>, fallbackMessage: string, recordLabel: string, dedupeKey: string) {
     setArchiveConfirmation({ dedupeKey, fallbackMessage, recordLabel, task });
+  }
+
+  function openJournalCreateDialog() {
+    const targetValue =
+      selectedJournalTarget && !selectedJournalTarget.archivedAt
+        ? selectedJournalTarget.value
+        : activeJournalTargets[0]?.value ?? "";
+
+    setJournalForm(defaultJournalForm(targetValue));
+    setJournalCreateDialogOpen(true);
   }
 
   function submitEquipmentCreate(keepOpen = false) {
@@ -1571,6 +2285,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
             name="equipment-unit-id"
             onChange={(event) => setEquipmentForm((current) => ({ ...current, unitId: event.target.value }))}
             options={session.units.map((unit) => ({ label: unit.name, value: unit.id }))}
+            required
             value={equipmentForm.unitId}
           />
           <SelectField
@@ -1583,6 +2298,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
               }))
             }
             options={registryStatusOptions}
+            required
             value={equipmentForm.status}
           />
         </div>
@@ -1592,6 +2308,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
             label="Производитель"
             name="equipment-manufacturer"
             onChange={(event) => setEquipmentForm((current) => ({ ...current, manufacturer: event.target.value }))}
+            required
             value={equipmentForm.manufacturer}
           />
           <InputField
@@ -1599,6 +2316,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
             label="Класс / тип"
             name="equipment-classification"
             onChange={(event) => setEquipmentForm((current) => ({ ...current, classification: event.target.value }))}
+            required
             value={equipmentForm.classification}
           />
           <InputField
@@ -1606,6 +2324,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
             label="Модель"
             name="equipment-model"
             onChange={(event) => setEquipmentForm((current) => ({ ...current, model: event.target.value }))}
+            required
             value={equipmentForm.model}
           />
           <InputField
@@ -1614,6 +2333,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
             label="Год выпуска"
             name="equipment-manufacture-year"
             onChange={(event) => setEquipmentForm((current) => ({ ...current, manufactureYear: event.target.value }))}
+            required
             type="number"
             value={equipmentForm.manufactureYear}
           />
@@ -1622,6 +2342,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
             label="Полное наименование"
             name="equipment-full-name"
             onChange={(event) => setEquipmentForm((current) => ({ ...current, fullName: event.target.value }))}
+            required
             value={equipmentForm.fullName}
           />
           <InputField
@@ -1629,6 +2350,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
             label="Заводской номер"
             name="equipment-factory-number"
             onChange={(event) => setEquipmentForm((current) => ({ ...current, factoryNumber: event.target.value }))}
+            required
             spellCheck={false}
             translate="no"
             value={equipmentForm.factoryNumber}
@@ -1657,6 +2379,13 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
           onChange={(event) => setEquipmentForm((current) => ({ ...current, comment: event.target.value }))}
           value={equipmentForm.comment}
         />
+        <EquipmentPhotoDraftField
+          disabled={isMutating}
+          draft={createPhotoDraft}
+          idPrefix="equipment-create"
+          onAddFiles={appendCreatePhotoFiles}
+          onRemoveUpload={removeCreatePhotoUpload}
+        />
       </>
     );
   }
@@ -1672,6 +2401,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
               setMeasuringInstrumentForm((current) => ({ ...current, unitId: event.target.value }))
             }
             options={session.units.map((unit) => ({ label: unit.name, value: unit.id }))}
+            required
             value={measuringInstrumentForm.unitId}
           />
           <InputField
@@ -1679,6 +2409,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
             label="Наименование"
             name="measuring-instrument-name"
             onChange={(event) => setMeasuringInstrumentForm((current) => ({ ...current, name: event.target.value }))}
+            required
             value={measuringInstrumentForm.name}
           />
           <InputField
@@ -1688,6 +2419,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
             onChange={(event) =>
               setMeasuringInstrumentForm((current) => ({ ...current, instrumentType: event.target.value }))
             }
+            required
             value={measuringInstrumentForm.instrumentType}
           />
           <InputField
@@ -1695,6 +2427,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
             label="Модель"
             name="measuring-instrument-model"
             onChange={(event) => setMeasuringInstrumentForm((current) => ({ ...current, model: event.target.value }))}
+            required
             value={measuringInstrumentForm.model}
           />
           <InputField
@@ -1704,6 +2437,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
             onChange={(event) =>
               setMeasuringInstrumentForm((current) => ({ ...current, registrationNumber: event.target.value }))
             }
+            required
             spellCheck={false}
             translate="no"
             value={measuringInstrumentForm.registrationNumber}
@@ -1715,6 +2449,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
             onChange={(event) =>
               setMeasuringInstrumentForm((current) => ({ ...current, serialNumber: event.target.value }))
             }
+            required
             spellCheck={false}
             translate="no"
             value={measuringInstrumentForm.serialNumber}
@@ -1753,6 +2488,13 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
           onChange={(event) => setMeasuringInstrumentForm((current) => ({ ...current, comment: event.target.value }))}
           value={measuringInstrumentForm.comment}
         />
+        <EquipmentPhotoDraftField
+          disabled={isMutating}
+          draft={createPhotoDraft}
+          idPrefix="measuring-instrument-create"
+          onAddFiles={appendCreatePhotoFiles}
+          onRemoveUpload={removeCreatePhotoUpload}
+        />
         <div className="grid gap-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="text-sm font-medium text-foreground">Эталоны</span>
@@ -1789,6 +2531,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
                       label="Тип меры"
                       name={`diagnostic-standard-type-${draft.localId}`}
                       onChange={(event) => updateDiagnosticStandardDraft(draft.localId, { standardType: event.target.value })}
+                      required
                       value={draft.standardType}
                     />
                     <InputField
@@ -1796,6 +2539,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
                       label="Модель"
                       name={`diagnostic-standard-model-${draft.localId}`}
                       onChange={(event) => updateDiagnosticStandardDraft(draft.localId, { model: event.target.value })}
+                      required
                       value={draft.model}
                     />
                     <InputField
@@ -1803,6 +2547,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
                       label="Идентификатор"
                       name={`diagnostic-standard-identifier-${draft.localId}`}
                       onChange={(event) => updateDiagnosticStandardDraft(draft.localId, { identifier: event.target.value })}
+                      required
                       spellCheck={false}
                       translate="no"
                       value={draft.identifier}
@@ -1834,6 +2579,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
                         metrologicalCharacteristics: event.target.value,
                       })
                     }
+                    required
                     value={draft.metrologicalCharacteristics}
                   />
                   <TextareaField
@@ -1869,39 +2615,34 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
         bodyClassName="grid gap-5"
         dismissible={!isMutating}
         footer={
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground">
-              {!canSubmit ? "Заполните обязательные поля перед созданием." : "Карточка появится в реестре после сохранения."}
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Button disabled={isMutating} onClick={() => setCreateDialogOpen(false)} type="button" variant="secondary">
-                Отмена
-              </Button>
-              <Button
-                disabled={!canSubmit || isMutating}
-                onClick={() => submitEquipmentCreate(true)}
-                type="button"
-                variant="secondary"
-              >
-                Создать и добавить ещё
-              </Button>
-              <Button
-                disabled={!canSubmit}
-                leftIcon={<Plus className="size-4" />}
-                loading={isMutating}
-                onClick={() => submitEquipmentCreate(false)}
-                type="button"
-              >
-                Создать оборудование
-              </Button>
-            </div>
+          <div className="flex flex-wrap justify-end gap-3">
+            <Button disabled={isMutating} onClick={closeCreateDialog} type="button" variant="secondary">
+              Отмена
+            </Button>
+            <Button
+              disabled={!canSubmit || isMutating}
+              onClick={() => submitEquipmentCreate(true)}
+              type="button"
+              variant="secondary"
+            >
+              Создать и добавить ещё
+            </Button>
+            <Button
+              disabled={!canSubmit}
+              leftIcon={<Plus className="size-4" />}
+              loading={isMutating}
+              onClick={() => submitEquipmentCreate(false)}
+              type="button"
+            >
+              Создать оборудование
+            </Button>
           </div>
         }
         headerIcon={<Wrench aria-hidden="true" className="size-4" />}
         headerVariant="muted"
         onOpenChange={(open) => {
           if (!open && !isMutating) {
-            setCreateDialogOpen(false);
+            closeCreateDialog();
           }
         }}
         open={createDialogOpen}
@@ -1912,8 +2653,12 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
         <SelectField
           label="Тип оборудования"
           name="equipment-form-kind"
-          onChange={(event) => setEquipmentFormKind(event.target.value as EquipmentFormKind)}
+          onChange={(event) => {
+            resetCreatePhotoDraft();
+            setEquipmentFormKind(event.target.value as EquipmentFormKind);
+          }}
           options={equipmentFormKindOptions}
+          required
           value={equipmentFormKind}
         />
         {equipmentFormKind === "technical" ? renderTechnicalEquipmentFields() : renderDiagnosticEquipmentFields()}
@@ -1921,42 +2666,264 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
     );
   }
 
-  function renderReadonlyJournalCard(journalTimeline: ReactNode) {
-    if (!selectedMeasuringInstrument) {
+  function renderJournalCreateDialog() {
+    if (!canManageRegistry) {
       return null;
     }
 
+    const canSubmit =
+      isJournalFormReady(journalForm) &&
+      activeJournalTargets.some((item) => item.value === journalForm.targetValue);
+
     return (
-      <Card className="gap-4" padding="md" tone="muted">
-        <div className="min-w-0 space-y-1">
-          <h3 className="break-words text-lg font-semibold text-foreground">{selectedMeasuringInstrument.name}</h3>
-          <p className="text-sm text-muted-foreground">
-            Текущий статус: <span className="font-medium text-foreground">{statusLabelMap[selectedMeasuringInstrument.status]}</span>
-            {selectedMeasuringInstrument.nextDueDate
-              ? ` • действует до ${formatDate(selectedMeasuringInstrument.nextDueDate)}`
-              : " • срок пока не рассчитан"}
-          </p>
+      <Dialog
+        bodyClassName="grid gap-5"
+        dismissible={!isMutating}
+        footer={
+          <div className="flex flex-wrap justify-end gap-3">
+            <Button
+              disabled={isMutating}
+              onClick={() => setJournalCreateDialogOpen(false)}
+              type="button"
+              variant="secondary"
+            >
+              Отмена
+            </Button>
+            <Button
+              disabled={!canSubmit}
+              leftIcon={<Plus className="size-4" />}
+              loading={isMutating}
+              onClick={() =>
+                runMutation(
+                  createJournalEntry,
+                  "Не удалось добавить запись в журнал оборудования.",
+                  "equipment-journal-create-error",
+                )
+              }
+              type="button"
+            >
+              Добавить запись журнала
+            </Button>
+          </div>
+        }
+        headerIcon={<ListChecks aria-hidden="true" className="size-4" />}
+        headerVariant="muted"
+        onOpenChange={(open) => {
+          if (!open && !isMutating) {
+            setJournalCreateDialogOpen(false);
+          }
+        }}
+        open={journalCreateDialogOpen}
+        showClose={!isMutating}
+        size="lg"
+        title="Новая запись журнала"
+      >
+        <SelectField
+          label="Оборудование"
+          name="equipment-journal-target-id"
+          onChange={(event) =>
+            setJournalForm((current) => ({
+              ...current,
+              targetValue: event.target.value,
+            }))
+          }
+          options={activeJournalTargets.map((item) => ({
+            label: item.label,
+            value: item.value,
+          }))}
+          placeholder="Выберите запись…"
+          required
+          value={journalForm.targetValue}
+        />
+        <div className="grid gap-4 md:grid-cols-2">
+          <SelectField
+            label="Тип операции"
+            name="equipment-journal-operation-type"
+            onChange={(event) =>
+              setJournalForm((current) => ({
+                ...current,
+                operationType: event.target.value as JournalRecord["operationType"],
+              }))
+            }
+            options={journalOperationOptions}
+            required
+            value={journalForm.operationType}
+          />
+          <InputField
+            autoComplete={defaultAutoComplete("text")}
+            label="Дата операции"
+            name="equipment-journal-operation-date"
+            onChange={(event) =>
+              setJournalForm((current) => ({ ...current, operationDate: event.target.value }))
+            }
+            required
+            type="date"
+            value={journalForm.operationDate}
+          />
+          <InputField
+            autoComplete={defaultAutoComplete("text")}
+            label="Документ"
+            name="equipment-journal-document-number"
+            onChange={(event) =>
+              setJournalForm((current) => ({ ...current, documentNumber: event.target.value }))
+            }
+            required
+            spellCheck={false}
+            translate="no"
+            value={journalForm.documentNumber}
+          />
+          <InputField
+            autoComplete={defaultAutoComplete("text")}
+            label="Действует до"
+            name="equipment-journal-valid-until"
+            onChange={(event) =>
+              setJournalForm((current) => ({ ...current, validUntil: event.target.value }))
+            }
+            type="date"
+            value={journalForm.validUntil}
+          />
+          <InputField
+            autoComplete={defaultAutoComplete("text")}
+            label="Организация-исполнитель"
+            name="equipment-journal-executor"
+            onChange={(event) =>
+              setJournalForm((current) => ({ ...current, executorOrganization: event.target.value }))
+            }
+            required
+            value={journalForm.executorOrganization}
+          />
+          <InputField
+            autoComplete={defaultAutoComplete("url")}
+            label="Вложение / ссылка"
+            name="equipment-journal-attachment"
+            onChange={(event) =>
+              setJournalForm((current) => ({ ...current, attachmentUrl: event.target.value }))
+            }
+            type="url"
+            value={journalForm.attachmentUrl}
+          />
         </div>
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {fieldDetail("Тип / класс", selectedMeasuringInstrument.instrumentType)}
-          {fieldDetail("Модель", selectedMeasuringInstrument.model)}
-          {fieldDetail("ФИФ", selectedMeasuringInstrument.registrationNumber, true)}
-          {fieldDetail("Серийный номер", selectedMeasuringInstrument.serialNumber, true)}
-          {fieldDetail("Юнит", selectedMeasuringInstrument.unit.name)}
-          {fieldDetail("Действует до", selectedMeasuringInstrument.nextDueDate ? formatDate(selectedMeasuringInstrument.nextDueDate) : undefined)}
-        </div>
-        <div className="space-y-1">
-          <h3 className="text-lg font-semibold text-foreground">Хронология операций</h3>
-        </div>
-        {journalTimeline}
-      </Card>
+        <TextareaField
+          label="Комментарий"
+          name="equipment-journal-comment"
+          onChange={(event) =>
+            setJournalForm((current) => ({ ...current, comment: event.target.value }))
+          }
+          value={journalForm.comment}
+        />
+      </Dialog>
     );
   }
 
-  function renderTechnicalEquipmentCard(item: EquipmentRecord) {
-    const secondarySections: EquipmentPassportSection[] = [];
+  function renderDiagnosticPassportCard({
+    actions,
+    cardKey,
+    fullWidthSections,
+    includeDueDate,
+    intrinsicClassName = "[contain-intrinsic-size:1px_520px]",
+    item,
+    primaryExtraSections,
+    secondarySections,
+  }: {
+    actions?: ReactNode;
+    cardKey?: string;
+    fullWidthSections?: EquipmentPassportSection[];
+    includeDueDate?: boolean;
+    intrinsicClassName?: string;
+    item: MeasuringInstrumentRecord;
+    primaryExtraSections?: EquipmentPassportSection[];
+    secondarySections?: EquipmentPassportSection[];
+  }) {
+    return (
+      <EquipmentPassportCard
+        actions={actions}
+        badges={
+          <>
+            <Badge tone={statusToneMap[item.status]}>{statusLabelMap[item.status]}</Badge>
+            {item.archivedAt ? <Badge tone="neutral">В архиве</Badge> : null}
+          </>
+        }
+        fullWidthSections={fullWidthSections}
+        icon={<Gauge aria-hidden="true" className="size-7" />}
+        intrinsicClassName={intrinsicClassName}
+        key={cardKey}
+        label="Диагностическое"
+        media={
+          <EquipmentPhotoGallery
+            fallbackSrc={diagnosticEquipmentFallbackImage}
+            photos={item.photos ?? []}
+            title={item.name}
+          />
+        }
+        primarySections={buildDiagnosticPrimarySections(item, {
+          extraSections: primaryExtraSections,
+          includeDueDate,
+        })}
+        secondarySections={secondarySections}
+        subtitle={`${item.instrumentType} • ${item.model}`}
+        title={item.name}
+      />
+    );
+  }
 
-    if (item.documentUrl || item.comment) {
+  function buildJournalSummarySection(
+    id: string,
+    journalCount: number,
+    nextDueDate: string | undefined,
+    latestJournal: JournalRecord | undefined,
+  ): EquipmentPassportSection {
+    return {
+      id,
+      title: "Журнал",
+      icon: <ListChecks aria-hidden="true" className="size-4" />,
+      children: (
+        <>
+          {latestJournal ? (
+            <p className="break-words text-sm leading-6 text-foreground">
+              Последняя запись:{" "}
+              <span className="font-medium text-foreground">{formatOperationType(latestJournal.operationType)}</span> от{" "}
+              <span className="font-medium text-foreground">{formatDate(latestJournal.operationDate)}</span>, документ{" "}
+              <span className="font-medium text-foreground" translate="no">
+                {latestJournal.documentNumber}
+              </span>
+              .
+            </p>
+          ) : (
+            <p className="break-words text-sm leading-6 text-muted-foreground">
+              После первой операции текущий статус и срок рассчитаются автоматически.
+            </p>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <Badge size="sm" tone="neutral">
+              {journalCount ? `${journalCount} записей` : "журнал пуст"}
+            </Badge>
+            <Badge size="sm" tone="neutral">
+              {nextDueDate ? `Действует до ${formatDate(nextDueDate)}` : "срок не рассчитан"}
+            </Badge>
+          </div>
+        </>
+      ),
+    };
+  }
+
+  function renderTechnicalEquipmentCard(
+    item: EquipmentRecord,
+    options: {
+      actions?: ReactNode;
+      cardKey?: string;
+      fullWidthSections?: EquipmentPassportSection[];
+      includeDefaultSecondary?: boolean;
+      intrinsicClassName?: string;
+      primaryExtraSections?: EquipmentPassportSection[];
+      secondarySections?: EquipmentPassportSection[];
+    } = {},
+  ) {
+    const secondarySections: EquipmentPassportSection[] =
+      options.includeDefaultSecondary === false
+        ? []
+        : [buildJournalSummarySection("technical-journal", item.journalCount, item.nextDueDate, item.latestJournal)];
+
+    if (options.includeDefaultSecondary !== false && (item.documentUrl || item.comment)) {
       secondarySections.push({
         id: "technical-evidence",
         title: "Документ и комментарий",
@@ -1972,7 +2939,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
 
     return (
       <EquipmentPassportCard
-        actions={
+        actions={options.actions ?? (
           canManageRegistry && !item.archivedAt ? (
             <>
               <Button
@@ -2005,22 +2972,30 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
               </Button>
             </>
           ) : null
-        }
+        )}
         badges={
           <>
             <Badge tone={statusToneMap[item.status]}>{statusLabelMap[item.status]}</Badge>
             {item.archivedAt ? <Badge tone="neutral">В архиве</Badge> : null}
           </>
         }
-        icon={<Wrench aria-hidden="true" className="size-5" />}
-        intrinsicClassName="[contain-intrinsic-size:1px_420px]"
-        key={`technical:${item.id}`}
+        fullWidthSections={options.fullWidthSections}
+        icon={<Wrench aria-hidden="true" className="size-7" />}
+        intrinsicClassName={options.intrinsicClassName ?? "[contain-intrinsic-size:1px_420px]"}
+        key={options.cardKey ?? `technical:${item.id}`}
         label="Техническое"
+        media={
+          <EquipmentPhotoGallery
+            fallbackSrc={technicalEquipmentFallbackImage}
+            photos={item.photos ?? []}
+            title={item.fullName}
+          />
+        }
         primarySections={[
           {
             id: "technical-requisites",
             title: "Реквизиты записи",
-            icon: <Wrench aria-hidden="true" className="size-4" />,
+            icon: <ClipboardList aria-hidden="true" className="size-4" />,
             children: (
               <dl className="grid gap-3 sm:grid-cols-2">
                 {passportDetail("Заводской номер", item.factoryNumber, true)}
@@ -2043,8 +3018,9 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
               </p>
             ),
           },
+          ...(options.primaryExtraSections ?? []),
         ]}
-        secondarySections={secondarySections}
+        secondarySections={[...secondarySections, ...(options.secondarySections ?? [])]}
         subtitle={[item.manufacturer, item.classification, item.model].filter(Boolean).join(" • ")}
         title={item.fullName}
       />
@@ -2053,38 +3029,7 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
 
   function renderDiagnosticEquipmentCard(item: MeasuringInstrumentRecord) {
     const secondarySections: EquipmentPassportSection[] = [
-      {
-        id: "diagnostic-journal",
-        title: "Журнал",
-        icon: <ListChecks aria-hidden="true" className="size-4" />,
-        children: (
-          <>
-            {item.latestJournal ? (
-              <p className="break-words text-sm leading-6 text-foreground">
-                Последняя запись:{" "}
-                <span className="font-medium text-foreground">{formatOperationType(item.latestJournal.operationType)}</span> от{" "}
-                <span className="font-medium text-foreground">{formatDate(item.latestJournal.operationDate)}</span>, документ{" "}
-                <span className="font-medium text-foreground" translate="no">
-                  {item.latestJournal.documentNumber}
-                </span>
-                .
-              </p>
-            ) : (
-              <p className="break-words text-sm leading-6 text-muted-foreground">
-                После первой операции текущий статус и срок рассчитаются автоматически.
-              </p>
-            )}
-            <div className="flex flex-wrap gap-2">
-              <Badge size="sm" tone="neutral">
-                {item.journalCount ? `${item.journalCount} записей` : "журнал пуст"}
-              </Badge>
-              <Badge size="sm" tone="neutral">
-                {item.nextDueDate ? `Действует до ${formatDate(item.nextDueDate)}` : "срок не рассчитан"}
-              </Badge>
-            </div>
-          </>
-        ),
-      },
+      buildJournalSummarySection("diagnostic-journal", item.journalCount, item.nextDueDate, item.latestJournal),
     ];
 
     if (item.documentUrl) {
@@ -2139,85 +3084,44 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
       ),
     });
 
-    return (
-      <EquipmentPassportCard
-        actions={
-          canManageRegistry && !item.archivedAt ? (
-            <>
-              <Button
-                aria-label={`Редактировать диагностическое оборудование ${item.name}`}
-                leftIcon={<Pencil className="size-4" />}
-                onClick={() => openMeasuringInstrumentEditor(item)}
-                size="sm"
-                type="button"
-                variant="secondary"
-              >
-                Редактировать
-              </Button>
-              <Button
-                aria-label={`Архивировать диагностическое оборудование ${item.name}`}
-                leftIcon={<Archive className="size-4" />}
-                loading={isMutating}
-                onClick={() =>
-                  requestArchive(
-                    () => archiveMeasuringInstrument(item.id),
-                    "Не удалось архивировать диагностическое оборудование.",
-                    `диагностическое оборудование «${item.name}»`,
-                    "equipment-mi-archive-error",
-                  )
-                }
-                size="sm"
-                type="button"
-                variant="ghost"
-              >
-                Архивировать
-              </Button>
-            </>
-          ) : null
-        }
-        badges={
+    return renderDiagnosticPassportCard({
+      actions:
+        canManageRegistry && !item.archivedAt ? (
           <>
-            <Badge tone={statusToneMap[item.status]}>{statusLabelMap[item.status]}</Badge>
-            {item.archivedAt ? <Badge tone="neutral">В архиве</Badge> : null}
+            <Button
+              aria-label={`Редактировать диагностическое оборудование ${item.name}`}
+              leftIcon={<Pencil className="size-4" />}
+              onClick={() => openMeasuringInstrumentEditor(item)}
+              size="sm"
+              type="button"
+              variant="secondary"
+            >
+              Редактировать
+            </Button>
+            <Button
+              aria-label={`Архивировать диагностическое оборудование ${item.name}`}
+              leftIcon={<Archive className="size-4" />}
+              loading={isMutating}
+              onClick={() =>
+                requestArchive(
+                  () => archiveMeasuringInstrument(item.id),
+                  "Не удалось архивировать диагностическое оборудование.",
+                  `диагностическое оборудование «${item.name}»`,
+                  "equipment-mi-archive-error",
+                )
+              }
+              size="sm"
+              type="button"
+              variant="ghost"
+            >
+              Архивировать
+            </Button>
           </>
-        }
-        icon={<Gauge aria-hidden="true" className="size-5" />}
-        intrinsicClassName="[contain-intrinsic-size:1px_520px]"
-        key={`diagnostic:${item.id}`}
-        label="Диагностическое"
-        primarySections={[
-          {
-            id: "diagnostic-requisites",
-            title: "Реквизиты записи",
-            icon: <Wrench aria-hidden="true" className="size-4" />,
-            children: (
-              <dl className="grid gap-3 sm:grid-cols-2">
-                {passportDetail("ФИФ", item.registrationNumber, true)}
-                {passportDetail("Серийный номер", item.serialNumber, true)}
-                {passportDetail("Тип", item.instrumentType)}
-                {passportDetail("Модель", item.model)}
-                {passportDetail("Юнит", item.unit.name)}
-                {passportDetail("Связанное оборудование", item.equipment?.fullName)}
-                {item.archivedAt ? passportDetail("Архивирован", formatTimestamp(item.archivedAt)) : null}
-              </dl>
-            ),
-          },
-          {
-            id: "diagnostic-scope",
-            title: "Область учета",
-            icon: <MapPin aria-hidden="true" className="size-4" />,
-            children: (
-              <p className="mt-2 break-words text-sm leading-6 text-foreground">
-                {[item.unit.divisionName, item.unit.name].filter(Boolean).join(", ")}
-              </p>
-            ),
-          },
-        ]}
-        secondarySections={secondarySections}
-        subtitle={`${item.instrumentType} • ${item.model}`}
-        title={item.name}
-      />
-    );
+        ) : null,
+      cardKey: `diagnostic:${item.id}`,
+      item,
+      secondarySections,
+    });
   }
 
   function renderEquipmentListCard() {
@@ -2273,200 +3177,139 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
   }
 
   function renderUnifiedJournalPair() {
-    if (!selectedMeasuringInstrument) {
+    if (!selectedJournalTarget) {
       return (
         <EmptyState
-          detail="Диагностическое оборудование пока не зарегистрировано в текущей области доступа."
+          detail="Техническое и диагностическое оборудование пока не зарегистрировано в текущей области доступа."
           title="Журнал еще не выбран"
         />
       );
     }
 
-    const journalTimeline = loadingMeasuringInstrumentJournals ? (
+    const journalTimeline = loadingJournalEntries ? (
       <EmptyState detail="История операций оборудования загружается." title="Загрузка журнала" />
     ) : (
       <JournalTimeline
         emptyDetail="Для выбранного оборудования еще нет операций. После первой записи статус и срок станут производными."
         emptyTitle="Журнал пока пуст"
-        journals={measuringInstrumentJournals}
+        journals={journalEntries}
       />
     );
 
-    if (!canManageRegistry) {
-      return renderReadonlyJournalCard(journalTimeline);
+    if (selectedJournalTarget.kind === "technical") {
+      const item = selectedJournalTarget.record;
+
+      return renderTechnicalEquipmentCard(item, {
+        actions:
+          canManageRegistry && !item.archivedAt ? (
+            <Button
+              aria-label="Архивировать выбранное оборудование"
+              className="sm:col-span-2"
+              fullWidth
+              leftIcon={<Archive className="size-4" />}
+              loading={isMutating}
+              onClick={() =>
+                requestArchive(
+                  () => archiveEquipment(item.id),
+                  "Не удалось архивировать оборудование.",
+                  `оборудование «${item.fullName}»`,
+                  "equipment-selected-archive-error",
+                )
+              }
+              size="sm"
+              type="button"
+              variant="ghost"
+            >
+              Архивировать
+            </Button>
+        ) : null,
+        cardKey: `technical-journal:${item.id}`,
+        fullWidthSections: [
+          {
+            id: "technical-journal-history",
+            title: "Хронология операций",
+            icon: <ListChecks aria-hidden="true" className="size-4" />,
+            trailing: loadingJournalEntries ? undefined : journalEntries.length,
+            children: <div className="min-w-0">{journalTimeline}</div>,
+          },
+        ],
+        includeDefaultSecondary: false,
+        intrinsicClassName: "[contain-intrinsic-size:1px_760px]",
+      });
     }
 
-    const hasActiveJournalForm = !selectedMeasuringInstrument.archivedAt;
-    const journalFormCard = (
-      <Card className={hasActiveJournalForm ? "h-full min-h-0 gap-4" : "gap-4"} padding="md" tone="muted">
-        <div className="space-y-1">
-          <h3 className="text-lg font-semibold text-foreground">{selectedMeasuringInstrument.name}</h3>
-          <p className="text-sm text-muted-foreground">
-            Текущий статус: <span className="font-medium text-foreground">{statusLabelMap[selectedMeasuringInstrument.status]}</span>
-            {selectedMeasuringInstrument.nextDueDate
-              ? ` • действует до ${formatDate(selectedMeasuringInstrument.nextDueDate)}`
-              : " • срок пока не рассчитан"}
-          </p>
-        </div>
-        {hasActiveJournalForm ? (
-          <>
-            <div className="grid gap-4 md:grid-cols-2">
-              <SelectField
-                label="Тип операции"
-                name="equipment-journal-operation-type"
-                onChange={(event) =>
-                  setMeasuringInstrumentJournalForm((current) => ({
-                    ...current,
-                    operationType: event.target.value as JournalRecord["operationType"],
-                  }))
-                }
-                options={journalOperationOptions}
-                value={measuringInstrumentJournalForm.operationType}
-              />
-              <InputField
-                autoComplete={defaultAutoComplete("text")}
-                label="Дата операции"
-                name="equipment-journal-operation-date"
-                onChange={(event) =>
-                  setMeasuringInstrumentJournalForm((current) => ({ ...current, operationDate: event.target.value }))
-                }
-                type="date"
-                value={measuringInstrumentJournalForm.operationDate}
-              />
-              <InputField
-                autoComplete={defaultAutoComplete("text")}
-                label="Документ"
-                name="equipment-journal-document-number"
-                onChange={(event) =>
-                  setMeasuringInstrumentJournalForm((current) => ({ ...current, documentNumber: event.target.value }))
-                }
-                spellCheck={false}
-                translate="no"
-                value={measuringInstrumentJournalForm.documentNumber}
-              />
-              <InputField
-                autoComplete={defaultAutoComplete("text")}
-                label="Действует до"
-                name="equipment-journal-valid-until"
-                onChange={(event) =>
-                  setMeasuringInstrumentJournalForm((current) => ({ ...current, validUntil: event.target.value }))
-                }
-                type="date"
-                value={measuringInstrumentJournalForm.validUntil}
-              />
-              <InputField
-                autoComplete={defaultAutoComplete("text")}
-                label="Организация-исполнитель"
-                name="equipment-journal-executor"
-                onChange={(event) =>
-                  setMeasuringInstrumentJournalForm((current) => ({ ...current, executorOrganization: event.target.value }))
-                }
-                value={measuringInstrumentJournalForm.executorOrganization}
-              />
-              <InputField
-                autoComplete={defaultAutoComplete("url")}
-                label="Вложение / ссылка"
-                name="equipment-journal-attachment"
-                onChange={(event) =>
-                  setMeasuringInstrumentJournalForm((current) => ({ ...current, attachmentUrl: event.target.value }))
-                }
-                type="url"
-                value={measuringInstrumentJournalForm.attachmentUrl}
-              />
-            </div>
-            <TextareaField
-              label="Комментарий"
-              name="equipment-journal-comment"
-              onChange={(event) =>
-                setMeasuringInstrumentJournalForm((current) => ({ ...current, comment: event.target.value }))
-              }
-              value={measuringInstrumentJournalForm.comment}
-            />
-            <div className="flex flex-wrap gap-3">
-              <Button
-                loading={isMutating}
-                onClick={() =>
-                  runMutation(
-                    createMeasuringInstrumentJournal,
-                    "Не удалось добавить запись в журнал оборудования.",
-                    "equipment-journal-create-error",
-                  )
-                }
-                type="button"
-              >
-                Добавить запись журнала
-              </Button>
-              <Button
-                aria-label="Архивировать выбранное оборудование"
-                leftIcon={<Archive className="size-4" />}
-                loading={isMutating}
-                onClick={() =>
-                  requestArchive(
-                    () => archiveMeasuringInstrument(selectedMeasuringInstrument.id),
-                    "Не удалось архивировать диагностическое оборудование.",
-                    `диагностическое оборудование «${selectedMeasuringInstrument.name}»`,
-                    "equipment-selected-archive-error",
-                  )
-                }
-                size="sm"
-                type="button"
-                variant="ghost"
-              >
-                Архивировать
-              </Button>
-            </div>
-          </>
-        ) : (
-          <EmptyState
-            detail={
-              selectedMeasuringInstrument.archivedAt
-                ? "Архивированная карточка остается доступной для истории, но новые операции в нее не добавляются."
-                : "В текущей области доступа журнал можно только читать."
+    const selectedMeasuringInstrument = selectedJournalTarget.record;
+
+    return renderDiagnosticPassportCard({
+      actions:
+        canManageRegistry && !selectedMeasuringInstrument.archivedAt ? (
+          <Button
+            aria-label="Архивировать выбранное оборудование"
+            className="sm:col-span-2"
+            fullWidth
+            leftIcon={<Archive className="size-4" />}
+            loading={isMutating}
+            onClick={() =>
+              requestArchive(
+                () => archiveMeasuringInstrument(selectedMeasuringInstrument.id),
+                "Не удалось архивировать диагностическое оборудование.",
+                `диагностическое оборудование «${selectedMeasuringInstrument.name}»`,
+                "equipment-selected-archive-error",
+              )
             }
-            title="Редактирование скрыто"
-          />
-        )}
-      </Card>
-    );
-
-    const journalTimelineCard = (
-      <Card className={hasActiveJournalForm ? "h-full min-h-0 gap-4 overflow-hidden" : "gap-4"} padding="md" tone="muted">
-        <div className="space-y-1">
-          <h3 className="text-lg font-semibold text-foreground">Хронология операций</h3>
-        </div>
-        {hasActiveJournalForm ? (
-          <FormListScrollArea scrollMode="contained">{journalTimeline}</FormListScrollArea>
-        ) : (
-          journalTimeline
-        )}
-      </Card>
-    );
-
-    return hasActiveJournalForm ? (
-      <FormListSplitLayout form={journalFormCard} list={journalTimelineCard} />
-    ) : (
-      <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        {journalFormCard}
-        {journalTimelineCard}
-      </div>
-    );
+            size="sm"
+            type="button"
+            variant="ghost"
+          >
+            Архивировать
+          </Button>
+        ) : null,
+      fullWidthSections: [
+        {
+          id: "diagnostic-journal-history",
+          title: "Хронология операций",
+          icon: <ListChecks aria-hidden="true" className="size-4" />,
+          trailing: loadingJournalEntries ? undefined : journalEntries.length,
+          children: <div className="min-w-0">{journalTimeline}</div>,
+        },
+      ],
+      includeDueDate: true,
+      intrinsicClassName: "[contain-intrinsic-size:1px_760px]",
+      item: selectedMeasuringInstrument,
+    });
   }
 
   function renderUnifiedJournal() {
     return (
-      <IslandCard headingLevel={2} icon={<Cable aria-hidden="true" className="size-4" />} title="Журнал операций по оборудованию">
-        <div className="flex flex-wrap justify-end gap-3">
+      <IslandCard
+        action={
+          canCreateJournalEntry ? (
+            <button
+              aria-label="Добавить запись журнала"
+              onClick={openJournalCreateDialog}
+              title="Добавить запись журнала"
+              type="button"
+            >
+              <Plus aria-hidden="true" className="size-4" />
+            </button>
+          ) : null
+        }
+        headingLevel={2}
+        icon={<Cable aria-hidden="true" className="size-4" />}
+        title="Журнал операций по оборудованию"
+      >
+        <div className="flex flex-wrap justify-start gap-3">
           <div className="min-w-64">
             <SelectField
               label="Оборудование"
               name="selected-equipment-journal-record"
-              onChange={(event) => setSelectedMeasuringInstrumentId(event.target.value)}
-              options={measuringInstruments.map((item) => ({
-                label: `${item.name} • ${item.registrationNumber}`,
-                value: item.id,
+              onChange={(event) => setSelectedJournalTargetValue(event.target.value)}
+              options={journalTargets.map((item) => ({
+                label: item.label,
+                value: item.value,
               }))}
               placeholder="Выберите запись…"
-              value={selectedMeasuringInstrumentId}
+              value={selectedJournalTargetValue}
             />
           </div>
         </div>
@@ -2479,11 +3322,16 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
   return (
     <>
       {renderEquipmentCreateDialog()}
+      {renderJournalCreateDialog()}
       <EditRegistryDialog
         editor={editDialog}
         loading={isMutating}
-        onCancel={() => setEditDialog(null)}
+        onAddPhotoFiles={appendEditPhotoFiles}
+        onCancel={closeEditDialog}
         onChange={setEditDialog}
+        onMarkPhotoDeleted={markEditPhotoDeleted}
+        onRemovePhotoUpload={removeEditPhotoUpload}
+        onRestorePhotoDeleted={restoreEditPhotoDeleted}
         onSubmit={() => runMutation(updateEditedRecord, "Не удалось сохранить изменения.", "equipment-edit-error")}
         session={session}
       />
@@ -2495,9 +3343,9 @@ export function EquipmentRegistryWorkspace({ session, initialShowArchived }: Pro
       />
 
       <div
-        aria-hidden={createDialogOpen || archiveConfirmation || editDialog ? true : undefined}
+        aria-hidden={createDialogOpen || journalCreateDialogOpen || archiveConfirmation || editDialog ? true : undefined}
         className="grid min-w-0 gap-4"
-        inert={createDialogOpen || archiveConfirmation || editDialog ? true : undefined}
+        inert={createDialogOpen || journalCreateDialogOpen || archiveConfirmation || editDialog ? true : undefined}
       >
         {loadError ? (
           <div

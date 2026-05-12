@@ -1,4 +1,5 @@
 import { useId, type ComponentType, type HTMLAttributes } from "react";
+import Image from "next/image";
 import { PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
 import { Badge, Button } from "@/shared/ui";
 import { cn } from "@/shared/lib/cn";
@@ -17,9 +18,11 @@ export interface SidebarNavProps extends HTMLAttributes<HTMLElement> {
   footerItems?: readonly SidebarNavItem[];
   collapsed?: boolean;
   mobileOpen?: boolean;
+  brandLogoAlt?: string;
+  brandLogoSrc?: string;
   brandMark?: string;
-  metaLabel?: string;
-  metaTitle?: string;
+  metaLabel?: string | null;
+  metaTitle?: string | null;
   onCollapsedChange?: (collapsed: boolean) => void;
   onMobileOpenChange?: (mobileOpen: boolean) => void;
 }
@@ -67,6 +70,8 @@ function SidebarLink({
 
 export function SidebarNav({
   activeKey,
+  brandLogoAlt = "VRK",
+  brandLogoSrc,
   brandMark = "VRK",
   className,
   collapsed = false,
@@ -82,6 +87,7 @@ export function SidebarNav({
 }: SidebarNavProps) {
   const generatedId = useId();
   const navigationId = id ?? generatedId;
+  const brandLogo = brandLogoSrc ?? null;
 
   const handleCollapsedToggle = () => {
     onCollapsedChange?.(!collapsed);
@@ -121,14 +127,43 @@ export function SidebarNav({
       >
         <div className="flex items-center justify-between gap-3">
           <div className={cn("flex items-center gap-3", collapsed && "lg:justify-center")}>
-            <div className="flex size-11 items-center justify-center rounded-[var(--radius-lg)] bg-primary text-primary-foreground shadow-xs">
-              <span className="text-sm font-semibold tracking-[0.14em]">{brandMark}</span>
+            <div
+              className={cn(
+                "flex size-11 items-center justify-center rounded-[var(--radius-lg)] shadow-xs",
+                brandLogo
+                  ? "border border-border bg-card text-foreground"
+                  : "bg-primary text-primary-foreground",
+              )}
+            >
+              {brandLogo ? (
+                <Image
+                  alt={brandLogoAlt}
+                  className="size-10 rounded-[var(--radius-md)] object-contain"
+                  height={40}
+                  priority
+                  src={brandLogo}
+                  width={40}
+                />
+              ) : (
+                <span className="text-sm font-semibold tracking-[0.14em]">{brandMark}</span>
+              )}
             </div>
             <div className={cn("space-y-1", collapsed && "lg:hidden")}>
-              <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-                {metaLabel}
-              </p>
-              <p className="text-sm font-semibold text-foreground">{metaTitle}</p>
+              {metaLabel ? (
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                  {metaLabel}
+                </p>
+              ) : null}
+              {metaTitle ? (
+                <p
+                  className={cn(
+                    "font-semibold text-foreground",
+                    metaLabel ? "text-sm" : "text-lg leading-6",
+                  )}
+                >
+                  {metaTitle}
+                </p>
+              ) : null}
             </div>
           </div>
           <div className="flex items-center gap-2">

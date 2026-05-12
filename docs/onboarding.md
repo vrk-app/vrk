@@ -259,7 +259,7 @@ OBJECT_STORAGE_FORCE_PATH_STYLE=true
 - server-side runtime `apps/web` тоже должен получить тот же secret, чтобы `/register` мог проксировать `POST /api/v1/platform/organization-shells` через Next route handler;
 - secret используется только на server-side boundary и не должен попадать в browser-visible env или client bundle.
 
-Object storage env нужен для логотипов организаций. В compose baseline эти значения уже выставлены для backend и указывают на локальный MinIO-compatible сервис; при запуске backend вне compose используйте такие же значения или оставьте bucket/access keys пустыми, чтобы uploads возвращали controlled `object storage is unavailable`.
+Object storage env нужен для логотипов организаций и приватных фото оборудования. В compose baseline эти значения уже выставлены для backend и указывают на локальный MinIO-compatible сервис; при запуске backend вне compose используйте такие же значения или оставьте bucket/access keys пустыми, чтобы uploads возвращали controlled `object storage is unavailable`.
 
 ## 6. Установка backend tools
 

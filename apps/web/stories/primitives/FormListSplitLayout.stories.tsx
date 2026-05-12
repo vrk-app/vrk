@@ -10,6 +10,9 @@ import {
   TextareaField,
 } from "@/shared/ui";
 
+const bodyAlignmentRail =
+  "relative before:absolute before:bottom-0 before:left-0 before:top-0 before:w-px before:bg-accent/45";
+
 const rows = Array.from({ length: 14 }, (_, index) => ({
   detail: index % 2 === 0 ? "Ответственный контакт заполнен" : "Ожидает уточнения региона",
   name: `Производственная площадка ${String(index + 1).padStart(2, "0")}`,
@@ -46,7 +49,7 @@ function ListPreview({
 }) {
   return (
     <IslandCard
-      bodyClassName="min-h-0 flex-1"
+      bodyClassName={`min-h-0 flex-1 ${bodyAlignmentRail}`}
       className="h-full min-h-0 overflow-hidden"
       headingLevel={2}
       icon={<Building2 aria-hidden="true" className="size-4" />}

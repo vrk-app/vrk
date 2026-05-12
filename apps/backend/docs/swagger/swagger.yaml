@@ -661,6 +661,23 @@ definitions:
       scopeType:
         type: string
     type: object
+  equipment.CreateJournalRequest:
+    properties:
+      attachmentUrl:
+        type: string
+      comment:
+        type: string
+      documentNumber:
+        type: string
+      executorOrganization:
+        type: string
+      operationDate:
+        type: string
+      operationType:
+        type: string
+      validUntil:
+        type: string
+    type: object
   equipment.CreateRequest:
     properties:
       classification:
@@ -686,6 +703,25 @@ definitions:
       unitId:
         type: string
     type: object
+  equipment.EquipmentPhotoResponse:
+    properties:
+      contentType:
+        type: string
+      createdAt:
+        type: string
+      fileName:
+        type: string
+      id:
+        type: string
+      sizeBytes:
+        type: integer
+      sortOrder:
+        type: integer
+      updatedAt:
+        type: string
+      url:
+        type: string
+    type: object
   equipment.EquipmentResponse:
     properties:
       archivedAt:
@@ -706,6 +742,10 @@ definitions:
         type: string
       inventoryNumber:
         type: string
+      journalCount:
+        type: integer
+      latestJournal:
+        $ref: '#/definitions/equipment.JournalResponse'
       manufactureYear:
         type: integer
       manufacturer:
@@ -714,13 +754,40 @@ definitions:
         type: integer
       model:
         type: string
+      nextDueDate:
+        type: string
       organizationId:
         type: string
+      photos:
+        items:
+          $ref: '#/definitions/equipment.EquipmentPhotoResponse'
+        type: array
       status:
         type: string
       unit:
         $ref: '#/definitions/equipment.UnitSummary'
       updatedAt:
+        type: string
+    type: object
+  equipment.JournalResponse:
+    properties:
+      attachmentUrl:
+        type: string
+      comment:
+        type: string
+      createdAt:
+        type: string
+      documentNumber:
+        type: string
+      executorOrganization:
+        type: string
+      id:
+        type: string
+      operationDate:
+        type: string
+      operationType:
+        type: string
+      validUntil:
         type: string
     type: object
   equipment.Meta:
@@ -822,6 +889,25 @@ definitions:
       unitId:
         type: string
     type: object
+  measuringinstrument.EquipmentPhotoResponse:
+    properties:
+      contentType:
+        type: string
+      createdAt:
+        type: string
+      fileName:
+        type: string
+      id:
+        type: string
+      sizeBytes:
+        type: integer
+      sortOrder:
+        type: integer
+      updatedAt:
+        type: string
+      url:
+        type: string
+    type: object
   measuringinstrument.EquipmentSummary:
     properties:
       fullName:
@@ -895,6 +981,10 @@ definitions:
         type: string
       organizationId:
         type: string
+      photos:
+        items:
+          $ref: '#/definitions/measuringinstrument.EquipmentPhotoResponse'
+        type: array
       placementKind:
         type: string
       registrationNumber:
@@ -1086,6 +1176,33 @@ definitions:
         type: string
       shortName:
         type: string
+    type: object
+  photo.EquipmentPhotoResponse:
+    properties:
+      contentType:
+        type: string
+      createdAt:
+        type: string
+      fileName:
+        type: string
+      id:
+        type: string
+      sizeBytes:
+        type: integer
+      sortOrder:
+        type: integer
+      updatedAt:
+        type: string
+      url:
+        type: string
+    type: object
+  photo.Response:
+    properties:
+      data: {}
+      error:
+        type: string
+      success:
+        type: boolean
     type: object
   standard.CreateRequest:
     properties:
@@ -2301,6 +2418,228 @@ paths:
       summary: Archive equipment registry record
       tags:
       - equipment
+  /equipment/{id}/journals:
+    get:
+      description: Returns operation journal entries for one technical equipment record
+        visible inside the authenticated customer session scope.
+      parameters:
+      - description: Equipment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/equipment.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/equipment.JournalResponse'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/equipment.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/equipment.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/equipment.Response'
+      summary: List technical equipment journal
+      tags:
+      - equipment
+    post:
+      consumes:
+      - application/json
+      description: Appends one operation journal entry to a visible, non-archived
+        technical equipment record and updates its derived status.
+      parameters:
+      - description: Equipment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Journal payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/equipment.CreateJournalRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/equipment.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/equipment.JournalResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/equipment.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/equipment.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/equipment.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/equipment.Response'
+      summary: Create technical equipment journal entry
+      tags:
+      - equipment
+  /equipment/{id}/photos:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Stores one private photo for a visible non-archived technical equipment
+        record.
+      parameters:
+      - description: Equipment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Photo file
+        in: formData
+        name: photo
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/photo.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/photo.EquipmentPhotoResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/photo.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/photo.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/photo.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/photo.Response'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/photo.Response'
+      summary: Upload technical equipment photo
+      tags:
+      - equipment
+  /equipment/{id}/photos/{photoId}:
+    delete:
+      description: Deletes one private photo from a visible non-archived technical
+        equipment record.
+      parameters:
+      - description: Equipment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Photo ID
+        in: path
+        name: photoId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/photo.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/photo.EquipmentPhotoResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/photo.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/photo.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/photo.Response'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/photo.Response'
+      summary: Delete technical equipment photo
+      tags:
+      - equipment
+    get:
+      description: Streams one private photo for a visible technical equipment record.
+      parameters:
+      - description: Equipment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Photo ID
+        in: path
+        name: photoId
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/photo.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/photo.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/photo.Response'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/photo.Response'
+      summary: Stream technical equipment photo
+      tags:
+      - equipment
   /first-admin-invites/{token}:
     get:
       description: Opens the first-admin invite link before password setup.
@@ -2787,6 +3126,141 @@ paths:
           schema:
             $ref: '#/definitions/measuringinstrument.Response'
       summary: Create measuring instrument journal entry
+      tags:
+      - equipment
+  /measuring-instruments/{id}/photos:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Stores one private photo for a visible non-archived diagnostic
+        equipment record.
+      parameters:
+      - description: Measuring instrument ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Photo file
+        in: formData
+        name: photo
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/photo.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/photo.EquipmentPhotoResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/photo.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/photo.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/photo.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/photo.Response'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/photo.Response'
+      summary: Upload diagnostic equipment photo
+      tags:
+      - equipment
+  /measuring-instruments/{id}/photos/{photoId}:
+    delete:
+      description: Deletes one private photo from a visible non-archived diagnostic
+        equipment record.
+      parameters:
+      - description: Measuring instrument ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Photo ID
+        in: path
+        name: photoId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/photo.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/photo.EquipmentPhotoResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/photo.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/photo.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/photo.Response'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/photo.Response'
+      summary: Delete diagnostic equipment photo
+      tags:
+      - equipment
+    get:
+      description: Streams one private photo for a visible diagnostic equipment record.
+      parameters:
+      - description: Measuring instrument ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Photo ID
+        in: path
+        name: photoId
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/photo.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/photo.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/photo.Response'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/photo.Response'
+      summary: Stream diagnostic equipment photo
       tags:
       - equipment
   /measuring-instruments/{id}/standards:

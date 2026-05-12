@@ -175,9 +175,22 @@ body {
     border-radius: var(--radius-lg);
   }
 
+  .equipment-passport-media,
   .equipment-passport-main,
-  .equipment-passport-aside {
+  .equipment-passport-aside,
+  .equipment-passport-full {
     min-width: 0;
+  }
+
+  .equipment-passport-media {
+    display: flex;
+    border-bottom: 1px solid hsl(var(--border));
+    background: hsl(var(--card));
+  }
+
+  .equipment-passport-media > * {
+    flex: 1 1 auto;
+    width: 100%;
   }
 
   .equipment-passport-aside {
@@ -185,14 +198,34 @@ body {
     background: hsl(var(--muted) / 0.4);
   }
 
+  .equipment-passport-full {
+    border-top: 1px solid hsl(var(--border));
+    background: hsl(var(--card));
+  }
+
   @container (min-width: 760px) {
-    .equipment-passport-layout--split {
-      grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.75fr);
+    .equipment-passport-layout--with-media {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
     }
 
+    .equipment-passport-layout--split {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .equipment-passport-layout--with-media
+      > :not(.equipment-passport-full)
+      + :not(.equipment-passport-full) {
+      border-left: 1px solid hsl(var(--border));
+    }
+
+    .equipment-passport-full {
+      grid-column: 1 / -1;
+    }
+
+    .equipment-passport-layout--with-media .equipment-passport-media,
     .equipment-passport-layout--split .equipment-passport-aside {
       border-top: 0;
-      border-left: 1px solid hsl(var(--border));
+      border-bottom: 0;
     }
   }
 

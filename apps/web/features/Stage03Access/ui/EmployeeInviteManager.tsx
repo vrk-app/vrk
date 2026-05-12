@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { ArrowUpRight, Mail, MailX, Plus, ShieldCheck, UserRound } from "lucide-react";
+import { ArrowUpRight, Mail, MailX, Plus, UserRound } from "lucide-react";
 import {
   Badge,
   Button,
@@ -273,39 +273,34 @@ export function EmployeeInviteManager({ session }: Props) {
         bodyClassName="grid gap-5"
         dismissible={!isPending}
         footer={
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground">
-              Проверьте параметры доступа перед отправкой приглашения.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Button disabled={isPending} onClick={() => setInviteDialogOpen(false)} type="button" variant="secondary">
-                Отмена
-              </Button>
-              <Button
-                disabled={isPending}
-                onClick={() =>
-                  startTransition(() => {
-                    void handleCreateDraft({ keepOpen: true });
-                  })
-                }
-                type="button"
-                variant="secondary"
-              >
-                Создать и добавить ещё
-              </Button>
-              <Button
-                leftIcon={<Plus className="size-4" />}
-                loading={isPending}
-                onClick={() =>
-                  startTransition(() => {
-                    void handleCreateDraft();
-                  })
-                }
-                type="button"
-              >
-                Создать черновик приглашения
-              </Button>
-            </div>
+          <div className="flex flex-wrap justify-end gap-3">
+            <Button disabled={isPending} onClick={() => setInviteDialogOpen(false)} type="button" variant="secondary">
+              Отмена
+            </Button>
+            <Button
+              disabled={isPending}
+              onClick={() =>
+                startTransition(() => {
+                  void handleCreateDraft({ keepOpen: true });
+                })
+              }
+              type="button"
+              variant="secondary"
+            >
+              Создать и добавить ещё
+            </Button>
+            <Button
+              leftIcon={<Plus className="size-4" />}
+              loading={isPending}
+              onClick={() =>
+                startTransition(() => {
+                  void handleCreateDraft();
+                })
+              }
+              type="button"
+            >
+              Создать черновик приглашения
+            </Button>
           </div>
         }
         headerIcon={<UserRound aria-hidden="true" className="size-4" />}
@@ -328,6 +323,7 @@ export function EmployeeInviteManager({ session }: Props) {
               name="employeeName"
               onChange={(event) => setFullName(event.target.value)}
               placeholder="Например, Мария Кузнецова…"
+              required
               value={fullName}
             />
             <InputField
@@ -337,6 +333,7 @@ export function EmployeeInviteManager({ session }: Props) {
               name="employeeEmail"
               onChange={(event) => setEmail(event.target.value)}
               placeholder="Например, m.kuznetsova@vrk.local…"
+              required
               spellCheck={false}
               type="email"
               value={email}
@@ -346,6 +343,7 @@ export function EmployeeInviteManager({ session }: Props) {
               name="roleTemplate"
               onChange={(event) => setRoleTemplate(event.target.value as RoleTemplate)}
               options={roleTemplates}
+              required
               value={roleTemplate}
             />
             <div className="grid gap-4 md:grid-cols-2">
@@ -370,6 +368,7 @@ export function EmployeeInviteManager({ session }: Props) {
                     value: "unit",
                   },
                 ]}
+                required
                 value={scopeType}
               />
               <SelectField
@@ -378,20 +377,19 @@ export function EmployeeInviteManager({ session }: Props) {
                 name="scopeId"
                 onChange={(event) => setScopeId(event.target.value)}
                 options={scopeOptions[scopeType]}
+                required
                 value={scopeId}
               />
             </div>
-            <label className="grid gap-2.5">
-              <span className="text-sm font-medium text-foreground">Срок действия ссылки до</span>
-              <input
-                className="h-10 rounded-[var(--radius-md)] border border-input bg-card px-3.5 text-sm text-foreground shadow-xs outline-none transition-colors hover:border-border-strong focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-ring/15"
-                autoComplete="off"
-                name="expiresAt"
-                onChange={(event) => setExpiresAt(event.target.value)}
-                type="datetime-local"
-                value={expiresAt}
-              />
-            </label>
+            <InputField
+              autoComplete="off"
+              label="Срок действия ссылки до"
+              name="expiresAt"
+              onChange={(event) => setExpiresAt(event.target.value)}
+              required
+              type="datetime-local"
+              value={expiresAt}
+            />
           </div>
 
           {formError ? (
@@ -402,13 +400,6 @@ export function EmployeeInviteManager({ session }: Props) {
               {formError}
             </div>
           ) : null}
-
-          <div className="rounded-[var(--radius-lg)] bg-muted/70 px-4 py-3 text-sm leading-6 text-muted-foreground">
-            <div className="flex items-start gap-2">
-              <ShieldCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-accent" />
-              <p>Проверьте параметры доступа перед отправкой приглашения.</p>
-            </div>
-          </div>
       </Dialog>
 
       <IslandCard

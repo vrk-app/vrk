@@ -7,7 +7,6 @@ import {
   GitBranch,
   Image as ImageIcon,
   MapPinned,
-  Pencil,
   Plus,
   Save,
   Trash2,
@@ -822,6 +821,7 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
         <Tabs<TabKey>
           activeKey={activeTab}
           ariaLabel="Разделы управления организацией"
+          className="justify-self-start"
           items={visibleTabItems}
           onChange={setActiveTab}
         />
@@ -841,6 +841,7 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
                   name="organizationType"
                   onValueChange={updateProfilePropertyType}
                   options={organizationPropertyTypeOptions}
+                  required
                   value={profile.propertyType}
                 />
                 <InputField
@@ -849,6 +850,7 @@ export function CompanyStructureWorkspace({ initialSession }: Props) {
                   label="Наименование"
                   name="organizationName"
                   onChange={(event) => setProfile((current) => ({ ...current, name: event.target.value }))}
+                  required
                   value={profile.name}
                 />
                 <InputField
@@ -1129,6 +1131,7 @@ function StructureFormFields({
             name={`${namePrefix}Type`}
             onValueChange={(value) => update({ type: value })}
             options={unitTypeOptions}
+            required
             value={form.type}
           />
         ) : null}
@@ -1137,6 +1140,7 @@ function StructureFormFields({
           label="Наименование"
           name={`${namePrefix}Name`}
           onChange={(event) => update({ name: event.target.value })}
+          required
           value={form.name}
         />
         <InputField
@@ -1184,6 +1188,7 @@ function StructureFormFields({
             name={`${namePrefix}Parent`}
             onValueChange={(value) => update({ divisionId: value })}
             options={divisionOptions}
+            required
             value={form.divisionId}
           />
         ) : null}
@@ -1254,32 +1259,27 @@ function StructureCreateDialog({
       bodyClassName="grid gap-5"
       dismissible={!isPending}
       footer={
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">
-            {!canSubmit ? "Заполните обязательные поля перед созданием." : "Запись появится в текущей структуре после сохранения."}
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Button disabled={isPending} onClick={onCancel} type="button" variant="secondary">
-              Отмена
-            </Button>
-            <Button
-              disabled={!canSubmit || isPending}
-              onClick={() => (isUnit ? onUnitSubmit(true) : onDivisionSubmit(true))}
-              type="button"
-              variant="secondary"
-            >
-              Создать и добавить ещё
-            </Button>
-            <Button
-              disabled={!canSubmit}
-              leftIcon={<Plus className="size-4" />}
-              loading={isPending}
-              onClick={() => (isUnit ? onUnitSubmit(false) : onDivisionSubmit(false))}
-              type="button"
-            >
-              {submitLabel}
-            </Button>
-          </div>
+        <div className="flex flex-wrap justify-end gap-3">
+          <Button disabled={isPending} onClick={onCancel} type="button" variant="secondary">
+            Отмена
+          </Button>
+          <Button
+            disabled={!canSubmit || isPending}
+            onClick={() => (isUnit ? onUnitSubmit(true) : onDivisionSubmit(true))}
+            type="button"
+            variant="secondary"
+          >
+            Создать и добавить ещё
+          </Button>
+          <Button
+            disabled={!canSubmit}
+            leftIcon={<Plus className="size-4" />}
+            loading={isPending}
+            onClick={() => (isUnit ? onUnitSubmit(false) : onDivisionSubmit(false))}
+            type="button"
+          >
+            {submitLabel}
+          </Button>
         </div>
       }
       headerIcon={
@@ -1340,35 +1340,23 @@ function StructureEditDialog({
 
   return (
     <Dialog
-      badge={
-        <Badge icon={<Pencil className="size-4" />} tone="interactive">
-          Редактирование
-        </Badge>
-      }
       bodyClassName="grid gap-5"
       description={dialog.recordLabel}
       dismissible={!isPending}
       footer={
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">
-            {!canSubmit
-              ? "Заполните обязательные поля перед сохранением."
-              : "Изменения попадут в текущую структуру после сохранения."}
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Button disabled={isPending} onClick={onCancel} type="button" variant="secondary">
-              Отмена
-            </Button>
-            <Button
-              disabled={!canSubmit}
-              leftIcon={<Save className="size-4" />}
-              loading={isPending}
-              onClick={onSubmit}
-              type="button"
-            >
-              Сохранить изменения
-            </Button>
-          </div>
+        <div className="flex flex-wrap justify-end gap-3">
+          <Button disabled={isPending} onClick={onCancel} type="button" variant="secondary">
+            Отмена
+          </Button>
+          <Button
+            disabled={!canSubmit}
+            leftIcon={<Save className="size-4" />}
+            loading={isPending}
+            onClick={onSubmit}
+            type="button"
+          >
+            Сохранить изменения
+          </Button>
         </div>
       }
       onOpenChange={(open) => {

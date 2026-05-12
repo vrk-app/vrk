@@ -397,5 +397,40 @@
       ".agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-json-audit-2026-04-30.txt",
       ".agent/stages/03-identity-master-data/raw/slice-012-equipment-registry-declutter-harness-post-evidence-2026-04-30.txt"
     ]
+  },
+  {
+    "id": "stage03-technical-equipment-operation-journal-parity",
+    "category": "functional",
+    "description": "Correction slice: the unified /equipment operation journal works for technical equipment and diagnostic equipment / СИ, while standard journals and separate metrology modules remain out of target UI scope.",
+    "steps": [
+      "/equipment remains the unified customer equipment workspace with journal title Журнал операций по оборудованию",
+      "registry_metrology_journal_entries keeps its legacy name and subject_type accepts technical_equipment",
+      "Technical equipment journal List/Create requires visible scope, and Create requires manage_equipment",
+      "Archived technical and diagnostic equipment reject new journal mutations while preserving read-only journal history",
+      "Technical and diagnostic equipment status and nextDueDate derive from the latest applicable journal entry, with card-field fallback when no history exists",
+      "Standards/setup measures are not selectable journal subjects in the target UI, and contractor metrology plus a separate industry metrology module remain out of scope"
+    ],
+    "passes": true,
+    "evidence_refs": [
+      ".agent/stages/03-identity-master-data/evidence.json",
+      ".agent/stages/03-identity-master-data/evidence.md",
+      ".agent/stages/03-identity-master-data/problems.md",
+      ".agent/stages/03-identity-master-data/progress.md",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-backend-go-test-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-backend-targeted-test-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-doc-stale-audit-final-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-equipment-smoke-rerun4-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-selector-source-audit-final-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-standard-journal-route-audit-final-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-ui-review-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-web-lint-final-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/raw/technical-equipment-operation-journal-web-typecheck-final-2026-05-12.txt",
+      ".agent/stages/03-identity-master-data/sprint_contract.md",
+      ".agent/stages/03-identity-master-data/verdict.json",
+      "docs/PRD-MVP.md",
+      "docs/architecture/frontend-architecture.md",
+      "docs/architecture/identity-master-data.md",
+      "docs/roadmap.md"
+    ]
   }
 ]

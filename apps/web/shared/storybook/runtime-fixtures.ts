@@ -3,6 +3,7 @@ import type {
   ContractorOption,
   EmployeeAccessResponse,
   EmployeeInviteResponse,
+  EquipmentPhotoRecord,
   EquipmentRecord,
   JournalRecord,
   MeasuringInstrumentRecord,
@@ -13,6 +14,31 @@ import type {
 
 export function cloneFixture<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
+}
+
+const equipmentIllustrationBaseUrl = "/brand/illustrations/equipment";
+
+function equipmentPhoto(
+  id: string,
+  url: string,
+  fileName: string,
+  sortOrder: number,
+  sizeBytes: number,
+): EquipmentPhotoRecord {
+  return {
+    id,
+    fileName,
+    contentType: "image/png",
+    sizeBytes,
+    sortOrder,
+    url,
+    createdAt: "2026-04-20T09:00:00.000Z",
+    updatedAt: "2026-04-20T09:00:00.000Z",
+  };
+}
+
+function equipmentStubPhoto(id: string, fileName: string, sortOrder: number, sizeBytes: number): EquipmentPhotoRecord {
+  return equipmentPhoto(id, `${equipmentIllustrationBaseUrl}/${fileName}`, fileName, sortOrder, sizeBytes);
 }
 
 export const runtimeSession: SessionSummaryResponse = {
@@ -584,6 +610,23 @@ export const equipmentRecords: EquipmentRecord[] = [
     status: "active",
     comment: "Основной агрегат участка.",
     documentUrl: "https://example.local/equipment/pt-400.pdf",
+    photos: [
+      equipmentStubPhoto("photo-equipment-001-a", "technical-wagon-lift.png", 0, 1366117),
+      equipmentStubPhoto("photo-equipment-001-b", "technical-hydraulic-press.png", 1, 1075028),
+      equipmentStubPhoto("photo-equipment-001-c", "technical-wheelset-stand.png", 2, 1299088),
+    ],
+    journalCount: 1,
+    nextDueDate: "2027-03-12",
+    latestJournal: {
+      id: "journal-technical-001",
+      operationType: "maintenance",
+      operationDate: "2026-03-12",
+      documentNumber: "ТО-2026-114",
+      validUntil: "2027-03-12",
+      executorOrganization: "Служба главного механика",
+      comment: "Плановое обслуживание перед сезонной нагрузкой.",
+      createdAt: "2026-03-12T10:00:00.000Z",
+    },
     measuringInstrumentCount: 1,
     createdAt: "2026-01-15T09:00:00.000Z",
     updatedAt: "2026-04-20T09:00:00.000Z",
@@ -605,6 +648,8 @@ export const equipmentRecords: EquipmentRecord[] = [
     inventoryNumber: "EQ-2040",
     manufactureYear: 2020,
     status: "inactive",
+    photos: [],
+    journalCount: 0,
     measuringInstrumentCount: 0,
     archivedAt: "2026-04-18T09:00:00.000Z",
     createdAt: "2026-01-20T09:00:00.000Z",
@@ -703,6 +748,11 @@ export const measuringInstrumentRecords: MeasuringInstrumentRecord[] = [
     serialNumber: "RM80-8120",
     status: "active",
     placementKind: "built_in",
+    photos: [
+      equipmentStubPhoto("photo-mi-001-a", "diagnostic-ultrasonic-detector.png", 0, 1204777),
+      equipmentStubPhoto("photo-mi-001-b", "diagnostic-calibration-bench.png", 1, 1499579),
+      equipmentStubPhoto("photo-mi-001-c", "diagnostic-wheel-geometry-gauge.png", 2, 1099185),
+    ],
     standards: [
       {
         id: "standard-001",
@@ -736,6 +786,7 @@ export const measuringInstrumentRecords: MeasuringInstrumentRecord[] = [
     serialNumber: "MK160-450",
     status: "inactive",
     placementKind: "standalone",
+    photos: [],
     standards: [],
     journalCount: 0,
     archivedAt: "2026-04-12T09:00:00.000Z",

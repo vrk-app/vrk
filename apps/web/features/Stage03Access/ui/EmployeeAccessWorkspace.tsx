@@ -308,6 +308,7 @@ export function EmployeeAccessWorkspace({ session }: Props) {
                             )
                           }
                           options={roleTemplates}
+                          required
                           value={editForm.roleTemplate}
                         />
                         <SelectField
@@ -336,6 +337,7 @@ export function EmployeeAccessWorkspace({ session }: Props) {
                               value: "unit",
                             },
                           ]}
+                          required
                           value={editForm.scopeType}
                         />
                         <SelectField
@@ -346,6 +348,7 @@ export function EmployeeAccessWorkspace({ session }: Props) {
                             setEditForm((current) => (current ? { ...current, scopeId: event.target.value } : current))
                           }
                           options={scopeOptions[editForm.scopeType]}
+                          required
                           value={editForm.scopeId}
                         />
                         <div className="flex items-end gap-2">

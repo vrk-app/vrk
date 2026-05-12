@@ -1,0 +1,8 @@
+## apps/web/features/Stage03Equipment/ui/EquipmentRegistryWorkspace.tsx
+✓ pass; private-stream and blob-preview images keep <img> with explicit width/height, accessible alt text, keyboard thumbnail buttons, visible focus, and labeled file picker trigger.
+
+## apps/web/app/api/equipment/photo-proxy.ts
+✓ pass; server route helper only, no UI findings.
+
+## apps/web/stories/equipment/EquipmentRegistryWorkspace.stories.tsx
+✓ pass; stories cover single photo, gallery, no-photo fallback, and edit pending delete/upload states.

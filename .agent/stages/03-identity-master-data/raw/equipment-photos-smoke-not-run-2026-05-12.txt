@@ -1,0 +1,5 @@
+Probe: POST /api/v1/equipment/00000000-0000-0000-0000-000000000000/photos returned HTTP 404
+stderr:
+
+body:
+404 page not found

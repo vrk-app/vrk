@@ -1,0 +1,2 @@
+ Container vrk-db-1  Running
+18/u technical_equipment_journal_subject (22.998958ms)

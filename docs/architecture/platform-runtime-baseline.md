@@ -40,6 +40,7 @@
 - полный Stage 03 master-data fixture за пределами локального demo organization graph;
 - live request lifecycle из `Stage 04`;
 - Stage 06 offline engine для field-контура.
+- финальная векторная айдентика: текущие web/field PNG-логотипы являются зафиксированными рабочими brand directions для runtime и PWA icons, но не заменяют будущую production-branding векторизацию.
 
 ## Контейнерный контур
 
@@ -126,3 +127,4 @@ flowchart LR
 - Внешний порт PostgreSQL не пробрасывается, потому что Stage 02 smoke не требует прямого host-доступа к контейнерной БД.
 - `docker compose up --wait` фиксирует container health, но Stage 02 proof опирается на host-facing contract; поэтому `make smoke` сам коротко дожидается доступности `localhost:18080`, `localhost:3100` и `localhost:3102`, а затем выполняет обычные строгие assertions.
 - `apps/field` пока intentionally narrow: manifest-backed shell + sync boundaries. Offline storage, retry queue state machine и conflict flows остаются позднее.
+- `apps/web` runtime icon/manifest использует брендовый вариант 2 `Технический реестр`; `apps/field` manifest-backed shell использует вариант 5 `Полевой синк`.

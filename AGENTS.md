@@ -47,6 +47,16 @@ Apply these rules:
 - If `localhost:3100` is not available and the prompt did not explicitly ask to start a server, do not start `next dev`, `pnpm dev`, `storybook dev`, `python -m http.server`, or another preview server. Report that runtime verification was not run, or ask for permission when the check is important.
 - Short-lived build, lint, typecheck, and smoke commands are allowed when they exit on their own. Long-running preview servers are not.
 
+## Incubator Publish Policy
+
+- For publishing, merging, deploy monitoring, or runtime verification of changes into `Incubator`, invoke `$vrk-incubator-publish`.
+- Canonical runbook: `docs/architecture/yandex-cloud-incubator-deployment.md`.
+- Use a fresh `codex/...` branch for follow-up publish work when the current branch already backed a squash-merged PR.
+- Before opening an Incubator PR, run the publish preflight and duplicate-diff guard from `.agents/skills/vrk-incubator-publish/scripts/`.
+- Before merging into `Incubator`, verify that PR checks are green and the Incubator MDB preflight is not red.
+- After merge, wait for both `platform-baseline` and `incubator-deploy` on the new `Incubator` SHA, then run direct runtime health checks.
+- If publish belongs to a stage, write compact publish evidence to `.agent/stages/<stage-id>/publish.json`; stage evidence alone does not prove deployment readiness.
+
 ## UI Source Of Truth
 
 Before generating or refactoring UI, Storybook stories, layout, forms, tables, charts, and domain UI components, read:

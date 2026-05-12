@@ -152,7 +152,7 @@
 ### Не входит в этот roadmap MVP
 
 - юридически значимая ЭП / КЭП
-- самостоятельный отраслевой метрологический модуль вне встроенных реестров и журналов
+- самостоятельный отраслевой метрологический модуль вне встроенного customer-side contour диагностического оборудования, комплектов эталонов и журнала операций
 - оборудование подрядчика и его метрологическое оборудование в customer-side master-data MVP
 - тендер между несколькими подрядчиками
 - несколько подрядчиков внутри одной заявки
@@ -378,9 +378,9 @@
 - contractor/customer relation layer
 - contracts registry
 - contract status baseline `inactive / active / expired` для customer-admin contour
-- equipment registry with a split between technological equipment and customer diagnostic equipment / measuring instruments
+- equipment registry with a split between technological equipment and customer diagnostic equipment / measuring instruments, including optional private photos
 - standards / setup measures attached to customer diagnostic equipment
-- unified equipment operation journal, URL/reference attachment baseline и derived status for diagnostic equipment
+- unified equipment operation journal, URL/reference attachment baseline и derived status for technological and diagnostic equipment
 - historical bounded ownership-scope labels for standards remain implementation floor only; target correction moves standards under diagnostic equipment while standalone org-scoped dictionary/local-draft CRUD остается вне proven Stage 03 contract
 - archive baseline для организаций, дивизионов, юнитов, пользователей, договоров, оборудования, СИ и эталонов
 - audit baseline для auth + CRUD changes
@@ -390,7 +390,7 @@
   - division / unit selectors и scoped singular-session landing без multi-workspace picker
   - people, memberships, invites и access grant screens
   - contracts lists, cards and routing surfaces на публичном `/contracts` contour
-- one `/equipment` workspace with unified create form, type selector, equipment cards, owned standards inside diagnostic cards, add/delete kit management from the diagnostic edit modal, unified equipment journal, compatibility-only old tab params, and explicit archive visibility state
+- one `/equipment` workspace with unified create form, type selector, equipment cards, private product-gallery, owned standards inside diagnostic cards, add/delete kit management from the diagnostic edit modal, unified equipment journal, compatibility-only old tab params, and explicit archive visibility state
 
 ### Что обязательно доказать
 
@@ -411,7 +411,7 @@
 - нельзя создать рабочий request flow без зарегистрированного оборудования
 - технологическое оборудование и диагностическое оборудование заказчика (`СИ`) создаются через единую форму с типом, а эталоны/установочные меры существуют только как owned children диагностического оборудования
 - `/equipment` остается canonical public contour для equipment/master-data surface, а narrower scopes видят только read-only разрешенный subtree
-- текущий метрологический статус и ближайшая дата диагностического оборудования рассчитываются из последней применимой записи единого журнала операций по оборудованию, а не только из denormalized полей карточки
+- текущий статус и ближайшая дата технологического и диагностического оборудования рассчитываются из последней применимой записи единого журнала операций по оборудованию, а при пустой истории остаются fallback из карточки
 - у одного диагностического оборудования может быть `0..N` эталонов/установочных мер; эталон в MVP принадлежит комплекту конкретного диагностического оборудования, а не свободно переиспользуется между несколькими СИ
 - договор ограничивает допустимого подрядчика, а routing eligibility считается только для `active` + in-window contract
 - archive применяется вместо physical delete для ключевых master-data сущностей, archived rows скрыты из default active lists и открываются только через explicit archive state
@@ -435,7 +435,7 @@
 
 - customer admin активируется по invite и управляет организацией, дивизионами и юнитами из постоянного `/company` UI, включая first-empty state и повторное добавление структурных узлов
 - сотрудники приглашаются по email и получают только scoped access своего уровня
-- contracts + unified equipment workspace, diagnostic equipment with owned standards, journal и archive flows работают end-to-end
+- contracts + unified equipment workspace, technical and diagnostic equipment with private photos, owned standards, journal и archive flows работают end-to-end
 - contractor user видит только свой релевантный контур в рамках договоров и выданных грантов
 - audit trail фиксирует критичные действия
 - seeded demo data пригодны для Stage 04

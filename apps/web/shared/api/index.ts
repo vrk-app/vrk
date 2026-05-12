@@ -50,9 +50,11 @@ export {
   type WorkType,
 } from "./contracts";
 export {
+  fetchEquipmentJournals,
   fetchEquipmentRegistry,
   fetchMeasuringInstrumentJournals,
   fetchMeasuringInstrumentRegistry,
+  type EquipmentPhotoRecord,
   type EquipmentRecord,
   type JournalRecord,
   type LinkedStandardRecord,

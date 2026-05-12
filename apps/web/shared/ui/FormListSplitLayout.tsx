@@ -116,8 +116,8 @@ export function FormListScrollArea({ className, scrollMode = "page", ...props }:
   return (
     <div
       className={cn(
-        "min-h-0 flex-1 overflow-y-visible pr-0 xl:pr-1",
-        scrollMode === "contained" && "xl:overflow-y-auto xl:overscroll-auto",
+        "min-h-0 flex-1 overflow-y-visible pr-0",
+        scrollMode === "contained" && "xl:overflow-y-auto xl:overscroll-auto xl:pr-1",
         className,
       )}
       {...props}

@@ -60,24 +60,61 @@ type UnitSummary struct {
 	DivisionName *string `json:"divisionName,omitempty"`
 }
 
+type EquipmentPhotoResponse struct {
+	ID          string `json:"id"`
+	FileName    string `json:"fileName"`
+	ContentType string `json:"contentType"`
+	SizeBytes   int64  `json:"sizeBytes"`
+	SortOrder   int    `json:"sortOrder"`
+	URL         string `json:"url"`
+	CreatedAt   string `json:"createdAt"`
+	UpdatedAt   string `json:"updatedAt"`
+}
+
+type CreateJournalRequest struct {
+	OperationType        string  `json:"operationType"`
+	OperationDate        string  `json:"operationDate"`
+	DocumentNumber       string  `json:"documentNumber"`
+	ValidUntil           *string `json:"validUntil,omitempty"`
+	ExecutorOrganization string  `json:"executorOrganization"`
+	AttachmentURL        *string `json:"attachmentUrl,omitempty"`
+	Comment              *string `json:"comment,omitempty"`
+}
+
+type JournalResponse struct {
+	ID                   string  `json:"id"`
+	OperationType        string  `json:"operationType"`
+	OperationDate        string  `json:"operationDate"`
+	DocumentNumber       string  `json:"documentNumber"`
+	ValidUntil           *string `json:"validUntil,omitempty"`
+	ExecutorOrganization string  `json:"executorOrganization"`
+	AttachmentURL        *string `json:"attachmentUrl,omitempty"`
+	Comment              *string `json:"comment,omitempty"`
+	CreatedAt            string  `json:"createdAt"`
+}
+
 type EquipmentResponse struct {
-	ID                       string      `json:"id"`
-	OrganizationID           string      `json:"organizationId"`
-	Unit                     UnitSummary `json:"unit"`
-	Manufacturer             string      `json:"manufacturer"`
-	Classification           string      `json:"classification"`
-	Model                    string      `json:"model"`
-	FullName                 string      `json:"fullName"`
-	FactoryNumber            string      `json:"factoryNumber"`
-	InventoryNumber          *string     `json:"inventoryNumber,omitempty"`
-	ManufactureYear          int         `json:"manufactureYear"`
-	Status                   string      `json:"status"`
-	Comment                  *string     `json:"comment,omitempty"`
-	DocumentURL              *string     `json:"documentUrl,omitempty"`
-	MeasuringInstrumentCount int         `json:"measuringInstrumentCount"`
-	ArchivedAt               *string     `json:"archivedAt,omitempty"`
-	CreatedAt                string      `json:"createdAt"`
-	UpdatedAt                string      `json:"updatedAt"`
+	ID                       string                   `json:"id"`
+	OrganizationID           string                   `json:"organizationId"`
+	Unit                     UnitSummary              `json:"unit"`
+	Manufacturer             string                   `json:"manufacturer"`
+	Classification           string                   `json:"classification"`
+	Model                    string                   `json:"model"`
+	FullName                 string                   `json:"fullName"`
+	FactoryNumber            string                   `json:"factoryNumber"`
+	InventoryNumber          *string                  `json:"inventoryNumber,omitempty"`
+	ManufactureYear          int                      `json:"manufactureYear"`
+	Status                   string                   `json:"status"`
+	Comment                  *string                  `json:"comment,omitempty"`
+	DocumentURL              *string                  `json:"documentUrl,omitempty"`
+	Photos                   []EquipmentPhotoResponse `json:"photos"`
+	JournalCount             int                      `json:"journalCount"`
+	NextDueDate              *string                  `json:"nextDueDate,omitempty"`
+	LatestJournal            *JournalResponse         `json:"latestJournal,omitempty"`
+	MeasuringInstrumentCount int                      `json:"measuringInstrumentCount"`
+	ArchivedAt               *string                  `json:"archivedAt,omitempty"`
+	CreatedAt                string                   `json:"createdAt"`
+	UpdatedAt                string                   `json:"updatedAt"`
 }
 
 type Meta struct {

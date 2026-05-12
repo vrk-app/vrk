@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
+import { expect, within } from "@storybook/test";
+import { WEB_BRAND_ALT, WEB_BRAND_COMPACT_MARK_SRC } from "@/shared/config/brand";
 import { SHELL_FOOTER_ITEMS, SHELL_NAV_ITEMS } from "@/shared/storybook/fixtures";
 import { Button } from "@/shared/ui";
 import { SidebarNav, type SidebarNavProps } from "@/widgets/OperatorShell";
@@ -85,6 +87,10 @@ const meta = {
     items: SHELL_NAV_ITEMS,
     footerItems: SHELL_FOOTER_ITEMS,
     activeKey: "dashboard",
+    brandLogoAlt: WEB_BRAND_ALT,
+    brandLogoSrc: WEB_BRAND_COMPACT_MARK_SRC,
+    metaLabel: null,
+    metaTitle: "VRK",
   },
   render: (args) => <SidebarNavPreview {...args} />,
 } satisfies Meta<typeof SidebarNav>;
@@ -93,7 +99,16 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {};
+export const Default: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    const brandTitle = await canvas.findByText("VRK");
+    await expect(brandTitle).toBeVisible();
+    await expect(brandTitle).toHaveClass("text-lg");
+    await expect(canvas.queryByText("Рабочая область")).toBeNull();
+  },
+};
 
 export const ActiveRequests: Story = {
   args: {

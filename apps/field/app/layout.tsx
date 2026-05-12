@@ -15,6 +15,14 @@ const jetBrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "VRK Field Scaffold",
   description: "PWA-first field engineer scaffold for the Stage 02 platform baseline",
+  icons: {
+    icon: [
+      { url: "/brand/app-icons/vrk-field-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/brand/app-icons/vrk-field-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [{ url: "/brand/app-icons/vrk-field-180.png", sizes: "180x180", type: "image/png" }],
+  },
+  manifest: "/manifest.webmanifest",
 };
 
 export default function RootLayout({

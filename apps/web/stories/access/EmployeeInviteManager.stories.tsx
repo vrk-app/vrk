@@ -55,6 +55,7 @@ export const WithInvites: Story = {
     const dialog = await body.findByRole("dialog", { name: "Пригласить сотрудника" });
     await expect(dialog).toBeVisible();
     await expect(within(dialog).getByLabelText("Email приглашения")).toBeVisible();
+    await expect(within(dialog).queryByText("Проверьте параметры доступа перед отправкой приглашения.")).toBeNull();
   },
 };
 

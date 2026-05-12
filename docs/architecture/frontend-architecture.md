@@ -1,7 +1,7 @@
 # Архитектура фронтенда и практики разработки
 
 Статус: accepted baseline  
-Обновлено: 2026-05-11
+Обновлено: 2026-05-12
 
 ## Назначение
 
@@ -90,8 +90,9 @@ flowchart LR
 
 - анонимный пользователь все еще видит Stage 02 shell на `/company`, пока у него нет сессии;
 - платформенный админ выпускает invite через `/register`;
-- historical slice-001 implementation проводит приглашенного администратора по пути `/register/[token] -> /company/setup -> /company`;
+- historical slice-001 implementation проводил приглашенного администратора по пути `/register/[token] -> /company/setup -> /company`;
 - target correction от 2026-04-29 заменяет этот одноразовый wizard на путь `/register/[token] -> /company`, где первый и последующие дивизионы и юниты создаются через organization management UI;
+- текущий `/company/setup` является redirect-only compatibility route: он не рендерит `LaunchWizardForm`, а старый backend `/launch-wizard` остается compatibility API, не целевой UX;
 - `/company` разделяет semantics поля `Тип`: профиль организации показывает legal-form selector `ООО` / `ПАО` / `НАО` / `ИП`, дивизион не показывает type selector, а юнит сохраняет operational type selector `ВРД` / `ВРЗ` / `ВУ` / `ВРП`;
 - `/company` показывает optional requisites и логотип; логотип загружается через `app/api/company/logo`, а browser получает только authenticated proxy URL, не S3 object key;
 - `/company` держит вкладки `Дивизионы` и `Юниты` как list-first поверхности: реестр занимает полную ширину, create action живет в header/empty state списка и открывает отдельный Dialog; edit actions не подставляют значения в create forms;
@@ -193,13 +194,15 @@ Target `/equipment` frontend contract:
 - customer users попадают в один `EquipmentRegistryWorkspace`;
 - customer admins с `manage_equipment` получают create/edit/archive/journal controls внутри visible scope/subtree;
 - read-only роли видят single-column scope-filtered registry и journal history без create/edit/archive placeholders;
-- mutation surfaces (`Добавить оборудование` create Dialog, edit/archive actions, journal entry form) рендерятся только при `manage_equipment`;
+- mutation surfaces (`Добавить оборудование` create Dialog, edit/archive actions, journal entry create Dialog) рендерятся только при `manage_equipment`;
+- equipment cards include feature-local product-gallery: persisted private photos stream through Next proxy routes, while missing/broken photos fall back to public type-specific equipment illustrations;
 - manage UI показывает две верхнеуровневые client-side вкладки на том же route:
   - `Оборудование` как default tab с surface `Оборудование в учете`;
   - create action `Добавить оборудование`, который открывает Dialog `Новое оборудование` с типом `Техническое` / `Диагностическое`;
   - diagnostic equipment card with owned standards inside the card;
   - diagnostic edit modal with add-on-save and hard-delete-on-save controls for owned standards;
-  - `Журнал операций` как separate tab с surface `Журнал операций по оборудованию`.
+  - `Журнал операций` как separate tab с surface `Журнал операций по оборудованию`;
+  - create action `Добавить запись журнала`, который открывает Dialog `Новая запись журнала` с выбором активного технического или диагностического оборудования.
 
 ```mermaid
 flowchart LR
@@ -209,12 +212,17 @@ flowchart LR
     T -->|"Оборудование"| H["Оборудование в учете"]
     T -->|"Журнал операций"| K["Журнал операций по оборудованию"]
     H --> D["Add equipment action<br/>create Dialog"]
+    K --> N["Add journal entry action<br/>create Dialog"]
     D --> E{"Тип оборудования"}
     E -->|"Техническое"| F["technical payload"]
     E -->|"Диагностическое"| G["diagnostic payload<br/>owned standards 0..N"]
     H --> I["technical cards"]
     H --> J["diagnostic cards<br/>standards inside"]
     J --> M["edit modal<br/>add / hard-delete standards on save"]
+    K --> O["journal selector<br/>technical + diagnostic"]
+    O --> P{"selected record type"}
+    P -->|"technical"| Q["/api/equipment/{id}/journals"]
+    P -->|"diagnostic"| R["/api/equipment/measuring-instruments/{id}/journals"]
     C --> L["archive visibility<br/>shared control"]
 ```
 
@@ -226,11 +234,12 @@ The frontend may continue using existing Next proxy routes while the backend mig
 
 - technical equipment can still map to `/api/equipment`;
 - diagnostic equipment may still map to `/api/equipment/measuring-instruments` as implementation detail;
+- private equipment photos map to `/api/equipment/{id}/photos/*` and `/api/equipment/measuring-instruments/{id}/photos/*`; upload/delete are available only for `manage_equipment` on non-archived records, while visible records can stream persisted photos;
 - standards are created/viewed only through diagnostic equipment context in the UI;
 - customer admins can add new owned standards and physically delete existing owned standards from the diagnostic equipment edit modal; these changes are queued locally until `Сохранить изменения`;
 - standard journals are not exposed in the target UI;
-- unified equipment journal uses the diagnostic/equipment journal endpoint selected by the chosen equipment record;
-- edit/archive controls and journal mutation forms stay hidden for archived records and hidden from sessions without `manage_equipment`;
+- unified equipment journal selector includes technical and diagnostic equipment only, and uses `/api/equipment/{id}/journals` for technical records or `/api/equipment/measuring-instruments/{id}/journals` for diagnostic records;
+- edit/archive controls and journal entry create Dialog stay hidden for archived records and hidden from sessions without `manage_equipment`;
 - data fetching keeps pagination `meta` and `includeArchived=true` only when archive visibility is explicit;
 - active relationship controls must never surface archived records or reusable standards.
 
@@ -256,8 +265,20 @@ flowchart LR
 - есть manifest-backed shell и mobile-first layout;
 - есть явные API/sync boundaries;
 - нет live offline engine, draft storage и conflict resolution.
+- брендовый знак field-контура зафиксирован как вариант 5 `Полевой синк`; он используется в `apps/field` metadata/manifest и shell header, чтобы будущий мобильный PWA отличался от основного web workspace.
 
 Для platform/runtime orchestration см. `docs/architecture/platform-runtime-baseline.md`.
+
+### 1.4. Brand asset boundary
+
+Для runtime surfaces действует раздельный брендовый выбор:
+
+- `apps/web` использует вариант 2 `Технический реестр` для текущего веб-приложения управления компанией, оборудованием и учетными данными;
+- `apps/field` использует вариант 5 `Полевой синк` для мобильного инженерного PWA.
+
+Канонический UI source of truth для этих asset decisions — `docs/design/serviceops-design-system.md`. Product code не должен заново выбирать знак по месту: новые metadata, manifest, sidebar/header и auth/onboarding surfaces должны переиспользовать соответствующие `brand/app-icons` пути своего приложения.
+
+Asset class тоже является частью контракта: padded app/PWA icons используются для manifest, metadata, favicon и OS surfaces; compact UI mark используется для 36–44px runtime slots вроде sidebar/header и auth badges. Это сохраняет тот же web logo option 2, но не заставляет интерфейс показывать manifest icon как маленькую пиктограмму внутри дополнительной UI-плашки.
 
 ## 2. Архитектурный каркас: Adapted FSD для `apps/web`
 

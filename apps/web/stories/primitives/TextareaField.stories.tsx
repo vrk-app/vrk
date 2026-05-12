@@ -47,6 +47,15 @@ export const WithHint: Story = {
   },
 };
 
+export const Required: Story = {
+  args: {
+    label: "Метрологические характеристики",
+    name: "required-characteristics",
+    placeholder: "Диапазон, точность, условия применения…",
+    required: true,
+  },
+};
+
 export const WithCounter: Story = {
   args: {
     defaultValue: "Проверить документ перед архивированием.",

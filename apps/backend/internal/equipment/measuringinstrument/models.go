@@ -1,6 +1,10 @@
 package measuringinstrument
 
-import "time"
+import (
+	"time"
+
+	equipmentphoto "backend/internal/equipment/photo"
+)
 
 type LinkedStandard struct {
 	ID           string  `json:"id"`
@@ -17,8 +21,8 @@ type MeasuringInstrument struct {
 	OrganizationID     string
 	UnitID             string
 	UnitName           string
-	DivisionID      *string
-	DivisionName    *string
+	DivisionID         *string
+	DivisionName       *string
 	EquipmentID        *string
 	EquipmentFullName  *string
 	Name               string
@@ -30,6 +34,7 @@ type MeasuringInstrument struct {
 	PlacementKind      string
 	Comment            *string
 	DocumentURL        *string
+	Photos             []equipmentphoto.EquipmentPhoto
 	Standards          []LinkedStandard
 	ArchivedAt         *time.Time
 	CreatedAt          time.Time
@@ -87,8 +92,8 @@ type JournalResponse struct {
 }
 
 type UnitSummary struct {
-	ID              string  `json:"id"`
-	Name            string  `json:"name"`
+	ID           string  `json:"id"`
+	Name         string  `json:"name"`
 	DivisionID   *string `json:"divisionId,omitempty"`
 	DivisionName *string `json:"divisionName,omitempty"`
 }
@@ -98,27 +103,39 @@ type EquipmentSummary struct {
 	FullName string `json:"fullName"`
 }
 
+type EquipmentPhotoResponse struct {
+	ID          string `json:"id"`
+	FileName    string `json:"fileName"`
+	ContentType string `json:"contentType"`
+	SizeBytes   int64  `json:"sizeBytes"`
+	SortOrder   int    `json:"sortOrder"`
+	URL         string `json:"url"`
+	CreatedAt   string `json:"createdAt"`
+	UpdatedAt   string `json:"updatedAt"`
+}
+
 type MeasuringInstrumentResponse struct {
-	ID                 string            `json:"id"`
-	OrganizationID     string            `json:"organizationId"`
-	Unit               UnitSummary       `json:"unit"`
-	Equipment          *EquipmentSummary `json:"equipment,omitempty"`
-	Name               string            `json:"name"`
-	InstrumentType     string            `json:"instrumentType"`
-	Model              string            `json:"model"`
-	RegistrationNumber string            `json:"registrationNumber"`
-	SerialNumber       string            `json:"serialNumber"`
-	Status             string            `json:"status"`
-	PlacementKind      string            `json:"placementKind"`
-	Comment            *string           `json:"comment,omitempty"`
-	DocumentURL        *string           `json:"documentUrl,omitempty"`
-	Standards          []LinkedStandard  `json:"standards"`
-	JournalCount       int               `json:"journalCount"`
-	NextDueDate        *string           `json:"nextDueDate,omitempty"`
-	LatestJournal      *JournalResponse  `json:"latestJournal,omitempty"`
-	ArchivedAt         *string           `json:"archivedAt,omitempty"`
-	CreatedAt          string            `json:"createdAt"`
-	UpdatedAt          string            `json:"updatedAt"`
+	ID                 string                   `json:"id"`
+	OrganizationID     string                   `json:"organizationId"`
+	Unit               UnitSummary              `json:"unit"`
+	Equipment          *EquipmentSummary        `json:"equipment,omitempty"`
+	Name               string                   `json:"name"`
+	InstrumentType     string                   `json:"instrumentType"`
+	Model              string                   `json:"model"`
+	RegistrationNumber string                   `json:"registrationNumber"`
+	SerialNumber       string                   `json:"serialNumber"`
+	Status             string                   `json:"status"`
+	PlacementKind      string                   `json:"placementKind"`
+	Comment            *string                  `json:"comment,omitempty"`
+	DocumentURL        *string                  `json:"documentUrl,omitempty"`
+	Photos             []EquipmentPhotoResponse `json:"photos"`
+	Standards          []LinkedStandard         `json:"standards"`
+	JournalCount       int                      `json:"journalCount"`
+	NextDueDate        *string                  `json:"nextDueDate,omitempty"`
+	LatestJournal      *JournalResponse         `json:"latestJournal,omitempty"`
+	ArchivedAt         *string                  `json:"archivedAt,omitempty"`
+	CreatedAt          string                   `json:"createdAt"`
+	UpdatedAt          string                   `json:"updatedAt"`
 }
 
 type Meta struct {

@@ -234,6 +234,17 @@ At the end of each session:
 - leave the repo in a clean mergeable state
 - make a descriptive git commit when appropriate
 
+### 9. Publish to Incubator when requested
+
+If the user asks to publish, merge, deploy, or verify a completed stage slice in `Incubator`, hand off to `$vrk-incubator-publish` after the stage proof loop is complete.
+
+The stage harness proves implementation readiness; the Incubator publish workflow proves release readiness. Keep their artifacts separate:
+
+- stage proof stays in `.agent/stages/<stage-id>/evidence.*` and `verdict.json`;
+- publish proof goes in `.agent/stages/<stage-id>/publish.json` plus compact raw logs only when a failure needs diagnosis.
+
+Before an Incubator PR is opened, the publish workflow must guard against duplicate squash-merged history and verify the final diff against `origin/Incubator`.
+
 ## Hard rules
 
 - Do not declare the stage done early.

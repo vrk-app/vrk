@@ -1,0 +1,1 @@
+PASS: no stale diagnostic-only journal derivation wording or measuring-instrument-only selector symbols found in audited docs/UI source.

@@ -1,7 +1,7 @@
 # Yandex Cloud Incubator Deployment
 
 Статус: active incubator runbook  
-Обновлено: 2026-04-29
+Обновлено: 2026-05-12
 
 ## Назначение
 
@@ -18,7 +18,7 @@
 | PostgreSQL database/user | `vrk` / `vrk_app` |
 | PostgreSQL host | `rc1a-u2rouaenldfmev02.mdb.yandexcloud.net:6432` |
 | Runtime secrets | Lockbox `vrk-incubator-secrets` |
-| Object Storage | private S3-compatible bucket for organization logos; bucket name is stored as Lockbox `OBJECT_STORAGE_BUCKET` |
+| Object Storage | private S3-compatible bucket for organization logos and equipment photos; bucket name is stored as Lockbox `OBJECT_STORAGE_BUCKET` |
 | Backend container | `vrk-backend`, public URL `https://bbann5sjkg8iha0mmsl3.containers.yandexcloud.net` |
 | Web container | `vrk-web`, public URL `https://bbamk7b1htc1ilji6l7v.containers.yandexcloud.net` |
 | Storybook | Public web route `https://bbamk7b1htc1ilji6l7v.containers.yandexcloud.net/storybook/` |
@@ -95,10 +95,10 @@ flowchart LR
     H --> L["Yandex Lockbox secrets"]
     I --> L
     H --> M["Managed PostgreSQL"]
-    H --> N["Yandex Object Storage<br/>private logos bucket"]
+    H --> N["Yandex Object Storage<br/>private media bucket"]
 ```
 
-The workflow is intentionally ordered so migrations complete before the backend revision is deployed, and the web revision is deployed only after the backend revision succeeds. The backend container receives S3-compatible Yandex Object Storage settings for organization logos. The web container receives `INTERNAL_API_BASE_URL` and `NEXT_PUBLIC_API_BASE_URL` from `VRK_BACKEND_URL`; it also receives a derived `NEXT_PUBLIC_STORYBOOK_URL=${VRK_WEB_URL}/storybook/` and serves the static Storybook build from the same public endpoint.
+The workflow is intentionally ordered so migrations complete before the backend revision is deployed, and the web revision is deployed only after the backend revision succeeds. The backend container receives S3-compatible Yandex Object Storage settings for private media: organization logos and equipment photos. The web container receives `INTERNAL_API_BASE_URL` and `NEXT_PUBLIC_API_BASE_URL` from `VRK_BACKEND_URL`; it also receives a derived `NEXT_PUBLIC_STORYBOOK_URL=${VRK_WEB_URL}/storybook/` and serves the static Storybook build from the same public endpoint.
 
 Do not set `PORT` in Serverless Container revision env. Yandex Cloud reserves this environment variable and rejects web revision deployment with `INVALID_ARGUMENT: Environment variable PORT is forbidden`. The incubator web image starts Next.js on `${PORT:-8080}` through `apps/web/Dockerfile`; local Compose sets `PORT=3000`, while Yandex Cloud reaches the container on `127.0.0.1:8080`.
 
@@ -112,10 +112,120 @@ For session-authenticated backend calls in this Serverless Container topology, p
 
 All GitHub Actions workflows set top-level `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` so JavaScript actions run on the GitHub Actions Node.js 24 runtime ahead of the Node 20 deprecation path. This is separate from project runtime selection: `actions/setup-node` still installs Node.js `24.14.1` for the workspace, and runtime secrets stay in Yandex Lockbox.
 
+## Publish To Incubator Runbook
+
+Публикация в `Incubator` обслуживается repo-local skill:
+
+```text
+.agents/skills/vrk-incubator-publish/
+```
+
+Используй его для задач вида “закоммить текущие изменения”, “создай PR в Incubator”, “смержи и проверь деплой”. Stage harness доказывает готовность реализации, но не доказывает, что изменения корректно прошли GitHub PR, squash merge, push workflows и runtime health на Yandex Cloud.
+
+Минимальный publish flow:
+
+```mermaid
+flowchart LR
+    A["local repo changes"] --> B["codex/... publish branch"]
+    B --> C["preflight + secret scan"]
+    C --> D["diff guard against origin/Incubator"]
+    D --> E["ready PR to Incubator"]
+    E --> F["platform-baseline PR checks"]
+    F --> G["squash merge"]
+    G --> H["platform-baseline push workflow"]
+    G --> I["incubator-deploy push workflow"]
+    H --> J["runtime health checks"]
+    I --> J
+```
+
+Диаграмма фиксирует release-readiness loop: PR checks и deploy proof являются отдельным слоем поверх stage evidence.
+
+### Branch And Diff Guard
+
+Если текущая ветка уже была squash-merged, не переиспользуй ее напрямую для нового PR. Это создает риск шумного PR, куда попадет старая история. Создай новую ветку и перенеси только follow-up commits на текущий `origin/Incubator`:
+
+```text
+git fetch --prune origin
+git switch -c codex/<publish-branch>
+git rebase --onto origin/Incubator origin/<old-squash-merged-branch>
+.agents/skills/vrk-incubator-publish/scripts/diff_guard.sh origin/Incubator
+```
+
+`diff_guard.sh` должен показать, что `origin/Incubator` является merge-base для `HEAD`, и напечатать финальный `name-status` diff. Если guard красный, PR открывать нельзя: сначала нужно убрать уже squash-merged историю.
+
+### Local Preflight
+
+Перед PR:
+
+```text
+.agents/skills/vrk-incubator-publish/scripts/preflight.sh
+.agents/skills/vrk-incubator-publish/scripts/mdb_preflight.sh
+```
+
+`preflight.sh` запускает `git diff --check` и secret-pattern scan по текущим changed files. `mdb_preflight.sh` проверяет, что Managed PostgreSQL cluster `vrk-db` находится в `RUNNING` и что `active_until` не истекает в ближайшее время. Если `yc` недоступен локально, зафиксируй это как skipped infra preflight и проверь состояние через GitHub deploy workflow или Yandex Cloud вручную.
+
+### PR Checks And Merge
+
+PR в `Incubator` должен быть ready, не draft. Заголовок PR должен следовать Conventional Commits, потому что repo policy использует squash merge и PR title становится итоговым commit message.
+
+Ожидаемый порядок:
+
+```text
+.agents/skills/vrk-incubator-publish/scripts/watch_pr_checks.sh vrk-app/vrk <pr-number>
+gh pr merge <pr-number> --repo vrk-app/vrk --squash --delete-branch
+```
+
+Если PR check падает, нужно читать failing job logs, чинить минимально на той же ветке и заново ждать checks. Не мержи PR с красным `platform-baseline`, если пользователь явно не берет риск на себя.
+
+### Post-Merge Deploy Proof
+
+После squash merge возьми новый SHA ветки `Incubator` и дождись push workflows:
+
+```text
+.agents/skills/vrk-incubator-publish/scripts/watch_commit_workflows.sh vrk-app/vrk <incubator-sha> platform-baseline.yml incubator-deploy.yml
+.agents/skills/vrk-incubator-publish/scripts/runtime_health_check.sh
+```
+
+Runtime proof считается достаточным, если:
+
+- backend `/healthz` возвращает успешный ответ;
+- backend `/readyz` возвращает успешный ответ и не сообщает DB readiness failure;
+- web `/login` доступен;
+- web `/storybook/index.html` доступен;
+- web `/storybook/index.json` доступен и не пустой.
+
+Если `incubator-deploy` падает из-за stopped MDB или истекшего `active_until`, сначала восстанови infra state, затем rerun failed jobs или сделай новый исправляющий PR, если причина в коде.
+
+### Publish Evidence
+
+Для stage-bound публикаций фиксируй компактный machine-readable итог:
+
+```text
+.agent/stages/<stage-id>/publish.json
+```
+
+Рекомендуемые поля:
+
+```json
+{
+  "base_branch": "Incubator",
+  "head_branch": "codex/example",
+  "pr": 0,
+  "merge_sha": "",
+  "local_checks": [],
+  "pr_checks": [],
+  "post_merge_workflows": [],
+  "runtime_checks": [],
+  "infra_notes": []
+}
+```
+
+Длинные job logs не нужно переносить в контекст без необходимости. Достаточно run IDs, URLs, conclusion и кратких runtime результатов; подробные logs сохраняй в `.agent/stages/<stage-id>/raw/` только для диагностики отказа.
+
 ## Operational Notes
 
 - Direct public invocation is enabled for both incubator containers. This keeps the first incubator pipeline simple and cheap, but backend URL access should move behind API Gateway/custom domains before production hardening.
-- Storybook is intentionally public in the incubator web container at `/storybook/`; it has no separate auth gate, container, bucket, or CDN. The Object Storage bucket in this baseline is private and used only for organization logos served through authenticated backend/web proxy routes.
+- Storybook is intentionally public in the incubator web container at `/storybook/`; it has no separate auth gate, container, bucket, or CDN. The Object Storage bucket in this baseline is private and used only for organization logos and equipment photos served through authenticated backend/web proxy routes.
 - The backend accepts both `Authorization: Bearer <token>` and `X-VRK-Session-Token: <token>` for application sessions. Incubator web-to-backend calls use the latter to avoid cloud-front interception of the standard authorization header.
 - The PostgreSQL host has a public IP so GitHub Actions can run migrations. If the database is later made private, the migration step must move into a Yandex-side runner or a dedicated migration container flow.
 - The VPC network currently lives in the `ncfg` folder only because the cloud-level VPC network quota blocked a new `vrk` network. If quota is increased, create `vrk-network` / `vrk-subnet-a`, move `vrk-db`, and update this document.

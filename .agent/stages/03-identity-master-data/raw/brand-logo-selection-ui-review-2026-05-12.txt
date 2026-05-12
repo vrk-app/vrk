@@ -1,0 +1,21 @@
+Review source: .agent/stages/03-identity-master-data/raw/web-interface-guidelines-source-brand-logo-selection-2026-05-12.md
+Review target:
+- apps/web/app/_components/AuthIllustration.tsx
+- apps/web/widgets/OperatorShell/ui/SidebarNav.tsx
+- apps/web/app/(runtime)/_components/RuntimeShell.tsx
+- apps/web/app/layout.tsx
+- apps/web/app/manifest.ts
+- apps/web/app/logos/page.tsx
+- apps/field/app/layout.tsx
+- apps/field/app/manifest.ts
+- apps/field/app/page.tsx
+
+apps/web/app/_components/AuthIllustration.tsx: ✓ pass
+apps/web/widgets/OperatorShell/ui/SidebarNav.tsx: ✓ pass
+apps/web/app/(runtime)/_components/RuntimeShell.tsx: ✓ pass
+apps/web/app/layout.tsx: ✓ pass
+apps/web/app/manifest.ts: ✓ pass
+apps/web/app/logos/page.tsx: ✓ pass
+apps/field/app/layout.tsx: ✓ pass
+apps/field/app/manifest.ts: ✓ pass
+apps/field/app/page.tsx: ✓ pass

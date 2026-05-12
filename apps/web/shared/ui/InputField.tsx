@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, EyeOff } from "lucide-react";
+import { Asterisk, Eye, EyeOff } from "lucide-react";
 import { forwardRef, useId, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { cn } from "@/shared/lib/cn";
 import { Tooltip, type TooltipVariant } from "./Tooltip";
@@ -32,6 +32,7 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
       id,
       label,
       leftIcon,
+      required,
       rightIcon,
       showPasswordLabel = "Показать пароль",
       showPasswordToggle = true,
@@ -57,6 +58,15 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
           >
             {label}
           </label>
+          {required ? (
+            <span
+              className="inline-flex size-3.5 shrink-0 items-center justify-center text-destructive"
+              title="Обязательное поле"
+            >
+              <Asterisk aria-hidden="true" className="size-3.5" />
+              <span className="sr-only">обязательное поле</span>
+            </span>
+          ) : null}
           {hint ? (
             <Tooltip
               aria-label={`Справка: ${label}`}
@@ -71,8 +81,10 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
             "flex min-h-11 items-center gap-3 rounded-[var(--radius-md)] border bg-card px-3.5 shadow-xs transition-colors duration-150",
             error
               ? "border-destructive bg-destructive-soft/30"
-              : "border-input hover:border-border-strong focus-within:border-accent focus-within:ring-2 focus-within:ring-ring/15",
-            disabled && "cursor-not-allowed bg-muted text-text-disabled",
+              : required
+                ? "border-accent/45 bg-accent-soft/45 hover:border-accent focus-within:border-accent focus-within:ring-2 focus-within:ring-ring/20"
+                : "border-input hover:border-border-strong focus-within:border-accent focus-within:ring-2 focus-within:ring-ring/15",
+            disabled && "cursor-not-allowed border-input bg-muted text-text-disabled",
           )}
         >
           {leftIcon ? (
@@ -93,6 +105,7 @@ export const InputField = forwardRef<HTMLInputElement, InputFieldProps>(
             )}
             disabled={disabled}
             id={inputId}
+            required={required}
             type={resolvedType}
             {...props}
           />

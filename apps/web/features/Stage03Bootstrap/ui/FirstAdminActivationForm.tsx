@@ -105,6 +105,7 @@ export function FirstAdminActivationForm({ invite, inviteToken }: Props) {
             onChange={(event) => setPassword(event.target.value)}
             hint="Минимум 8 символов."
             placeholder="Например, password…"
+            required
             type="password"
             value={password}
           />
@@ -115,6 +116,7 @@ export function FirstAdminActivationForm({ invite, inviteToken }: Props) {
             name="passwordConfirm"
             onChange={(event) => setPasswordConfirm(event.target.value)}
             placeholder="Повторите пароль…"
+            required
             type="password"
             value={passwordConfirm}
           />
