@@ -31,6 +31,7 @@
 - `make smoke` требует доступный `python3` в локальном shell;
 - `make down` сохраняет named Postgres volume и marker успешного dev seed, а `make clean` пересоздает clean-room baseline для повторного seeded proof;
 - backend build/test path доступен через контейнерные scripts и не требует локального `go`.
+- backend создает PostgreSQL pool на startup без обязательного `Ping`, поэтому `/healthz` отражает liveness HTTP-процесса, а `/readyz` выполняет bounded DB ping и остается source of truth для готовности базы;
 - `compose.dev.yml` является официальным dev overlay для hot reload `apps/web`: он переиспользует `db`, `migrate`, `backend` и published port `3100` из `compose.platform.yml`, но запускает `web` через `pnpm --filter @vrk/web dev --hostname 0.0.0.0 --port 3000`;
 - root `make web-dev` поднимает тот же overlay для локальной UI-разработки, не заменяя production-like `make dev` / `make smoke` contract.
 
